@@ -1,0 +1,15 @@
+.dart_tool/
+.packages
+.pub/
+build/
+flutter_*.png
+*.iml
+.DS_Store
+android/.gradle/
+android/app/build/
+android/build/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+*.lock

@@ -1,0 +1,37 @@
+import 'package:flutter/material.dart';
+import '../../theme/theme.dart';
+
+class AppButton extends StatelessWidget {
+  final String title;
+  final VoidCallback? onPressed;
+  final bool loading;
+  final bool disabled;
+  final String? variant; // primary, secondary, outline, ghost
+
+  const AppButton({super.key, required this.title, this.onPressed, this.loading = false, this.disabled = false, this.variant});
+
+  @override
+  Widget build(BuildContext context) {
+    final isPrimary = variant == null || variant == 'primary';
+    final isOutline = variant == 'outline';
+    final bgColor = isPrimary ? AppColors.primary : isOutline ? Colors.transparent : Colors.transparent;
+    final textColor = isPrimary ? Colors.white : AppColors.primary;
+    final border = isOutline ? Border.all(color: AppColors.primary, width: 1.5) : null;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: (disabled || loading) ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bgColor,
+          foregroundColor: textColor,
+          disabledBackgroundColor: bgColor.withOpacity(0.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: border?.side ?? BorderSide.none,
+        ),
+        child: loading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+}

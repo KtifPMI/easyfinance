@@ -1,0 +1,73 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../components/common/app_button.dart';
+import '../../components/common/app_input.dart';
+import '../../components/common/screen_scaffold.dart';
+import '../../models/budget.dart';
+import '../../store/finance_store.dart';
+import '../../theme/theme.dart';
+
+class AddBudgetScreen extends StatefulWidget {
+  const AddBudgetScreen({super.key});
+
+  @override
+  State<AddBudgetScreen> createState() => _AddBudgetScreenState();
+}
+
+class _AddBudgetScreenState extends State<AddBudgetScreen> {
+  final _limitCtrl = TextEditingController();
+  String? _categoryId;
+
+  @override
+  void dispose() {
+    _limitCtrl.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    final store = context.read<FinanceStore>();
+    final limit = double.tryParse(_limitCtrl.text.replaceAll(',', '.')) ?? 0;
+    if (limit <= 0 || _categoryId == null) return;
+
+    store.addBudget(Budget(
+      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+      categoryId: _categoryId!,
+      limit: limit,
+    ));
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FinanceStore>(
+      builder: (context, store, _) {
+        final expenseCats = store.categories.where((c) => c.type == 'expense').toList();
+        _categoryId ??= expenseCats.isNotEmpty ? expenseCats.first.id : null;
+
+        return ScreenScaffold(
+          title: 'Новый бюджет',
+          child: Column(
+            children: [
+              Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _categoryId,
+                decoration: InputDecoration(
+                  filled: true, fillColor: AppColors.card,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                items: expenseCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                onChanged: (v) => setState(() => _categoryId = v),
+              ),
+              const SizedBox(height: 16),
+              AppInput(label: 'Лимит', controller: _limitCtrl, keyboardType: TextInputType.number),
+              const SizedBox(height: 24),
+              AppButton(title: 'Сохранить', onPressed: _save),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

@@ -1,0 +1,111 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../components/common/app_chip.dart';
+import '../../components/common/screen_scaffold.dart';
+import '../../components/operations/operation_list_item.dart';
+import '../../store/finance_store.dart';
+import '../../theme/theme.dart';
+import '../../utils/format.dart';
+
+class OperationsListScreen extends StatefulWidget {
+  const OperationsListScreen({super.key});
+
+  @override
+  State<OperationsListScreen> createState() => _OperationsListScreenState();
+}
+
+class _OperationsListScreenState extends State<OperationsListScreen> {
+  String _filter = 'all';
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FinanceStore>(
+      builder: (context, store, _) {
+        var ops = store.operations.toList();
+        if (_filter == 'income') ops = ops.where((o) => o.type == 'income').toList();
+        if (_filter == 'expense') ops = ops.where((o) => o.type == 'expense').toList();
+
+        final grouped = groupByDay(ops);
+
+        return ScreenScaffold(
+          title: 'Учёт',
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => Navigator.pushNamed(context, '/add-operation'),
+            ),
+          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    AppChip(label: 'Все', active: _filter == 'all', onPressed: () => setState(() => _filter = 'all')),
+                    AppChip(label: 'Доходы', active: _filter == 'income', onPressed: () => setState(() => _filter = 'income')),
+                    AppChip(label: 'Расходы', active: _filter == 'expense', onPressed: () => setState(() => _filter = 'expense')),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (grouped.isEmpty)
+                const Center(child: Padding(padding: EdgeInsets.all(40), child: Text('Нет операций', style: TextStyle(color: AppColors.textSecondary))))
+              else
+                ...grouped.map((entry) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 4),
+                      child: Text(formatDayLabel(entry.key), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+                      child: Column(
+                        children: entry.value.map((op) {
+                          final cat = store.getCategory(op.categoryId);
+                          final acc = store.getAccount(op.accountId);
+                          final toAcc = store.getAccount(op.toAccountId);
+                          final iconData = op.type == 'transfer' ? Icons.swap_horiz : (cat != null ? _catIcon(cat.icon) : Icons.help_outline);
+                          final color = op.type == 'transfer' ? AppColors.transfer : (cat?.color != null ? _parseColor(cat!.color) : AppColors.textSecondary);
+                          final title = op.type == 'transfer'
+                              ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
+                              : cat?.name ?? 'Без категории';
+
+                          return OperationListItem(
+                            title: title,
+                            subtitle: op.comment ?? acc?.name ?? '',
+                            amount: op.amount,
+                            type: op.type,
+                            icon: iconData,
+                            iconColor: color,
+                            onTap: () {},
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _catIcon(String icon) {
+    const map = {
+      'shopping_cart': Icons.shopping_cart, 'directions_car': Icons.directions_car, 'restaurant': Icons.restaurant,
+      'home': Icons.home, 'movie': Icons.movie, 'favorite': Icons.favorite, 'wifi': Icons.wifi,
+      'checkroom': Icons.checkroom, 'payments': Icons.payments, 'laptop': Icons.laptop,
+      'card_giftcard': Icons.card_giftcard, 'trending_up': Icons.trending_up,
+    };
+    return map[icon] ?? Icons.help_outline;
+  }
+
+  Color _parseColor(String hex) {
+    hex = hex.replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
+  }
+}
