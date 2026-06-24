@@ -1,3 +1,19 @@
-plugins {
-    id "com.android.application" version "8.11.1" apply false
+// Файл должен быть пустым или содержать только базовые настройки
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
 }
