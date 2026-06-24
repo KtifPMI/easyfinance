@@ -31,13 +31,13 @@ class AppTheme {
       centerTitle: true,
       titleTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text),
     ),
-    cardTheme: CardThemeData(
+    cardTheme: const CardThemeData(
       color: AppColors.card,
       elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
       margin: EdgeInsets.zero,
     ),
-    dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1, height: 1),
+    dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1, space: 1),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       backgroundColor: AppColors.white,
       selectedItemColor: AppColors.primary,

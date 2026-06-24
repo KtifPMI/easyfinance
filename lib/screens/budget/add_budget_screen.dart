@@ -57,7 +57,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                items: expenseCats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                items: expenseCats.map((c) => DropdownMenuItem<String>(value: c.id, child: Text(c.name))).toList(),
                 onChanged: (v) => setState(() => _categoryId = v),
               ),
               const SizedBox(height: 16),

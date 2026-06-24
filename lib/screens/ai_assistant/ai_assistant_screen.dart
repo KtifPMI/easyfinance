@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../components/common/app_card.dart';
-import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
 

@@ -5,7 +5,6 @@ import '../screens/budget/plan_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
 import '../screens/reports/reports_screen.dart';
 import '../screens/more/more_screen.dart';
-import '../theme/theme.dart';
 
 class MainTabs extends StatefulWidget {
   const MainTabs({super.key});

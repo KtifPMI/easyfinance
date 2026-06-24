@@ -20,7 +20,7 @@ class GaugeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final clamped = percent.clamp(0, 100);
+    final clamped = percent.clamp(0, 100).toDouble();
     final color = clamped >= 100 ? AppColors.danger : clamped >= 80 ? AppColors.warning : AppColors.success;
 
     return CustomPaint(

@@ -5,7 +5,6 @@ import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/goal.dart';
 import '../../store/finance_store.dart';
-import '../../theme/theme.dart';
 
 class AddGoalScreen extends StatefulWidget {
   const AddGoalScreen({super.key});

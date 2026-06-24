@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/account.dart';
 import '../models/budget.dart';
-import '../models/category.dart';
+import '../models/category.dart' as cat;
 import '../models/financial_event.dart';
 import '../models/goal.dart';
 import '../models/operation.dart';
@@ -9,12 +9,10 @@ import '../models/recommendation.dart';
 import '../models/tag.dart';
 import '../services/mock_data.dart';
 
-String _genId() => DateTime.now().microsecondsSinceEpoch.toRadixString(36);
-
 class FinanceStore extends ChangeNotifier {
   List<Account> _accounts = [...mockAccounts];
   List<Operation> _operations = [...mockOperations];
-  List<Category> _categories = [...mockCategories];
+  List<cat.Category> _categories = [...mockCategories];
   List<Budget> _budgets = [...mockBudgets];
   List<Goal> _goals = [...mockGoals];
   List<FinancialEvent> _events = [...mockEvents];
@@ -23,7 +21,7 @@ class FinanceStore extends ChangeNotifier {
 
   List<Account> get accounts => _accounts;
   List<Operation> get operations => _operations.where((o) => !o.isDeleted).toList();
-  List<Category> get categories => _categories;
+  List<cat.Category> get categories => _categories;
   List<Budget> get budgets => _budgets.where((b) => !b.isDeleted).toList();
   List<Goal> get goals => _goals;
   List<FinancialEvent> get events => _events;
@@ -31,7 +29,7 @@ class FinanceStore extends ChangeNotifier {
   List<Tag> get tags => _tags;
   bool get isLoading => false;
 
-  Category? getCategory(String? id) => id == null ? null : _categories.cast<Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
+  cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
 
   double get totalBalance => _accounts.where((a) => a.includeInTotal).fold(0, (s, a) => s + a.balance);

@@ -28,7 +28,7 @@ class AppButton extends StatelessWidget {
           foregroundColor: textColor,
           disabledBackgroundColor: bgColor.withOpacity(0.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          side: border?.side ?? BorderSide.none,
+          side: border,
         ),
         child: loading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       ),

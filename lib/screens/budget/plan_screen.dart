@@ -7,9 +7,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
-import '../goals/goal_detail_screen.dart';
 import '../goals/add_goal_screen.dart';
-import 'budget_detail_screen.dart';
 import 'add_budget_screen.dart';
 
 class PlanScreen extends StatelessWidget {
