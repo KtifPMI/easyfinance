@@ -51,7 +51,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                initialValue: _categoryId,
                 decoration: InputDecoration(
                   filled: true, fillColor: AppColors.card,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

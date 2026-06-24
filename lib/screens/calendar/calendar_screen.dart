@@ -62,7 +62,7 @@ class CalendarScreen extends StatelessWidget {
                         Container(
                           width: 40, height: 40,
                           decoration: BoxDecoration(
-                            color: e.type == 'income' ? AppColors.success.withOpacity(0.15) : AppColors.expense.withOpacity(0.15),
+                            color: e.type == 'income' ? AppColors.success.withValues(alpha: 0.15) : AppColors.expense.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, color: e.type == 'income' ? AppColors.success : AppColors.expense),

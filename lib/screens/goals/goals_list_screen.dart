@@ -38,7 +38,7 @@ class GoalsListScreen extends StatelessWidget {
                               children: [
                                 Container(
                                   width: 48, height: 48,
-                                  decoration: BoxDecoration(color: _parseColor(g.color).withOpacity(0.15), shape: BoxShape.circle),
+                                  decoration: BoxDecoration(color: _parseColor(g.color).withValues(alpha: 0.15), shape: BoxShape.circle),
                                   child: Icon(_goalIcon(g.icon), color: _parseColor(g.color), size: 24),
                                 ),
                                 const SizedBox(width: 12),

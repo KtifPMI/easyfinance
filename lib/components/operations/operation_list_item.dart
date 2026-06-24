@@ -49,7 +49,7 @@ class OperationListItem extends StatelessWidget {
           children: [
             Container(
               width: 40, height: 40,
-              decoration: BoxDecoration(color: iconColor.withOpacity(0.15), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.15), shape: BoxShape.circle),
               child: Icon(icon, size: 20, color: iconColor),
             ),
             const SizedBox(width: 12),

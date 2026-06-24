@@ -86,7 +86,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _accountId,
+                initialValue: _accountId,
                 decoration: InputDecoration(
                   filled: true, fillColor: AppColors.card,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -100,7 +100,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _categoryId,
+                  initialValue: _categoryId,
                   decoration: InputDecoration(
                     filled: true, fillColor: AppColors.card,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -114,7 +114,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 Text('На счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _toAccountId,
+                  initialValue: _toAccountId,
                   decoration: InputDecoration(
                     filled: true, fillColor: AppColors.card,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
