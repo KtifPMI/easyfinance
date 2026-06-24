@@ -16,7 +16,7 @@ class AppButton extends StatelessWidget {
     final isOutline = variant == 'outline';
     final bgColor = isPrimary ? AppColors.primary : isOutline ? Colors.transparent : Colors.transparent;
     final textColor = isPrimary ? Colors.white : AppColors.primary;
-    final border = isOutline ? Border.all(color: AppColors.primary, width: 1.5) : null;
+    final border = isOutline ? const BorderSide(color: AppColors.primary, width: 1.5) : null;
 
     return SizedBox(
       width: double.infinity,
