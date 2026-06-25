@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
@@ -14,14 +13,12 @@ class ApiClient {
   String? _userId;
 
   final http.Client _httpClient;
-  final HttpClient _dartHttpClient;
 
   ApiClient({
     required this.appId,
     required this.secretKey,
     http.Client? httpClient,
-  })  : _httpClient = httpClient ?? http.Client(),
-        _dartHttpClient = HttpClient()..autoUncompress = true;
+  }) : _httpClient = httpClient ?? http.Client();
 
   String? get accessToken => _accessToken;
   String? get userId => _userId;
@@ -38,7 +35,6 @@ class ApiClient {
 
   void dispose() {
     _httpClient.close();
-    _dartHttpClient.close();
   }
 
   String _md5(String input) => md5.convert(utf8.encode(input)).toString();
@@ -83,47 +79,27 @@ class ApiClient {
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
 
     try {
-      print('=== Token Exchange Request ===');
-      print('URL: $uri');
+      final request = http.Request('GET', uri);
+      final response = await _httpClient.send(request).timeout(_timeout);
 
-      _dartHttpClient.autoFollowRedirects = false;
-      final request = await _dartHttpClient.getUrl(uri).timeout(_timeout);
-      final response = await request.close().timeout(_timeout);
-      final statusCode = response.statusCode;
-      final location = response.headers.value('location');
-
-      print('=== Token Exchange Response ===');
-      print('Status: $statusCode');
-      print('Location: $location');
-
-      if (location != null && _isRedirect(statusCode)) {
-        print('Redirect detected: $location');
-        final locUri = Uri.parse(location);
-        final token = _extractTokenFromUri(locUri);
-        if (token != null) {
-          print('Token found in redirect location');
-          return token;
-        }
+      final finalUri = response.request?.url;
+      if (finalUri != null) {
+        final token = _extractTokenFromUri(finalUri);
+        if (token != null) return token;
       }
 
-      final body = await response.transform(utf8.decoder).join();
-      print('Body length: ${body.length}');
-      print('Body preview: ${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
+      final body = await response.stream.bytesToString();
+      final statusCode = response.statusCode;
+      final location = finalUri?.toString();
 
       return _extractTokenFromBody(body, statusCode: statusCode, location: location);
     } on TimeoutException {
       throw ApiException('Token exchange timeout', 'TIMEOUT');
     } on ApiException {
       rethrow;
-    } catch (e, stackTrace) {
-      print('Token exchange error: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       throw ApiException('Token exchange failed: $e', 'EXCHANGE_FAIL');
     }
-  }
-
-  bool _isRedirect(int statusCode) {
-    return statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308;
   }
 
   String? _extractTokenFromUri(Uri uri) {
@@ -142,47 +118,30 @@ class ApiClient {
   String _extractTokenFromBody(String body, {int? statusCode, String? location}) {
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
-      print('JSON parsed successfully');
-
       final resp = json['response'] as Map<String, dynamic>?;
-      
+
       if (resp != null && resp.containsKey('response_error')) {
         final err = resp['response_error'] as Map<String, dynamic>;
-        throw ApiException(
-          err['error_message']?.toString() ?? 'Unknown error',
-          err['error_code']?.toString() ?? 'API_ERROR',
-        );
+        throw ApiException(err['error_message']?.toString() ?? 'Unknown error', err['error_code']?.toString() ?? 'API_ERROR');
       }
 
       final data = resp?['response_data'] as Map<String, dynamic>?;
 
       if (data != null && data.containsKey('access_token')) {
         final token = data['access_token']?.toString();
-        if (token != null && token.isNotEmpty) {
-          print('Token found in response_data.access_token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
 
       if (resp != null && resp.containsKey('access_token')) {
         final token = resp['access_token']?.toString();
-        if (token != null && token.isNotEmpty) {
-          print('Token found in response.access_token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
 
       if (json.containsKey('access_token')) {
         final token = json['access_token']?.toString();
-        if (token != null && token.isNotEmpty) {
-          print('Token found in root access_token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
-
-      print('Token not found in JSON structure');
     } on FormatException {
-      print('Response is not JSON');
     } on ApiException {
       rethrow;
     }
@@ -197,19 +156,13 @@ class ApiClient {
       final match = pattern.firstMatch(body);
       if (match != null) {
         final token = match.group(1);
-        if (token != null && token.isNotEmpty) {
-          print('Token found via regex: $token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
     }
 
     final snippet = body.length > 500 ? '${body.substring(0, 500)}...' : body;
     final locInfo = location != null ? ' (redirect to: $location)' : '';
-    throw ApiException(
-      'Token not found in response HTTP $statusCode$locInfo: $snippet',
-      'TOKEN_NOT_FOUND',
-    );
+    throw ApiException('Token not found in response HTTP $statusCode$locInfo: $snippet', 'TOKEN_NOT_FOUND');
   }
 
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
@@ -235,51 +188,24 @@ class ApiClient {
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {
-    if (response.statusCode == 200) {
-      try {
-        final dynamic decoded = jsonDecode(response.body);
-        
-        if (decoded is! Map<String, dynamic>) {
-          throw ApiException(
-            'Unexpected response format: ${decoded.runtimeType}',
-            'INVALID_FORMAT',
-          );
-        }
-
-        final resp = decoded['response'] as Map<String, dynamic>?;
-
-        if (resp != null && resp.containsKey('response_error')) {
-          final err = resp['response_error'] as Map<String, dynamic>;
-          throw ApiException(
-            err['error_message']?.toString() ?? 'Unknown API error',
-            err['error_code']?.toString() ?? 'API_ERROR',
-          );
-        }
-
-        if (resp != null && resp.containsKey('response_data')) {
-          final data = resp['response_data'];
-          if (data is Map<String, dynamic>) {
-            return data;
-          }
-          return {'data': data};
-        }
-        
-        return resp ?? decoded;
-      } on FormatException {
-        final snippet = response.body.length > 200 
-            ? response.body.substring(0, 200) 
-            : response.body;
-        throw ApiException(
-          'Invalid JSON response: $snippet',
-          'INVALID_JSON',
-        );
-      }
+    if (response.statusCode != 200) {
+      throw ApiException('HTTP ${response.statusCode}: ${response.body}', response.statusCode.toString());
     }
-
-    throw ApiException(
-      'HTTP ${response.statusCode}: ${response.body}',
-      response.statusCode.toString(),
-    );
+    final dynamic decoded = jsonDecode(response.body);
+    if (decoded is! Map<String, dynamic>) {
+      throw ApiException('Unexpected response format: ${decoded.runtimeType}', 'INVALID_FORMAT');
+    }
+    final resp = decoded['response'] as Map<String, dynamic>?;
+    if (resp != null && resp.containsKey('response_error')) {
+      final err = resp['response_error'] as Map<String, dynamic>;
+      throw ApiException(err['error_message']?.toString() ?? 'Unknown API error', err['error_code']?.toString() ?? 'API_ERROR');
+    }
+    if (resp != null && resp.containsKey('response_data')) {
+      final data = resp['response_data'];
+      if (data is Map<String, dynamic>) return data;
+      return {'data': data};
+    }
+    return resp ?? decoded;
   }
 }
 
