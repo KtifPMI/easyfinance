@@ -76,7 +76,7 @@ class ApiClient {
       'response_type': 'token',
     };
     params['sig'] = _buildSig(params, uidOverride: '');
-    final uri = Uri.parse(baseUrl).replace(queryParameters: params);
+    final uri = Uri.parse('${baseUrl}result').replace(queryParameters: params);
 
     try {
       final request = http.Request('GET', uri);

@@ -34,13 +34,24 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     final uri = Uri.parse(req.url);
 
     if (uri.path.endsWith('/v2/result')) {
-      if (uri.queryParameters.containsKey('code')) {
-        final code = uri.queryParameters['code'];
-        if (code != null && code.isNotEmpty) {
-          _handleCode(code);
+      if (uri.queryParameters.containsKey('access_token')) {
+        _handleToken(uri.queryParameters['access_token']!);
+        return NavigationDecision.prevent;
+      }
+
+      if (uri.hasFragment) {
+        final frag = Uri.splitQueryString(uri.fragment);
+        if (frag.containsKey('access_token')) {
+          _handleToken(frag['access_token']!);
           return NavigationDecision.prevent;
         }
       }
+
+      if (uri.queryParameters.containsKey('code')) {
+        _handleCode(uri.queryParameters['code']!);
+        return NavigationDecision.prevent;
+      }
+
       if (uri.queryParameters.containsKey('access_denied')) {
         if (mounted) Navigator.pop(context, false);
         return NavigationDecision.prevent;
@@ -48,6 +59,32 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     }
 
     return NavigationDecision.navigate;
+  }
+
+  Future<void> _handleToken(String token) async {
+    try {
+      final store = context.read<FinanceStore>();
+      store.apiClient.setAuth(accessToken: token);
+      await store.authService.saveCredentials(
+        appId: store.apiClient.appId,
+        secretKey: store.apiClient.secretKey,
+        accessToken: token,
+      );
+      await store.fetchAllData();
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка: ${e.message}'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context, false);
+      }
+    }
   }
 
   Future<void> _handleCode(String code) async {
