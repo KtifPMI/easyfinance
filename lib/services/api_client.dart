@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
@@ -39,13 +40,18 @@ class ApiClient {
 
   String _md5(String input) => md5.convert(utf8.encode(input)).toString();
 
-  String _buildSig(Map<String, String> params, {String? uidOverride}) {
+  String _buildSig(Map<String, String> params, {bool includeUid = true}) {
     final sorted = Map.fromEntries(
       params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
     );
     final paramStr = sorted.entries.map((e) => '${e.key}=${e.value}').join('&');
-    final uid = uidOverride ?? _userId ?? '';
-    return _md5('$secretKey$uid$paramStr');
+    
+    // При обмене кода на токен uid не используется
+    if (includeUid && _userId != null && _userId!.isNotEmpty) {
+      return _md5('$secretKey$_userId$paramStr');
+    } else {
+      return _md5('$secretKey$paramStr');
+    }
   }
 
   Uri _buildUri(String method, Map<String, String> extraParams) {
@@ -64,7 +70,7 @@ class ApiClient {
       'app_id': appId,
       'response_type': 'code',
     };
-    params['sig'] = _buildSig(params);
+    params['sig'] = _buildSig(params, includeUid: false);
     return Uri.parse(baseUrl).replace(queryParameters: params);
   }
 
@@ -75,37 +81,75 @@ class ApiClient {
       'grant_type': 'authorization_code',
       'response_type': 'token',
     };
-    params['sig'] = _buildSig(params, uidOverride: '');
+    
+    // При обмене кода uid НЕ используется в подписи
+    params['sig'] = _buildSig(params, includeUid: false);
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
 
     try {
-      final request = http.Request('GET', uri);
-      final response = await _httpClient.send(request).timeout(_timeout);
+      print('=== Token Exchange Request ===');
+      print('URL: $uri');
 
-      final finalUri = response.request?.url;
-      if (finalUri != null) {
-        final token = _extractTokenFromUri(finalUri);
-        if (token != null) return token;
+      // Используем HttpClient для контроля редиректов
+      final client = HttpClient()..autoUncompress = true;
+      
+      try {
+        final request = await client.getUrl(uri).timeout(_timeout);
+        // Отключаем авто-редирект, чтобы перехватить Location header
+        request.followRedirects = false;
+        
+        final response = await request.close().timeout(_timeout);
+        final statusCode = response.statusCode;
+        final location = response.headers.value('location');
+
+        print('=== Token Exchange Response ===');
+        print('Status: $statusCode');
+        print('Location: $location');
+
+        // Если есть редирект (301/302/307/308), ищем токен в Location
+        if (location != null && _isRedirect(statusCode)) {
+          print('Redirect detected: $location');
+          final locUri = Uri.parse(location);
+          print('Parsed location: $locUri');
+          print('Query params: ${locUri.queryParameters}');
+          
+          final token = _extractTokenFromUri(locUri);
+          if (token != null) {
+            print('✅ Token found in redirect location: $token');
+            return token;
+          }
+        }
+
+        // Если токена нет в Location, читаем body
+        final body = await response.transform(utf8.decoder).join();
+        print('Body length: ${body.length}');
+        print('Body preview: ${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
+
+        return _extractTokenFromBody(body, statusCode: statusCode, location: location);
+      } finally {
+        client.close();
       }
-
-      final body = await response.stream.bytesToString();
-      final statusCode = response.statusCode;
-      final location = finalUri?.toString();
-
-      return _extractTokenFromBody(body, statusCode: statusCode, location: location);
     } on TimeoutException {
       throw ApiException('Token exchange timeout', 'TIMEOUT');
     } on ApiException {
       rethrow;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Token exchange error: $e');
+      print('Stack trace: $stackTrace');
       throw ApiException('Token exchange failed: $e', 'EXCHANGE_FAIL');
     }
   }
 
+  bool _isRedirect(int statusCode) {
+    return statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308;
+  }
+
   String? _extractTokenFromUri(Uri uri) {
+    // Проверяем query parameters
     var token = uri.queryParameters['access_token'];
     if (token != null && token.isNotEmpty) return token;
 
+    // Проверяем fragment (стандарт OAuth 2.0)
     if (uri.hasFragment) {
       final fragmentParams = Uri.splitQueryString(uri.fragment);
       token = fragmentParams['access_token'];
@@ -118,42 +162,66 @@ class ApiClient {
   String _extractTokenFromBody(String body, {int? statusCode, String? location}) {
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
-      final resp = json['response'] as Map<String, dynamic>?;
+      print('JSON parsed successfully');
 
+      final resp = json['response'] as Map<String, dynamic>?;
+      
+      // Проверяем наличие ошибки
       if (resp != null && resp.containsKey('response_error')) {
         final err = resp['response_error'] as Map<String, dynamic>;
-        throw ApiException(err['error_message']?.toString() ?? 'Unknown error', err['error_code']?.toString() ?? 'API_ERROR');
+        throw ApiException(
+          err['error_message']?.toString() ?? 'Unknown error',
+          err['error_code']?.toString() ?? 'API_ERROR',
+        );
       }
 
       final data = resp?['response_data'] as Map<String, dynamic>?;
 
+      // Проверяем наличие ошибок в response_data
       if (data != null && data.containsKey('errors')) {
         final errors = data['errors'] as List<dynamic>?;
         if (errors != null && errors.isNotEmpty) {
           final first = errors.first as Map<String, dynamic>;
-          throw ApiException(first['text']?.toString() ?? 'API error', first['code']?.toString() ?? 'API_ERROR');
+          throw ApiException(
+            first['text']?.toString() ?? 'API error',
+            first['code']?.toString() ?? 'API_ERROR',
+          );
         }
       }
 
+      // Ищем токен в разных местах
       if (data != null && data.containsKey('access_token')) {
         final token = data['access_token']?.toString();
-        if (token != null && token.isNotEmpty) return token;
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found in response_data.access_token');
+          return token;
+        }
       }
 
       if (resp != null && resp.containsKey('access_token')) {
         final token = resp['access_token']?.toString();
-        if (token != null && token.isNotEmpty) return token;
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found in response.access_token');
+          return token;
+        }
       }
 
       if (json.containsKey('access_token')) {
         final token = json['access_token']?.toString();
-        if (token != null && token.isNotEmpty) return token;
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found in root access_token');
+          return token;
+        }
       }
+
+      print('Token not found in JSON structure');
     } on FormatException {
+      print('Response is not JSON');
     } on ApiException {
       rethrow;
     }
 
+    // Ищем токен через regex
     final patterns = [
       RegExp(r'"access_token"\s*:\s*"([^"]+)"', caseSensitive: false),
       RegExp(r'access_token=([a-f0-9]+)', caseSensitive: false),
@@ -164,13 +232,19 @@ class ApiClient {
       final match = pattern.firstMatch(body);
       if (match != null) {
         final token = match.group(1);
-        if (token != null && token.isNotEmpty) return token;
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found via regex: $token');
+          return token;
+        }
       }
     }
 
     final snippet = body.length > 500 ? '${body.substring(0, 500)}...' : body;
     final locInfo = location != null ? ' (redirect to: $location)' : '';
-    throw ApiException('Token not found in response HTTP $statusCode$locInfo: $snippet', 'TOKEN_NOT_FOUND');
+    throw ApiException(
+      'Token not found in response HTTP $statusCode$locInfo: $snippet',
+      'TOKEN_NOT_FOUND',
+    );
   }
 
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
@@ -199,30 +273,42 @@ class ApiClient {
     if (response.statusCode != 200) {
       throw ApiException('HTTP ${response.statusCode}: ${response.body}', response.statusCode.toString());
     }
+    
     final dynamic decoded = jsonDecode(response.body);
     if (decoded is! Map<String, dynamic>) {
       throw ApiException('Unexpected response format: ${decoded.runtimeType}', 'INVALID_FORMAT');
     }
+    
     final resp = decoded['response'] as Map<String, dynamic>?;
+    
     if (resp != null && resp.containsKey('response_error')) {
       final err = resp['response_error'] as Map<String, dynamic>;
-      throw ApiException(err['error_message']?.toString() ?? 'Unknown API error', err['error_code']?.toString() ?? 'API_ERROR');
+      throw ApiException(
+        err['error_message']?.toString() ?? 'Unknown API error',
+        err['error_code']?.toString() ?? 'API_ERROR',
+      );
     }
+    
     if (resp != null && resp.containsKey('response_data')) {
       final data = resp['response_data'];
       if (data is Map<String, dynamic> && data.containsKey('errors')) {
         final errors = data['errors'] as List<dynamic>?;
         if (errors != null && errors.isNotEmpty) {
           final first = errors.first as Map<String, dynamic>;
-          throw ApiException(first['text']?.toString() ?? 'API error', first['code']?.toString() ?? 'API_ERROR');
+          throw ApiException(
+            first['text']?.toString() ?? 'API error',
+            first['code']?.toString() ?? 'API_ERROR',
+          );
         }
       }
     }
+    
     if (resp != null && resp.containsKey('response_data')) {
       final data = resp['response_data'];
       if (data is Map<String, dynamic>) return data;
       return {'data': data};
     }
+    
     return resp ?? decoded;
   }
 }
