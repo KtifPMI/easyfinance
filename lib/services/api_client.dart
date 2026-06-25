@@ -21,7 +21,9 @@ class ApiClient {
     required this.secretKey,
     http.Client? httpClient,
   })  : _httpClient = httpClient ?? http.Client(),
-        _dartHttpClient = HttpClient()..autoUncompress = true;
+        _dartHttpClient = HttpClient()
+          ..autoUncompress = true
+          ..autoRedirect = false; // 🔥 КРИТИЧНО: отключаем авто-редирект
 
   String? get accessToken => _accessToken;
   String? get userId => _userId;
@@ -72,45 +74,60 @@ class ApiClient {
     return Uri.parse(baseUrl).replace(queryParameters: params);
   }
 
-    Future<String> exchangeCodeForToken(String code) async {
+  Future<String> exchangeCodeForToken(String code) async {
     final params = <String, String>{
       'app_id': appId,
       'code': code,
       'grant_type': 'authorization_code',
       'response_type': 'token',
     };
-    params['sig'] = _buildSig(params);
+    // 🔥 Явно указываем пустой uid, т.к. при обмене кода пользователь ещё не авторизован
+    params['sig'] = _buildSig(params, uidOverride: '');
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
-  
+
     try {
-      // Убрали onTimeout отсюда — он несовместим с типом HttpClientRequest
-      final request = await _dartHttpClient.getUrl(uri);
-      final response = await request.close().timeout(
-        _timeout,
-        onTimeout: () => throw ApiException('Request timeout', 'TIMEOUT'),
-      );
+      print('=== Token Exchange Request ===');
+      print('URL: $uri');
+
+      final request = await _dartHttpClient.getUrl(uri).timeout(_timeout);
+      request.followRedirects = false; // 🔥 Для ясности
+      
+      final response = await request.close().timeout(_timeout);
       final statusCode = response.statusCode;
       final location = response.headers.value('location');
-  
-      // Проверяем токен в Location header (query или fragment)
-      if (location != null) {
+
+      print('=== Token Exchange Response ===');
+      print('Status: $statusCode');
+      print('Location: $location');
+
+      // Если есть редирект (302/301/307/308), ищем токен в Location
+      if (location != null && (statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308)) {
+        print('Redirect detected: $location');
         final locUri = Uri.parse(location);
         final token = _extractTokenFromUri(locUri);
-        if (token != null) return token;
+        if (token != null) {
+          print('✅ Token found in redirect location');
+          return token;
+        }
       }
-  
-      // Если нет редиректа или токен не найден в URL, читаем body
+
+      // Иначе читаем body (для 200 OK или если в Location нет токена)
       final body = await response.transform(utf8.decoder).join();
+      print('Body length: ${body.length}');
+      print('Body preview: ${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
+
       return _extractTokenFromBody(body, statusCode: statusCode, location: location);
     } on TimeoutException {
       throw ApiException('Token exchange timeout', 'TIMEOUT');
     } on ApiException {
       rethrow;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('Token exchange error: $e');
+      print('Stack trace: $stackTrace');
       throw ApiException('Token exchange failed: $e', 'EXCHANGE_FAIL');
     }
   }
-  
+
   String? _extractTokenFromUri(Uri uri) {
     // Проверяем query parameters
     var token = uri.queryParameters['access_token'];
@@ -127,18 +144,12 @@ class ApiClient {
   }
 
   String _extractTokenFromBody(String body, {int? statusCode, String? location}) {
-    // Пытаемся распарсить JSON
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
+      print('JSON parsed successfully');
+
       final resp = json['response'] as Map<String, dynamic>?;
-
-      // Ищем токен в response_data
-      final data = resp?['response_data'] as Map<String, dynamic>?;
-      if (data?.containsKey('access_token') == true) {
-        final token = data!['access_token']?.toString();
-        if (token != null && token.isNotEmpty) return token;
-      }
-
+      
       // Проверяем наличие ошибки
       if (resp?.containsKey('response_error') == true) {
         final err = resp!['response_error'] as Map<String, dynamic>;
@@ -147,31 +158,70 @@ class ApiClient {
           err['error_code']?.toString() ?? 'API_ERROR',
         );
       }
+
+      final data = resp?['response_data'] as Map<String, dynamic>?;
+
+      // Ищем токен в разных местах
+      if (data?.containsKey('access_token') == true) {
+        final token = data!['access_token']?.toString();
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found in response_data.access_token');
+          return token;
+        }
+      }
+
+      if (resp?.containsKey('access_token') == true) {
+        final token = resp!['access_token']?.toString();
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found in response.access_token');
+          return token;
+        }
+      }
+
+      if (json.containsKey('access_token')) {
+        final token = json['access_token']?.toString();
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found in root access_token');
+          return token;
+        }
+      }
+
+      print('Token not found in JSON structure');
     } on FormatException {
-      // Не JSON, продолжаем поиск в тексте
+      print('Response is not JSON');
     } on ApiException {
       rethrow;
     }
 
-    // Ищем токен в тексте через regex
-    final rx = RegExp(r'access_token[=:]\s*([a-f0-9]+)', caseSensitive: false);
-    final match = rx.firstMatch(body);
-    if (match != null) return match.group(1)!;
+    // Ищем токен через regex
+    final patterns = [
+      RegExp(r'"access_token"\s*:\s*"([^"]+)"', caseSensitive: false),
+      RegExp(r'access_token=([a-f0-9]+)', caseSensitive: false),
+      RegExp(r'access_token[=:]\s*["\']?([a-f0-9]{16,})["\']?', caseSensitive: false),
+    ];
 
-    // Токен не найден
-    final snippet = body.length > 300 ? '${body.substring(0, 300)}...' : body;
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(body);
+      if (match != null) {
+        final token = match.group(1);
+        if (token != null && token.isNotEmpty) {
+          print('✅ Token found via regex: $token');
+          return token;
+        }
+      }
+    }
+
+    final snippet = body.length > 500 ? '${body.substring(0, 500)}...' : body;
     final locInfo = location != null ? ' (redirect to: $location)' : '';
     throw ApiException(
-      'Token exchange failed HTTP $statusCode$locInfo: $snippet',
-      'EXCHANGE_FAIL',
+      'Token not found in response HTTP $statusCode$locInfo: $snippet',
+      'TOKEN_NOT_FOUND',
     );
   }
 
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
-    final response = await _httpClient
-        .get(uri)
-        .timeout(_timeout, onTimeout: () => throw ApiException('Request timeout', 'TIMEOUT'));
+    final response = await _httpClient.get(uri).timeout(_timeout);
     return _handleResponse(response);
   }
 
@@ -187,17 +237,25 @@ class ApiClient {
           body: body != null ? jsonEncode(body) : null,
           headers: {'Content-Type': 'application/json'},
         )
-        .timeout(_timeout, onTimeout: () => throw ApiException('Request timeout', 'TIMEOUT'));
+        .timeout(_timeout);
     return _handleResponse(response);
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {
     if (response.statusCode == 200) {
       try {
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final dynamic decoded = jsonDecode(response.body);
+        
+        // 🔥 Проверяем тип ответа
+        if (decoded is! Map<String, dynamic>) {
+          throw ApiException(
+            'Unexpected response format: ${decoded.runtimeType}',
+            'INVALID_FORMAT',
+          );
+        }
+
         final resp = decoded['response'] as Map<String, dynamic>?;
 
-        // Проверяем наличие ошибки в ответе
         if (resp != null && resp.containsKey('response_error')) {
           final err = resp['response_error'] as Map<String, dynamic>;
           throw ApiException(
@@ -206,14 +264,22 @@ class ApiClient {
           );
         }
 
-        // Возвращаем response_data если есть, иначе весь response, иначе весь ответ
         if (resp?.containsKey('response_data') == true) {
-          return resp!['response_data'] as Map<String, dynamic>;
+          final data = resp!['response_data'];
+          if (data is Map<String, dynamic>) {
+            return data;
+          }
+          // Если response_data не Map, возвращаем как есть
+          return {'data': data};
         }
+        
         return resp ?? decoded;
       } on FormatException {
+        final snippet = response.body.length > 200 
+            ? response.body.substring(0, 200) 
+            : response.body;
         throw ApiException(
-          'Invalid JSON response: ${response.body.substring(0, response.body.length.clamp(0, 200))}',
+          'Invalid JSON response: $snippet',
           'INVALID_JSON',
         );
       }
