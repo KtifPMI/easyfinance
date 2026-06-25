@@ -127,6 +127,14 @@ class ApiClient {
 
       final data = resp?['response_data'] as Map<String, dynamic>?;
 
+      if (data != null && data.containsKey('errors')) {
+        final errors = data['errors'] as List<dynamic>?;
+        if (errors != null && errors.isNotEmpty) {
+          final first = errors.first as Map<String, dynamic>;
+          throw ApiException(first['text']?.toString() ?? 'API error', first['code']?.toString() ?? 'API_ERROR');
+        }
+      }
+
       if (data != null && data.containsKey('access_token')) {
         final token = data['access_token']?.toString();
         if (token != null && token.isNotEmpty) return token;
@@ -199,6 +207,16 @@ class ApiClient {
     if (resp != null && resp.containsKey('response_error')) {
       final err = resp['response_error'] as Map<String, dynamic>;
       throw ApiException(err['error_message']?.toString() ?? 'Unknown API error', err['error_code']?.toString() ?? 'API_ERROR');
+    }
+    if (resp != null && resp.containsKey('response_data')) {
+      final data = resp['response_data'];
+      if (data is Map<String, dynamic> && data.containsKey('errors')) {
+        final errors = data['errors'] as List<dynamic>?;
+        if (errors != null && errors.isNotEmpty) {
+          final first = errors.first as Map<String, dynamic>;
+          throw ApiException(first['text']?.toString() ?? 'API error', first['code']?.toString() ?? 'API_ERROR');
+        }
+      }
     }
     if (resp != null && resp.containsKey('response_data')) {
       final data = resp['response_data'];
