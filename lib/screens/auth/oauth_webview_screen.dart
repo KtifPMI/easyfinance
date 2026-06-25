@@ -24,7 +24,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onPageStarted: (_) => setState(() => _loading = true),
-        onPageFinished: (_) => setState(() => _loading = false),
+        onPageFinished: _onPageFinished,
         onNavigationRequest: _interceptNav,
       ))
       ..loadRequest(uri);
@@ -48,8 +48,8 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       }
 
       if (uri.queryParameters.containsKey('code')) {
-        _handleCode(uri.queryParameters['code']!);
-        return NavigationDecision.prevent;
+        _pendingCode = uri.queryParameters['code']!;
+        return NavigationDecision.navigate;
       }
 
       if (uri.queryParameters.containsKey('access_denied')) {
@@ -59,6 +59,32 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     }
 
     return NavigationDecision.navigate;
+  }
+
+  String? _pendingCode;
+
+  Future<void> _onPageFinished(String url) async {
+    setState(() => _loading = false);
+
+    final uri = Uri.parse(url);
+    if (uri.path.endsWith('/v2/result')) {
+      if (uri.queryParameters.containsKey('access_token')) {
+        _handleToken(uri.queryParameters['access_token']!);
+        return;
+      }
+      if (uri.hasFragment) {
+        final frag = Uri.splitQueryString(uri.fragment);
+        if (frag.containsKey('access_token')) {
+          _handleToken(frag['access_token']!);
+          return;
+        }
+      }
+      if (_pendingCode != null) {
+        final code = _pendingCode!;
+        _pendingCode = null;
+        _handleCode(code);
+      }
+    }
   }
 
   Future<void> _handleToken(String token) async {
