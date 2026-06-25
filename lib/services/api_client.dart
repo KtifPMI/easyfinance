@@ -86,9 +86,8 @@ class ApiClient {
       print('=== Token Exchange Request ===');
       print('URL: $uri');
 
+      _dartHttpClient.autoFollowRedirects = false;
       final request = await _dartHttpClient.getUrl(uri).timeout(_timeout);
-      request.followRedirects = false;
-      
       final response = await request.close().timeout(_timeout);
       final statusCode = response.statusCode;
       final location = response.headers.value('location');
@@ -191,7 +190,7 @@ class ApiClient {
     final patterns = [
       RegExp(r'"access_token"\s*:\s*"([^"]+)"', caseSensitive: false),
       RegExp(r'access_token=([a-f0-9]+)', caseSensitive: false),
-      RegExp(r'access_token[=:]\s*["\']?([a-f0-9]{16,})["\']?', caseSensitive: false),
+      RegExp(r'access_token[=:]\s*([a-f0-9]{16,})', caseSensitive: false),
     ];
 
     for (final pattern in patterns) {
