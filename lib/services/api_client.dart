@@ -72,7 +72,7 @@ class ApiClient {
     return Uri.parse(baseUrl).replace(queryParameters: params);
   }
 
-  Future<String> exchangeCodeForToken(String code) async {
+    Future<String> exchangeCodeForToken(String code) async {
     final params = <String, String>{
       'app_id': appId,
       'code': code,
@@ -81,33 +81,36 @@ class ApiClient {
     };
     params['sig'] = _buildSig(params);
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
-
+  
     try {
-      final request = await _dartHttpClient
-          .getUrl(uri)
-          .timeout(_timeout, onTimeout: (_) => throw ApiException('Request timeout', 'TIMEOUT'));
-      final response = await request.close();
+      // Убрали onTimeout отсюда — он несовместим с типом HttpClientRequest
+      final request = await _dartHttpClient.getUrl(uri);
+      final response = await request.close().timeout(
+        _timeout,
+        onTimeout: () => throw ApiException('Request timeout', 'TIMEOUT'),
+      );
       final statusCode = response.statusCode;
       final location = response.headers.value('location');
-
+  
       // Проверяем токен в Location header (query или fragment)
       if (location != null) {
         final locUri = Uri.parse(location);
         final token = _extractTokenFromUri(locUri);
         if (token != null) return token;
       }
-
+  
       // Если нет редиректа или токен не найден в URL, читаем body
       final body = await response.transform(utf8.decoder).join();
       return _extractTokenFromBody(body, statusCode: statusCode, location: location);
     } on TimeoutException {
       throw ApiException('Token exchange timeout', 'TIMEOUT');
+    } on ApiException {
+      rethrow;
     } catch (e) {
-      if (e is ApiException) rethrow;
       throw ApiException('Token exchange failed: $e', 'EXCHANGE_FAIL');
     }
   }
-
+  
   String? _extractTokenFromUri(Uri uri) {
     // Проверяем query parameters
     var token = uri.queryParameters['access_token'];
