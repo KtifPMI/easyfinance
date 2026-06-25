@@ -90,7 +90,7 @@ class ApiClient {
       } catch (_) {}
 
       if (body.contains('access_token')) {
-        final rx = RegExp(r'access_token[=:]\s*["\']?([a-f0-9]+)');
+        final rx = RegExp(r'access_token[=:]\s*([a-f0-9]+)');
         final m = rx.firstMatch(body);
         if (m != null) return m.group(1)!;
       }

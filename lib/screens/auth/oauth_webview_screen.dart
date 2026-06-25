@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
-import '../../theme/theme.dart';
 
 class OAuthWebViewScreen extends StatefulWidget {
   const OAuthWebViewScreen({super.key});
