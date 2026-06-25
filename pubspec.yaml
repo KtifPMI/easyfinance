@@ -17,6 +17,7 @@ dependencies:
   uuid: ^4.2.1
   http: ^1.2.1
   crypto: ^3.0.3
+  webview_flutter: ^4.10.0
 
 dev_dependencies:
   flutter_test:

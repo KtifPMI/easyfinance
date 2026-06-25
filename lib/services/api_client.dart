@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
@@ -27,10 +28,10 @@ class ApiClient {
 
   String _md5(String input) => md5.convert(utf8.encode(input)).toString();
 
-  String _buildSig(Map<String, String> params) {
+  String _buildSig(Map<String, String> params, {String? uidOverride}) {
     final sorted = Map.fromEntries(params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
     final paramStr = sorted.entries.map((e) => '${e.key}=${e.value}').join('&');
-    final uid = _userId ?? '';
+    final uid = uidOverride ?? _userId ?? '';
     return _md5('$secretKey$uid$paramStr');
   }
 
@@ -44,6 +45,42 @@ class ApiClient {
     params['sig'] = _buildSig(params);
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
     return uri;
+  }
+
+  Uri buildOAuthCodeUrl() {
+    final params = <String, String>{
+      'app_id': appId,
+      'response_type': 'code',
+    };
+    params['sig'] = _buildSig(params);
+    return Uri.parse(baseUrl).replace(queryParameters: params);
+  }
+
+  Future<String> exchangeCodeForToken(String code) async {
+    final params = <String, String>{
+      'app_id': appId,
+      'code': code,
+      'grant_type': 'authorization_code',
+      'response_type': 'token',
+    };
+    params['sig'] = _buildSig(params);
+    final uri = Uri.parse(baseUrl).replace(queryParameters: params);
+
+    final client = HttpClient();
+    client.autoUncompress = false;
+    try {
+      final request = await client.getUrl(uri);
+      final response = await request.close();
+      await response.drain();
+      final location = response.headers.value('location');
+      if (location != null && location.contains('access_token=')) {
+        final locUri = Uri.parse(location);
+        return locUri.queryParameters['access_token'] ?? '';
+      }
+      throw ApiException('Token exchange failed: no access_token in redirect', 'OAUTH_FAIL');
+    } finally {
+      client.close();
+    }
   }
 
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {

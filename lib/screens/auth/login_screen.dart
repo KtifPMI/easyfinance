@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
-import '../../components/common/app_input.dart';
+import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -11,24 +12,33 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _loginCtrl = TextEditingController(text: 'demo@easyfinance.ru');
-  final _passCtrl = TextEditingController(text: '123456');
   bool _loading = false;
 
-  void _login() {
-    setState(() => _loading = true);
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/main');
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _tryRestore();
   }
 
-  @override
-  void dispose() {
-    _loginCtrl.dispose();
-    _passCtrl.dispose();
-    super.dispose();
+  Future<void> _tryRestore() async {
+    final store = context.read<FinanceStore>();
+    final restored = await store.authService.tryRestoreSession();
+    if (restored && mounted) {
+      setState(() => _loading = true);
+      await store.fetchAllData();
+      if (mounted) Navigator.pushReplacementNamed(context, '/main');
+    }
+  }
+
+  void _startOAuth() async {
+    final result = await Navigator.pushNamed(context, '/oauth');
+    if (result == true && mounted) {
+      Navigator.pushReplacementNamed(context, '/main');
+    }
+  }
+
+  void _skipLogin() {
+    Navigator.pushReplacementNamed(context, '/main');
   }
 
   @override
@@ -45,16 +55,22 @@ class _LoginScreenState extends State<LoginScreen> {
               Text('EasyFinance', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.text)),
               const SizedBox(height: 8),
               Text('Ваш финансовый навигатор', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
+              const SizedBox(height: 40),
+              Text(
+                'Войдите через EasyFinance.ru, чтобы получить доступ к вашим счетам, операциям и бюджету.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              ),
               const Spacer(),
-              AppInput(label: 'Email', controller: _loginCtrl, keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 8),
-              AppInput(label: 'Пароль', controller: _passCtrl, obscureText: true),
-              const SizedBox(height: 24),
-              AppButton(title: 'Войти', onPressed: _login, loading: _loading),
+              AppButton(
+                title: 'Войти через EasyFinance.ru',
+                onPressed: _startOAuth,
+                loading: _loading,
+              ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () {},
-                child: Text('Создать аккаунт', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                onPressed: _skipLogin,
+                child: Text('Пропустить (демо-режим)', style: TextStyle(color: AppColors.textSecondary)),
               ),
               const SizedBox(height: 48),
             ],

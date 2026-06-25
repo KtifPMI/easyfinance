@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/oauth_webview_screen.dart';
 import '../screens/operations/add_operation_screen.dart';
 import 'tab_router.dart';
 
 class AppRouter {
   static const String login = '/login';
+  static const String oauth = '/oauth';
   static const String main = '/main';
   static const String addOperation = '/add-operation';
 
   static Map<String, Widget Function(BuildContext)> get routes => {
     login: (_) => const LoginScreen(),
+    oauth: (_) => const OAuthWebViewScreen(),
     main: (_) => const MainTabs(),
     addOperation: (_) => const AddOperationScreen(),
   };

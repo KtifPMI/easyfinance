@@ -8,7 +8,6 @@ import '../models/operation.dart';
 import '../models/recommendation.dart';
 import '../models/tag.dart';
 import '../services/api_client.dart';
-import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/mock_data.dart';
 
