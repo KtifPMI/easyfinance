@@ -31,19 +31,20 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   }
 
   Future<NavigationDecision> _interceptNav(NavigationRequest req) async {
-    final url = req.url;
+    final uri = Uri.parse(req.url);
 
-    if (url.contains('/v2/result') && url.contains('code=')) {
-      final code = Uri.parse(url).queryParameters['code'];
-      if (code != null && code.isNotEmpty) {
-        _handleCode(code);
+    if (uri.path.endsWith('/v2/result')) {
+      if (uri.queryParameters.containsKey('code')) {
+        final code = uri.queryParameters['code'];
+        if (code != null && code.isNotEmpty) {
+          _handleCode(code);
+          return NavigationDecision.prevent;
+        }
       }
-      return NavigationDecision.prevent;
-    }
-
-    if (url.contains('/v2/result') && url.contains('access_denied')) {
-      if (mounted) Navigator.pop(context, false);
-      return NavigationDecision.prevent;
+      if (uri.queryParameters.containsKey('access_denied')) {
+        if (mounted) Navigator.pop(context, false);
+        return NavigationDecision.prevent;
+      }
     }
 
     return NavigationDecision.navigate;
