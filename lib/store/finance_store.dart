@@ -80,27 +80,33 @@ class FinanceStore extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    final api = authService.apiService;
+
     try {
-      final api = authService.apiService;
-      final results = await Future.wait([
-        api.getAccounts(),
-        api.getOperations(),
-        api.getCategories(),
-        api.getTags(),
-      ]);
-      _accounts = results[0] as List<Account>;
-      _operations = results[1] as List<Operation>;
-      _categories = results[2] as List<cat.Category>;
-      _tags = results[3] as List<Tag>;
-      _useMock = false;
+      _accounts = await api.getAccounts();
     } on ApiException catch (e) {
       _error = e.message;
-      _loadFromMock();
-    } catch (e) {
-      _error = e.toString();
-      _loadFromMock();
     }
 
+    try {
+      _operations = await api.getOperations();
+    } on ApiException catch (e) {
+      _error = e.message;
+    }
+
+    try {
+      _categories = await api.getCategories();
+    } on ApiException catch (e) {
+      _error = e.message;
+    }
+
+    try {
+      _tags = await api.getTags();
+    } on ApiException catch (e) {
+      _error = e.message;
+    }
+
+    _useMock = _accounts.isEmpty && _operations.isEmpty && _categories.isEmpty && _tags.isEmpty;
     _isLoading = false;
     notifyListeners();
   }

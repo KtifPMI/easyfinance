@@ -40,18 +40,16 @@ class ApiClient {
 
   String _md5(String input) => md5.convert(utf8.encode(input)).toString();
 
-  String _buildSig(Map<String, String> params, {bool includeUid = true}) {
+  String _buildSig(Map<String, String> params, {bool includeUid = false}) {
     final sorted = Map.fromEntries(
       params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
     );
     final paramStr = sorted.entries.map((e) => '${e.key}=${e.value}').join('&');
     
-    // При обмене кода на токен uid не используется
     if (includeUid && _userId != null && _userId!.isNotEmpty) {
       return _md5('$secretKey$_userId$paramStr');
-    } else {
-      return _md5('$secretKey$paramStr');
     }
+    return _md5('$secretKey$paramStr');
   }
 
   Uri _buildUri(String method, Map<String, String> extraParams) {
@@ -87,43 +85,23 @@ class ApiClient {
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
 
     try {
-      print('=== Token Exchange Request ===');
-      print('URL: $uri');
-
-      // Используем HttpClient для контроля редиректов
       final client = HttpClient()..autoUncompress = true;
-      
+
       try {
         final request = await client.getUrl(uri).timeout(_timeout);
-        // Отключаем авто-редирект, чтобы перехватить Location header
         request.followRedirects = false;
-        
+
         final response = await request.close().timeout(_timeout);
         final statusCode = response.statusCode;
         final location = response.headers.value('location');
 
-        print('=== Token Exchange Response ===');
-        print('Status: $statusCode');
-        print('Location: $location');
-
-        // Если есть редирект (301/302/307/308), ищем токен в Location
         if (location != null && _isRedirect(statusCode)) {
-          print('Redirect detected: $location');
           final locUri = Uri.parse(location);
-          print('Parsed location: $locUri');
-          print('Query params: ${locUri.queryParameters}');
-          
           final token = _extractTokenFromUri(locUri);
-          if (token != null) {
-            print('✅ Token found in redirect location: $token');
-            return token;
-          }
+          if (token != null) return token;
         }
 
-        // Если токена нет в Location, читаем body
         final body = await response.transform(utf8.decoder).join();
-        print('Body length: ${body.length}');
-        print('Body preview: ${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
 
         return _extractTokenFromBody(body, statusCode: statusCode, location: location);
       } finally {
@@ -133,9 +111,7 @@ class ApiClient {
       throw ApiException('Token exchange timeout', 'TIMEOUT');
     } on ApiException {
       rethrow;
-    } catch (e, stackTrace) {
-      print('Token exchange error: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       throw ApiException('Token exchange failed: $e', 'EXCHANGE_FAIL');
     }
   }
@@ -162,11 +138,8 @@ class ApiClient {
   String _extractTokenFromBody(String body, {int? statusCode, String? location}) {
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
-      print('JSON parsed successfully');
-
       final resp = json['response'] as Map<String, dynamic>?;
-      
-      // Проверяем наличие ошибки
+
       if (resp != null && resp.containsKey('response_error')) {
         final err = resp['response_error'] as Map<String, dynamic>;
         throw ApiException(
@@ -177,7 +150,6 @@ class ApiClient {
 
       final data = resp?['response_data'] as Map<String, dynamic>?;
 
-      // Проверяем наличие ошибок в response_data
       if (data != null && data.containsKey('errors')) {
         final errors = data['errors'] as List<dynamic>?;
         if (errors != null && errors.isNotEmpty) {
@@ -189,39 +161,25 @@ class ApiClient {
         }
       }
 
-      // Ищем токен в разных местах
       if (data != null && data.containsKey('access_token')) {
         final token = data['access_token']?.toString();
-        if (token != null && token.isNotEmpty) {
-          print('✅ Token found in response_data.access_token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
 
       if (resp != null && resp.containsKey('access_token')) {
         final token = resp['access_token']?.toString();
-        if (token != null && token.isNotEmpty) {
-          print('✅ Token found in response.access_token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
 
       if (json.containsKey('access_token')) {
         final token = json['access_token']?.toString();
-        if (token != null && token.isNotEmpty) {
-          print('✅ Token found in root access_token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
-
-      print('Token not found in JSON structure');
     } on FormatException {
-      print('Response is not JSON');
     } on ApiException {
       rethrow;
     }
 
-    // Ищем токен через regex
     final patterns = [
       RegExp(r'"access_token"\s*:\s*"([^"]+)"', caseSensitive: false),
       RegExp(r'access_token=([a-f0-9]+)', caseSensitive: false),
@@ -232,10 +190,7 @@ class ApiClient {
       final match = pattern.firstMatch(body);
       if (match != null) {
         final token = match.group(1);
-        if (token != null && token.isNotEmpty) {
-          print('✅ Token found via regex: $token');
-          return token;
-        }
+        if (token != null && token.isNotEmpty) return token;
       }
     }
 

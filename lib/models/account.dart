@@ -24,7 +24,7 @@ class Account {
 
   factory Account.fromJson(Map<String, dynamic> json) => Account(
     id: json['id']?.toString() ?? '',
-    name: json['name']?.toString() ?? '',
+    name: json['name']?.toString() ?? json['title']?.toString() ?? '',
     balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0,
     currency: json['currency']?.toString() ?? 'RUB',
     icon: json['icon']?.toString() ?? 'cash',

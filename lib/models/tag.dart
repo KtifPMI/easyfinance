@@ -6,6 +6,6 @@ class Tag {
 
   factory Tag.fromJson(Map<String, dynamic> json) => Tag(
     id: json['id']?.toString() ?? '',
-    name: json['name']?.toString() ?? '',
+    name: json['name']?.toString() ?? json['title']?.toString() ?? '',
   );
 }

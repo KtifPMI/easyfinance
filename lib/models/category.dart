@@ -17,7 +17,7 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) => Category(
     id: json['id']?.toString() ?? '',
-    name: json['name']?.toString() ?? '',
+    name: json['name']?.toString() ?? json['title']?.toString() ?? '',
     type: _parseType(json['type']),
     icon: json['icon']?.toString() ?? 'help',
     color: json['color']?.toString() ?? '#6B7280',
