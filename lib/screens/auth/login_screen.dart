@@ -72,10 +72,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _skipLogin,
                 child: Text('Пропустить (демо-режим)', style: TextStyle(color: AppColors.textSecondary)),
               ),
-              TextButton(
-                onPressed: () => Navigator.pushNamed(context, '/debug'),
-                child: Text('Debug API', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-              ),
               const SizedBox(height: 48),
             ],
           ),

@@ -3,6 +3,7 @@ import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
 import '../bank/bank_screen.dart';
+import '../debug/debug_screen.dart';
 import '../recommendations/recommendations_screen.dart';
 import '../informer/informer_screen.dart';
 import '../settings/settings_screen.dart';
@@ -21,6 +22,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.settings_outlined, 'Настройки', const SettingsScreen()),
       (Icons.person_outline, 'Профиль', const ProfileScreen()),
       (Icons.smart_toy_outlined, 'ИИ-ассистент', const AiAssistantScreen()),
+      (Icons.bug_report_outlined, 'Debug API', const DebugScreen()),
     ];
 
     return ScreenScaffold(
