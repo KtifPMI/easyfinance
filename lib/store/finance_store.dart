@@ -15,8 +15,6 @@ import '../services/mock_data.dart';
 class FinanceStore extends ChangeNotifier {
   final AuthService authService;
   final ApiClient apiClient;
-  ApiService? _apiService;
-
   List<Account> _accounts = [];
   List<Operation> _operations = [];
   List<cat.Category> _categories = [];

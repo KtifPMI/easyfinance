@@ -64,7 +64,7 @@ class ApiClient {
       final resp = decoded['response'] as Map<String, dynamic>?;
       if (resp != null && resp.containsKey('response_error')) {
         final err = resp['response_error'] as Map<String, dynamic>;
-        throw ApiException(err['error_message']?.toString() ?? 'Unknown API error', err['error_code']?.toString());
+        throw ApiException(err['error_message']?.toString() ?? 'Unknown API error', err['error_code']?.toString() ?? '');
       }
       return decoded;
     }

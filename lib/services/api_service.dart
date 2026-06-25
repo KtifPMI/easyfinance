@@ -2,7 +2,6 @@ import '../models/account.dart';
 import '../models/operation.dart';
 import '../models/category.dart' as cat;
 import '../models/tag.dart';
-import '../models/budget.dart';
 import 'api_client.dart';
 
 class ApiService {
