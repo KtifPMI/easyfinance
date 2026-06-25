@@ -41,10 +41,15 @@ class ApiClient {
   String _md5(String input) => md5.convert(utf8.encode(input)).toString();
 
   String _buildSig(Map<String, String> params, {bool includeUid = false}) {
-    final sorted = Map.fromEntries(
-      params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)),
-    );
-    final paramStr = sorted.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final order = ['method', 'app_id', 'access_token'];
+    final ordered = <String, String>{};
+    for (final key in order) {
+      if (params.containsKey(key)) ordered[key] = params[key]!;
+    }
+    for (final e in params.entries) {
+      if (!ordered.containsKey(e.key)) ordered[e.key] = e.value;
+    }
+    final paramStr = ordered.entries.map((e) => '${e.key}=${e.value}').join('&');
     
     if (includeUid && _userId != null && _userId!.isNotEmpty) {
       return _md5('$secretKey$_userId$paramStr');
