@@ -208,6 +208,16 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  Future<DebugResponse> getRaw(String method, {Map<String, String>? params}) async {
+    final uri = _buildUri(method, params ?? {});
+    final response = await _httpClient.get(uri).timeout(_timeout);
+    return DebugResponse(
+      statusCode: response.statusCode,
+      body: response.body,
+      url: uri.toString(),
+    );
+  }
+
   Future<Map<String, dynamic>> post(
     String method, {
     Map<String, String>? params,
@@ -276,4 +286,11 @@ class ApiException implements Exception {
 
   @override
   String toString() => 'ApiException($code): $message';
+}
+
+class DebugResponse {
+  final int statusCode;
+  final String body;
+  final String url;
+  DebugResponse({required this.statusCode, required this.body, required this.url});
 }
