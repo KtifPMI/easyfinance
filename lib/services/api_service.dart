@@ -65,18 +65,14 @@ class ApiService {
     await _client.post('categories.set', body: {'request': {'request_info': {'method': 'categories.set'}, 'request_data': body}});
   }
 
-  List<T> _parseList<T>(Map<String, dynamic> json, String key, T Function(Map<String, dynamic>) fromJson) {
-    final response = json['response'] as Map<String, dynamic>?;
-    final data = response?['response_data'] as Map<String, dynamic>?;
-    final list = data?[key] as List<dynamic>?;
+  List<T> _parseList<T>(Map<String, dynamic> data, String key, T Function(Map<String, dynamic>) fromJson) {
+    final list = data[key] as List<dynamic>?;
     if (list == null) return [];
     return list.cast<Map<String, dynamic>>().map(fromJson).toList();
   }
 
-  BudgetInfo _parseBudget(Map<String, dynamic> json) {
-    final response = json['response'] as Map<String, dynamic>?;
-    final data = response?['response_data'] as Map<String, dynamic>?;
-    final budget = data?['budget'] as Map<String, dynamic>?;
+  BudgetInfo _parseBudget(Map<String, dynamic> data) {
+    final budget = data['budget'] as Map<String, dynamic>?;
     final planned = double.tryParse(budget?['planned']?.toString() ?? '0') ?? 0;
     final spent = double.tryParse(budget?['spent']?.toString() ?? '0') ?? 0;
     return BudgetInfo(planned: planned, spent: spent);

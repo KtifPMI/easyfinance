@@ -53,6 +53,27 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   Future<void> _handleCode(String code) async {
     try {
       final store = context.read<FinanceStore>();
+
+      // First try using code directly as access_token
+      store.apiClient.setAuth(accessToken: code);
+      try {
+        await store.apiClient.get('accounts.get');
+        final token = code;
+        await store.authService.saveCredentials(
+          appId: store.apiClient.appId,
+          secretKey: store.apiClient.secretKey,
+          accessToken: token,
+        );
+        await store.fetchAllData();
+        if (mounted) {
+          Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
+        }
+        return;
+      } on ApiException {
+        // code is not a token, try exchange
+      }
+
+      // Exchange code for token
       final token = await store.apiClient.exchangeCodeForToken(code);
       if (token.isEmpty) throw ApiException('Empty token', 'OAUTH_FAIL');
 
