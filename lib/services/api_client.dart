@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
@@ -63,21 +62,40 @@ class ApiClient {
       'grant_type': 'authorization_code',
       'response_type': 'token',
     };
-    params['sig'] = _buildSig(params);
+    params['sig'] = _buildSig(params, uidOverride: '');
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
 
-    final client = HttpClient();
-    client.autoUncompress = false;
+    final client = http.Client();
     try {
-      final request = await client.getUrl(uri);
-      final response = await request.close();
-      await response.drain();
-      final location = response.headers.value('location');
-      if (location != null && location.contains('access_token=')) {
-        final locUri = Uri.parse(location);
-        return locUri.queryParameters['access_token'] ?? '';
+      final request = http.Request('GET', uri);
+      final streamedResponse = await client.send(request);
+
+      final finalUri = streamedResponse.request?.url;
+      final token = finalUri?.queryParameters['access_token'];
+      if (token != null && token.isNotEmpty) return token;
+
+      final body = await streamedResponse.stream.bytesToString();
+
+      try {
+        final json = jsonDecode(body) as Map<String, dynamic>;
+        final resp = json['response'] as Map<String, dynamic>?;
+        final data = resp?['response_data'] as Map<String, dynamic>?;
+        if (data?.containsKey('access_token') == true) {
+          return data!['access_token'].toString();
+        }
+        if (resp?.containsKey('response_error') == true) {
+          final err = resp!['response_error'] as Map<String, dynamic>;
+          throw ApiException(err['error_message']?.toString() ?? 'Unknown error', err['error_code']?.toString() ?? '');
+        }
+      } catch (_) {}
+
+      if (body.contains('access_token')) {
+        final rx = RegExp(r'access_token[=:]\s*["\']?([a-f0-9]+)');
+        final m = rx.firstMatch(body);
+        if (m != null) return m.group(1)!;
       }
-      throw ApiException('Token exchange failed: no access_token in redirect', 'OAUTH_FAIL');
+
+      throw ApiException('Token exchange failed: no access_token in response', 'EXCHANGE_FAIL');
     } finally {
       client.close();
     }
