@@ -21,9 +21,7 @@ class ApiClient {
     required this.secretKey,
     http.Client? httpClient,
   })  : _httpClient = httpClient ?? http.Client(),
-        _dartHttpClient = HttpClient()
-          ..autoUncompress = true
-          ..autoRedirect = false; // 🔥 КРИТИЧНО: отключаем авто-редирект
+        _dartHttpClient = HttpClient()..autoUncompress = true;
 
   String? get accessToken => _accessToken;
   String? get userId => _userId;
@@ -81,7 +79,6 @@ class ApiClient {
       'grant_type': 'authorization_code',
       'response_type': 'token',
     };
-    // 🔥 Явно указываем пустой uid, т.к. при обмене кода пользователь ещё не авторизован
     params['sig'] = _buildSig(params, uidOverride: '');
     final uri = Uri.parse(baseUrl).replace(queryParameters: params);
 
@@ -90,7 +87,7 @@ class ApiClient {
       print('URL: $uri');
 
       final request = await _dartHttpClient.getUrl(uri).timeout(_timeout);
-      request.followRedirects = false; // 🔥 Для ясности
+      request.followRedirects = false;
       
       final response = await request.close().timeout(_timeout);
       final statusCode = response.statusCode;
@@ -100,18 +97,16 @@ class ApiClient {
       print('Status: $statusCode');
       print('Location: $location');
 
-      // Если есть редирект (302/301/307/308), ищем токен в Location
-      if (location != null && (statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308)) {
+      if (location != null && _isRedirect(statusCode)) {
         print('Redirect detected: $location');
         final locUri = Uri.parse(location);
         final token = _extractTokenFromUri(locUri);
         if (token != null) {
-          print('✅ Token found in redirect location');
+          print('Token found in redirect location');
           return token;
         }
       }
 
-      // Иначе читаем body (для 200 OK или если в Location нет токена)
       final body = await response.transform(utf8.decoder).join();
       print('Body length: ${body.length}');
       print('Body preview: ${body.length > 500 ? '${body.substring(0, 500)}...' : body}');
@@ -128,12 +123,14 @@ class ApiClient {
     }
   }
 
+  bool _isRedirect(int statusCode) {
+    return statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308;
+  }
+
   String? _extractTokenFromUri(Uri uri) {
-    // Проверяем query parameters
     var token = uri.queryParameters['access_token'];
     if (token != null && token.isNotEmpty) return token;
 
-    // Проверяем fragment (стандарт OAuth 2.0)
     if (uri.hasFragment) {
       final fragmentParams = Uri.splitQueryString(uri.fragment);
       token = fragmentParams['access_token'];
@@ -150,9 +147,8 @@ class ApiClient {
 
       final resp = json['response'] as Map<String, dynamic>?;
       
-      // Проверяем наличие ошибки
-      if (resp?.containsKey('response_error') == true) {
-        final err = resp!['response_error'] as Map<String, dynamic>;
+      if (resp != null && resp.containsKey('response_error')) {
+        final err = resp['response_error'] as Map<String, dynamic>;
         throw ApiException(
           err['error_message']?.toString() ?? 'Unknown error',
           err['error_code']?.toString() ?? 'API_ERROR',
@@ -161,19 +157,18 @@ class ApiClient {
 
       final data = resp?['response_data'] as Map<String, dynamic>?;
 
-      // Ищем токен в разных местах
-      if (data?.containsKey('access_token') == true) {
-        final token = data!['access_token']?.toString();
+      if (data != null && data.containsKey('access_token')) {
+        final token = data['access_token']?.toString();
         if (token != null && token.isNotEmpty) {
-          print('✅ Token found in response_data.access_token');
+          print('Token found in response_data.access_token');
           return token;
         }
       }
 
-      if (resp?.containsKey('access_token') == true) {
-        final token = resp!['access_token']?.toString();
+      if (resp != null && resp.containsKey('access_token')) {
+        final token = resp['access_token']?.toString();
         if (token != null && token.isNotEmpty) {
-          print('✅ Token found in response.access_token');
+          print('Token found in response.access_token');
           return token;
         }
       }
@@ -181,7 +176,7 @@ class ApiClient {
       if (json.containsKey('access_token')) {
         final token = json['access_token']?.toString();
         if (token != null && token.isNotEmpty) {
-          print('✅ Token found in root access_token');
+          print('Token found in root access_token');
           return token;
         }
       }
@@ -193,7 +188,6 @@ class ApiClient {
       rethrow;
     }
 
-    // Ищем токен через regex
     final patterns = [
       RegExp(r'"access_token"\s*:\s*"([^"]+)"', caseSensitive: false),
       RegExp(r'access_token=([a-f0-9]+)', caseSensitive: false),
@@ -205,7 +199,7 @@ class ApiClient {
       if (match != null) {
         final token = match.group(1);
         if (token != null && token.isNotEmpty) {
-          print('✅ Token found via regex: $token');
+          print('Token found via regex: $token');
           return token;
         }
       }
@@ -246,7 +240,6 @@ class ApiClient {
       try {
         final dynamic decoded = jsonDecode(response.body);
         
-        // 🔥 Проверяем тип ответа
         if (decoded is! Map<String, dynamic>) {
           throw ApiException(
             'Unexpected response format: ${decoded.runtimeType}',
@@ -264,12 +257,11 @@ class ApiClient {
           );
         }
 
-        if (resp?.containsKey('response_data') == true) {
-          final data = resp!['response_data'];
+        if (resp != null && resp.containsKey('response_data')) {
+          final data = resp['response_data'];
           if (data is Map<String, dynamic>) {
             return data;
           }
-          // Если response_data не Map, возвращаем как есть
           return {'data': data};
         }
         
