@@ -68,7 +68,7 @@ class ApiClient {
 
     final client = HttpClient();
     client.autoUncompress = false;
-    client.followRedirects = false;
+    client.autoFollowRedirects = false;
     try {
       final request = await client.getUrl(uri);
       final response = await request.close();
@@ -80,7 +80,7 @@ class ApiClient {
         final token = locUri.queryParameters['access_token'];
         if (token != null && token.isNotEmpty) return token;
 
-        client.followRedirects = true;
+        client.autoFollowRedirects = true;
         final req2 = await client.getUrl(locUri);
         final resp2 = await req2.close();
         final body = await resp2.transform(utf8.decoder).join();
