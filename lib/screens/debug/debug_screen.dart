@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
@@ -63,6 +64,13 @@ class _DebugScreenState extends State<DebugScreen> {
     return Colors.grey;
   }
 
+  void _copy(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Copied'), duration: Duration(seconds: 1)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,64 +130,77 @@ class _DebugScreenState extends State<DebugScreen> {
               },
             ),
           ),
-          if (_response != null)
+          if (_response != null && _response!.url.isNotEmpty)
             Container(
-              height: 300,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
-                border: Border(top: BorderSide(color: Colors.grey.shade700)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              color: const Color(0xFF2D2D2D),
+              child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    color: const Color(0xFF2D2D2D),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _statusColor(_response!.statusCode).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'HTTP ${_response!.statusCode}',
-                            style: TextStyle(fontSize: 12, color: _statusColor(_response!.statusCode)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _response!.url,
-                            style: const TextStyle(color: Colors.white54, fontSize: 11),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.copy, color: Colors.white54, size: 18),
-                          onPressed: () => {},
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                      ],
+                  Expanded(
+                    child: Text(
+                      _response!.url,
+                      style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
                     ),
                   ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(12),
-                      child: SelectableText(
-                        _formatBody(_response!.body),
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 12,
-                          color: Color(0xFFD4D4D4),
-                          height: 1.5,
+                  IconButton(
+                    icon: const Icon(Icons.copy, color: Colors.white54, size: 18),
+                    onPressed: () => _copy(_response!.url),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ),
+          if (_response != null)
+            Expanded(
+              child: Container(
+                color: const Color(0xFF1E1E1E),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      color: const Color(0xFF333333),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: _statusColor(_response!.statusCode).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'HTTP ${_response!.statusCode}',
+                              style: TextStyle(fontSize: 12, color: _statusColor(_response!.statusCode)),
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.copy, color: Colors.white54, size: 16),
+                            onPressed: () => _copy(_response!.body),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            tooltip: 'Copy response body',
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(12),
+                        child: SelectableText(
+                          _formatBody(_response!.body),
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 12,
+                            color: Color(0xFFD4D4D4),
+                            height: 1.5,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
         ],
