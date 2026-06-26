@@ -12,7 +12,7 @@ class ApiService {
   ApiClient get client => _client;
 
   Future<List<Account>> getAccounts() async {
-    final json = await _client.get('accounts.get');
+    final json = await _client.get('accounts.get', params: {'fields': 'id,name,type_id,currency_id,currency_char_code,state,balance,init_balance,description,icon,created_at,updated_at,user_id'});
     return _parseList(json, 'accounts', Account.fromJson);
   }
 
