@@ -26,6 +26,7 @@ class _DebugScreenState extends State<DebugScreen> {
     'tags.get',
     'budget.get',
     'users.get',
+    'operationPatterns.get',
   ];
 
   Map<String, String> _builtinParams(String method) {

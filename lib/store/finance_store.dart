@@ -154,6 +154,16 @@ class FinanceStore extends ChangeNotifier {
       }
     } on ApiException catch (_) {}
 
+    try {
+      final patterns = await api.getOperationPatterns();
+      final goals = patterns.where((p) => p['type']?.toString() == '4').toList();
+      final balanceMap = <String, double>{};
+      for (final a in _accounts) {
+        balanceMap[a.id] = a.balance;
+      }
+      _goals = goals.map((g) => Goal.fromJson(g, accountBalances: balanceMap)).toList();
+    } on ApiException catch (_) {}
+
     _useMock = _accounts.isEmpty && _operations.isEmpty && _categories.isEmpty && _tags.isEmpty;
     _isLoading = false;
     notifyListeners();
