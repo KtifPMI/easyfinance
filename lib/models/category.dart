@@ -59,7 +59,11 @@ class Category {
   }
 
   static String _parseType(dynamic type) {
-    if (type is String) return type;
+    if (type is String) {
+      if (type == '-1') return 'expense';
+      if (type == '1') return 'income';
+      return type;
+    }
     if (type is int) return type == -1 ? 'expense' : type == 1 ? 'income' : 'other';
     return 'expense';
   }
