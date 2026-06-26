@@ -139,7 +139,7 @@ class _DebugScreenState extends State<DebugScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: _statusColor(_response!.statusCode).withOpacity(0.15),
+                            color: _statusColor(_response!.statusCode).withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -207,7 +207,7 @@ class _DebugScreenState extends State<DebugScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: _statusColor(_response!.statusCode).withOpacity(0.2),
+                              color: _statusColor(_response!.statusCode).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(

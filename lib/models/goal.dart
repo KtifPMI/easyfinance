@@ -26,12 +26,12 @@ class Goal {
   });
 
   factory Goal.fromJson(Map<String, dynamic> json, {Map<String, double>? accountBalances}) {
-    final amount = double.tryParse(json['amount']?.toString() ?? '0') ?? 0;
-    final transferAmount = double.tryParse(json['transfer_amount']?.toString() ?? '0') ?? 0;
+    final amount = double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0;
+    final transferAmount = double.tryParse(json['transfer_amount']?.toString() ?? '0') ?? 0.0;
     final transferAccountId = json['transfer_account_id']?.toString();
     final currentAmount = transferAccountId != null && accountBalances != null
-        ? (accountBalances[transferAccountId] ?? 0)
-        : 0;
+        ? (accountBalances[transferAccountId] ?? 0.0)
+        : 0.0;
     return Goal(
       id: json['id']?.toString() ?? '',
       title: json['name']?.toString() ?? '',
