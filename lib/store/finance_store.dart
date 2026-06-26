@@ -172,16 +172,9 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addOperation(Operation op) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final dateTime = DateTime.tryParse(op.date) ?? DateTime.now();
-        final dateStr = '${dateTime.year.toString().padLeft(4, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
-        final timeStr = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
-        final now = DateTime.now().toUtc();
-        final offset = DateTime.now().timeZoneOffset;
-        final tzSign = offset.isNegative ? '-' : '+';
-        final tzHours = offset.inHours.abs().toString().padLeft(2, '0');
-        const tzMinutes = '00';
-        final tz = '$tzSign$tzHours$tzMinutes';
-        final createdAt = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tz';
+        final now = DateTime.now();
+        final dateStr = now.toIso8601String();
+        final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
 
         await authService.apiService.addOperation({
           'operations': [{
@@ -195,8 +188,8 @@ class FinanceStore extends ChangeNotifier {
             if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
             'client_id': op.id,
-            'created_at': createdAt,
-            'updated_at': createdAt,
+            'created_at': dateStr,
+            'updated_at': dateStr,
           }]
         });
       } catch (_) {}
@@ -218,16 +211,9 @@ class FinanceStore extends ChangeNotifier {
   Future<void> updateOperation(Operation op) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final dateTime = DateTime.tryParse(op.date) ?? DateTime.now();
-        final dateStr = '${dateTime.year.toString().padLeft(4, '0')}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
-        final timeStr = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
-        final now = DateTime.now().toUtc();
-        final offset = DateTime.now().timeZoneOffset;
-        final tzSign = offset.isNegative ? '-' : '+';
-        final tzHours = offset.inHours.abs().toString().padLeft(2, '0');
-        const tzMinutes = '00';
-        final tz = '$tzSign$tzHours$tzMinutes';
-        final updatedAt = '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tz';
+        final now = DateTime.now();
+        final dateStr = now.toIso8601String();
+        final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
 
         await authService.apiService.setOperation({
           'operations': [{
@@ -241,7 +227,7 @@ class FinanceStore extends ChangeNotifier {
             if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
             if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
-            'updated_at': updatedAt,
+            'updated_at': dateStr,
           }]
         });
       } catch (_) {}
