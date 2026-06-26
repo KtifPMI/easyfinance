@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
+import '../accounts/accounts_screen.dart';
 import '../bank/bank_screen.dart';
+import '../categories/categories_screen.dart';
 import '../debug/debug_screen.dart';
 import '../recommendations/recommendations_screen.dart';
 import '../informer/informer_screen.dart';
@@ -16,6 +18,8 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
+      (Icons.account_balance, 'Счета', const AccountsScreen()),
+      (Icons.category_outlined, 'Категории', const CategoriesScreen()),
       (Icons.account_balance, 'EasyBank', const BankScreen()),
       (Icons.lightbulb_outline, 'Рекомендации', const RecommendationsScreen()),
       (Icons.info_outline, 'Информер', const InformerScreen()),

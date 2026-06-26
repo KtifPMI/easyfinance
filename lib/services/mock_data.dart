@@ -30,6 +30,7 @@ final mockCategories = [
   Category(id: 'c10', name: 'Фриланс', type: 'income', icon: 'laptop', color: '#22C55E'),
   Category(id: 'c11', name: 'Подарки', type: 'income', icon: 'card_giftcard', color: '#10B981'),
   Category(id: 'c12', name: 'Инвестиции', type: 'income', icon: 'trending_up', color: '#059669'),
+  Category(id: 'c13', name: 'Накопления', type: 'expense', icon: 'savings', color: '#7C3AED'),
 ];
 
 final mockTags = [

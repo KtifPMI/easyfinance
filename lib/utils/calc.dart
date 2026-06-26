@@ -34,7 +34,13 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
     budgetScore = ((2 - ratio) * 50).clamp(0, 100).round().toDouble();
   }
 
-  const debtScore = 100.0;
+  double debtScore = 100;
+  final creditBalance = accounts
+      .where((a) => a.type == 'credit')
+      .fold<double>(0, (s, a) => s + a.balance.abs());
+  if (creditBalance > 0) {
+    debtScore = ((1 - creditBalance / (monthIncome > 0 ? monthIncome : creditBalance)) * 100).clamp(0, 100).round().toDouble();
+  }
 
   double savings = 0;
   if (monthIncome > 0) {

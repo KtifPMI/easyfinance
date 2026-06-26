@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../models/user.dart';
 import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
 
@@ -87,14 +88,31 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     }
   }
 
+  Future<User?> _fetchUser() async {
+    try {
+      final store = context.read<FinanceStore>();
+      return await store.authService.apiService.getUser();
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> _handleToken(String token) async {
     try {
       final store = context.read<FinanceStore>();
       store.apiClient.setAuth(accessToken: token);
+
+      final user = await _fetchUser();
+      if (user != null && user.id.isNotEmpty) {
+        store.apiClient.setAuth(accessToken: token, userId: user.id);
+        store.saveUser(user);
+      }
+
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
         accessToken: token,
+        userId: user?.id,
       );
       await store.fetchAllData();
       if (mounted) {
@@ -119,10 +137,19 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       final token = await store.apiClient.exchangeCodeForToken(code);
       if (token.isEmpty) throw ApiException('Empty token', 'OAUTH_FAIL');
 
+      store.apiClient.setAuth(accessToken: token);
+
+      final user = await _fetchUser();
+      if (user != null && user.id.isNotEmpty) {
+        store.apiClient.setAuth(accessToken: token, userId: user.id);
+        store.saveUser(user);
+      }
+
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
         accessToken: token,
+        userId: user?.id,
       );
 
       await store.fetchAllData();

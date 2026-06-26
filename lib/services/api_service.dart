@@ -2,6 +2,7 @@ import '../models/account.dart';
 import '../models/operation.dart';
 import '../models/category.dart' as cat;
 import '../models/tag.dart';
+import '../models/user.dart';
 import 'api_client.dart';
 
 class ApiService {
@@ -36,6 +37,13 @@ class ApiService {
   Future<BudgetInfo> getBudget() async {
     final json = await _client.get('budget.get');
     return _parseBudget(json);
+  }
+
+  Future<User> getUser() async {
+    final json = await _client.get('users.get');
+    final list = json['users'] as List<dynamic>?;
+    if (list == null || list.isEmpty) throw ApiException('User not found', 'NOT_FOUND');
+    return User.fromJson(list.first as Map<String, dynamic>);
   }
 
   Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body) async {

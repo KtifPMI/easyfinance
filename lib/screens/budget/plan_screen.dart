@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../models/goal.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
@@ -88,16 +89,28 @@ class PlanScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(g.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                                  Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                  if (g.isCompleted)
+                                    Text('Достигнута!', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
+                                  else
+                                    Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                                 ],
                               ),
                             ),
+                            if (!g.isCompleted)
+                              GestureDetector(
+                                onTap: () => _showDepositDialog(context, g, store),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
+                                  child: const Text('Пополнить', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 8),
-                        ProgressBar(percent: percent, color: _parseColor(g.color)),
+                        ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
                         const SizedBox(height: 4),
-                        Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -113,6 +126,63 @@ class PlanScreen extends StatelessWidget {
   IconData _goalIcon(String name) {
     const map = {'shield': Icons.shield, 'beach_access': Icons.beach_access, 'laptop': Icons.laptop, 'star': Icons.star};
     return map[name] ?? Icons.star;
+  }
+
+  void _showDepositDialog(BuildContext context, Goal goal, FinanceStore store) {
+    final amountCtrl = TextEditingController();
+    String? accountId = store.accounts.isNotEmpty ? store.accounts.first.id : null;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDState) => AlertDialog(
+          title: Text(goal.title),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: amountCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'Сумма'),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: accountId,
+                decoration: InputDecoration(labelText: 'Списать со счёта'),
+                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${formatMoney(a.balance)})'))).toList(),
+                onChanged: (v) => setDState(() => accountId = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+            TextButton(
+              onPressed: () {
+                final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? 0;
+                if (amount > 0 && accountId != null) {
+                  store.depositToGoal(goal.id, amount, accountId!);
+                  final newGoal = store.goals.where((g) => g.id == goal.id).firstOrNull;
+                  if (newGoal != null && newGoal.isCompleted) {
+                    Navigator.pop(ctx);
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Поздравляем!'),
+                        content: Text('Цель "${goal.title}" достигнута!'),
+                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: const Text('Отлично'))],
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Пополнить'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Color _parseColor(String hex) {

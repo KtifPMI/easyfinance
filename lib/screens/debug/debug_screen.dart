@@ -23,6 +23,7 @@ class _DebugScreenState extends State<DebugScreen> {
     'categories.get',
     'tags.get',
     'budget.get',
+    'users.get',
   ];
 
   Future<void> _callMethod(String method) async {

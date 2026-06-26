@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import 'package:provider/provider.dart';
+import '../../models/operation.dart';
 import '../../store/finance_store.dart';
 
 class OperationDetailScreen extends StatelessWidget {
@@ -9,14 +10,50 @@ class OperationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final operationId = args?['operationId'] as String?;
+
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final op = store.operations.isNotEmpty ? store.operations.first : null;
-        if (op == null) return const Scaffold(body: Center(child: Text('Нет операций')));
+        final op = operationId != null
+            ? store.operations.where((o) => o.id == operationId).firstOrNull
+            : null;
+        if (op == null) return const Scaffold(body: Center(child: Text('Операция не найдена')));
 
         final cat = store.getCategory(op.categoryId);
+        final acc = store.getAccount(op.accountId);
+        final toAcc = store.getAccount(op.toAccountId);
+
         return Scaffold(
-          appBar: AppBar(title: const Text('Операция')),
+          appBar: AppBar(
+            title: const Text('Операция'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => Navigator.pushNamed(context, '/add-operation',
+                    arguments: {'type': op.type, 'operationId': op.id}),
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () async {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Удалить операцию?'),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
+                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Удалить')),
+                      ],
+                    ),
+                  );
+                  if (ok == true) {
+                    store.deleteOperation(op.id);
+                    if (context.mounted) Navigator.pop(context);
+                  }
+                },
+              ),
+            ],
+          ),
           body: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -27,6 +64,10 @@ class OperationDetailScreen extends StatelessWidget {
                 Text(cat?.name ?? '', style: TextStyle(fontSize: 18, color: AppColors.text)),
                 const SizedBox(height: 16),
                 if (op.comment != null) Text(op.comment!, style: TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 8),
+                if (acc != null) Text('Счёт: ${acc.name}', style: TextStyle(color: AppColors.textSecondary)),
+                if (toAcc != null) Text('На счёт: ${toAcc.name}', style: TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 8),
                 Text(formatDateLong(op.date), style: TextStyle(color: AppColors.textSecondary)),
               ],
             ),

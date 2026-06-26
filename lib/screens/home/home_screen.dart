@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../components/common/app_card.dart';
+import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/home/fin_health_card.dart';
 import '../../components/home/quick_actions.dart';
@@ -16,6 +18,8 @@ class HomeScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         final indicators = calcFinHealth(store.accounts, store.operations, store.budgets);
+        final now = DateTime.now();
+        final upcomingOps = store.events.where((e) => DateTime.parse(e.date).isAfter(now)).take(4).toList();
 
         return ScreenScaffold(
           title: 'EasyFinance',
@@ -54,6 +58,97 @@ class HomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               FinHealthCard(indicators: indicators),
+              const SizedBox(height: 16),
+              if (store.budgets.isNotEmpty) ...[
+                Text('Бюджет месяца', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                const SizedBox(height: 8),
+                ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
+                  final cat = store.getCategory(b.categoryId);
+                  final percent = b.limit > 0 ? (b.spent / b.limit * 100) : 0.0;
+                  final color = cat?.color != null ? _parseColor(cat!.color) : AppColors.primary;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                              Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ProgressBar(percent: percent, color: color),
+                          Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+              ],
+              if (upcomingOps.isNotEmpty) ...[
+                Text('Ближайшие платежи', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                const SizedBox(height: 8),
+                ...upcomingOps.map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: AppCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: (e.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: e.type == 'income' ? AppColors.success : AppColors.expense),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                              Text(formatDate(e.date), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            ],
+                          ),
+                        ),
+                        if (e.amount != null)
+                          Text(formatMoney(e.amount!), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
+                      ],
+                    ),
+                  ),
+                )),
+                const SizedBox(height: 16),
+              ],
+              if (store.goals.isNotEmpty) ...[
+                Text('Цели', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                const SizedBox(height: 8),
+                ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
+                  final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(g.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                              ),
+                              Text('${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ProgressBar(percent: percent, color: _parseColor(g.color)),
+                          Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ],
           ),
         );
@@ -67,5 +162,10 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
       child: Text(text, style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
     );
+  }
+
+  Color _parseColor(String hex) {
+    hex = hex.replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
   }
 }

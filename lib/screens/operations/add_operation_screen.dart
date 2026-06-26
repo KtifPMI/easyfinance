@@ -9,8 +9,9 @@ import '../../models/operation.dart';
 
 class AddOperationScreen extends StatefulWidget {
   final String? type;
+  final String? operationId;
 
-  const AddOperationScreen({super.key, this.type});
+  const AddOperationScreen({super.key, this.type, this.operationId});
 
   @override
   State<AddOperationScreen> createState() => _AddOperationScreenState();
@@ -24,10 +25,31 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   final _amountCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
 
+  bool get _isEditing => widget.operationId != null;
+  bool _loaded = false;
+
   @override
   void initState() {
     super.initState();
     if (widget.type != null) _type = widget.type!;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isEditing && !_loaded) {
+      _loaded = true;
+      final store = context.read<FinanceStore>();
+      final op = store.operations.where((o) => o.id == widget.operationId).firstOrNull;
+      if (op != null) {
+        _type = op.type;
+        _amountCtrl.text = op.amount.toStringAsFixed(0);
+        _accountId = op.accountId;
+        _categoryId = op.categoryId;
+        _toAccountId = op.toAccountId;
+        if (op.comment != null) _commentCtrl.text = op.comment!;
+      }
+    }
   }
 
   @override
@@ -42,16 +64,29 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
     if (amount <= 0) return;
 
-    store.addOperation(Operation(
-      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-      type: _type,
-      amount: amount,
-      date: DateTime.now().toIso8601String(),
-      accountId: _accountId ?? store.accounts.first.id,
-      toAccountId: _type == 'transfer' ? _toAccountId : null,
-      categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
-      comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
-    ));
+    if (_isEditing) {
+      store.updateOperation(Operation(
+        id: widget.operationId!,
+        type: _type,
+        amount: amount,
+        date: DateTime.now().toIso8601String(),
+        accountId: _accountId ?? store.accounts.first.id,
+        toAccountId: _type == 'transfer' ? _toAccountId : null,
+        categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
+        comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+      ));
+    } else {
+      store.addOperation(Operation(
+        id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+        type: _type,
+        amount: amount,
+        date: DateTime.now().toIso8601String(),
+        accountId: _accountId ?? store.accounts.first.id,
+        toAccountId: _type == 'transfer' ? _toAccountId : null,
+        categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
+        comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+      ));
+    }
 
     Navigator.pop(context);
   }
@@ -67,7 +102,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         }
 
         return ScreenScaffold(
-          title: 'Новая операция',
+          title: _isEditing ? 'Редактировать' : 'Новая операция',
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
