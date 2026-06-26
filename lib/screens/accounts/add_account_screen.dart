@@ -19,26 +19,23 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _nameCtrl = TextEditingController();
   final _balanceCtrl = TextEditingController();
   String _type = 'account';
-  bool _loaded = false;
 
   bool get _isEditing => widget.accountId != null;
+  bool _loaded = false;
 
   @override
-  void initState() {
-    super.initState();
-    if (_isEditing) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loadExisting());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isEditing && !_loaded) {
+      _loaded = true;
+      final store = context.read<FinanceStore>();
+      final acc = store.accounts.where((a) => a.id == widget.accountId).firstOrNull;
+      if (acc != null) {
+        _nameCtrl.text = acc.name;
+        _balanceCtrl.text = acc.balance.toStringAsFixed(0);
+        _type = acc.type;
+      }
     }
-  }
-
-  void _loadExisting() {
-    final store = context.read<FinanceStore>();
-    final acc = store.accounts.where((a) => a.id == widget.accountId).firstOrNull;
-    if (acc == null) return;
-    _nameCtrl.text = acc.name;
-    _balanceCtrl.text = acc.balance.toStringAsFixed(0);
-    _type = acc.type;
-    setState(() {});
   }
 
   @override

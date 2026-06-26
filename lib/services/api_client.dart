@@ -181,6 +181,7 @@ class ApiClient {
         if (token != null && token.isNotEmpty) return token;
       }
     } on FormatException {
+      // not JSON
     } on ApiException {
       rethrow;
     }

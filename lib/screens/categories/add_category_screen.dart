@@ -53,7 +53,7 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
       id: _isEditing ? widget.categoryId! : DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       name: name,
       type: _type,
-      icon: 'other_${_type}',
+      icon: 'other_$_type',
       color: _type == 'income' ? '#16A34A' : '#6B7280',
       isDefault: false,
     );

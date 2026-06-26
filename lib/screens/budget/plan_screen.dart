@@ -147,7 +147,7 @@ class PlanScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: accountId,
+                initialValue: accountId,
                 decoration: InputDecoration(labelText: 'Списать со счёта'),
                 items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${formatMoney(a.balance)})'))).toList(),
                 onChanged: (v) => setDState(() => accountId = v),

@@ -8,7 +8,7 @@ import '../models/recommendation.dart';
 import '../models/tag.dart';
 import '../models/user.dart';
 
-final mockUser = User(id: 'u1', name: 'Алексей Иванов', email: 'demo@easyfinance.ru', currency: 'RUB', plan: 'free');
+final mockUser = User(id: 'u1', name: 'Алексей Иванов', email: 'demo@easyfinance.ru', currency: 'RUB');
 
 final mockAccounts = [
   Account(id: 'a1', name: 'Наличные', balance: 12500, icon: 'cash', color: '#16A34A'),

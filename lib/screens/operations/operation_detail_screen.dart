@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import 'package:provider/provider.dart';
-import '../../models/operation.dart';
 import '../../store/finance_store.dart';
 
 class OperationDetailScreen extends StatelessWidget {
