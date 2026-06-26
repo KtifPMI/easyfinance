@@ -49,7 +49,7 @@ class ApiClient {
     for (final e in params.entries) {
       if (!ordered.containsKey(e.key)) ordered[e.key] = e.value;
     }
-    final paramStr = ordered.entries.map((e) => '${e.key}=${e.value}').join('&');
+    final paramStr = ordered.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&');
     
     if (includeUid && _userId != null && _userId!.isNotEmpty) {
       return _md5('$secretKey$_userId$paramStr');

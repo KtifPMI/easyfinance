@@ -30,7 +30,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Map<String, String> _builtinParams(String method) {
     if (method == 'accounts.get') {
-      return {'fields': 'id,name,type_id,currency_id,currency_char_code,state,balance,init_balance,description,icon,created_at,updated_at,user_id'};
+      return {'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,created_at,updated_at,user_id'};
     }
     return {};
   }
@@ -155,7 +155,7 @@ class _DebugScreenState extends State<DebugScreen> {
           if (_selectedMethod == 'accounts.get')
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text('fields добавлены автоматом (balance, icon)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+              child: Text('fields добавлены автоматом (balance, init_balance)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
