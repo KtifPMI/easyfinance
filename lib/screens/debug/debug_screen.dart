@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
+import '../../theme/theme.dart';
 
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
@@ -16,6 +17,7 @@ class _DebugScreenState extends State<DebugScreen> {
   DebugResponse? _response;
   bool _loading = false;
   bool _prettyPrint = true;
+  final _paramsCtrl = TextEditingController();
 
   static const methods = [
     'accounts.get',
@@ -26,6 +28,24 @@ class _DebugScreenState extends State<DebugScreen> {
     'users.get',
   ];
 
+  Map<String, String> _builtinParams(String method) {
+    if (method == 'accounts.get') {
+      return {'fields': 'id,name,type_id,currency_id,currency_char_code,state,balance,init_balance,description,icon,created_at,updated_at,user_id'};
+    }
+    return {};
+  }
+
+  Map<String, String> _customParams() {
+    final raw = _paramsCtrl.text.trim();
+    if (raw.isEmpty) return {};
+    final map = <String, String>{};
+    for (final pair in raw.split(',')) {
+      final parts = pair.split('=');
+      if (parts.length == 2) map[parts[0].trim()] = parts[1].trim();
+    }
+    return map;
+  }
+
   Future<void> _callMethod(String method) async {
     setState(() {
       _selectedMethod = method;
@@ -35,7 +55,8 @@ class _DebugScreenState extends State<DebugScreen> {
 
     try {
       final api = context.read<FinanceStore>().apiClient;
-      final resp = await api.getRaw(method);
+      final params = {..._builtinParams(method), ..._customParams()};
+      final resp = await api.getRaw(method, params: params.isEmpty ? null : params);
       if (mounted) setState(() => _response = resp);
     } catch (e) {
       if (mounted) {
@@ -129,6 +150,24 @@ class _DebugScreenState extends State<DebugScreen> {
                   ),
                 );
               },
+            ),
+          ),
+          if (_selectedMethod == 'accounts.get')
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              child: Text('fields добавлены автоматом (balance, icon)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: TextField(
+              controller: _paramsCtrl,
+              decoration: const InputDecoration(
+                hintText: 'Доп. params (fields=x,y, from=...)',
+                isDense: true, border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              style: const TextStyle(fontSize: 13),
+              onSubmitted: _selectedMethod != null ? (_) => _callMethod(_selectedMethod!) : null,
             ),
           ),
           if (_response != null && _response!.url.isNotEmpty)
