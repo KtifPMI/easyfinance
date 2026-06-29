@@ -111,6 +111,9 @@
   "budget.limit": "Limit",
   "budget.save": "Save",
   "budget.detail": "Budget Details",
+  "budget.confirm_delete": "Delete budget?",
+  "budget.delete": "Delete",
+  "budget.cancel": "Cancel",
 
   "goals.title": "Goals",
   "goals.empty": "No goals",

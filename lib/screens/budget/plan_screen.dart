@@ -49,7 +49,35 @@ class PlanScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                            Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                const SizedBox(width: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (ctx) => AlertDialog(
+                                        title: Text(context.tr('budget.confirm_delete')),
+                                        content: Text(b.name ?? cat?.name ?? ''),
+                                        actions: [
+                                          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+                                          TextButton(
+                                            onPressed: () {
+                                              store.deleteBudget(b.id);
+                                              Navigator.pop(ctx);
+                                            },
+                                            child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                  child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),

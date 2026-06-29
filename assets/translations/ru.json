@@ -111,6 +111,9 @@
   "budget.limit": "Лимит",
   "budget.save": "Сохранить",
   "budget.detail": "Детали бюджета",
+  "budget.confirm_delete": "Удалить бюджет?",
+  "budget.delete": "Удалить",
+  "budget.cancel": "Отмена",
 
   "goals.title": "Цели",
   "goals.empty": "Нет целей",

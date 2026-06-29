@@ -150,6 +150,15 @@ class FinanceStore extends ChangeNotifier {
       _goals = goals.map((g) => Goal.fromJson(g, accountBalances: balanceMap)).toList();
     } on ApiException catch (_) {}
 
+    for (var i = 0; i < _budgets.length; i++) {
+      final b = _budgets[i];
+      final ops = _operations.where((o) =>
+        o.categoryId == b.categoryId && o.type == 'expense');
+      final total = ops.fold(0.0, (sum, o) => sum + o.amount);
+      _budgets[i] = b.copyWith(spent: total);
+    }
+    await _saveBudgets();
+
     _useMock = _accounts.isEmpty && _operations.isEmpty && _categories.isEmpty && _tags.isEmpty;
     _isLoading = false;
     notifyListeners();
