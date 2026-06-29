@@ -299,7 +299,7 @@ class FinanceStore extends ChangeNotifier {
             'balance': account.balance.abs().toString(),
             'type_id': _accountTypeToApi(account.type),
             'currency_id': '1',
-            'icon': account.icon,
+            'icon': _accountIconToApi(account.icon),
           }]
         }, options: 'client');
       } catch (_) {}
@@ -317,7 +317,7 @@ class FinanceStore extends ChangeNotifier {
             'name': account.name,
             'balance': account.balance.abs().toString(),
             'type_id': _accountTypeToApi(account.type),
-            'icon': account.icon,
+            'icon': _accountIconToApi(account.icon),
           }]
         });
       } catch (_) {}
@@ -349,6 +349,16 @@ class FinanceStore extends ChangeNotifier {
       case 'savings': return '5';
       default: return '1';
     }
+  }
+
+  String _accountIconToApi(String icon) {
+    const map = <String, String>{
+      'cash': 'accountimage1', 'credit_card': 'accountimage2',
+      'savings': 'accountimage3', 'account_balance': 'accountimage4',
+      'wallet': 'accountimage5', 'payments': 'accountimage6',
+      'currency_ruble': 'accountimage7', 'card_giftcard': 'accountimage8',
+    };
+    return map[icon] ?? 'accountimage1';
   }
 
   Future<void> addBudget(Budget b) async {
