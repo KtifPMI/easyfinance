@@ -163,10 +163,10 @@ class _DebugScreenState extends State<DebugScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: TextField(
               controller: _paramsCtrl,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: context.tr('debug.extra_params'),
-                isDense: true, border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                isDense: true, border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
               style: const TextStyle(fontSize: 13),
               onSubmitted: _selectedMethod != null ? (_) => _callMethod(_selectedMethod!) : null,

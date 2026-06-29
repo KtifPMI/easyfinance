@@ -1,0 +1,93 @@
+БАГ-РЕПОРТ: operations.post возвращает HTTP 500 Internal Server Error
+====================================================================
+
+Дата: 26–29 июня 2026
+Метод: POST https://api.easyfinance.ru/v2/?method=operations.post
+Автор приложения: EasyFinance Flutter (app_id: 7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60)
+
+---
+
+Суть
+----
+При отправке запроса к operations.post сервер возвращает HTTP 500.
+GET-методы (operations.get, accounts.get, categories.get, operationPatterns.get)
+работают штатно.
+
+Первоначально запросы содержали ошибки (отсутствовал user_id, amount был
+положительным для расходов, client_id был строкой вместо числа). После
+исправления по полной документации (стр. 50–58) проблема сохраняется —
+даже правильный запрос возвращает 500. Похоже на регрессию деплоя.
+
+---
+
+Корректный запрос (по документации)
+------------------------------------
+POST /v2/?method=operations.post&app_id=7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60&access_token=471c9f1d95e027286e1fbc8242637651&sig=...
+Host: api.easyfinance.ru
+Content-Type: application/json
+
+{
+  "request": {
+    "request_data": {
+      "operations": [
+        {
+          "user_id": "48162434",
+          "account_id": "501385015",
+          "category_id": "551145691",
+          "amount": "-123.00",
+          "date": "2026-06-26",
+          "time": "17:09:08",
+          "type": "0",
+          "accepted": true,
+          "transfer_account_id": null,
+          "transfer_amount": null,
+          "created_at": "2026-06-26T17:09:08+03:00",
+          "updated_at": "2026-06-26T17:09:08+03:00",
+          "deleted_at": null,
+          "client_id": 12345
+        }
+      ]
+    }
+  }
+}
+
+Ожидаемый ответ (200):
+{
+  "response": {
+    "response_info": { "server_time": "..." },
+    "response_data": {
+      "success": true,
+      "operations": [{"id": "...", ...}]
+    }
+  }
+}
+
+Фактический ответ (500):
+HTTP/1.1 500 Internal Server Error
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<response server_time="2026-06-29T08:28:23+00:00">
+    <error code="500">Internal Server Error</error>
+</response>
+
+---
+
+curl для воспроизведения (правильный запрос):
+-----------------------------------------------
+curl -X POST "https://api.easyfinance.ru/v2/?method=operations.post&app_id=7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60&access_token=471c9f1d95e027286e1fbc8242637651&sig=..." \
+  -H "Content-Type: application/json" \
+  -d '{"request":{"request_data":{"operations":[{"user_id":"48162434","account_id":"501385015","category_id":"551145691","amount":"-123.00","date":"2026-06-26","time":"17:09:08","type":"0","accepted":true,"transfer_account_id":null,"transfer_amount":null,"created_at":"2026-06-26T17:09:08+03:00","updated_at":"2026-06-26T17:09:08+03:00","deleted_at":null,"client_id":12345}]}}}'
+
+---
+
+Дополнительные проверки
+-----------------------
+— GET-запросы (operations.get, accounts.get, categories.get) работают (200)
+— type=1 (income) тоже возвращает 500
+— Без категории — тоже 500
+— Разные account_id — тоже 500
+— Операции, созданные через веб-интерфейс easyfinance.ru, видны через operations.get
+
+Вывод: публичный v2 API не принимает POST-запросы на создание операций.
+Вероятная причина — регрессия после деплоя на бэкенде.

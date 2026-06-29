@@ -68,6 +68,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showLangDialog(BuildContext context) {
+    final current = context.locale.languageCode;
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -77,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             ListTile(
               title: Text(context.tr('settings.language_ru')),
-              leading: Radio<String>(value: 'ru', groupValue: context.locale.languageCode, onChanged: (_) {}),
+              leading: Icon(Icons.check_circle, color: current == 'ru' ? AppColors.primary : Colors.transparent),
               onTap: () {
                 const locale = Locale('ru');
                 context.read<LocaleStore>().setLocale(locale);
@@ -87,7 +88,7 @@ class SettingsScreen extends StatelessWidget {
             ),
             ListTile(
               title: Text(context.tr('settings.language_en')),
-              leading: Radio<String>(value: 'en', groupValue: context.locale.languageCode, onChanged: (_) {}),
+              leading: Icon(Icons.check_circle, color: current == 'en' ? AppColors.primary : Colors.transparent),
               onTap: () {
                 const locale = Locale('en');
                 context.read<LocaleStore>().setLocale(locale);
