@@ -3,12 +3,15 @@ import '../../theme/theme.dart';
 
 class AppInput extends StatelessWidget {
   final String label;
+  final String? hint;
   final TextEditingController? controller;
   final bool obscureText;
   final TextInputType? keyboardType;
   final String? error;
+  final bool enabled;
+  final int? maxLines;
 
-  const AppInput({super.key, required this.label, this.controller, this.obscureText = false, this.keyboardType, this.error});
+  const AppInput({super.key, required this.label, this.hint, this.controller, this.obscureText = false, this.keyboardType, this.error, this.enabled = true, this.maxLines = 1});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +24,14 @@ class AppInput extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          enabled: enabled,
+          maxLines: maxLines,
           style: TextStyle(fontSize: 15, color: AppColors.text),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.card,
+            hintText: hint,
+            hintStyle: TextStyle(fontSize: 15, color: AppColors.textSecondary.withValues(alpha: 0.6)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: error != null ? AppColors.danger : AppColors.border),

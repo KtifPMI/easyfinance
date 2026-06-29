@@ -98,6 +98,34 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           ),
           const SizedBox(height: 24),
           AppButton(title: context.tr('accounts.save'), onPressed: _save),
+          if (_isEditing) ...[
+            const SizedBox(height: 8),
+            AppButton(
+              title: context.tr('accounts.delete'),
+              onPressed: () => _delete(context),
+              variant: 'danger',
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _delete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('accounts.confirm_delete')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('accounts.cancel'))),
+          TextButton(
+            onPressed: () {
+              context.read<FinanceStore>().deleteAccount(widget.accountId!);
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: Text(context.tr('accounts.delete'), style: TextStyle(color: AppColors.expense)),
+          ),
         ],
       ),
     );

@@ -7,20 +7,20 @@ import '../../components/common/screen_scaffold.dart';
 import '../../components/home/fin_health_card.dart';
 import '../../components/home/quick_actions.dart';
 import '../../store/finance_store.dart';
+import '../../models/financial_event.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
+import '../../store/planned_payment_store.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FinanceStore>(
-      builder: (context, store, _) {
+    return Consumer2<FinanceStore, PlannedPaymentStore>(
+      builder: (context, store, plannedPayments, _) {
         final indicators = calcFinHealth(store.accounts, store.operations, store.budgets);
-        final now = DateTime.now();
-        final upcomingOps = store.events.where((e) => DateTime.parse(e.date).isAfter(now)).take(4).toList();
 
         return ScreenScaffold(
           title: 'EasyFinance',
@@ -89,38 +89,18 @@ class HomeScreen extends StatelessWidget {
                 }),
                 const SizedBox(height: 16),
               ],
-              if (upcomingOps.isNotEmpty) ...[
-                Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+              if (plannedPayments.upcomingIncomes.isNotEmpty) ...[
+                Text(context.tr('home.upcoming_income'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
-                ...upcomingOps.map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: AppCard(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(
-                            color: (e.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: e.type == 'income' ? AppColors.success : AppColors.expense),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-                              Text(formatDate(e.date), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                            ],
-                          ),
-                        ),
-                        if (e.amount != null)
-                          Text(formatMoney(e.amount!), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
-                      ],
-                    ),
-                  ),
-                )),
+                ...plannedPayments.upcomingIncomes.take(3).map((e) => _upcomingTile(e)),
+                _manageButton(context),
+                const SizedBox(height: 16),
+              ],
+              if (plannedPayments.upcomingExpenses.isNotEmpty) ...[
+                Text(context.tr('home.upcoming_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                const SizedBox(height: 8),
+                ...plannedPayments.upcomingExpenses.take(3).map((e) => _upcomingTile(e)),
+                _manageButton(context),
                 const SizedBox(height: 16),
               ],
               if (store.goals.isNotEmpty) ...[
@@ -164,6 +144,43 @@ class HomeScreen extends StatelessWidget {
       child: Text(text, style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
+
+  Widget _upcomingTile(FinancialEvent e) => Padding(
+    padding: const EdgeInsets.only(bottom: 6),
+    child: AppCard(
+      child: Row(
+        children: [
+          Container(
+            width: 40, height: 40,
+            decoration: BoxDecoration(
+              color: (e.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: e.type == 'income' ? AppColors.success : AppColors.expense),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(formatDate(e.date), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+          Text(formatMoney(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
+        ],
+      ),
+    ),
+  );
+
+  Widget _manageButton(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: TextButton(
+      onPressed: () => Navigator.pushNamed(context, '/planned-payments'),
+      child: Text(context.tr('home.manage_planned'), style: TextStyle(fontSize: 13, color: AppColors.primary)),
+    ),
+  );
 
   Color _parseColor(String hex) {
     hex = hex.replaceAll('#', '');

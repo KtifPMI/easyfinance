@@ -6,6 +6,7 @@ import 'services/api_client.dart';
 import 'services/auth_service.dart';
 import 'store/finance_store.dart';
 import 'store/locale_store.dart';
+import 'store/planned_payment_store.dart';
 import 'theme/theme.dart';
 
 void main() async {
@@ -18,12 +19,15 @@ void main() async {
   final authService = AuthService(apiClient);
   final localeStore = LocaleStore();
   await localeStore.load();
+  final plannedPaymentStore = PlannedPaymentStore();
+  await plannedPaymentStore.load();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => FinanceStore(authService: authService, apiClient: apiClient)),
         ChangeNotifierProvider.value(value: localeStore),
+        ChangeNotifierProvider.value(value: plannedPaymentStore),
       ],
       child: EasyLocalization(
         supportedLocales: const [Locale('ru'), Locale('en')],

@@ -48,8 +48,10 @@ class ApiService {
     return User.fromJson(list.first as Map<String, dynamic>);
   }
 
-  Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body) async {
-    final json = await _client.post('accounts.post', body: {'request': {'request_info': {'method': 'accounts.post'}, 'request_data': body}});
+  Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body, {String? options}) async {
+    final params = <String, String>{};
+    if (options != null) params['options'] = options;
+    final json = await _client.post('accounts.post', params: params, body: {'request': {'request_info': {'method': 'accounts.post'}, 'request_data': body}});
     return json;
   }
 

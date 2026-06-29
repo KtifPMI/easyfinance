@@ -1,46 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/format.dart';
+import '../accounts/add_account_screen.dart';
 
 class BankScreen extends StatelessWidget {
   const BankScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final banks = [
-      ('Тинькофф', true, 'connected'),
-      ('Сбербанк', true, 'connected'),
-      ('Альфа-Банк', false, null),
-      ('ВТБ', false, null),
-    ];
+    return Consumer<FinanceStore>(
+      builder: (context, store, _) {
+        final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
 
-    return ScreenScaffold(
-      title: 'EasyBank',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.tr('bank.connect_hint'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-          const SizedBox(height: 16),
-          ...banks.map((b) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: AppCard(
-              child: Row(
-                children: [
-                  Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)), child: Icon(Icons.account_balance, color: AppColors.primary)),
-                  const SizedBox(width: 12),
-                  Expanded(child: Text(b.$1, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text))),
-                  if (b.$2)
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)), child: Text(context.tr('bank.connected'), style: TextStyle(fontSize: 11, color: AppColors.success)))
-                  else
-                    Icon(Icons.add_circle_outline, color: AppColors.primary),
-                ],
+        return ScreenScaffold(
+          title: 'EasyBank',
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
+            child: const Icon(Icons.add),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    const SizedBox(height: 4),
+                    Text(formatMoney(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ),
-            ),
-          )),
-        ],
-      ),
+              const SizedBox(height: 16),
+              Text(context.tr('accounts.title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+              const SizedBox(height: 8),
+              if (store.accounts.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondary))),
+                )
+              else
+                ...store.accounts.map((a) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: AppCard(
+                    child: InkWell(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddAccountScreen(accountId: a.id))),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 48, height: 48,
+                            decoration: BoxDecoration(color: _parseColor(a.color).withValues(alpha: 0.15), shape: BoxShape.circle),
+                            child: Icon(iconMap[a.icon] ?? Icons.account_balance, color: _parseColor(a.color)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
+                                if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                              ],
+                            ),
+                          ),
+                          Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.text : AppColors.expense)),
+                          const SizedBox(width: 8),
+                          Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                        ],
+                      ),
+                    ),
+                  ),
+                )),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Color _parseColor(String hex) {
+    hex = hex.replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
   }
 }

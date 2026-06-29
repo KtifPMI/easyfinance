@@ -1,7 +1,6 @@
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
-import '../models/financial_event.dart';
 import '../models/goal.dart';
 import '../models/operation.dart';
 import '../models/recommendation.dart';
@@ -45,11 +44,6 @@ String _iso(int daysAgo) {
   return d.toIso8601String();
 }
 
-String _futureIso(int daysAhead) {
-  final d = DateTime.now().add(Duration(days: daysAhead));
-  return d.toIso8601String();
-}
-
 final mockOperations = [
   Operation(id: 'o1', type: 'expense', amount: 2350, date: _iso(0), accountId: 'a2', categoryId: 'c1', comment: 'Пятёрочка', tagIds: ['t1']),
   Operation(id: 'o2', type: 'expense', amount: 450, date: _iso(0), accountId: 'a1', categoryId: 'c2', comment: 'Метро'),
@@ -75,14 +69,6 @@ final mockGoals = [
   Goal(id: 'g1', title: 'Подушка безопасности', targetAmount: 300000, currentAmount: 180000, deadline: '2026-12-31', icon: 'shield', color: '#16A34A', monthlyRecommendation: 17142),
   Goal(id: 'g2', title: 'Отпуск в Сочи', targetAmount: 120000, currentAmount: 45000, deadline: '2026-08-15', icon: 'beach_access', color: '#0EA5E9', monthlyRecommendation: 25000),
   Goal(id: 'g3', title: 'Новый ноутбук', targetAmount: 150000, currentAmount: 150000, deadline: '2026-05-01', icon: 'laptop', color: '#7C3AED', monthlyRecommendation: 0),
-];
-
-final mockEvents = [
-  FinancialEvent(id: 'e1', title: 'Оплата аренды', date: _futureIso(2), amount: 35000, type: 'expense', isRecurring: true, recurrenceRule: 'monthly'),
-  FinancialEvent(id: 'e2', title: 'Зарплата', date: _futureIso(5), amount: 95000, type: 'income', isRecurring: true, recurrenceRule: 'monthly'),
-  FinancialEvent(id: 'e3', title: 'Платёж по кредиту', date: _futureIso(7), amount: 12000, type: 'expense', isRecurring: true, recurrenceRule: 'monthly'),
-  FinancialEvent(id: 'e4', title: 'Напомнить продлить страховку', date: _futureIso(10), type: 'reminder', isRecurring: false),
-  FinancialEvent(id: 'e5', title: 'Подписка на сервис', date: _futureIso(14), amount: 599, type: 'expense', isRecurring: true, recurrenceRule: 'monthly'),
 ];
 
 final mockRecommendations = [

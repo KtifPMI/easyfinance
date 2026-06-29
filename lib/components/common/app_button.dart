@@ -6,16 +6,17 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool loading;
   final bool disabled;
-  final String? variant; // primary, secondary, outline, ghost
+  final String? variant; // primary, danger, outline, ghost
 
   const AppButton({super.key, required this.title, this.onPressed, this.loading = false, this.disabled = false, this.variant});
 
   @override
   Widget build(BuildContext context) {
     final isPrimary = variant == null || variant == 'primary';
+    final isDanger = variant == 'danger';
     final isOutline = variant == 'outline';
-    final bgColor = isPrimary ? AppColors.primary : isOutline ? Colors.transparent : Colors.transparent;
-    final textColor = isPrimary ? Colors.white : AppColors.primary;
+    final bgColor = isDanger ? AppColors.danger : isPrimary ? AppColors.primary : isOutline ? Colors.transparent : Colors.transparent;
+    final textColor = isDanger ? Colors.white : isPrimary ? Colors.white : AppColors.primary;
     final border = isOutline ? const BorderSide(color: AppColors.primary, width: 1.5) : null;
 
     return SizedBox(

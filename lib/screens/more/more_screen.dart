@@ -3,7 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
-import '../accounts/accounts_screen.dart';
+import '../planned_payments/planned_payments_screen.dart';
 import '../bank/bank_screen.dart';
 import '../categories/categories_screen.dart';
 import '../debug/debug_screen.dart';
@@ -19,7 +19,7 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.account_balance, context.tr('more.accounts'), const AccountsScreen()),
+      (Icons.calendar_today, context.tr('more.planned_payments'), const PlannedPaymentsScreen()),
       (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
       (Icons.account_balance, context.tr('more.easybank'), const BankScreen()),
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),

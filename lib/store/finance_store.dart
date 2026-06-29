@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/category.dart' as cat;
-import '../models/financial_event.dart';
 import '../models/goal.dart';
 import '../models/operation.dart';
 import '../models/recommendation.dart';
@@ -21,7 +20,6 @@ class FinanceStore extends ChangeNotifier {
   List<cat.Category> _categories = [];
   List<Budget> _budgets = [];
   List<Goal> _goals = [...mockGoals];
-  List<FinancialEvent> _events = [...mockEvents];
   List<Recommendation> _recommendations = [...mockRecommendations];
   List<Tag> _tags = [];
   bool _isLoading = false;
@@ -55,7 +53,6 @@ class FinanceStore extends ChangeNotifier {
     _budgets = [];
     _tags = [];
     _goals = [...mockGoals];
-    _events = [...mockEvents];
     _recommendations = [...mockRecommendations];
     _useMock = true;
     _loadFromMock();
@@ -68,7 +65,6 @@ class FinanceStore extends ChangeNotifier {
   List<cat.Category> get categories => _categories;
   List<Budget> get budgets => _budgets.where((b) => !b.isDeleted).toList();
   List<Goal> get goals => _goals;
-  List<FinancialEvent> get events => _events;
   List<Recommendation> get recommendations => _recommendations;
   List<Tag> get tags => _tags;
   bool get isLoading => _isLoading;
@@ -297,7 +293,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        await authService.apiService.setAccount({
+        await authService.apiService.addAccount({
           'accounts': [{
             'name': account.name,
             'balance': account.balance.abs().toString(),
@@ -305,7 +301,7 @@ class FinanceStore extends ChangeNotifier {
             'currency_id': '1',
             'icon': account.icon,
           }]
-        });
+        }, options: 'client');
       } catch (_) {}
     }
     _accounts.add(account);
@@ -328,6 +324,21 @@ class FinanceStore extends ChangeNotifier {
     }
     final idx = _accounts.indexWhere((a) => a.id == account.id);
     if (idx >= 0) _accounts[idx] = account;
+    notifyListeners();
+  }
+
+  Future<void> deleteAccount(String id) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        await authService.apiService.setAccount({
+          'accounts': [{
+            'id': id,
+            'deleted_at': DateTime.now().toIso8601String(),
+          }]
+        });
+      } catch (_) {}
+    }
+    _accounts.removeWhere((a) => a.id == id);
     notifyListeners();
   }
 
