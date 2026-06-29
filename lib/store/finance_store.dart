@@ -175,21 +175,26 @@ class FinanceStore extends ChangeNotifier {
         final now = DateTime.now();
         final dateStr = now.toIso8601String();
         final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+        final amount = op.type == 'income' ? op.amount : -op.amount;
+        final clientId = int.tryParse(op.id) ?? op.id.hashCode;
 
         await authService.apiService.addOperation({
           'operations': [{
             'type': _typeToApi(op.type),
+            'user_id': apiClient.userId ?? '',
             'account_id': op.accountId,
             if (op.categoryId != null) 'category_id': op.categoryId,
-            'amount': op.amount.toStringAsFixed(2),
+            'amount': amount.toStringAsFixed(2),
             'date': dateStr,
             'time': timeStr,
-            if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
-            if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
+            'transfer_account_id': op.toAccountId,
+            'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
             if (op.comment != null) 'comment': op.comment,
-            'client_id': op.id,
+            'accepted': true,
+            'client_id': clientId,
             'created_at': dateStr,
             'updated_at': dateStr,
+            'deleted_at': null,
           }]
         });
       } catch (_) {}
@@ -214,6 +219,7 @@ class FinanceStore extends ChangeNotifier {
         final now = DateTime.now();
         final dateStr = now.toIso8601String();
         final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+        final amount = op.type == 'income' ? op.amount : -op.amount;
 
         await authService.apiService.setOperation({
           'operations': [{
@@ -221,13 +227,15 @@ class FinanceStore extends ChangeNotifier {
             'type': _typeToApi(op.type),
             'account_id': op.accountId,
             if (op.categoryId != null) 'category_id': op.categoryId,
-            'amount': op.amount.toStringAsFixed(2),
+            'amount': amount.toStringAsFixed(2),
             'date': dateStr,
             'time': timeStr,
-            if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
-            if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
+            'transfer_account_id': op.toAccountId,
+            'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
             if (op.comment != null) 'comment': op.comment,
+            'accepted': true,
             'updated_at': dateStr,
+            'deleted_at': null,
           }]
         });
       } catch (_) {}
