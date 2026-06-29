@@ -102,6 +102,7 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
 
     await _loadBudgets();
+    await _loadGoals();
 
     final api = authService.apiService;
 
@@ -147,7 +148,15 @@ class FinanceStore extends ChangeNotifier {
       for (final a in _accounts) {
         balanceMap[a.id] = a.balance;
       }
-      _goals = goals.map((g) => Goal.fromJson(g, accountBalances: balanceMap)).toList();
+      final existingIds = _goals.map((g) => g.id).toSet();
+      for (final g in goals.map((g) => Goal.fromJson(g, accountBalances: balanceMap))) {
+        final idx = _goals.indexWhere((e) => e.id == g.id);
+        if (idx >= 0) {
+          _goals[idx] = g;
+        } else {
+          _goals.add(g);
+        }
+      }
     } on ApiException catch (_) {}
 
     for (var i = 0; i < _budgets.length; i++) {
@@ -447,6 +456,7 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addGoal(Goal g) async {
     _goals.add(g);
+    await _saveGoals();
     notifyListeners();
   }
 
@@ -455,6 +465,7 @@ class FinanceStore extends ChangeNotifier {
     if (idx >= 0) {
       _goals[idx] = _goals[idx].copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
     }
+    await _saveGoals();
     notifyListeners();
   }
 
@@ -480,6 +491,22 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteGoal(String id) async {
     _goals.removeWhere((g) => g.id == id);
+    await _saveGoals();
     notifyListeners();
+  }
+
+  Future<void> _saveGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = _goals.map((g) => g.toJson()).toList();
+    await prefs.setString('easyfinance_goals', jsonEncode(data));
+  }
+
+  Future<void> _loadGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('easyfinance_goals');
+    if (raw != null) {
+      final list = jsonDecode(raw) as List<dynamic>;
+      _goals = list.map((e) => Goal.fromLocalJson(e as Map<String, dynamic>)).toList();
+    }
   }
 }

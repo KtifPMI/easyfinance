@@ -47,6 +47,34 @@ class Goal {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'targetAmount': targetAmount,
+    'currentAmount': currentAmount,
+    'deadline': deadline,
+    'icon': icon,
+    'color': color,
+    'monthlyRecommendation': monthlyRecommendation,
+    'isCompleted': isCompleted,
+    'accountId': accountId,
+    'transferAccountId': transferAccountId,
+  };
+
+  factory Goal.fromLocalJson(Map<String, dynamic> json) => Goal(
+    id: json['id'] as String? ?? '',
+    title: json['title'] as String? ?? '',
+    targetAmount: (json['targetAmount'] as num?)?.toDouble() ?? 0,
+    currentAmount: (json['currentAmount'] as num?)?.toDouble() ?? 0,
+    deadline: json['deadline'] as String? ?? '',
+    icon: json['icon'] as String? ?? 'star',
+    color: json['color'] as String? ?? '#16A34A',
+    monthlyRecommendation: (json['monthlyRecommendation'] as num?)?.toDouble(),
+    isCompleted: json['isCompleted'] as bool? ?? false,
+    accountId: json['accountId'] as String?,
+    transferAccountId: json['transferAccountId'] as String?,
+  );
+
   Goal copyWith({double? currentAmount, bool? isCompleted}) =>
       Goal(
         id: id, title: title, targetAmount: targetAmount,
