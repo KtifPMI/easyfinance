@@ -30,7 +30,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     super.initState();
     final e = widget.existing;
     _nameController = TextEditingController(text: e?.title ?? '');
-    _amountController = TextEditingController(text: e?.amount > 0 ? e.amount.toString() : '');
+    _amountController = TextEditingController(text: e != null && e.amount > 0 ? e.amount.toString() : '');
     _dayController = TextEditingController(text: e?.dayOfMonth?.toString() ?? '');
     _commentController = TextEditingController(text: e?.comment ?? '');
     _type = e?.type ?? 'expense';
@@ -125,7 +125,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.15) : AppColors.surface,
+            color: selected ? color.withValues(alpha: 0.15) : AppColors.card,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: selected ? color : AppColors.border),
         ),
