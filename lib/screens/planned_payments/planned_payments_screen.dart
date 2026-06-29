@@ -28,6 +28,8 @@ class PlannedPaymentsScreen extends StatelessWidget {
           child: store.events.isEmpty
               ? Center(child: Text(context.tr('planned_payments.empty'), style: TextStyle(color: AppColors.textSecondary)))
               : ListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     if (incomes.isNotEmpty) ...[
                       _sectionHeader(context, context.tr('planned_payments.income')),

@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/category.dart' as cat;
@@ -99,6 +101,8 @@ class FinanceStore extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
+    await _loadBudgets();
+
     final api = authService.apiService;
 
     try {
@@ -135,20 +139,6 @@ class FinanceStore extends ChangeNotifier {
     } on ApiException catch (e) {
       _error = e.message;
     }
-
-    try {
-      final budgetInfo = await api.getBudget();
-      if (budgetInfo.planned > 0 || budgetInfo.spent > 0) {
-        _budgets.clear();
-        _budgets.add(Budget(
-          id: 'budget_total',
-          name: 'Бюджет',
-          categoryId: '',
-          limit: budgetInfo.planned,
-          spent: budgetInfo.spent,
-        ));
-      }
-    } on ApiException catch (_) {}
 
     try {
       final patterns = await api.getOperationPatterns();
@@ -363,13 +353,49 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addBudget(Budget b) async {
     _budgets.add(b);
+    await _saveBudgets();
     notifyListeners();
   }
 
   Future<void> deleteBudget(String id) async {
     final idx = _budgets.indexWhere((b) => b.id == id);
     if (idx >= 0) _budgets[idx] = _budgets[idx].copyWith(isDeleted: true);
+    await _saveBudgets();
     notifyListeners();
+  }
+
+  Future<void> _saveBudgets() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = _budgets.map((b) => {
+      'id': b.id,
+      'name': b.name,
+      'categoryId': b.categoryId,
+      'limit': b.limit,
+      'spent': b.spent,
+      'period': b.period,
+      'isDeleted': b.isDeleted,
+    }).toList();
+    await prefs.setString('easyfinance_budgets', jsonEncode(data));
+  }
+
+  Future<void> _loadBudgets() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('easyfinance_budgets');
+    if (raw != null) {
+      final list = jsonDecode(raw) as List<dynamic>;
+      _budgets = list.map((e) {
+        final m = e as Map<String, dynamic>;
+        return Budget(
+          id: m['id'] as String,
+          name: m['name'] as String?,
+          categoryId: m['categoryId'] as String? ?? '',
+          limit: (m['limit'] as num).toDouble(),
+          spent: (m['spent'] as num?)?.toDouble() ?? 0,
+          period: m['period'] as String? ?? 'monthly',
+          isDeleted: m['isDeleted'] as bool? ?? false,
+        );
+      }).toList();
+    }
   }
 
   Future<void> addCategory(cat.Category category) async {
