@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_chip.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/operations/operation_list_item.dart';
@@ -28,7 +29,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         final grouped = groupByDay(ops);
 
         return ScreenScaffold(
-          title: 'Учёт',
+          title: context.tr('operations.title'),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -42,22 +43,22 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    AppChip(label: 'Все', active: _filter == 'all', onPressed: () => setState(() => _filter = 'all')),
-                    AppChip(label: 'Доходы', active: _filter == 'income', onPressed: () => setState(() => _filter = 'income')),
-                    AppChip(label: 'Расходы', active: _filter == 'expense', onPressed: () => setState(() => _filter = 'expense')),
+                    AppChip(label: context.tr('operations.all'), active: _filter == 'all', onPressed: () => setState(() => _filter = 'all')),
+                    AppChip(label: context.tr('operations.income'), active: _filter == 'income', onPressed: () => setState(() => _filter = 'income')),
+                    AppChip(label: context.tr('operations.expense'), active: _filter == 'expense', onPressed: () => setState(() => _filter = 'expense')),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
               if (grouped.isEmpty)
-                const Center(child: Padding(padding: EdgeInsets.all(40), child: Text('Нет операций', style: TextStyle(color: AppColors.textSecondary))))
+                Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondary))))
               else
                 ...grouped.map((entry) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 12, bottom: 4),
-                      child: Text(formatDayLabel(entry.key), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                      child: Text(formatDayLabel(entry.key, context), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -71,7 +72,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           final color = op.type == 'transfer' ? AppColors.transfer : (cat?.color != null ? _parseColor(cat!.color) : AppColors.textSecondary);
                           final title = op.type == 'transfer'
                               ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
-                              : cat?.name ?? 'Без категории';
+                              : cat?.name ?? context.tr('operations.no_category');
 
                           return OperationListItem(
                             title: title,

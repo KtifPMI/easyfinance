@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -18,11 +19,11 @@ class ReportsScreen extends StatelessWidget {
         final balance = store.totalBalance;
 
         return ScreenScaffold(
-          title: 'Отчёты',
+          title: context.tr('reports.title'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Этот месяц', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(context.tr('reports.this_month'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -32,7 +33,7 @@ class ReportsScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.arrow_downward, color: AppColors.success, size: 28),
                           const SizedBox(height: 4),
-                          Text('Доходы', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(context.tr('reports.income'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                           const SizedBox(height: 4),
                           Text(formatMoney(income), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.success)),
                         ],
@@ -46,7 +47,7 @@ class ReportsScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.arrow_upward, color: AppColors.expense, size: 28),
                           const SizedBox(height: 4),
-                          Text('Расходы', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                           const SizedBox(height: 4),
                           Text(formatMoney(expense), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.expense)),
                         ],
@@ -60,13 +61,13 @@ class ReportsScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Баланс', style: TextStyle(fontSize: 15, color: AppColors.text)),
+                    Text(context.tr('reports.balance'), style: TextStyle(fontSize: 15, color: AppColors.text)),
                     Text(formatMoney(balance), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: balance >= 0 ? AppColors.success : AppColors.expense)),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              Text('По категориям', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 12),
               ...store.categories.where((c) => c.type == 'expense').take(6).map((cat) {
                 final total = store.operations.where((o) => o.categoryId == cat.id && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);

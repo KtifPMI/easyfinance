@@ -64,7 +64,7 @@ class ApiClient {
       if (_accessToken != null) 'access_token': _accessToken!,
       ...extraParams,
     };
-    params['sig'] = _buildSig(params);
+    params['sig'] = _buildSig(params, includeUid: true);
     return Uri.parse(baseUrl).replace(queryParameters: params);
   }
 

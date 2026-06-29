@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -14,7 +15,7 @@ class CategoriesScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return ScreenScaffold(
-          title: 'Категории',
+          title: context.tr('categories.title'),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -23,7 +24,7 @@ class CategoriesScreen extends StatelessWidget {
           ],
           child: Column(
             children: [
-              Text('Доходы', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(context.tr('categories.incomes'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 8),
               ...store.categories.where((c) => c.type == 'income').map((c) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
@@ -43,7 +44,7 @@ class CategoriesScreen extends StatelessWidget {
                 ),
               )),
               const SizedBox(height: 16),
-              Text('Расходы', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(context.tr('categories.expenses'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 8),
               ...store.categories.where((c) => c.type == 'expense').map((c) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),

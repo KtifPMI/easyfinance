@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/screen_scaffold.dart';
 
 class GoalDetailScreen extends StatelessWidget {
@@ -6,6 +7,6 @@ class GoalDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ScreenScaffold(title: 'Цель', child: Text('Детали цели'));
+    return ScreenScaffold(title: context.tr('goals.title'), child: Text(context.tr('goals.detail')));
   }
 }

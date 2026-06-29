@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -71,14 +72,14 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   @override
   Widget build(BuildContext context) {
     return ScreenScaffold(
-      title: _isEditing ? 'Редактировать счёт' : 'Новый счёт',
+      title: _isEditing ? context.tr('accounts.edit') : context.tr('accounts.new'),
       child: Column(
         children: [
-          AppInput(label: 'Название', controller: _nameCtrl),
+          AppInput(label: context.tr('accounts.name'), controller: _nameCtrl),
           const SizedBox(height: 16),
-          AppInput(label: 'Баланс', controller: _balanceCtrl, keyboardType: TextInputType.number),
+          AppInput(label: context.tr('accounts.balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
-          Text('Тип счёта', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(context.tr('accounts.type'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _type,
@@ -87,16 +88,16 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-            items: const [
-              DropdownMenuItem(value: 'account', child: Text('Наличные')),
-              DropdownMenuItem(value: 'card', child: Text('Карта')),
-              DropdownMenuItem(value: 'savings', child: Text('Накопительный')),
-              DropdownMenuItem(value: 'credit', child: Text('Кредитная карта')),
+            items: [
+              DropdownMenuItem(value: 'account', child: Text(context.tr('accounts.type.cash'))),
+              DropdownMenuItem(value: 'card', child: Text(context.tr('accounts.type.card'))),
+              DropdownMenuItem(value: 'savings', child: Text(context.tr('accounts.type.savings'))),
+              DropdownMenuItem(value: 'credit', child: Text(context.tr('accounts.type.credit'))),
             ],
             onChanged: (v) => setState(() => _type = v!),
           ),
           const SizedBox(height: 24),
-          AppButton(title: 'Сохранить', onPressed: _save),
+          AppButton(title: context.tr('accounts.save'), onPressed: _save),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -15,7 +16,7 @@ class AccountsScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return ScreenScaffold(
-          title: 'Счета',
+          title: context.tr('accounts.title'),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -23,7 +24,7 @@ class AccountsScreen extends StatelessWidget {
             ),
           ],
           child: store.accounts.isEmpty
-              ? Center(child: Text('Нет счетов', style: TextStyle(color: AppColors.textSecondary)))
+              ? Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondary)))
               : Column(
                   children: store.accounts.map((a) {
                     final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
@@ -45,7 +46,7 @@ class AccountsScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
-                                    if (a.isArchived) Text('Архивный', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                    if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                                   ],
                                 ),
                               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -19,14 +20,14 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = context.watch<FinanceStore>();
     final user = store.currentUser;
-    final name = user?.name ?? 'Демо-пользователь';
+    final name = user?.name ?? context.tr('profile.demo_user');
     final email = user?.email ?? 'demo@easyfinance.ru';
     final regDate = user?.registeredAt != null ? formatDateLong(user!.registeredAt!.toIso8601String()) : '—';
-    final plan = user?.isPremium == true ? 'Премиум' : 'Бесплатный';
-    final syncLabel = user != null ? 'EasyFinance.ru' : 'Локальные данные';
+    final plan = user?.isPremium == true ? context.tr('profile.premium') : context.tr('profile.free');
+    final syncLabel = user != null ? 'EasyFinance.ru' : context.tr('profile.local_data');
 
     return ScreenScaffold(
-      title: 'Профиль',
+      title: context.tr('profile.title'),
       child: Column(
         children: [
           const SizedBox(height: 20),
@@ -35,9 +36,9 @@ class ProfileScreen extends StatelessWidget {
           Text(name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.text)),
           Text(email, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
           const SizedBox(height: 24),
-          _info('Дата регистрации', regDate),
-          _info('Тариф', plan),
-          _info('Синхронизация', syncLabel),
+          _info(context.tr('profile.reg_date'), regDate),
+          _info(context.tr('profile.tariff'), plan),
+          _info(context.tr('profile.sync'), syncLabel),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
@@ -46,7 +47,7 @@ class ProfileScreen extends StatelessWidget {
               child: TextButton(
                 onPressed: () => _logout(context),
                 style: TextButton.styleFrom(foregroundColor: AppColors.expense),
-                child: const Text('Выйти из аккаунта'),
+                child: Text(context.tr('profile.logout')),
               ),
             ),
           ),

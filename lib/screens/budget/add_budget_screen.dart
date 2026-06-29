@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -45,10 +46,10 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
         _categoryId ??= expenseCats.isNotEmpty ? expenseCats.first.id : null;
 
         return ScreenScaffold(
-          title: 'Новый бюджет',
+          title: context.tr('budget.new'),
           child: Column(
             children: [
-              Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(context.tr('budget.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _categoryId,
@@ -61,9 +62,9 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                 onChanged: (v) => setState(() => _categoryId = v),
               ),
               const SizedBox(height: 16),
-              AppInput(label: 'Лимит', controller: _limitCtrl, keyboardType: TextInputType.number),
+              AppInput(label: context.tr('budget.limit'), controller: _limitCtrl, keyboardType: TextInputType.number),
               const SizedBox(height: 24),
-              AppButton(title: 'Сохранить', onPressed: _save),
+              AppButton(title: context.tr('budget.save'), onPressed: _save),
             ],
           ),
         );

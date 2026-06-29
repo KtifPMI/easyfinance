@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -36,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Общий баланс', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
                     const SizedBox(height: 4),
                     Text(formatMoney(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 12),
@@ -60,7 +61,7 @@ class HomeScreen extends StatelessWidget {
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
               if (store.budgets.isNotEmpty) ...[
-                Text('Бюджет месяца', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
                 ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
                   final cat = store.getCategory(b.categoryId);
@@ -89,7 +90,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               if (upcomingOps.isNotEmpty) ...[
-                Text('Ближайшие платежи', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
                 ...upcomingOps.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -123,7 +124,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               if (store.goals.isNotEmpty) ...[
-                Text('Цели', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
                 ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
                   final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;

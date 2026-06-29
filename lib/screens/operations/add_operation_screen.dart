@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -102,23 +103,23 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         }
 
         return ScreenScaffold(
-          title: _isEditing ? 'Редактировать' : 'Новая операция',
+          title: _isEditing ? context.tr('operations.edit') : context.tr('operations.add'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  _typeBtn('expense', 'Расход'),
+                  _typeBtn('expense', context.tr('operations.type_expense')),
                   const SizedBox(width: 8),
-                  _typeBtn('income', 'Доход'),
+                  _typeBtn('income', context.tr('operations.type_income')),
                   const SizedBox(width: 8),
-                  _typeBtn('transfer', 'Перевод'),
+                  _typeBtn('transfer', context.tr('operations.type_transfer')),
                 ],
               ),
               const SizedBox(height: 20),
-              AppInput(label: 'Сумма', controller: _amountCtrl, keyboardType: TextInputType.number),
+              AppInput(label: context.tr('operations.amount'), controller: _amountCtrl, keyboardType: TextInputType.number),
               const SizedBox(height: 16),
-              Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(context.tr('operations.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _accountId,
@@ -132,7 +133,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ),
               const SizedBox(height: 16),
               if (_type != 'transfer') ...[
-                Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                Text(context.tr('operations.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _categoryId,
@@ -146,7 +147,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 ),
               ],
               if (_type == 'transfer') ...[
-                Text('На счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                Text(context.tr('operations.to_account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _toAccountId,
@@ -160,9 +161,9 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 ),
               ],
               const SizedBox(height: 16),
-              AppInput(label: 'Комментарий', controller: _commentCtrl),
+              AppInput(label: context.tr('operations.comment'), controller: _commentCtrl),
               const SizedBox(height: 24),
-              AppButton(title: 'Сохранить', onPressed: _save),
+              AppButton(title: context.tr('operations.save'), onPressed: _save),
             ],
           ),
         );

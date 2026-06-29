@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -13,7 +14,7 @@ class RecommendationsScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return ScreenScaffold(
-          title: 'Рекомендации',
+          title: context.tr('recommendations.title'),
           child: Column(
             children: store.recommendations.map((r) {
               Color color;

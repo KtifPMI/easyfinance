@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -69,12 +70,12 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
   @override
   Widget build(BuildContext context) {
     return ScreenScaffold(
-      title: _isEditing ? 'Редактировать категорию' : 'Новая категория',
+      title: _isEditing ? context.tr('categories.edit') : context.tr('categories.new'),
       child: Column(
         children: [
-          AppInput(label: 'Название', controller: _nameCtrl),
+          AppInput(label: context.tr('categories.name'), controller: _nameCtrl),
           const SizedBox(height: 16),
-          Text('Тип', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(context.tr('categories.type'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _type,
@@ -83,14 +84,14 @@ class _AddCategoryScreenState extends State<AddCategoryScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-            items: const [
-              DropdownMenuItem(value: 'income', child: Text('Доход')),
-              DropdownMenuItem(value: 'expense', child: Text('Расход')),
+            items: [
+              DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
+              DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
             ],
             onChanged: (v) => setState(() => _type = v!),
           ),
           const SizedBox(height: 24),
-          AppButton(title: 'Сохранить', onPressed: _save),
+          AppButton(title: context.tr('categories.save'), onPressed: _save),
         ],
       ),
     );

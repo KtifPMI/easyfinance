@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../models/user.dart';
 import '../../services/api_client.dart';
@@ -121,7 +122,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${e.message}'), backgroundColor: Colors.red),
+          SnackBar(content: Text(context.tr('auth.error', namedArgs: {'message': e.message})), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
@@ -159,13 +160,13 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: ${e.message}'), backgroundColor: Colors.red),
+          SnackBar(content: Text(context.tr('auth.error', namedArgs: {'message': e.message})), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка авторизации: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(context.tr('auth.error_generic', namedArgs: {'details': e.toString()})), backgroundColor: Colors.red),
         );
       }
     }
@@ -174,7 +175,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Авторизация EasyFinance'), centerTitle: true),
+      appBar: AppBar(title: Text(context.tr('auth.title_webview')), centerTitle: true),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),

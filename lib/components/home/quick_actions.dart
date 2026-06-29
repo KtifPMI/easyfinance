@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 
 class QuickActions extends StatelessWidget {
@@ -12,11 +13,11 @@ class QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _action(Icons.add_circle_outline, 'Доход', AppColors.success, onAddIncome),
+        _action(Icons.add_circle_outline, context.tr('quick_actions.income'), AppColors.success, onAddIncome),
         const SizedBox(width: 8),
-        _action(Icons.remove_circle_outline, 'Расход', AppColors.expense, onAddExpense),
+        _action(Icons.remove_circle_outline, context.tr('quick_actions.expense'), AppColors.expense, onAddExpense),
         const SizedBox(width: 8),
-        _action(Icons.swap_horiz, 'Перевод', AppColors.transfer, onAddTransfer),
+        _action(Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, onAddTransfer),
       ],
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
 
@@ -7,9 +8,9 @@ class TrashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ScreenScaffold(
-      title: 'Корзина',
-      child: Center(child: Text('Корзина пуста', style: TextStyle(color: AppColors.textSecondary))),
+    return ScreenScaffold(
+      title: context.tr('operations.trash'),
+      child: Center(child: Text(context.tr('operations.trash_empty'), style: TextStyle(color: AppColors.textSecondary))),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/operation.dart';
 
 String formatMoney(double amount, {String currency = 'RUB'}) {
@@ -6,7 +7,8 @@ String formatMoney(double amount, {String currency = 'RUB'}) {
   final symbol = symbols[currency] ?? currency;
   final sign = amount < 0 ? '-' : '';
   final abs = amount.abs();
-  final formatted = NumberFormat('#,###', 'ru-RU').format(abs);
+  final locale = Intl.defaultLocale ?? 'ru';
+  final formatted = NumberFormat('#,###', locale).format(abs);
   return '$sign$formatted $symbol';
 }
 
@@ -17,17 +19,18 @@ String formatSignedMoney(double amount, {String currency = 'RUB'}) {
 
 String formatDate(String iso) {
   final d = DateTime.parse(iso);
-  final months = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
-  return '${d.day.toString().padLeft(2, '0')} ${months[d.month - 1]}';
+  final locale = Intl.defaultLocale ?? 'ru';
+  final month = DateFormat.MMM(locale).format(d);
+  return '${d.day.toString().padLeft(2, '0')} $month';
 }
 
 String formatDateLong(String iso) {
   final d = DateTime.parse(iso);
-  final months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-  return '${d.day} ${months[d.month - 1]} ${d.year}';
+  final locale = Intl.defaultLocale ?? 'ru';
+  return DateFormat.yMMMd(locale).format(d);
 }
 
-String formatDayLabel(String iso) {
+String formatDayLabel(String iso, BuildContext context) {
   final date = DateTime.parse(iso);
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
@@ -35,9 +38,9 @@ String formatDayLabel(String iso) {
   final yesterday = today.subtract(const Duration(days: 1));
   final d = DateTime(date.year, date.month, date.day);
 
-  if (d == today) return 'Сегодня';
-  if (d == yesterday) return 'Вчера';
-  if (d == tomorrow) return 'Завтра';
+  if (d == today) return context.tr('date.today');
+  if (d == yesterday) return context.tr('date.yesterday');
+  if (d == tomorrow) return context.tr('date.tomorrow');
   return formatDateLong(iso);
 }
 

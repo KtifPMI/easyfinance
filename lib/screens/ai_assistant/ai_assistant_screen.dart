@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
 
@@ -25,14 +26,14 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     setState(() {
       _messages.add({'role': 'user', 'text': text});
       _ctrl.clear();
-      _messages.add({'role': 'assistant', 'text': 'Я ваш ИИ-ассистент. В демо-версии я отвечаю на вопросы об управлении финансами.'});
+      _messages.add({'role': 'assistant', 'text': context.tr('ai_assistant.greeting')});
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return ScreenScaffold(
-      title: 'ИИ-ассистент',
+      title: context.tr('ai_assistant.title'),
       child: Column(
         children: [
           Expanded(
@@ -43,7 +44,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                       children: [
                         Icon(Icons.smart_toy_outlined, size: 64, color: AppColors.textSecondary),
                         const SizedBox(height: 16),
-                        Text('Спросите о финансах', style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+                        Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
                       ],
                     ),
                   )
@@ -77,7 +78,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 child: TextField(
                   controller: _ctrl,
                   decoration: InputDecoration(
-                    hintText: 'Введите вопрос...',
+                    hintText: context.tr('ai_assistant.placeholder'),
                     filled: true, fillColor: AppColors.card,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

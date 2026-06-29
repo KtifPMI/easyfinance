@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
@@ -18,19 +19,19 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.account_balance, 'Счета', const AccountsScreen()),
-      (Icons.category_outlined, 'Категории', const CategoriesScreen()),
-      (Icons.account_balance, 'EasyBank', const BankScreen()),
-      (Icons.lightbulb_outline, 'Рекомендации', const RecommendationsScreen()),
-      (Icons.info_outline, 'Информер', const InformerScreen()),
-      (Icons.settings_outlined, 'Настройки', const SettingsScreen()),
-      (Icons.person_outline, 'Профиль', const ProfileScreen()),
-      (Icons.smart_toy_outlined, 'ИИ-ассистент', const AiAssistantScreen()),
+      (Icons.account_balance, context.tr('more.accounts'), const AccountsScreen()),
+      (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
+      (Icons.account_balance, context.tr('more.easybank'), const BankScreen()),
+      (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
+      (Icons.info_outline, context.tr('more.informer'), const InformerScreen()),
+      (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
+      (Icons.person_outline, context.tr('more.profile'), const ProfileScreen()),
+      (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
       (Icons.bug_report_outlined, 'Debug API', const DebugScreen()),
     ];
 
     return ScreenScaffold(
-      title: 'Ещё',
+      title: context.tr('more.title'),
       child: Column(
         children: items.map((item) {
           final (icon, title, screen) = item;

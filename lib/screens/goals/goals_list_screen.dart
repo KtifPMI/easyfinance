@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -17,7 +18,7 @@ class GoalsListScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return ScreenScaffold(
-          title: 'Цели',
+          title: context.tr('goals.title'),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
@@ -25,7 +26,7 @@ class GoalsListScreen extends StatelessWidget {
             ),
           ],
           child: store.goals.isEmpty
-              ? Center(child: Text('Нет целей', style: TextStyle(color: AppColors.textSecondary)))
+              ? Center(child: Text(context.tr('goals.empty'), style: TextStyle(color: AppColors.textSecondary)))
               : Column(
                   children: store.goals.map((g) {
                     final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
@@ -61,13 +62,13 @@ class GoalsListScreen extends StatelessWidget {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                               decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                                              child: Text('Достигнута', style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600)),
+                                              child: Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600)),
                                             ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
                                       if (g.isCompleted)
-                                        Text('Цель достигнута!', style: TextStyle(fontSize: 13, color: AppColors.success))
+                                        Text(context.tr('goals.achieved_title'), style: TextStyle(fontSize: 13, color: AppColors.success))
                                       else
                                         Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                                     ],
@@ -79,7 +80,7 @@ class GoalsListScreen extends StatelessWidget {
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                       decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-                                      child: const Text('Пополнить', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                                      child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
                                     ),
                                   ),
                               ],
@@ -90,10 +91,10 @@ class GoalsListScreen extends StatelessWidget {
                             if (g.isCompleted)
                               Text('100%', style: TextStyle(fontSize: 11, color: AppColors.success))
                             else
-                              Text('${percent.round()}% · срок ${formatDateLong(g.deadline)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${formatDateLong(g.deadline)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                             if (!g.isCompleted && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
-                              Text('Рекомендуется откладывать ${formatMoney(g.monthlyRecommendation!)} в месяц', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                              Text(context.tr('goals.recommendation', namedArgs: {'amount': formatMoney(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                             ],
                           ],
                         ),
@@ -121,19 +122,19 @@ class GoalsListScreen extends StatelessWidget {
               TextField(
                 controller: amountCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Сумма'),
+                decoration: InputDecoration(labelText: context.tr('goals.amount')),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: accountId,
-                decoration: const InputDecoration(labelText: 'Списать со счёта'),
+                decoration: InputDecoration(labelText: context.tr('goals.from_account')),
                 items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${formatMoney(a.balance)})'))).toList(),
                 onChanged: (v) => setDState(() => accountId = v),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
             TextButton(
               onPressed: () {
                 final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? 0;
@@ -145,9 +146,9 @@ class GoalsListScreen extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (_) => AlertDialog(
-                        title: const Text('Поздравляем!'),
-                        content: Text('Цель "${goal.title}" достигнута!'),
-                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: const Text('Отлично'))],
+                        title: Text(context.tr('goals.congrats')),
+                        content: Text(context.tr('goals.achieved_text', namedArgs: {'title': goal.title})),
+                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: Text(context.tr('goals.ok')))],
                       ),
                     );
                     return;
@@ -155,7 +156,7 @@ class GoalsListScreen extends StatelessWidget {
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('Пополнить'),
+              child: Text(context.tr('goals.top_up')),
             ),
           ],
         ),

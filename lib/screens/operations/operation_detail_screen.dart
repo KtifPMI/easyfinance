@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,7 @@ class OperationDetailScreen extends StatelessWidget {
         final op = operationId != null
             ? store.operations.where((o) => o.id == operationId).firstOrNull
             : null;
-        if (op == null) return const Scaffold(body: Center(child: Text('Операция не найдена')));
+        if (op == null) return Scaffold(body: Center(child: Text(context.tr('operations.not_found'))));
 
         final cat = store.getCategory(op.categoryId);
         final acc = store.getAccount(op.accountId);
@@ -25,7 +26,7 @@ class OperationDetailScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Операция'),
+            title: Text(context.tr('operations.title_detail')),
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
@@ -38,10 +39,10 @@ class OperationDetailScreen extends StatelessWidget {
                   final ok = await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      title: const Text('Удалить операцию?'),
+                      title: Text(context.tr('operations.delete_confirm')),
                       actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Удалить')),
+                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('operations.cancel'))),
+                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('operations.delete'))),
                       ],
                     ),
                   );
@@ -64,8 +65,8 @@ class OperationDetailScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 if (op.comment != null) Text(op.comment!, style: TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
-                if (acc != null) Text('Счёт: ${acc.name}', style: TextStyle(color: AppColors.textSecondary)),
-                if (toAcc != null) Text('На счёт: ${toAcc.name}', style: TextStyle(color: AppColors.textSecondary)),
+                if (acc != null) Text(context.tr('operations.account_from', namedArgs: {'name': acc.name}), style: TextStyle(color: AppColors.textSecondary)),
+                if (toAcc != null) Text(context.tr('operations.account_to', namedArgs: {'name': toAcc.name}), style: TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 8),
                 Text(formatDateLong(op.date), style: TextStyle(color: AppColors.textSecondary)),
               ],

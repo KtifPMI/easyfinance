@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -156,14 +157,14 @@ class _DebugScreenState extends State<DebugScreen> {
           if (_selectedMethod == 'accounts.get')
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text('fields добавлены автоматом (balance, init_balance)', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+              child: Text(context.tr('debug.fields_added'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: TextField(
               controller: _paramsCtrl,
               decoration: const InputDecoration(
-                hintText: 'Доп. params (fields=x,y, from=...)',
+                hintText: context.tr('debug.extra_params'),
                 isDense: true, border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),

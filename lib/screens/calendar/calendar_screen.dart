@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -19,14 +20,14 @@ class CalendarScreen extends StatelessWidget {
         final offset = firstWeekday - 1;
 
         return ScreenScaffold(
-          title: 'Календарь',
+          title: context.tr('calendar.title'),
           child: Column(
             children: [
               Text('${now.month}.${now.year}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((d) =>
+                children: [context.tr('calendar.mon'), context.tr('calendar.tue'), context.tr('calendar.wed'), context.tr('calendar.thu'), context.tr('calendar.fri'), context.tr('calendar.sat'), context.tr('calendar.sun')].map((d) =>
                   SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)))
                 ).toList(),
               ),
@@ -52,7 +53,7 @@ class CalendarScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               if (store.events.isEmpty)
-                Text('Нет событий', style: TextStyle(color: AppColors.textSecondary))
+                Text(context.tr('calendar.empty'), style: TextStyle(color: AppColors.textSecondary))
               else
                 ...store.events.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),

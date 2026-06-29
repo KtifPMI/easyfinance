@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
@@ -20,7 +21,7 @@ class BankScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Подключите банки для автоматической загрузки операций', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(context.tr('bank.connect_hint'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 16),
           ...banks.map((b) => Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -31,7 +32,7 @@ class BankScreen extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(child: Text(b.$1, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text))),
                   if (b.$2)
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)), child: Text('Подключён', style: TextStyle(fontSize: 11, color: AppColors.success)))
+                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)), child: Text(context.tr('bank.connected'), style: TextStyle(fontSize: 11, color: AppColors.success)))
                   else
                     Icon(Icons.add_circle_outline, color: AppColors.primary),
                 ],

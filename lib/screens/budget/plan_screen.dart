@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -19,14 +20,14 @@ class PlanScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return ScreenScaffold(
-          title: 'Бюджет и цели',
+          title: context.tr('budget.title'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Бюджет', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(context.tr('budget.budget'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
                   GestureDetector(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBudgetScreen())),
                     child: Icon(Icons.add_circle_outline, color: AppColors.primary),
@@ -64,7 +65,7 @@ class PlanScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Цели', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(context.tr('budget.goals'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
                   GestureDetector(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
                     child: Icon(Icons.add_circle_outline, color: AppColors.primary),
@@ -90,7 +91,7 @@ class PlanScreen extends StatelessWidget {
                                 children: [
                                   Text(g.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                                   if (g.isCompleted)
-                                    Text('Достигнута!', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
+                                    Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                                   else
                                     Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                                 ],
@@ -102,7 +103,7 @@ class PlanScreen extends StatelessWidget {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-                                  child: const Text('Пополнить', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                                  child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
                                 ),
                               ),
                           ],
@@ -143,19 +144,19 @@ class PlanScreen extends StatelessWidget {
               TextField(
                 controller: amountCtrl,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: 'Сумма'),
+                decoration: InputDecoration(labelText: context.tr('goals.amount')),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: accountId,
-                decoration: InputDecoration(labelText: 'Списать со счёта'),
+                decoration: InputDecoration(labelText: context.tr('goals.from_account')),
                 items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${formatMoney(a.balance)})'))).toList(),
                 onChanged: (v) => setDState(() => accountId = v),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
             TextButton(
               onPressed: () {
                 final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? 0;
@@ -167,9 +168,9 @@ class PlanScreen extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (_) => AlertDialog(
-                        title: const Text('Поздравляем!'),
-                        content: Text('Цель "${goal.title}" достигнута!'),
-                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: const Text('Отлично'))],
+                        title: Text(context.tr('goals.congrats')),
+                        content: Text(context.tr('goals.achieved_text', namedArgs: {'title': goal.title})),
+                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: Text(context.tr('goals.ok')))],
                       ),
                     );
                     return;
@@ -177,7 +178,7 @@ class PlanScreen extends StatelessWidget {
                   Navigator.pop(ctx);
                 }
               },
-              child: const Text('Пополнить'),
+              child: Text(context.tr('goals.top_up')),
             ),
           ],
         ),

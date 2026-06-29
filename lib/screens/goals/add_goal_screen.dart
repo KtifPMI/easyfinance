@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -46,16 +47,16 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   @override
   Widget build(BuildContext context) {
     return ScreenScaffold(
-      title: 'Новая цель',
+      title: context.tr('goals.new'),
       child: Column(
         children: [
-          AppInput(label: 'Название', controller: _titleCtrl),
+          AppInput(label: context.tr('goals.name'), controller: _titleCtrl),
           const SizedBox(height: 16),
-          AppInput(label: 'Целевая сумма', controller: _targetCtrl, keyboardType: TextInputType.number),
+          AppInput(label: context.tr('goals.target_amount'), controller: _targetCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
-          AppInput(label: 'Текущая сумма', controller: _currentCtrl, keyboardType: TextInputType.number),
+          AppInput(label: context.tr('goals.current_amount'), controller: _currentCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 24),
-          AppButton(title: 'Сохранить', onPressed: _save),
+          AppButton(title: context.tr('goals.save'), onPressed: _save),
         ],
       ),
     );

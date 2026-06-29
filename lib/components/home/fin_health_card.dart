@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 
@@ -16,11 +17,11 @@ class FinHealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      ('Состояние', Icons.favorite, indicators.finState, 60),
-      ('Ликвидность', Icons.water_drop, indicators.money, 50),
-      ('Бюджет', Icons.bar_chart, indicators.budget, 50),
-      ('Долги', Icons.account_balance, indicators.debt, 70),
-      ('Сбережения', Icons.savings, indicators.savings, 40),
+      (context.tr('health.status'), Icons.favorite, indicators.finState, 60),
+      (context.tr('health.liquidity'), Icons.water_drop, indicators.money, 50),
+      (context.tr('health.budget'), Icons.bar_chart, indicators.budget, 50),
+      (context.tr('health.debts'), Icons.account_balance, indicators.debt, 70),
+      (context.tr('health.savings'), Icons.savings, indicators.savings, 40),
     ];
 
     return Container(
@@ -34,7 +35,7 @@ class FinHealthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Финансовое состояние', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+          Text(context.tr('health.title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -61,7 +62,7 @@ class FinHealthCard extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: 8),
-          Text('Ликвидность: запас на 3 мес. · Сбережения: норма 20% дохода', style: TextStyle(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
+          Text(context.tr('health.detail'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
         ],
       ),
     );

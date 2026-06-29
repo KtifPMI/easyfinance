@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -54,23 +55,23 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
               Text('EasyFinance', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.text)),
               const SizedBox(height: 8),
-              Text('Ваш финансовый навигатор', style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
+              Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
               const SizedBox(height: 40),
               Text(
-                'Войдите через EasyFinance.ru, чтобы получить доступ к вашим счетам, операциям и бюджету.',
+                context.tr('auth.description'),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
               ),
               const Spacer(),
               AppButton(
-                title: 'Войти через EasyFinance.ru',
+                title: context.tr('auth.login'),
                 onPressed: _startOAuth,
                 loading: _loading,
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _skipLogin,
-                child: Text('Пропустить (демо-режим)', style: TextStyle(color: AppColors.textSecondary)),
+                child: Text(context.tr('auth.skip'), style: TextStyle(color: AppColors.textSecondary)),
               ),
               const SizedBox(height: 48),
             ],
