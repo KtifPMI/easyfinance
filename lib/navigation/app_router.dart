@@ -30,6 +30,7 @@ class AppRouter {
         builder: (_) => AddOperationScreen(
           type: args?['type'] as String?,
           operationId: args?['operationId'] as String?,
+          presetDate: args?['presetDate'] as String?,
         ),
         settings: settings,
       );

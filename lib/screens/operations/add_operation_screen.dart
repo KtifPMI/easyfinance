@@ -11,8 +11,9 @@ import '../../models/operation.dart';
 class AddOperationScreen extends StatefulWidget {
   final String? type;
   final String? operationId;
+  final String? presetDate;
 
-  const AddOperationScreen({super.key, this.type, this.operationId});
+  const AddOperationScreen({super.key, this.type, this.operationId, this.presetDate});
 
   @override
   State<AddOperationScreen> createState() => _AddOperationScreenState();
@@ -28,6 +29,15 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
+
+  String _dateStr() {
+    final now = DateTime.now();
+    if (widget.presetDate != null) {
+      final parts = widget.presetDate!.split('-').map(int.parse).toList();
+      return DateTime(parts[0], parts[1], parts[2], now.hour, now.minute, now.second, now.millisecond, now.microsecond).toIso8601String();
+    }
+    return now.toIso8601String();
+  }
 
   @override
   void initState() {
@@ -70,7 +80,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         id: widget.operationId!,
         type: _type,
         amount: amount,
-        date: DateTime.now().toIso8601String(),
+        date: _dateStr(),
         accountId: _accountId ?? store.accounts.first.id,
         toAccountId: _type == 'transfer' ? _toAccountId : null,
         categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
@@ -81,7 +91,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
         type: _type,
         amount: amount,
-        date: DateTime.now().toIso8601String(),
+        date: _dateStr(),
         accountId: _accountId ?? store.accounts.first.id,
         toAccountId: _type == 'transfer' ? _toAccountId : null,
         categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
