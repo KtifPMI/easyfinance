@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../services/update_service.dart';
+import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../planned_payments/planned_payments_screen.dart';
 import '../bank/bank_screen.dart';
@@ -13,8 +16,73 @@ import '../settings/settings_screen.dart';
 import '../settings/profile_screen.dart';
 import '../ai_assistant/ai_assistant_screen.dart';
 
-class MoreScreen extends StatelessWidget {
+class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
+  @override
+  State<MoreScreen> createState() => _MoreScreenState();
+}
+
+class _MoreScreenState extends State<MoreScreen> {
+  bool _checking = false;
+
+  Future<void> _checkUpdate() async {
+    setState(() => _checking = true);
+    final update = await UpdateService.check();
+    if (!mounted) return;
+    setState(() => _checking = false);
+
+    if (update != null) {
+      _showUpdateDialog(update);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('У вас актуальная версия')),
+      );
+    }
+  }
+
+  void _showUpdateDialog(UpdateInfo update) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Доступно обновление'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Версия: ${update.version}'),
+            if (update.changelog != null) ...[
+              const SizedBox(height: 8),
+              Text(update.changelog!, style: const TextStyle(fontSize: 13)),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Позже')),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _downloadAndInstall(update.downloadUrl);
+            },
+            child: const Text('Обновить'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _downloadAndInstall(String url) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    UpdateService.downloadAndInstall(url).then((_) {
+      if (mounted) Navigator.pop(context);
+    }).catchError((e) {
+      if (mounted) Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +92,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.account_balance, context.tr('more.easybank'), const BankScreen()),
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
+      (Icons.system_update_outlined, 'Обновление', null),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
       (Icons.person_outline, context.tr('more.profile'), const ProfileScreen()),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
@@ -39,14 +108,19 @@ class MoreScreen extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: AppCard(
               child: InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => screen)),
+                onTap: screen != null
+                    ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => screen))
+                    : _checking ? null : _checkUpdate,
                 child: Row(
                   children: [
                     Icon(icon, color: AppColors.primary, size: 24),
                     const SizedBox(width: 16),
                     Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
                     const Spacer(),
-                    Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                    if (_checking && screen == null)
+                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    else
+                      Icon(Icons.chevron_right, color: AppColors.textSecondary),
                   ],
                 ),
               ),

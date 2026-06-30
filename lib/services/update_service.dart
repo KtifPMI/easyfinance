@@ -1,0 +1,76 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+class UpdateInfo {
+  final String version;
+  final String downloadUrl;
+  final String? changelog;
+
+  UpdateInfo({required this.version, required this.downloadUrl, this.changelog});
+}
+
+class UpdateService {
+  static const _repo = 'KtifPMI/easyfinance';
+  static const _apiUrl = 'https://api.github.com/repos/$_repo/releases/latest';
+
+  static Future<UpdateInfo?> check() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      final current = info.version;
+
+      final response = await http.get(
+        Uri.parse(_apiUrl),
+        headers: {'Accept': 'application/vnd.github.v3+json'},
+      );
+      if (response.statusCode != 200) return null;
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final tag = (data['tag_name'] as String?)?.replaceFirst('v', '') ?? '';
+      if (tag.isEmpty) return null;
+
+      if (!_isNewer(tag, current)) return null;
+
+      final assets = data['assets'] as List? ?? [];
+      Map<String, dynamic>? apkAsset;
+      for (final a in assets) {
+        if ((a['name'] as String?)?.endsWith('.apk') == true) {
+          apkAsset = a as Map<String, dynamic>;
+          break;
+        }
+      }
+      if (apkAsset == null) return null;
+
+      return UpdateInfo(
+        version: tag,
+        downloadUrl: apkAsset['browser_download_url'] as String,
+        changelog: data['body'] as String?,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static bool _isNewer(String latest, String current) {
+    final l = latest.split('.').map(int.tryParse).whereType<int>().toList();
+    final c = current.split('.').map(int.tryParse).whereType<int>().toList();
+    for (int i = 0; i < l.length && i < c.length; i++) {
+      if (l[i] > c[i]) return true;
+      if (l[i] < c[i]) return false;
+    }
+    return l.length > c.length;
+  }
+
+  static Future<void> downloadAndInstall(String url) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/easyfinance.apk');
+
+    final response = await http.get(Uri.parse(url));
+    await file.writeAsBytes(response.bodyBytes);
+
+    await OpenFilex.open(file.path);
+  }
+}
