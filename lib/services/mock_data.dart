@@ -1,7 +1,6 @@
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
-import '../models/goal.dart';
 import '../models/operation.dart';
 import '../models/tag.dart';
 import '../models/user.dart';
@@ -64,9 +63,4 @@ final mockBudgets = [
   Budget(id: 'b5', name: 'Одежда', categoryId: 'c8', limit: 3000, spent: 1200),
 ];
 
-final mockGoals = [
-  Goal(id: 'g1', title: 'Подушка безопасности', targetAmount: 300000, currentAmount: 180000, deadline: '2026-12-31', icon: 'shield', color: '#16A34A', monthlyRecommendation: 17142),
-  Goal(id: 'g2', title: 'Отпуск в Сочи', targetAmount: 120000, currentAmount: 45000, deadline: '2026-08-15', icon: 'beach_access', color: '#0EA5E9', monthlyRecommendation: 25000),
-  Goal(id: 'g3', title: 'Новый ноутбук', targetAmount: 150000, currentAmount: 150000, deadline: '2026-05-01', icon: 'laptop', color: '#7C3AED', monthlyRecommendation: 0),
-];
 

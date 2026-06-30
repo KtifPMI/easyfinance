@@ -21,7 +21,7 @@ class FinanceStore extends ChangeNotifier {
   List<Operation> _operations = [];
   List<cat.Category> _categories = [];
   List<Budget> _budgets = [];
-  List<Goal> _goals = [...mockGoals];
+  List<Goal> _goals = [];
   List<Recommendation> _recommendations = [];
   List<Tag> _tags = [];
   bool _isLoading = false;
@@ -55,7 +55,7 @@ class FinanceStore extends ChangeNotifier {
     _categories = [];
     _budgets = [];
     _tags = [];
-    _goals = [...mockGoals];
+    _goals = [];
     _useMock = true;
     _loadFromMock();
   }
