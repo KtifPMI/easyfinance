@@ -72,6 +72,7 @@ class FinanceStore extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   String? get error => _error;
+  void clearError() { _error = null; notifyListeners(); }
 
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
@@ -410,7 +411,13 @@ class FinanceStore extends ChangeNotifier {
             'deleted_at': null,
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message;
+        notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка добавления: $e';
+        notifyListeners();
+      }
     }
     _operations.insert(0, op);
     _updateBalancesOnAdd(op);
@@ -452,7 +459,11 @@ class FinanceStore extends ChangeNotifier {
             'deleted_at': null,
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления: $e'; notifyListeners();
+      }
     }
     final idx = _operations.indexWhere((o) => o.id == op.id);
     if (idx >= 0) {
@@ -474,7 +485,11 @@ class FinanceStore extends ChangeNotifier {
             'deleted_at': DateTime.now().toIso8601String(),
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления: $e'; notifyListeners();
+      }
     }
     if (!op.isDeleted) _updateBalancesOnDelete(op);
     final idx = _operations.indexWhere((o) => o.id == id);
@@ -522,7 +537,11 @@ class FinanceStore extends ChangeNotifier {
             'icon': _accountIconToApi(account.icon),
           }]
         }, options: 'client');
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка добавления счёта: $e'; notifyListeners();
+      }
     }
     _accounts.add(account);
     notifyListeners();
@@ -540,7 +559,11 @@ class FinanceStore extends ChangeNotifier {
             'icon': _accountIconToApi(account.icon),
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления счёта: $e'; notifyListeners();
+      }
     }
     final idx = _accounts.indexWhere((a) => a.id == account.id);
     if (idx >= 0) _accounts[idx] = account;
@@ -556,7 +579,11 @@ class FinanceStore extends ChangeNotifier {
             'deleted_at': DateTime.now().toIso8601String(),
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления счёта: $e'; notifyListeners();
+      }
     }
     _accounts.removeWhere((a) => a.id == id);
     notifyListeners();
@@ -638,7 +665,11 @@ class FinanceStore extends ChangeNotifier {
             'custom': '1',
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка добавления категории: $e'; notifyListeners();
+      }
     }
     _categories.add(category);
     notifyListeners();
@@ -654,7 +685,11 @@ class FinanceStore extends ChangeNotifier {
             'type': category.type == 'income' ? '1' : '-1',
           }]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления категории: $e'; notifyListeners();
+      }
     }
     final idx = _categories.indexWhere((c) => c.id == category.id);
     if (idx >= 0) _categories[idx] = category;
@@ -667,7 +702,11 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setCategory({
           'categories': [{'id': id, 'deleted_at': DateTime.now().toIso8601String()}]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления категории: $e'; notifyListeners();
+      }
     }
     _categories.removeWhere((c) => c.id == id);
     notifyListeners();
@@ -678,7 +717,11 @@ class FinanceStore extends ChangeNotifier {
     if (!_useMock && authService.isAuthenticated) {
       try {
         await authService.apiService.addTag({'tags': [{'name': name}]});
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка добавления тега: $e'; notifyListeners();
+      }
     }
     _tags.add(tag);
     notifyListeners();
@@ -690,7 +733,11 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setTag({
           'tags': [{'id': id, 'deleted_at': DateTime.now().toIso8601String()}]
         });
-      } catch (_) {}
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления тега: $e'; notifyListeners();
+      }
     }
     _tags.removeWhere((t) => t.id == id);
     notifyListeners();

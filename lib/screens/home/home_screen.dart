@@ -24,6 +24,12 @@ class HomeScreen extends StatelessWidget {
 
         return ScreenScaffold(
           title: 'EasyFinance',
+          isLoading: store.isLoading,
+          error: store.error,
+          onRetry: () {
+            store.clearError();
+            store.fetchAllData();
+          },
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
