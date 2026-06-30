@@ -148,7 +148,6 @@ class FinanceStore extends ChangeNotifier {
       for (final a in _accounts) {
         balanceMap[a.id] = a.balance;
       }
-      final existingIds = _goals.map((g) => g.id).toSet();
       for (final g in goals.map((g) => Goal.fromJson(g, accountBalances: balanceMap))) {
         final idx = _goals.indexWhere((e) => e.id == g.id);
         if (idx >= 0) {
@@ -186,28 +185,77 @@ class FinanceStore extends ChangeNotifier {
       return d != null && !d.isBefore(monthStart) && !d.isAfter(monthEnd);
     }
 
+    final monthIncome = _operations.where((o) => o.type == 'income' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
+    final monthExpense = _operations.where((o) => o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
+
     // 1 — budget overspent or near limit
     for (final b in _budgets.where((b) => !b.isDeleted)) {
       final cat = _categories.where((c) => c.id == b.categoryId).firstOrNull;
+      final name = cat?.name ?? b.name ?? '';
       if (b.spent > b.limit) {
         _recommendations.add(Recommendation(
           id: 'b_overspent_${b.id}', type: 'risk', severity: 'high',
-          title: 'Лимит превышен: ${cat?.name ?? b.name}',
-          description: 'Потрачено ${b.spent.toStringAsFixed(0)} ₽ при лимите ${b.limit.toStringAsFixed(0)} ₽. Превышение на ${(b.spent - b.limit).toStringAsFixed(0)} ₽.',
+          title: 'Лимит превышен: $name',
+          description: 'Потрачено ${b.spent.toStringAsFixed(0)} ₽ при лимите ${b.limit.toStringAsFixed(0)} ₽ (превышение ${(b.spent - b.limit).toStringAsFixed(0)} ₽, ${(b.spent / b.limit * 100).round()}% от лимита).',
         ));
       } else if (b.spent > b.limit * 0.8) {
+        final remaining = b.limit - b.spent;
         _recommendations.add(Recommendation(
           id: 'b_near_${b.id}', type: 'optimization', severity: 'medium',
-          title: 'Близок к лимиту: ${cat?.name ?? b.name}',
-          description: 'Потрачено ${b.spent.toStringAsFixed(0)} ₽ при лимите ${b.limit.toStringAsFixed(0)} ₽. Осталось ${(b.limit - b.spent).toStringAsFixed(0)} ₽ до конца месяца.',
+          title: 'Близок к лимиту: $name',
+          description: 'Использовано ${b.spent.toStringAsFixed(0)} ₽ из ${b.limit.toStringAsFixed(0)} ₽ (${(b.spent / b.limit * 100).round()}%). Осталось всего ${remaining.toStringAsFixed(0)} ₽ до конца месяца.',
         ));
       }
     }
 
-    // 2 — no budget for high-spend categories
+    // 2 — total food (groceries + dining) as income percentage
+    final foodCats = _categories.where((c) =>
+      c.name.contains('продукт') || c.name.contains('кафе') || c.name.contains('ресторан') ||
+      c.name.contains('food') || c.name.contains('cafe') || c.name.contains('restaurant') || c.name.contains('еда')
+    ).map((c) => c.id).toSet();
+    if (foodCats.isNotEmpty && monthIncome > 0) {
+      double foodTotal = 0;
+      double diningTotal = 0;
+      int diningCount = 0;
+      for (final o in _operations.where((o) => o.type == 'expense' && inRange(o) && foodCats.contains(o.categoryId))) {
+        final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
+        if (cat != null && (cat.name.contains('кафе') || cat.name.contains('ресторан') || cat.name.contains('cafe') || cat.name.contains('restaurant'))) {
+          diningTotal += o.amount;
+          diningCount++;
+        } else {
+          foodTotal += o.amount;
+        }
+      }
+      final allFood = foodTotal + diningTotal;
+      if (allFood > 0) {
+        final foodRatio = allFood / monthIncome * 100;
+        if (foodRatio > 50) {
+          _recommendations.add(Recommendation(
+            id: 'high_food', type: 'risk', severity: 'high',
+            title: 'Высокие расходы на питание',
+            description: 'На питание уходит ${foodRatio.round()}% дохода (${allFood.toStringAsFixed(0)} ₽ из ${monthIncome.toStringAsFixed(0)} ₽). Рекомендуется не более 30%.',
+          ));
+        } else if (foodRatio > 30) {
+          _recommendations.add(Recommendation(
+            id: 'food_warning', type: 'optimization', severity: 'medium',
+            title: 'Питание отнимает ${foodRatio.round()}% дохода',
+            description: 'Потрачено ${allFood.toStringAsFixed(0)} ₽ из ${monthIncome.toStringAsFixed(0)} ₽. Постарайтесь уложиться в 30%.',
+          ));
+        }
+      }
+      if (diningCount >= 5 && diningTotal > 0) {
+        _recommendations.add(Recommendation(
+          id: 'dining_freq', type: 'optimization', severity: 'low',
+          title: '$diningCount раз(а) в кафе за месяц',
+          description: 'На кафе и рестораны ушло ${diningTotal.toStringAsFixed(0)} ₽ (${(diningTotal / monthIncome * 100).round()}% дохода). Домашняя еда поможет сэкономить.',
+        ));
+      }
+    }
+
+    // 3 — no budget for high-spend categories
     final topSpend = <String, double>{};
-    for (final o in _operations.where((o) => o.type == 'expense')) {
-      topSpend.update(o.categoryId, (v) => v + o.amount, ifAbsent: () => o.amount);
+    for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null)) {
+      topSpend.update(o.categoryId!, (v) => v + o.amount, ifAbsent: () => o.amount);
     }
     final budgetedCats = _budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
     final sortedCats = topSpend.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
@@ -215,111 +263,114 @@ class FinanceStore extends ChangeNotifier {
       if (!budgetedCats.contains(entry.key)) {
         final cat = _categories.where((c) => c.id == entry.key).firstOrNull;
         if (cat != null && entry.value > 1000) {
+          final pct = monthExpense > 0 ? (entry.value / monthExpense * 100).round() : 0;
           _recommendations.add(Recommendation(
             id: 'no_budget_${entry.key}', type: 'optimization', severity: 'medium',
             title: 'Нет бюджета для «${cat.name}»',
-            description: 'Всего потрачено ${entry.value.toStringAsFixed(0)} ₽. Рекомендуем установить бюджет, чтобы контролировать расходы.',
+            description: 'Потрачено ${entry.value.toStringAsFixed(0)} ₽ (${pct}% от всех расходов). Установите бюджет, чтобы контролировать эту категорию.',
           ));
         }
       }
     }
 
-    // 3 — fixed costs (housing) vs income
+    // 4 — fixed costs (housing) vs income
     final housingCats = _categories.where((c) =>
       c.name.contains('жиль') || c.name.contains('аренд') || c.name.contains('квартир') || c.name.contains('коммунал') ||
       c.name.contains('rent') || c.name.contains('housing') || c.name.contains('utility') || c.name.contains('mortgage')
     ).map((c) => c.id).toSet();
     double housingTotal = 0;
-    double incomeTotal = 0;
-    for (final o in _operations.where(inRange)) {
-      if (housingCats.contains(o.categoryId)) housingTotal += o.amount;
-      if (o.type == 'income') incomeTotal += o.amount;
+    for (final o in _operations.where((o) => o.type == 'expense' && inRange(o) && housingCats.contains(o.categoryId))) {
+      housingTotal += o.amount;
     }
-    if (incomeTotal > 0) {
-      final housingRatio = housingTotal / incomeTotal * 100;
+    if (monthIncome > 0 && housingTotal > 0) {
+      final housingRatio = housingTotal / monthIncome * 100;
       if (housingRatio > 30) {
         _recommendations.add(Recommendation(
           id: 'high_housing', type: 'risk', severity: 'high',
-          title: 'Высокая доля обязательных расходов',
-          description: 'Жильё занимает ${housingRatio.round()}% от дохода. Рекомендуется не более 30%.',
-        ));
-      }
-    }
-
-    // 4 — dining out frequency
-    final diningCats = _categories.where((c) =>
-      c.name.contains('кафе') || c.name.contains('ресторан') || c.name.contains('cafe') || c.name.contains('restaurant') || c.name.contains('еда')
-    ).map((c) => c.id).toSet();
-    if (diningCats.isNotEmpty) {
-      final diningOps = _operations.where((o) => diningCats.contains(o.categoryId) && o.type == 'expense').toList();
-      final monthDining = diningOps.where(inRange).toList();
-      if (monthDining.isNotEmpty) {
-        final totalDining = monthDining.fold(0.0, (s, o) => s + o.amount);
-        _recommendations.add(Recommendation(
-          id: 'dining', type: 'optimization', severity: 'low',
-          title: '${monthDining.length} раз(а) в кафе за месяц',
-          description: 'Потрачено ${totalDining.toStringAsFixed(0)} ₽. Попробуйте готовить дома, чтобы сэкономить.',
+          title: 'Жильё — ${housingRatio.round()}% от дохода',
+          description: 'На жильё уходит ${housingTotal.toStringAsFixed(0)} ₽ из ${monthIncome.toStringAsFixed(0)} ₽ (${housingRatio.round()}%). Рекомендуется не более 30%.',
         ));
       }
     }
 
     // 5 — savings rate
-    final monthIncome = _operations.where((o) => o.type == 'income' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
-    final monthExpense = _operations.where((o) => o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
     if (monthIncome > 0) {
       final savingsRate = (monthIncome - monthExpense) / monthIncome * 100;
       if (savingsRate < 0) {
         _recommendations.add(Recommendation(
           id: 'negative_savings', type: 'risk', severity: 'high',
           title: 'Расходы превышают доходы',
-          description: 'В этом месяце расходы на ${(-savingsRate).round()}% превышают доходы. Пересмотрите бюджет.',
+          description: 'Доход ${monthIncome.toStringAsFixed(0)} ₽, расходы ${monthExpense.toStringAsFixed(0)} ₽ (дефицит ${(monthExpense - monthIncome).toStringAsFixed(0)} ₽). Пересмотрите бюджет.',
         ));
       } else if (savingsRate < 10) {
+        final saveAmt = monthIncome - monthExpense;
         _recommendations.add(Recommendation(
           id: 'low_savings', type: 'risk', severity: 'medium',
           title: 'Низкая норма сбережения',
-          description: 'Откладывается всего ${savingsRate.round()}% от дохода. Рекомендуется минимум 20%.',
+          description: 'Откладывается ${saveAmt.toStringAsFixed(0)} ₽ (${savingsRate.round()}% от ${monthIncome.toStringAsFixed(0)} ₽). Цель — минимум 20% (${(monthIncome * 0.2).toStringAsFixed(0)} ₽).',
         ));
       } else if (savingsRate >= 20) {
+        final saveAmt = monthIncome - monthExpense;
         _recommendations.add(Recommendation(
           id: 'good_savings', type: 'tip', severity: 'low',
           title: 'Хорошая норма сбережения',
-          description: 'Откладывается ${savingsRate.round()}% от дохода. Так держать!',
+          description: 'Отложено ${saveAmt.toStringAsFixed(0)} ₽ (${savingsRate.round()}% от ${monthIncome.toStringAsFixed(0)} ₽). Отличный результат!',
         ));
       }
     }
 
-    // 6 — no emergency fund goal
+    // 6 — biggest expense categories
+    if (monthExpense > 0) {
+      final topCatList = sortedCats.take(5).where((e) {
+        final cat = _categories.where((c) => c.id == e.key).firstOrNull;
+        return cat != null && e.value > monthExpense * 0.15;
+      }).toList();
+      if (topCatList.length >= 2) {
+        final parts = topCatList.map((e) {
+          final cat = _categories.where((c) => c.id == e.key).firstOrNull;
+          final pct = (e.value / monthExpense * 100).round();
+          return '${cat?.name ?? e.key} ${e.value.toStringAsFixed(0)} ₽ ($pct%)';
+        }).join(', ');
+        _recommendations.add(Recommendation(
+          id: 'top_cats', type: 'tip', severity: 'low',
+          title: 'Структура расходов',
+          description: 'Основные статьи: $parts.',
+        ));
+      }
+    }
+
+    // 7 — no emergency fund goal
     if (_goals.where((g) =>
       !g.isCompleted && (g.title.contains('подушк') || g.title.contains('безопасн') || g.title.contains('сбережен') ||
                          g.title.contains('emergency') || g.title.contains('safety') || g.title.contains('cushion'))
     ).isEmpty) {
+      final suggested = monthExpense > 0 ? (monthExpense * 3).toStringAsFixed(0) : '—';
       _recommendations.add(Recommendation(
         id: 'no_emergency', type: 'tip', severity: 'low',
         title: 'Создайте финансовую подушку',
-        description: 'Рекомендуется иметь резерв в размере 3–6 месячных расходов на случай непредвиденных ситуаций.',
+        description: 'Рекомендуется резерв 3–6 месячных расходов (${suggested} ₽). Добавьте цель «Подушка безопасности» в разделе целей.',
       ));
     }
 
-    // 7 — idle cash
+    // 8 — idle cash
     for (final a in _accounts) {
       if (a.icon == 'cash' && a.balance > 50000) {
         _recommendations.add(Recommendation(
           id: 'idle_cash_${a.id}', type: 'optimization', severity: 'low',
-          title: 'Много наличных на руках',
-          description: 'На счету «${a.name}» ${a.balance.toStringAsFixed(0)} ₽. Часть можно перенести на накопительный счёт.',
+          title: '${a.balance.toStringAsFixed(0)} ₽ наличными без движения',
+          description: 'На счету «${a.name}» ${a.balance.toStringAsFixed(0)} ₽. Часть можно перенести на накопительный счёт или вклад.',
         ));
       }
     }
 
-    // 8 — goal progress
+    // 9 — goal progress
     for (final g in _goals.where((g) => !g.isCompleted && g.targetAmount > 0)) {
       final progress = g.currentAmount / g.targetAmount * 100;
       if (progress >= 75) {
         _recommendations.add(Recommendation(
           id: 'goal_close_${g.id}', type: 'tip', severity: 'low',
           title: 'Цель «${g.title}» почти достигнута',
-          description: 'Накоплено ${progress.round()}% (${g.currentAmount.toStringAsFixed(0)} ₽ из ${g.targetAmount.toStringAsFixed(0)} ₽). Осталось немного!',
+          description: 'Накоплено ${g.currentAmount.toStringAsFixed(0)} ₽ из ${g.targetAmount.toStringAsFixed(0)} ₽ (${progress.round()}%). Осталось ${(g.targetAmount - g.currentAmount).toStringAsFixed(0)} ₽.',
         ));
       }
     }
