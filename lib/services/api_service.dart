@@ -84,6 +84,15 @@ class ApiService {
     await _client.post('categories.set', body: {'request': {'request_info': {'method': 'categories.set'}, 'request_data': body}});
   }
 
+  Future<Map<String, dynamic>> addTag(Map<String, dynamic> body) async {
+    final json = await _client.post('tags.post', body: {'request': {'request_info': {'method': 'tags.post'}, 'request_data': body}});
+    return json;
+  }
+
+  Future<void> setTag(Map<String, dynamic> body) async {
+    await _client.post('tags.set', body: {'request': {'request_info': {'method': 'tags.set'}, 'request_data': body}});
+  }
+
   List<T> _parseList<T>(Map<String, dynamic> data, String key, T Function(Map<String, dynamic>) fromJson) {
     final list = data[key] as List<dynamic>?;
     if (list == null) return [];

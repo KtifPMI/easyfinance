@@ -665,7 +665,37 @@ class FinanceStore extends ChangeNotifier {
   }
 
   Future<void> deleteCategory(String id) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        await authService.apiService.setCategory({
+          'categories': [{'id': id, 'deleted_at': DateTime.now().toIso8601String()}]
+        });
+      } catch (_) {}
+    }
     _categories.removeWhere((c) => c.id == id);
+    notifyListeners();
+  }
+
+  Future<void> addTag(String name) async {
+    final tag = Tag(id: DateTime.now().microsecondsSinceEpoch.toRadixString(36), name: name);
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        await authService.apiService.addTag({'tags': [{'name': name}]});
+      } catch (_) {}
+    }
+    _tags.add(tag);
+    notifyListeners();
+  }
+
+  Future<void> deleteTag(String id) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        await authService.apiService.setTag({
+          'tags': [{'id': id, 'deleted_at': DateTime.now().toIso8601String()}]
+        });
+      } catch (_) {}
+    }
+    _tags.removeWhere((t) => t.id == id);
     notifyListeners();
   }
 

@@ -47,7 +47,7 @@ String formatDayLabel(String iso, BuildContext context) {
 List<MapEntry<String, List<Operation>>> groupByDay(List<Operation> items) {
   final map = <String, List<Operation>>{};
   for (final item in items) {
-    final key = item.date.substring(0, 10);
+    final key = item.date.length >= 10 ? item.date.substring(0, 10) : item.date;
     map.putIfAbsent(key, () => []);
     map[key]!.add(item);
   }

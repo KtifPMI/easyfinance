@@ -8,4 +8,6 @@ class Tag {
     id: json['id']?.toString() ?? '',
     name: json['name']?.toString() ?? json['title']?.toString() ?? '',
   );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
 }

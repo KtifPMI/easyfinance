@@ -26,6 +26,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   String? _toAccountId;
   final _amountCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
+  Set<String> _selectedTagIds = {};
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
@@ -59,6 +60,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         _categoryId = op.categoryId;
         _toAccountId = op.toAccountId;
         if (op.comment != null) _commentCtrl.text = op.comment!;
+        if (op.tagIds != null) _selectedTagIds = op.tagIds!.toSet();
       }
     }
   }
@@ -74,6 +76,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     final store = context.read<FinanceStore>();
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
     if (amount <= 0) return;
+    if (store.accounts.isEmpty) return;
+
+    final catId = _type != 'transfer' ? (_categoryId ?? store.categories.where((c) => c.type == _type).firstOrNull?.id) : null;
+    if (_type != 'transfer' && catId == null) return;
 
     if (_isEditing) {
       store.updateOperation(Operation(
@@ -83,8 +89,9 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         date: _dateStr(),
         accountId: _accountId ?? store.accounts.first.id,
         toAccountId: _type == 'transfer' ? _toAccountId : null,
-        categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
+        categoryId: catId,
         comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+        tagIds: _selectedTagIds.isNotEmpty ? _selectedTagIds.toList() : null,
       ));
     } else {
       store.addOperation(Operation(
@@ -94,12 +101,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         date: _dateStr(),
         accountId: _accountId ?? store.accounts.first.id,
         toAccountId: _type == 'transfer' ? _toAccountId : null,
-        categoryId: _type != 'transfer' ? (_categoryId ?? store.categories.firstWhere((c) => c.type == _type).id) : null,
+        categoryId: catId,
         comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+        tagIds: _selectedTagIds.isNotEmpty ? _selectedTagIds.toList() : null,
       ));
     }
 
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -172,6 +180,23 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ],
               const SizedBox(height: 16),
               AppInput(label: context.tr('operations.comment'), controller: _commentCtrl),
+              if (store.tags.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Text(context.tr('operations.tags'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: store.tags.map((t) => FilterChip(
+                    label: Text(t.name),
+                    selected: _selectedTagIds.contains(t.id),
+                    onSelected: (sel) => setState(() {
+                      if (sel) { _selectedTagIds.add(t.id); } else { _selectedTagIds.remove(t.id); }
+                    }),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                    checkmarkColor: AppColors.primary,
+                  )).toList(),
+                ),
+              ],
               const SizedBox(height: 24),
               AppButton(title: context.tr('operations.save'), onPressed: _save),
             ],

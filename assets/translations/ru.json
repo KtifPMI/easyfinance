@@ -82,6 +82,7 @@
   "operations.to_account": "На счёт",
   "operations.comment": "Комментарий",
   "operations.save": "Сохранить",
+  "operations.tags": "Теги",
   "operations.not_found": "Операция не найдена",
   "operations.title_detail": "Операция",
   "operations.delete_confirm": "Удалить операцию?",
@@ -102,6 +103,9 @@
   "categories.type_income": "Доход",
   "categories.type_expense": "Расход",
   "categories.save": "Сохранить",
+  "categories.delete": "Удалить",
+  "categories.cancel": "Отмена",
+  "categories.confirm_delete": "Удалить категорию?",
 
   "budget.title": "Бюджет и цели",
   "budget.budget": "Бюджет",
@@ -245,5 +249,14 @@
   "month.long.9": "сентября",
   "month.long.10": "октября",
   "month.long.11": "ноября",
-  "month.long.12": "декабря"
+  "month.long.12": "декабря",
+
+  "tags.title": "Теги",
+  "tags.name": "Название тега",
+  "tags.empty": "Нет тегов",
+  "tags.delete": "Удалить",
+  "tags.cancel": "Отмена",
+  "tags.confirm_delete": "Удалить тег?",
+
+  "more.tags": "Теги"
 }

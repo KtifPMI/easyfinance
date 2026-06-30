@@ -82,6 +82,7 @@
   "operations.to_account": "To Account",
   "operations.comment": "Comment",
   "operations.save": "Save",
+  "operations.tags": "Tags",
   "operations.not_found": "Operation not found",
   "operations.title_detail": "Operation",
   "operations.delete_confirm": "Delete operation?",
@@ -102,6 +103,9 @@
   "categories.type_income": "Income",
   "categories.type_expense": "Expense",
   "categories.save": "Save",
+  "categories.delete": "Delete",
+  "categories.cancel": "Cancel",
+  "categories.confirm_delete": "Delete category?",
 
   "budget.title": "Budget & Goals",
   "budget.budget": "Budget",
@@ -245,5 +249,14 @@
   "month.long.9": "September",
   "month.long.10": "October",
   "month.long.11": "November",
-  "month.long.12": "December"
+  "month.long.12": "December",
+
+  "tags.title": "Tags",
+  "tags.name": "Tag name",
+  "tags.empty": "No tags",
+  "tags.delete": "Delete",
+  "tags.cancel": "Cancel",
+  "tags.confirm_delete": "Delete tag?",
+
+  "more.tags": "Tags"
 }

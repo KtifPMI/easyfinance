@@ -37,7 +37,28 @@ class CategoriesScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(c.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
                         const Spacer(),
-                        if (!c.isDefault) Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                        if (!c.isDefault) GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(context.tr('categories.confirm_delete')),
+                                content: Text(c.name),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('categories.cancel'))),
+                                  TextButton(
+                                    onPressed: () {
+                                      store.deleteCategory(c.id);
+                                      Navigator.pop(ctx);
+                                    },
+                                    child: Text(context.tr('categories.delete'), style: TextStyle(color: AppColors.danger)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                        ),
                       ],
                     ),
                   ),
@@ -57,7 +78,28 @@ class CategoriesScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(c.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
                         const Spacer(),
-                        if (!c.isDefault) Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                        if (!c.isDefault) GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(context.tr('categories.confirm_delete')),
+                                content: Text(c.name),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('categories.cancel'))),
+                                  TextButton(
+                                    onPressed: () {
+                                      store.deleteCategory(c.id);
+                                      Navigator.pop(ctx);
+                                    },
+                                    child: Text(context.tr('categories.delete'), style: TextStyle(color: AppColors.danger)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                        ),
                       ],
                     ),
                   ),

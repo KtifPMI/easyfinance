@@ -13,6 +13,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    debugPrint('Unhandled Flutter error: ${details.exception}\n${details.stack}');
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Unhandled platform error: $error\n$stack');
+    return true;
+  };
+
   const appId = '7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60';
   const secretKey = 'e3df02801d7e7073a0d042f6a040aa043b9fc003';
   final apiClient = ApiClient(appId: appId, secretKey: secretKey);

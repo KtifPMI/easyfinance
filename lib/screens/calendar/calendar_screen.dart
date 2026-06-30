@@ -122,7 +122,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: AppCard(
                     child: InkWell(
-                      onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: op.id),
+                      onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
                       child: Row(
                         children: [
                           Container(
