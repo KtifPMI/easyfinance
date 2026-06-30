@@ -32,7 +32,7 @@ class Goal {
     final parts = endStr.split('.');
     final deadline = parts.length == 3 ? '${parts[2]}-${parts[1]}-${parts[0]}' : '';
     final accountsList = json['accounts'] as List<dynamic>?;
-    final accountId = json['account']?.toString() ?? (accountsList?.isNotEmpty == true ? (accountsList.first as Map<String, dynamic>)['account_id']?.toString() : null);
+    final accountId = json['account']?.toString() ?? (accountsList?.isNotEmpty == true ? (accountsList!.first as Map<String, dynamic>)['account_id']?.toString() : null);
     return Goal(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
