@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'navigation/app_router.dart';
+import 'config.dart';
 import 'services/api_client.dart';
 import 'services/auth_service.dart';
 import 'store/finance_store.dart';
@@ -24,9 +25,7 @@ void main() async {
     return true;
   };
 
-  const appId = '7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60';
-  const secretKey = 'e3df02801d7e7073a0d042f6a040aa043b9fc003';
-  final apiClient = ApiClient(appId: appId, secretKey: secretKey);
+  final apiClient = ApiClient(appId: AppConfig.appId, secretKey: AppConfig.secretKey);
   final authService = AuthService(apiClient);
   final localeStore = LocaleStore();
   await localeStore.load();

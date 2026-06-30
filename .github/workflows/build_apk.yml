@@ -14,6 +14,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Generate config.dart
+        run: |
+          cat > lib/config.dart << EOF
+          class AppConfig {
+            static const String appId = '${{ secrets.APP_ID }}';
+            static const String secretKey = '${{ secrets.SECRET_KEY }}';
+          }
+          EOF
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:

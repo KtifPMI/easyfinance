@@ -13,3 +13,6 @@ ios/.symlinks/
 ios/Flutter/Flutter.framework
 ios/Flutter/Flutter.podspec
 *.lock
+
+# Credentials
+/lib/config.dart
