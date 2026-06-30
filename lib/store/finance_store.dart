@@ -389,7 +389,7 @@ class FinanceStore extends ChangeNotifier {
         final isoStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tzStr';
         final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
         final amount = op.type == 'income' ? op.amount : -op.amount;
-        final clientId = int.tryParse(op.id) ?? op.id.hashCode;
+        final clientId = now.microsecondsSinceEpoch % 1000000;
 
         await authService.apiService.addOperation({
           'operations': [{
@@ -400,14 +400,13 @@ class FinanceStore extends ChangeNotifier {
             'amount': amount.toStringAsFixed(2),
             'date': isoStr,
             'time': timeStr,
-            'transfer_account_id': op.toAccountId,
-            'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
+            if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
+            if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
             'accepted': true,
             'client_id': clientId,
             'created_at': isoStr,
             'updated_at': isoStr,
-            'deleted_at': null,
           }]
         });
       } catch (_) {}
