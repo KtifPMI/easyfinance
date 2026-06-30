@@ -389,7 +389,7 @@ class FinanceStore extends ChangeNotifier {
         final isoStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tzStr';
         final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
         final amount = op.type == 'income' ? op.amount : -op.amount;
-        final clientId = now.microsecondsSinceEpoch % 1000000;
+        final clientId = int.parse('${(now.microsecondsSinceEpoch % 1000000).abs()}');
 
         await authService.apiService.addOperation({
           'operations': [{

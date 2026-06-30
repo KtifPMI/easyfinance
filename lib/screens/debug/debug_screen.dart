@@ -46,7 +46,8 @@ class _DebugScreenState extends State<DebugScreen> {
           "accepted": true,
           "created_at": "DATE",
           "updated_at": "DATE",
-          "client_id": "CLIENT_ID"
+          "deleted_at": null,
+          "client_id": CLIENT_ID
         }
       ]
     }
