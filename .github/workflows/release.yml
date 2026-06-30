@@ -15,6 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup release keystore
+        run: |
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > android/key.jks
+          echo "storeFile=../key.jks" > android/key.properties
+          echo "keyAlias=release" >> android/key.properties
+          echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -25,8 +33,8 @@ jobs:
         run: |
           cat > lib/config.dart << EOF
           class AppConfig {
-            static const String appId = '\${{ secrets.APP_ID }}';
-            static const String secretKey = '\${{ secrets.SECRET_KEY }}';
+            static const String appId = '${{ secrets.APP_ID }}';
+            static const String secretKey = '${{ secrets.SECRET_KEY }}';
           }
           EOF
 
