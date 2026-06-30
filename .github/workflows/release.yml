@@ -40,4 +40,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: build/app/outputs/flutter-apk/*.apk
-          generate_release_notes: true
+          body: 'Исправления и улучшения.'

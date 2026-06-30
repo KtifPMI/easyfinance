@@ -93,10 +93,10 @@ class UpdateService {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Версия: ${update.version}'),
+            Text('Новая версия: ${update.version}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             if (update.changelog != null) ...[
               const SizedBox(height: 8),
-              Text(update.changelog!, style: const TextStyle(fontSize: 13)),
+              Text(update.changelog!, style: const TextStyle(fontSize: 13), maxLines: 5, overflow: TextOverflow.ellipsis),
             ],
           ],
         ),
