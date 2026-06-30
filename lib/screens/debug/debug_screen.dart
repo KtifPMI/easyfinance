@@ -38,7 +38,7 @@ class _DebugScreenState extends State<DebugScreen> {
         {
           "user_id": "USER_ID",
           "account_id": "ACCOUNT_ID",
-          "category_id": "CATEGORY_ID",
+          "category_id": "551145691",
           "amount": "-100.00",
           "date": "DATE",
           "time": "TIME",
@@ -114,7 +114,6 @@ class _DebugScreenState extends State<DebugScreen> {
       var body = _postBodyCtrl.text;
       body = body.replaceAll('USER_ID', api.userId ?? '')
           .replaceAll('ACCOUNT_ID', store.accounts.isNotEmpty ? store.accounts.first.id : '1')
-          .replaceAll('CATEGORY_ID', store.categories.isNotEmpty ? store.categories.first.id : '1')
           .replaceAll('DATE', isoStr)
           .replaceAll('TIME', timeStr)
           .replaceAll('CLIENT_ID', '${now.millisecondsSinceEpoch % 100000}');
