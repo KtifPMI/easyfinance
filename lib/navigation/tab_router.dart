@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../services/update_service.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/operations/operations_list_screen.dart';
 import '../screens/budget/plan_screen.dart';
@@ -28,6 +29,12 @@ class _MainTabsState extends State<MainTabs> {
 
   final _icons = [Icons.home_outlined, Icons.list_alt_outlined, Icons.track_changes_outlined, Icons.calendar_month_outlined, Icons.pie_chart_outline, Icons.menu_outlined];
   final _activeIcons = [Icons.home, Icons.list_alt, Icons.track_changes, Icons.calendar_month, Icons.pie_chart, Icons.menu];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => UpdateService.checkAndShow(context));
+  }
 
   @override
   Widget build(BuildContext context) {

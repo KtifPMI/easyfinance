@@ -25,61 +25,8 @@ class _MoreScreenState extends State<MoreScreen> {
 
   Future<void> _checkUpdate() async {
     setState(() => _checking = true);
-    final update = await UpdateService.check();
-    if (!mounted) return;
-    setState(() => _checking = false);
-
-    if (update != null) {
-      _showUpdateDialog(update);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('У вас актуальная версия')),
-      );
-    }
-  }
-
-  void _showUpdateDialog(UpdateInfo update) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Доступно обновление'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Версия: ${update.version}'),
-            if (update.changelog != null) ...[
-              const SizedBox(height: 8),
-              Text(update.changelog!, style: const TextStyle(fontSize: 13)),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Позже')),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _downloadAndInstall(update.downloadUrl);
-            },
-            child: const Text('Обновить'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _downloadAndInstall(String url) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-    UpdateService.downloadAndInstall(url).then((_) {
-      if (mounted) Navigator.pop(context);
-    }).catchError((e) {
-      if (mounted) Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
-    });
+    await UpdateService.checkAndShow(context);
+    if (mounted) setState(() => _checking = false);
   }
 
   @override

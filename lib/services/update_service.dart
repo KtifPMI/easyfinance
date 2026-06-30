@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -64,13 +65,71 @@ class UpdateService {
     return l.length > c.length;
   }
 
-  static Future<void> downloadAndInstall(String url) async {
+  static Future<void> downloadAndInstall(String url, BuildContext context) async {
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/easyfinance.apk');
 
     final response = await http.get(Uri.parse(url));
     await file.writeAsBytes(response.bodyBytes);
 
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('APK загружен, открываю установщик...')),
+      );
+    }
+
     await OpenFilex.open(file.path);
+  }
+
+  static Future<void> checkAndShow(BuildContext context) async {
+    final update = await check();
+    if (update == null || !context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Доступно обновление'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Версия: ${update.version}'),
+            if (update.changelog != null) ...[
+              const SizedBox(height: 8),
+              Text(update.changelog!, style: const TextStyle(fontSize: 13)),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Позже')),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _downloadWithProgress(context, update.downloadUrl);
+            },
+            child: const Text('Обновить'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void _downloadWithProgress(BuildContext context, String url) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      await downloadAndInstall(url, context);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка загрузки: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
+    }
   }
 }
