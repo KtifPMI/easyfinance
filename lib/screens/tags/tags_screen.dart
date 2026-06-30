@@ -43,7 +43,6 @@ class _TagsScreenState extends State<TagsScreen> {
                   Expanded(child: AppInput(
                     label: context.tr('tags.name'),
                     controller: _ctrl,
-                    onSubmitted: (_) => _addTag(store),
                   )),
                   const SizedBox(width: 8),
                   IconButton(

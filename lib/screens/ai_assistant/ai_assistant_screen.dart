@@ -55,8 +55,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
     if (q.contains('баланс') || q.contains('баланс') || (q.contains('сколько') && q.contains('денег')) || q.contains('balance') || q.contains('money')) {
       final total = store.accounts.fold(0.0, (s, a) => s + a.balance);
-      return 'Общий баланс по всем счетам: ${formatMoney(total)}\n\n' +
-        store.accounts.map((a) => '• ${a.name}: ${formatMoney(a.balance)}').join('\n');
+      return 'Общий баланс по всем счетам: ${formatMoney(total)}\n\n${store.accounts.map((a) => '• ${a.name}: ${formatMoney(a.balance)}').join('\n')}';
     }
 
     if ((q.contains('трат') || q.contains('расход') || q.contains('spent') || q.contains('expense')) && q.contains('категори')) {
@@ -71,7 +70,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
         if (cat != null) totals.update(cat.name, (v) => v + o.amount, ifAbsent: () => o.amount);
       }
       final sorted = totals.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-      return 'Расходы по категориям:\n' + sorted.map((e) => '• ${e.key}: ${formatMoney(e.value)}').join('\n');
+      return 'Расходы по категориям:\n${sorted.map((e) => '• ${e.key}: ${formatMoney(e.value)}').join('\n')}';
     }
 
     if ((q.contains('доход') || q.contains('заработ') || q.contains('income') || q.contains('earn')) && (q.contains('сколько') || q.contains('how much'))) {
@@ -80,8 +79,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
     if (q.contains('счёт') || q.contains('счет') || q.contains('account')) {
       final total = store.accounts.fold(0.0, (s, a) => s + a.balance);
-      return 'У вас ${store.accounts.length} счет(ов) на общую сумму ${formatMoney(total)}.\n\n' +
-        store.accounts.map((a) => '• ${a.name}: ${formatMoney(a.balance)}').join('\n');
+      return 'У вас ${store.accounts.length} счет(ов) на общую сумму ${formatMoney(total)}.\n\n${store.accounts.map((a) => '• ${a.name}: ${formatMoney(a.balance)}').join('\n')}';
     }
 
     if (q.contains('цел') || q.contains('goal')) {

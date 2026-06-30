@@ -267,7 +267,7 @@ class FinanceStore extends ChangeNotifier {
           _recommendations.add(Recommendation(
             id: 'no_budget_${entry.key}', type: 'optimization', severity: 'medium',
             title: 'Нет бюджета для «${cat.name}»',
-            description: 'Потрачено ${entry.value.toStringAsFixed(0)} ₽ (${pct}% от всех расходов). Установите бюджет, чтобы контролировать эту категорию.',
+            description: 'Потрачено ${entry.value.toStringAsFixed(0)} ₽ ($pct% от всех расходов). Установите бюджет, чтобы контролировать эту категорию.',
           ));
         }
       }
@@ -348,7 +348,7 @@ class FinanceStore extends ChangeNotifier {
       _recommendations.add(Recommendation(
         id: 'no_emergency', type: 'tip', severity: 'low',
         title: 'Создайте финансовую подушку',
-        description: 'Рекомендуется резерв 3–6 месячных расходов (${suggested} ₽). Добавьте цель «Подушка безопасности» в разделе целей.',
+        description: 'Рекомендуется резерв 3–6 месячных расходов ($suggested ₽). Добавьте цель «Подушка безопасности» в разделе целей.',
       ));
     }
 
