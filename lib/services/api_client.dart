@@ -68,6 +68,16 @@ class ApiClient {
     return Uri.parse(baseUrl).replace(queryParameters: params);
   }
 
+  Uri buildPostUri(String method) {
+    final params = <String, String>{
+      'method': method,
+      'app_id': appId,
+      if (_accessToken != null) 'access_token': _accessToken!,
+    };
+    params['sig'] = _buildSig(params, includeUid: true);
+    return Uri.parse(baseUrl).replace(queryParameters: params);
+  }
+
   Uri buildOAuthCodeUrl() {
     final params = <String, String>{
       'app_id': appId,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../services/api_client.dart';
@@ -19,6 +20,7 @@ class _DebugScreenState extends State<DebugScreen> {
   bool _loading = false;
   bool _prettyPrint = true;
   final _paramsCtrl = TextEditingController();
+  final _postBodyCtrl = TextEditingController();
 
   static const methods = [
     'accounts.get',
@@ -27,8 +29,29 @@ class _DebugScreenState extends State<DebugScreen> {
     'tags.get',
     'budget.get',
     'users.get',
-    'operationPatterns.get',
   ];
+
+  static const _defaultPostBody = '''{
+  "request": {
+    "request_data": {
+      "operations": [
+        {
+          "user_id": "USER_ID",
+          "account_id": "ACCOUNT_ID",
+          "category_id": "CATEGORY_ID",
+          "amount": "-100.00",
+          "date": "DATE",
+          "time": "TIME",
+          "type": "0",
+          "accepted": true,
+          "created_at": "DATE",
+          "updated_at": "DATE",
+          "client_id": "CLIENT_ID"
+        }
+      ]
+    }
+  }
+}''';
 
   Map<String, String> _builtinParams(String method) {
     if (method == 'accounts.get') {
@@ -71,6 +94,53 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 
+  Future<void> _sendPost() async {
+    setState(() {
+      _selectedMethod = 'POST';
+      _loading = true;
+      _response = null;
+    });
+
+    try {
+      final store = context.read<FinanceStore>();
+      final api = store.apiClient;
+      final now = DateTime.now();
+      final tz = now.timeZoneOffset;
+      final tzStr = '${tz.isNegative ? '-' : '+'}${tz.inHours.abs().toString().padLeft(2, '0')}:${(tz.inMinutes % 60).abs().toString().padLeft(2, '0')}';
+      final isoStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tzStr';
+      final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
+
+      var body = _postBodyCtrl.text;
+      body = body.replaceAll('USER_ID', api.userId ?? '')
+          .replaceAll('ACCOUNT_ID', store.accounts.isNotEmpty ? store.accounts.first.id : '1')
+          .replaceAll('CATEGORY_ID', store.categories.isNotEmpty ? store.categories.first.id : '1')
+          .replaceAll('DATE', isoStr)
+          .replaceAll('TIME', timeStr)
+          .replaceAll('CLIENT_ID', '${now.millisecondsSinceEpoch % 100000}');
+
+      final uri = api.buildPostUri('operations.post');
+      final resp = await http.post(uri, body: body, headers: {'Content-Type': 'application/json'}).timeout(const Duration(seconds: 15));
+
+      if (mounted) {
+        setState(() {
+          _response = DebugResponse(
+            statusCode: resp.statusCode,
+            body: '--- REQUEST URL ---\n$uri\n\n--- REQUEST BODY ---\n${_formatBody(body)}\n\n--- RESPONSE (${resp.statusCode}) ---\n${_formatBody(resp.body)}',
+            url: uri.toString(),
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _response = DebugResponse(statusCode: 0, body: 'Exception: $e', url: '');
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   String _formatBody(String body) {
     if (!_prettyPrint) return body;
     try {
@@ -93,6 +163,19 @@ class _DebugScreenState extends State<DebugScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Copied'), duration: Duration(seconds: 1)),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _postBodyCtrl.text = _defaultPostBody;
+  }
+
+  @override
+  void dispose() {
+    _paramsCtrl.dispose();
+    _postBodyCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -172,6 +255,20 @@ class _DebugScreenState extends State<DebugScreen> {
               onSubmitted: _selectedMethod != null ? (_) => _callMethod(_selectedMethod!) : null,
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            child: SizedBox(
+              width: double.infinity,
+              child: MaterialButton(
+                onPressed: _loading ? null : _sendPost,
+                color: Colors.deepPurple,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                child: Text(_loading ? 'Sending...' : '▶ POST Test Operation', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
           if (_response != null && _response!.url.isNotEmpty)
             Container(
               width: double.infinity,
@@ -183,6 +280,7 @@ class _DebugScreenState extends State<DebugScreen> {
                     child: Text(
                       _response!.url,
                       style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(
@@ -231,7 +329,7 @@ class _DebugScreenState extends State<DebugScreen> {
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(12),
                         child: SelectableText(
-                          _formatBody(_response!.body),
+                          _response!.body,
                           style: const TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 12,
