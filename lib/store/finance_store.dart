@@ -407,6 +407,7 @@ class FinanceStore extends ChangeNotifier {
             'client_id': clientId,
             'created_at': isoStr,
             'updated_at': isoStr,
+            'deleted_at': null,
           }]
         });
       } catch (_) {}
