@@ -60,12 +60,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> addOperation(Map<String, dynamic> body) async {
-    final json = await _client.post('operations.post', body: {'request': {'request_info': {'method': 'operations.post'}, 'request_data': body}});
+    final json = await _client.post('operations.post', body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setOperation(Map<String, dynamic> body) async {
-    await _client.post('operations.set', body: {'request': {'request_info': {'method': 'operations.set'}, 'request_data': body}});
+    await _client.post('operations.set', body: {'request': {'request_data': body}});
   }
 
   Future<List<Map<String, dynamic>>> getGoals() async {

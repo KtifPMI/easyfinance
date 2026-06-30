@@ -384,7 +384,9 @@ class FinanceStore extends ChangeNotifier {
     if (!_useMock && authService.isAuthenticated) {
       try {
         final now = DateTime.now();
-        final dateStr = now.toIso8601String();
+        final tz = now.timeZoneOffset;
+        final tzStr = '${tz.isNegative ? '-' : '+'}${tz.inHours.abs().toString().padLeft(2, '0')}:${(tz.inMinutes % 60).abs().toString().padLeft(2, '0')}';
+        final isoStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tzStr';
         final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
         final amount = op.type == 'income' ? op.amount : -op.amount;
         final clientId = int.tryParse(op.id) ?? op.id.hashCode;
@@ -396,15 +398,15 @@ class FinanceStore extends ChangeNotifier {
             'account_id': op.accountId,
             if (op.categoryId != null) 'category_id': op.categoryId,
             'amount': amount.toStringAsFixed(2),
-            'date': dateStr,
+            'date': isoStr,
             'time': timeStr,
             'transfer_account_id': op.toAccountId,
             'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
             if (op.comment != null) 'comment': op.comment,
             'accepted': true,
             'client_id': clientId,
-            'created_at': dateStr,
-            'updated_at': dateStr,
+            'created_at': isoStr,
+            'updated_at': isoStr,
             'deleted_at': null,
           }]
         });
