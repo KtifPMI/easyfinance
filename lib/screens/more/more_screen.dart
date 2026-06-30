@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:provider/provider.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../services/update_service.dart';
-import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../planned_payments/planned_payments_screen.dart';
 import '../bank/bank_screen.dart';
