@@ -142,13 +142,8 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      final patterns = await api.getOperationPatterns();
-      final goals = patterns.where((p) => p['type']?.toString() == '4').toList();
-      final balanceMap = <String, double>{};
-      for (final a in _accounts) {
-        balanceMap[a.id] = a.balance;
-      }
-      for (final g in goals.map((g) => Goal.fromJson(g, accountBalances: balanceMap))) {
+      final goals = await api.getGoals();
+      for (final g in goals.map((g) => Goal.fromJson(g))) {
         final idx = _goals.indexWhere((e) => e.id == g.id);
         if (idx >= 0) {
           _goals[idx] = g;

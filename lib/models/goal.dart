@@ -27,23 +27,22 @@ class Goal {
 
   factory Goal.fromJson(Map<String, dynamic> json, {Map<String, double>? accountBalances}) {
     final amount = double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0;
-    final transferAmount = double.tryParse(json['transfer_amount']?.toString() ?? '0') ?? 0.0;
-    final transferAccountId = json['transfer_account_id']?.toString();
-    final currentAmount = transferAccountId != null && accountBalances != null
-        ? (accountBalances[transferAccountId] ?? 0.0)
-        : 0.0;
+    final amountDone = double.tryParse(json['amount_done']?.toString() ?? '0') ?? 0.0;
+    final endStr = json['end']?.toString() ?? '';
+    final parts = endStr.split('.');
+    final deadline = parts.length == 3 ? '${parts[2]}-${parts[1]}-${parts[0]}' : '';
+    final accountsList = json['accounts'] as List<dynamic>?;
+    final accountId = json['account']?.toString() ?? (accountsList?.isNotEmpty == true ? (accountsList.first as Map<String, dynamic>)['account_id']?.toString() : null);
     return Goal(
       id: json['id']?.toString() ?? '',
-      title: json['name']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
       targetAmount: amount,
-      currentAmount: currentAmount,
-      deadline: '',
+      currentAmount: amountDone,
+      deadline: deadline,
       icon: 'star',
       color: '#16A34A',
-      monthlyRecommendation: transferAmount > 0 ? transferAmount : null,
-      isCompleted: amount > 0 && currentAmount >= amount,
-      accountId: json['account_id']?.toString(),
-      transferAccountId: transferAccountId,
+      isCompleted: (json['done']?.toString() == '1') || (amount > 0 && amountDone >= amount),
+      accountId: accountId,
     );
   }
 

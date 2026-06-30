@@ -68,9 +68,9 @@ class ApiService {
     await _client.post('operations.set', body: {'request': {'request_info': {'method': 'operations.set'}, 'request_data': body}});
   }
 
-  Future<List<Map<String, dynamic>>> getOperationPatterns() async {
-    final json = await _client.get('operationPatterns.get');
-    final list = json['operationPatterns'] as List<dynamic>?;
+  Future<List<Map<String, dynamic>>> getGoals() async {
+    final json = await _client.get('users.get', params: {'fields': 'goals'});
+    final list = json['goals'] as List<dynamic>?;
     if (list == null) return [];
     return list.cast<Map<String, dynamic>>();
   }
