@@ -214,14 +214,6 @@
 
   "recommendations.title": "Recommendations",
 
-  "recommendation.cafe_excess": "Cafe expenses exceed plan",
-  "recommendation.cafe_excess_desc": "Over the last 3 months you've spent 25% more on cafes than planned.",
-  "recommendation.fixed_high": "High fixed expenses level",
-  "recommendation.fixed_high_desc": "Rent takes 38% of income. Recommended no more than 30%.",
-  "recommendation.safety_progress": "Great safety buffer progress",
-  "recommendation.safety_progress_desc": "You've already saved 60% of your goal.",
-  "recommendation.auto_transfer": "Set up auto-transfers to goals",
-  "recommendation.auto_transfer_desc": "Regular automatic transfers help reach goals 30% faster.",
 
   "debug.fields_added": "fields auto-added (balance, init_balance)",
   "debug.extra_params": "Extra params (fields=x,y, from=...)",

@@ -214,14 +214,6 @@
 
   "recommendations.title": "Рекомендации",
 
-  "recommendation.cafe_excess": "Расходы на кафе превышают план",
-  "recommendation.cafe_excess_desc": "За последние 3 месяца вы тратите на кафе на 25% больше, чем планировали.",
-  "recommendation.fixed_high": "Высокий уровень фиксированных расходов",
-  "recommendation.fixed_high_desc": "Аренда занимает 38% от дохода. Рекомендуется не более 30%.",
-  "recommendation.safety_progress": "Отличный прогресс по подушке безопасности",
-  "recommendation.safety_progress_desc": "Вы накопили уже 60% от цели.",
-  "recommendation.auto_transfer": "Настройте автоперевод на цели",
-  "recommendation.auto_transfer_desc": "Регулярные автоматические переводы помогают достигать целей на 30% быстрее.",
 
   "debug.fields_added": "fields добавлены автоматом (balance, init_balance)",
   "debug.extra_params": "Доп. params (fields=x,y, from=...)",

@@ -3,7 +3,6 @@ import '../models/budget.dart';
 import '../models/category.dart';
 import '../models/goal.dart';
 import '../models/operation.dart';
-import '../models/recommendation.dart';
 import '../models/tag.dart';
 import '../models/user.dart';
 
@@ -71,9 +70,3 @@ final mockGoals = [
   Goal(id: 'g3', title: 'Новый ноутбук', targetAmount: 150000, currentAmount: 150000, deadline: '2026-05-01', icon: 'laptop', color: '#7C3AED', monthlyRecommendation: 0),
 ];
 
-final mockRecommendations = [
-  Recommendation(id: 'r1', title: 'Расходы на кафе превышают план', description: 'За последние 3 месяца вы тратите на кафе на 25% больше, чем планировали.', type: 'optimization', severity: 'medium'),
-  Recommendation(id: 'r2', title: 'Высокий уровень фиксированных расходов', description: 'Аренда занимает 38% от дохода. Рекомендуется не более 30%.', type: 'risk', severity: 'high'),
-  Recommendation(id: 'r3', title: 'Отличный прогресс по подушке безопасности', description: 'Вы накопили уже 60% от цели.', type: 'tip', severity: 'low'),
-  Recommendation(id: 'r4', title: 'Настройте автоперевод на цели', description: 'Регулярные автоматические переводы помогают достигать целей на 30% быстрее.', type: 'tip', severity: 'low'),
-];
