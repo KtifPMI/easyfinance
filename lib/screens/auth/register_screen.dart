@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
+import '../../services/api_client.dart' show ApiException;
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
@@ -59,8 +60,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
         Navigator.pop(context);
       }
+    } on ApiException catch (e) {
+      setState(() => _error = '${e.message} (код: ${e.code})');
     } catch (e) {
-      setState(() => _error = 'Ошибка регистрации: $e');
+      setState(() => _error = 'Ошибка: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
