@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
+import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -72,6 +73,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           title: context.tr('calendar.title'),
           child: Column(
             children: [
+              ScreenHint(hintId: 'calendar', text: 'Нажмите на день, чтобы увидеть все операции за эту дату. Можно листать месяцы стрелками.'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

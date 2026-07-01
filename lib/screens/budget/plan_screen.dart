@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
+import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/goal.dart';
 import '../../store/finance_store.dart';
@@ -24,6 +25,7 @@ class PlanScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ScreenHint(hintId: 'plan', text: 'Бюджеты и цели. Установите лимит по категории (например, «Продукты» — 30 000 ₽), чтобы следить за перерасходом. Цели помогут копить на крупные покупки.'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

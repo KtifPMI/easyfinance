@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_chip.dart';
+import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/operations/operation_list_item.dart';
 import '../../store/finance_store.dart';
@@ -39,6 +40,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ScreenHint(hintId: 'operations', text: 'Список всех операций — доходов, расходов и переводов. Используйте фильтр сверху, чтобы посмотреть только расходы или доходы.'),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(

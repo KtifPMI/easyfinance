@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
+import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../services/update_service.dart';
 import '../../theme/theme.dart';
@@ -47,7 +48,9 @@ class _MoreScreenState extends State<MoreScreen> {
     return ScreenScaffold(
       title: context.tr('more.title'),
       child: Column(
-        children: items.map((item) {
+        children: [
+          ScreenHint(hintId: 'more', text: 'Настройки, категории, теги, синхронизация и профиль. Здесь же можно проверить обновления приложения.'),
+          ...items.map((item) {
           final (icon, title, screen) = item;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
+import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -23,6 +24,7 @@ class ReportsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              ScreenHint(hintId: 'reports', text: 'Аналитика за месяц: доходы, расходы, структура трат по категориям и динамика остатка на счетах.'),
               Text(context.tr('reports.this_month'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 16),
               Row(
