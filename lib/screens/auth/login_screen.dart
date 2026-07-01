@@ -69,6 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 loading: _loading,
               ),
               const SizedBox(height: 12),
+              AppButton(
+                title: 'Регистрация',
+                onPressed: () => Navigator.pushNamed(context, '/register'),
+                variant: 'outline',
+              ),
+              const SizedBox(height: 12),
               TextButton(
                 onPressed: _skipLogin,
                 child: Text(context.tr('auth.skip'), style: TextStyle(color: AppColors.textSecondary)),
