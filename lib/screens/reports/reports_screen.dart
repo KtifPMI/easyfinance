@@ -75,7 +75,7 @@ class ReportsScreen extends StatelessWidget {
                 final catTotals = store.categories
                     .where((c) => c.type == 'expense')
                     .map((c) => (cat: c, total: store.operations
-                        .where((o) => o.type == 'expense' && !o.isDeleted && o.categoryId == c.id)
+                        .where((o) => o.type == 'expense' && !o.isDeleted && o.categoryId == c.id && store.isInCurrentMonth(o.date))
                         .fold<double>(0, (s, o) => s + o.amount)))
                     .where((e) => e.total > 0)
                     .toList()
