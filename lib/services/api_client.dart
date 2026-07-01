@@ -40,6 +40,11 @@ class ApiClient {
 
   String _md5(String input) => md5.convert(utf8.encode(input)).toString();
 
+  /// Рассчитать подпись для запроса (без uid, для регистрации)
+  String calculateSig(String paramsStr) {
+    return _md5('$secretKey$paramsStr');
+  }
+
   String _buildSig(Map<String, String> params, {bool includeUid = false}) {
     final order = ['method', 'app_id', 'access_token'];
     final ordered = <String, String>{};
@@ -234,24 +239,17 @@ class ApiClient {
     );
   }
 
-  Future<DebugResponse> postRaw(
-    String method, {
-    Map<String, String>? params,
-    Map<String, dynamic>? body,
-  }) async {
-    final uri = _buildUri(method, params ?? {});
+  Future<http.Response> postRaw(Uri uri, String body) async {
     final response = await _httpClient
         .post(
           uri,
-          body: body != null ? jsonEncode(body) : null,
-          headers: {'Content-Type': 'application/json'},
+          body: body,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
         )
         .timeout(_timeout);
-    return DebugResponse(
-      statusCode: response.statusCode,
-      body: response.body,
-      url: uri.toString(),
-    );
+    return response;
   }
 
   Future<Map<String, dynamic>> post(
