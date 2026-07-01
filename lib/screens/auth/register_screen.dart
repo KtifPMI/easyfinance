@@ -46,8 +46,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final api = store.authService.apiService;
       final resp = await api.client.postRaw('users.post', body: {
         'request': {
+          'request_info': {'method': 'users.post'},
           'request_data': {
-            'user': {'login': login, 'password': pass, 'name': name, 'mail': mail},
+            'users': [
+              {'login': login, 'password': pass, 'name': name, 'mail': mail},
+            ],
           },
         },
       });
