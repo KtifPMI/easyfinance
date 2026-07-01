@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../services/api_client.dart' show ApiException;
 import '../../store/finance_store.dart';
@@ -65,7 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final userId = user['id']?.toString();
         final accessToken = resp['access_token']?.toString();
         if (accessToken != null && accessToken.isNotEmpty) {
-          await store.apiClient.setAuth(accessToken: accessToken, userId: userId);
+          store.apiClient.setAuth(accessToken: accessToken, userId: userId);
           await store.authService.saveCredentials(
             appId: store.apiClient.appId,
             secretKey: store.apiClient.secretKey,
