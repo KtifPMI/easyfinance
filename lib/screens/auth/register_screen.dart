@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
 import '../../store/finance_store.dart';
@@ -52,20 +51,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final store = context.read<FinanceStore>();
       final apiClient = store.apiClient;
 
-      // 1. Параметры для подписи (БЕЗ access_token и uid!)
+      // 1. Формируем URL-параметры для подписи
       final paramsStr = 'method=users.post&app_id=${apiClient.appId}';
-      
-      // 2. Расчёт подписи: sig = md5(secret_key + params)
       final sig = apiClient.calculateSig(paramsStr);
 
-      // 3. URL запроса (только method, app_id, sig)
-      final uri = Uri.parse('https://api.easyfinance.ru/v2/').replace(queryParameters: {
+      // 2. Формируем URL
+      final uri = Uri.parse('https://api.easyfinance.ru/v2/')
+          .replace(queryParameters: {
         'method': 'users.post',
         'app_id': apiClient.appId,
         'sig': sig,
       });
 
-      // 4. Тело запроса в формате JSON (стр. 41 документации)
+      // 3. Формируем тело запроса
       final body = jsonEncode({
         'request': {
           'request_info': {
@@ -82,21 +80,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
       });
 
-      if (kDebugMode) {
-        debugPrint('=== REGISTER REQUEST ===');
-        debugPrint('URL: $uri');
-        debugPrint('Body: $body');
-      }
+      // 4. Отправляем POST-запрос
+      final response = await apiClient.postRaw(uri, body);
 
-      // 5. Отправляем POST-запрос
-      final response = await http.post(
-        uri,
-        body: body,
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      ).timeout(const Duration(seconds: 30));
-
+      // 5. ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ
       if (kDebugMode) {
         debugPrint('=== REGISTER RESPONSE ===');
         debugPrint('Status: ${response.statusCode}');
@@ -108,15 +95,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final resp = decoded['response'] as Map<String, dynamic>?;
       final responseData = resp?['response_data'] as Map<String, dynamic>?;
 
-      // Проверяем ошибки
+      // Проверяем наличие ошибок в ответе
       if (responseData != null && responseData.containsKey('errors')) {
         final errors = responseData['errors'] as List<dynamic>;
         if (errors.isNotEmpty) {
           final first = errors.first as Map<String, dynamic>;
-          final text = first['text']?.toString() ?? 'Unknown error';
+          final text = first['text']?.toString();
           final code = first['code']?.toString() ?? '';
+          
+          // Если текст ошибки пустой, показываем код
+          if (text == null || text.isEmpty) {
+            throw Exception('Ошибка API (код: $code). Полный ответ: ${response.body}');
+          }
           throw Exception('Ошибка $code: $text');
         }
+      }
+
+      // Проверяем response_error (другой формат ошибки)
+      if (resp != null && resp.containsKey('response_error')) {
+        final err = resp['response_error'] as Map<String, dynamic>;
+        final text = err['error_message']?.toString() ?? 'Unknown error';
+        final code = err['error_code']?.toString() ?? '';
+        throw Exception('Ошибка $code: $text');
       }
 
       // 7. Обрабатываем успешный ответ
@@ -144,13 +144,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (mounted) {
             setState(() => _error = 'Регистрация успешна! Теперь войдите через EasyFinance.ru');
             Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) Navigator.pop(context);
+              if (mounted) {
+                Navigator.pop(context);
+              }
             });
           }
         }
       } else {
         if (mounted) {
-          setState(() => _error = 'Неожиданный ответ сервера');
+          setState(() => _error = 'Неожиданный ответ сервера. Проверьте логи.');
         }
       }
     } catch (e) {
