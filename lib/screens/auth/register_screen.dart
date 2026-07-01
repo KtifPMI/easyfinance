@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
+import '../../services/api_client.dart' show ApiException;
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
@@ -44,16 +45,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final store = context.read<FinanceStore>();
       final api = store.authService.apiService;
-      final resp = await api.client.getRaw('users.post', params: {
-        'login': login,
-        'password': pass,
-        'name': name,
-        'mail': mail,
+      final resp = await api.client.post('users.post', body: {
+        'request': {
+          'request_info': {'method': 'users.post'},
+          'request_data': {
+            'user': {
+              'login': login,
+              'password': pass,
+              'name': name,
+              'mail': mail,
+            },
+          },
+        },
       });
 
-      if (mounted) {
-        setState(() => _error = 'HTTP ${resp.statusCode}\nURL: ${resp.url}\n\n${resp.body}');
+      final users = resp['users'];
+      if (users is List && users.isNotEmpty) {
+        final user = users.first as Map<String, dynamic>;
+        final userId = user['id']?.toString();
+        final accessToken = resp['access_token']?.toString();
+        if (accessToken != null && accessToken.isNotEmpty) {
+          await store.apiClient.setAuth(accessToken: accessToken, userId: userId);
+          await store.authService.saveCredentials(
+            appId: store.apiClient.appId,
+            secretKey: store.apiClient.secretKey,
+            accessToken: accessToken,
+            userId: userId,
+          );
+          if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
+          return;
+        }
       }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Регистрация успешна! Теперь войдите.'), backgroundColor: Colors.green),
+        );
+        Navigator.pop(context);
+      }
+    } on ApiException catch (e) {
+      setState(() => _error = 'Ошибка API: ${e.message} (код: ${e.code})');
     } catch (e) {
       setState(() => _error = 'Ошибка: $e');
     } finally {
