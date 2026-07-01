@@ -12,7 +12,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.easyfinance.app"
-    compileSdk = 35 // Обновил до 35
+    compileSdk = 36 // Обновил до 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -27,7 +27,7 @@ android {
     defaultConfig {
         applicationId = "com.easyfinance.app"
         minSdk = 21
-        targetSdk = 35 // Обновил до 35
+        targetSdk = 36 // Обновил до 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

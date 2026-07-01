@@ -74,7 +74,8 @@ class _MoreScreenState extends State<MoreScreen> {
               ),
             ),
           );
-        }).toList(),
+          }),
+        ],
       ),
     );
   }
