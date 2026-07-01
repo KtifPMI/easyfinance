@@ -124,9 +124,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        return ScreenScaffold(
-          title: context.tr('ai_assistant.title'),
-          child: Column(
+        return Scaffold(
+          appBar: AppBar(title: Text(context.tr('ai_assistant.title'))),
+          body: Column(
             children: [
               Expanded(
                 child: _messages.isEmpty
@@ -142,6 +142,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                       )
                     : ListView.builder(
                         controller: _scrollCtrl,
+                        padding: const EdgeInsets.all(16),
                         itemCount: _messages.length,
                         itemBuilder: (_, i) {
                           final msg = _messages[i];
@@ -167,27 +168,29 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                         },
                       ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _ctrl,
-                      decoration: InputDecoration(
-                        hintText: context.tr('ai_assistant.placeholder'),
-                        filled: true, fillColor: AppColors.card,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                decoration: BoxDecoration(color: AppColors.background, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2))]),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _ctrl,
+                        decoration: InputDecoration(
+                          hintText: context.tr('ai_assistant.placeholder'),
+                          filled: true, fillColor: AppColors.card,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
                       ),
-                      onSubmitted: (_) => _send(),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: Icon(Icons.send, color: AppColors.primary),
-                    onPressed: _send,
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: Icon(Icons.send, color: AppColors.primary),
+                      onPressed: _send,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

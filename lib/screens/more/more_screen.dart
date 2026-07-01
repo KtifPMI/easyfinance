@@ -7,8 +7,6 @@ import '../../services/update_service.dart';
 import '../../theme/theme.dart';
 import '../planned_payments/planned_payments_screen.dart';
 import '../bank/bank_screen.dart';
-import '../categories/categories_screen.dart';
-import '../tags/tags_screen.dart';
 import '../debug/debug_screen.dart';
 import '../recommendations/recommendations_screen.dart';
 import '../settings/settings_screen.dart';
@@ -34,14 +32,12 @@ class _MoreScreenState extends State<MoreScreen> {
   Widget build(BuildContext context) {
     final items = [
       (Icons.calendar_today, context.tr('more.planned_payments'), const PlannedPaymentsScreen()),
-      (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
       (Icons.account_balance, context.tr('more.easybank'), const BankScreen()),
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
-      (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
       (Icons.system_update_outlined, 'Обновление', null),
+      (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
       (Icons.person_outline, context.tr('more.profile'), const ProfileScreen()),
-      (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
       (Icons.bug_report_outlined, 'Debug API', const DebugScreen()),
     ];
 
