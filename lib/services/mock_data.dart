@@ -58,9 +58,11 @@ final mockOperations = [
 final mockBudgets = [
   Budget(id: 'b1', name: 'Продукты', categoryId: 'c1', limit: 20000, spent: 9800),
   Budget(id: 'b2', name: 'Транспорт', categoryId: 'c2', limit: 5000, spent: 2200),
-  Budget(id: 'b3', name: 'Коммуналка', categoryId: 'c3', limit: 8000, spent: 6100),
+  Budget(id: 'b3', name: 'Жильё', categoryId: 'c4', limit: 40000, spent: 35000),
   Budget(id: 'b4', name: 'Здоровье', categoryId: 'c6', limit: 4000, spent: 0),
   Budget(id: 'b5', name: 'Одежда', categoryId: 'c8', limit: 3000, spent: 1200),
+  Budget(id: 'b6', name: 'Кафе и рестораны', categoryId: 'c3', limit: 8000, spent: 3400),
+  Budget(id: 'b7', name: 'Связь и интернет', categoryId: 'c7', limit: 2500, spent: 890),
 ];
 
 
