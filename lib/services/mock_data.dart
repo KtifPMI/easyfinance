@@ -15,19 +15,32 @@ final mockAccounts = [
 ];
 
 final mockCategories = [
-  Category(id: 'c1', name: 'Продукты', type: 'expense', icon: 'shopping_cart', color: '#F59E0B'),
-  Category(id: 'c2', name: 'Транспорт', type: 'expense', icon: 'directions_car', color: '#3B82F6'),
-  Category(id: 'c3', name: 'Кафе и рестораны', type: 'expense', icon: 'restaurant', color: '#EF4444'),
-  Category(id: 'c4', name: 'Жильё', type: 'expense', icon: 'home', color: '#8B5CF6'),
-  Category(id: 'c5', name: 'Развлечения', type: 'expense', icon: 'movie', color: '#EC4899'),
-  Category(id: 'c6', name: 'Здоровье', type: 'expense', icon: 'favorite', color: '#14B8A6'),
-  Category(id: 'c7', name: 'Связь и интернет', type: 'expense', icon: 'wifi', color: '#0EA5E9'),
-  Category(id: 'c8', name: 'Одежда', type: 'expense', icon: 'checkroom', color: '#A855F7'),
-  Category(id: 'c9', name: 'Зарплата', type: 'income', icon: 'payments', color: '#16A34A'),
-  Category(id: 'c10', name: 'Фриланс', type: 'income', icon: 'laptop', color: '#22C55E'),
-  Category(id: 'c11', name: 'Подарки', type: 'income', icon: 'card_giftcard', color: '#10B981'),
-  Category(id: 'c12', name: 'Инвестиции', type: 'income', icon: 'trending_up', color: '#059669'),
-  Category(id: 'c13', name: 'Накопления', type: 'expense', icon: 'savings', color: '#7C3AED'),
+  Category(id: '551145658', name: 'Автомобиль', type: 'expense', icon: 'directions_car', color: '#EF4444'),
+  Category(id: '551145659', name: 'Банковское обслуживание', type: 'expense', icon: 'account_balance', color: '#3B82F6'),
+  Category(id: '551145661', name: 'Домашнее хозяйство', type: 'expense', icon: 'home', color: '#8B5CF6'),
+  Category(id: '551145663', name: 'Досуг и отдых', type: 'expense', icon: 'movie', color: '#EC4899'),
+  Category(id: '551145664', name: 'Коммунальные платежи', type: 'expense', icon: 'receipt', color: '#F59E0B'),
+  Category(id: '551145665', name: 'Медицина', type: 'expense', icon: 'favorite', color: '#14B8A6'),
+  Category(id: '551145666', name: 'Налоги, сборы и услуги', type: 'expense', icon: 'receipt_long', color: '#71717A'),
+  Category(id: '551145667', name: 'Образование', type: 'expense', icon: 'school', color: '#6366F1'),
+  Category(id: '551145668', name: 'Одежда, обувь, аксессуары', type: 'expense', icon: 'checkroom', color: '#A855F7'),
+  Category(id: '551145669', name: 'Питание', type: 'expense', icon: 'restaurant', color: '#F59E0B'),
+  Category(id: '551145670', name: 'Подарки, материальная помощь', type: 'expense', icon: 'card_giftcard', color: '#10B981'),
+  Category(id: '551145671', name: 'Проезд, транспорт', type: 'expense', icon: 'directions_bus', color: '#3B82F6'),
+  Category(id: '551145673', name: 'Прочие личные расходы', type: 'expense', icon: 'more_horiz', color: '#6B7280'),
+  Category(id: '551145674', name: 'Расходы по работе', type: 'expense', icon: 'work', color: '#4B5563'),
+  Category(id: '551145675', name: 'Связь, ТВ и интернет', type: 'expense', icon: 'wifi', color: '#0EA5E9'),
+  Category(id: '551145676', name: 'Страхование', type: 'expense', icon: 'security', color: '#6366F1'),
+  Category(id: '551145677', name: 'Уход за собой', type: 'expense', icon: 'spa', color: '#EC4899'),
+  Category(id: '551145678', name: 'Персональные доходы', type: 'income', icon: 'payments', color: '#16A34A'),
+  Category(id: '551145679', name: 'Инвестиционный доход', type: 'income', icon: 'trending_up', color: '#059669'),
+  Category(id: '551145672', name: 'Прочие доходы', type: 'income', icon: 'attach_money', color: '#10B981'),
+  Category(id: '551145680', name: 'Не определена. Для расходов', type: 'expense', icon: 'help_outline', color: '#9CA3AF'),
+  Category(id: '551145681', name: 'Перевод', type: 'transfer', icon: 'swap_horiz', color: '#6B7280'),
+  Category(id: '551145682', name: 'Не определена. Для доходов', type: 'income', icon: 'help_outline', color: '#9CA3AF'),
+  Category(id: '551145683', name: 'Вредные привычки', type: 'expense', icon: 'warning', color: '#DC2626'),
+  Category(id: '551145685', name: 'Проценты по кредитам и займам', type: 'expense', icon: 'credit_card', color: '#DC2626'),
+  Category(id: '551145686', name: 'Инвестиционный расход', type: 'expense', icon: 'trending_down', color: '#DC2626'),
 ];
 
 final mockTags = [
@@ -43,26 +56,26 @@ String _iso(int daysAgo) {
 }
 
 final mockOperations = [
-  Operation(id: 'o1', type: 'expense', amount: 2350, date: _iso(0), accountId: 'a2', categoryId: 'c1', comment: 'Пятёрочка', tagIds: ['t1']),
-  Operation(id: 'o2', type: 'expense', amount: 450, date: _iso(0), accountId: 'a1', categoryId: 'c2', comment: 'Метро'),
-  Operation(id: 'o3', type: 'income', amount: 95000, date: _iso(1), accountId: 'a3', categoryId: 'c9', comment: 'Зарплата', tagIds: ['t2']),
-  Operation(id: 'o4', type: 'expense', amount: 1200, date: _iso(1), accountId: 'a2', categoryId: 'c3', comment: 'Кофейня'),
+  Operation(id: 'o1', type: 'expense', amount: 2350, date: _iso(0), accountId: 'a2', categoryId: '551145669', comment: 'Пятёрочка', tagIds: ['t1']),
+  Operation(id: 'o2', type: 'expense', amount: 450, date: _iso(0), accountId: 'a1', categoryId: '551145671', comment: 'Метро'),
+  Operation(id: 'o3', type: 'income', amount: 95000, date: _iso(1), accountId: 'a3', categoryId: '551145678', comment: 'Зарплата', tagIds: ['t2']),
+  Operation(id: 'o4', type: 'expense', amount: 1200, date: _iso(1), accountId: 'a2', categoryId: '551145663', comment: 'Кофейня'),
   Operation(id: 'o5', type: 'transfer', amount: 20000, date: _iso(2), accountId: 'a3', toAccountId: 'a4', comment: 'Перевод на накопления'),
-  Operation(id: 'o6', type: 'expense', amount: 35000, date: _iso(3), accountId: 'a3', categoryId: 'c4', comment: 'Аренда квартиры'),
-  Operation(id: 'o7', type: 'expense', amount: 890, date: _iso(4), accountId: 'a2', categoryId: 'c7', comment: 'Связь'),
-  Operation(id: 'o8', type: 'expense', amount: 3200, date: _iso(5), accountId: 'a2', categoryId: 'c5', comment: 'Кино и боулинг', tagIds: ['t1']),
-  Operation(id: 'o9', type: 'income', amount: 18000, date: _iso(6), accountId: 'a2', categoryId: 'c10', comment: 'Проект на фрилансе', tagIds: ['t2']),
-  Operation(id: 'o10', type: 'expense', amount: 5400, date: _iso(7), accountId: 'a2', categoryId: 'c8', comment: 'Одежда'),
+  Operation(id: 'o6', type: 'expense', amount: 35000, date: _iso(3), accountId: 'a3', categoryId: '551145661', comment: 'Аренда квартиры'),
+  Operation(id: 'o7', type: 'expense', amount: 890, date: _iso(4), accountId: 'a2', categoryId: '551145675', comment: 'Связь'),
+  Operation(id: 'o8', type: 'expense', amount: 3200, date: _iso(5), accountId: 'a2', categoryId: '551145663', comment: 'Кино и боулинг', tagIds: ['t1']),
+  Operation(id: 'o9', type: 'income', amount: 18000, date: _iso(6), accountId: 'a2', categoryId: '551145678', comment: 'Проект на фрилансе', tagIds: ['t2']),
+  Operation(id: 'o10', type: 'expense', amount: 5400, date: _iso(7), accountId: 'a2', categoryId: '551145668', comment: 'Одежда'),
 ];
 
 final mockBudgets = [
-  Budget(id: 'b1', name: 'Продукты', categoryId: 'c1', limit: 20000, spent: 9800),
-  Budget(id: 'b2', name: 'Транспорт', categoryId: 'c2', limit: 5000, spent: 2200),
-  Budget(id: 'b3', name: 'Жильё', categoryId: 'c4', limit: 40000, spent: 35000),
-  Budget(id: 'b4', name: 'Здоровье', categoryId: 'c6', limit: 4000, spent: 0),
-  Budget(id: 'b5', name: 'Одежда', categoryId: 'c8', limit: 3000, spent: 1200),
-  Budget(id: 'b6', name: 'Кафе и рестораны', categoryId: 'c3', limit: 8000, spent: 3400),
-  Budget(id: 'b7', name: 'Связь и интернет', categoryId: 'c7', limit: 2500, spent: 890),
+  Budget(id: 'b1', name: 'Питание', categoryId: '551145669', limit: 30000, spent: 0),
+  Budget(id: 'b2', name: 'Проезд, транспорт', categoryId: '551145671', limit: 5000, spent: 0),
+  Budget(id: 'b3', name: 'Коммунальные платежи', categoryId: '551145664', limit: 8000, spent: 0),
+  Budget(id: 'b4', name: 'Медицина', categoryId: '551145665', limit: 5000, spent: 0),
+  Budget(id: 'b5', name: 'Одежда, обувь, аксессуары', categoryId: '551145668', limit: 5000, spent: 0),
+  Budget(id: 'b6', name: 'Досуг и отдых', categoryId: '551145663', limit: 10000, spent: 0),
+  Budget(id: 'b7', name: 'Связь, ТВ и интернет', categoryId: '551145675', limit: 3000, spent: 0),
 ];
 
 
