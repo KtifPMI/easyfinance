@@ -91,10 +91,11 @@ class FinanceStore extends ChangeNotifier {
     return _operations.where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end)).fold(0, (s, o) => s + o.amount);
   }
 
-  bool isInCurrentMonth(String dateIso) {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, 1);
-    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+  bool isInCurrentMonth(String dateIso) => isInMonth(dateIso, DateTime.now());
+
+  bool isInMonth(String dateIso, DateTime month) {
+    final start = DateTime(month.year, month.month, 1);
+    final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
     return _inPeriod(dateIso, start, end);
   }
 
