@@ -44,15 +44,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final store = context.read<FinanceStore>();
       final api = store.authService.apiService;
-      final resp = await api.client.postRaw('users.post', body: {
-        'request': {
-          'request_info': {'method': 'users.post'},
-          'request_data': {
-            'users': [
-              {'login': login, 'password': pass, 'name': name, 'mail': mail},
-            ],
-          },
-        },
+      final resp = await api.client.getRaw('users.post', params: {
+        'login': login,
+        'password': pass,
+        'name': name,
+        'mail': mail,
       });
 
       if (mounted) {
