@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -51,25 +51,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final store = context.read<FinanceStore>();
       final apiClient = store.apiClient;
 
-      // 1. Формируем URL-параметры для подписи (БЕЗ uid, т.к. пользователь ещё не зарегистрирован)
-      final urlParams = {
-        'method': 'users.post',
-        'app_id': apiClient.appId,
-      };
-
-      // 2. Рассчитываем подпись: sig = md5(secret_key + params)
-      // params в том же порядке, что и в URL
+      // 1. Формируем URL-параметры для подписи
       final paramsStr = 'method=users.post&app_id=${apiClient.appId}';
       final sig = apiClient.calculateSig(paramsStr);
 
-      // 3. Формируем URL
+      // 2. Формируем URL
       final uri = Uri.parse('https://api.easyfinance.ru/v2/')
           .replace(queryParameters: {
-        ...urlParams,
+        'method': 'users.post',
+        'app_id': apiClient.appId,
         'sig': sig,
       });
 
-      // 4. Формируем тело запроса по документации (стр. 41)
+      // 3. Формируем тело запроса
       final body = jsonEncode({
         'request': {
           'request_info': {
@@ -86,8 +80,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
       });
 
-      // 5. Отправляем POST-запрос
+      // 4. Отправляем POST-запрос
       final response = await apiClient.postRaw(uri, body);
+
+      // 5. ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ
+      if (kDebugMode) {
+        debugPrint('=== REGISTER RESPONSE ===');
+        debugPrint('Status: ${response.statusCode}');
+        debugPrint('Body: ${response.body}');
+      }
 
       // 6. Парсим ответ
       final decoded = jsonDecode(response.body) as Map<String, dynamic>;
@@ -99,10 +100,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final errors = responseData['errors'] as List<dynamic>;
         if (errors.isNotEmpty) {
           final first = errors.first as Map<String, dynamic>;
-          final text = first['text']?.toString() ?? 'Unknown error';
+          final text = first['text']?.toString();
           final code = first['code']?.toString() ?? '';
+          
+          // Если текст ошибки пустой, показываем код
+          if (text == null || text.isEmpty) {
+            throw Exception('Ошибка API (код: $code). Полный ответ: ${response.body}');
+          }
           throw Exception('Ошибка $code: $text');
         }
+      }
+
+      // Проверяем response_error (другой формат ошибки)
+      if (resp != null && resp.containsKey('response_error')) {
+        final err = resp['response_error'] as Map<String, dynamic>;
+        final text = err['error_message']?.toString() ?? 'Unknown error';
+        final code = err['error_code']?.toString() ?? '';
+        throw Exception('Ошибка $code: $text');
       }
 
       // 7. Обрабатываем успешный ответ
@@ -129,20 +143,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // Обычное приложение — нужно авторизоваться через OAuth
           if (mounted) {
             setState(() => _error = 'Регистрация успешна! Теперь войдите через EasyFinance.ru');
-            // Через 2 секунды переходим на экран входа
             Future.delayed(const Duration(seconds: 2), () {
               if (mounted) {
-                Navigator.pop(context); // Возврат на экран входа
+                Navigator.pop(context);
               }
             });
           }
         }
       } else {
         if (mounted) {
-          setState(() => _error = 'Неожиданный ответ сервера');
+          setState(() => _error = 'Неожиданный ответ сервера. Проверьте логи.');
         }
       }
     } catch (e) {
+      if (kDebugMode) {
+        debugPrint('=== REGISTER ERROR ===');
+        debugPrint('Error: $e');
+      }
       if (mounted) {
         setState(() => _error = 'Ошибка: $e');
       }
@@ -211,8 +228,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!, 
-                  style: TextStyle(color: AppColors.expense, fontSize: 13)),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  color: Colors.red[50],
+                  child: Text(_error!, 
+                    style: TextStyle(color: Colors.red[900], fontSize: 13)),
+                ),
               ],
               const SizedBox(height: 24),
               AppButton(
