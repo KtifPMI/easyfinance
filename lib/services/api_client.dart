@@ -234,6 +234,26 @@ class ApiClient {
     );
   }
 
+  Future<DebugResponse> postRaw(
+    String method, {
+    Map<String, String>? params,
+    Map<String, dynamic>? body,
+  }) async {
+    final uri = _buildUri(method, params ?? {});
+    final response = await _httpClient
+        .post(
+          uri,
+          body: body != null ? jsonEncode(body) : null,
+          headers: {'Content-Type': 'application/json'},
+        )
+        .timeout(_timeout);
+    return DebugResponse(
+      statusCode: response.statusCode,
+      body: response.body,
+      url: uri.toString(),
+    );
+  }
+
   Future<Map<String, dynamic>> post(
     String method, {
     Map<String, String>? params,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
-import '../../services/api_client.dart' show ApiException;
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
@@ -45,18 +44,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final store = context.read<FinanceStore>();
       final api = store.authService.apiService;
-      await api.client.post('users.post', body: {
+      final resp = await api.client.postRaw('users.post', body: {
         'users': [{'login': login, 'password': pass, 'name': name, 'mail': mail}],
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Регистрация успешна! Теперь войдите.'), backgroundColor: Colors.green),
-        );
-        Navigator.pop(context);
+        setState(() => _error = 'HTTP ${resp.statusCode}\nURL: ${resp.url}\n\n${resp.body}');
       }
-    } on ApiException catch (e) {
-      setState(() => _error = '${e.message} (код: ${e.code})');
     } catch (e) {
       setState(() => _error = 'Ошибка: $e');
     } finally {
