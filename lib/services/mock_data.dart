@@ -2,7 +2,6 @@ import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
 import '../models/operation.dart';
-import '../models/tag.dart';
 import '../models/user.dart';
 
 final mockUser = User(id: 'u1', name: 'Алексей Иванов', email: 'demo@easyfinance.ru', currency: 'RUB');
@@ -43,28 +42,21 @@ final mockCategories = [
   Category(id: '551145686', name: 'Инвестиционный расход', type: 'expense', icon: 'trending_down', color: '#DC2626'),
 ];
 
-final mockTags = [
-  Tag(id: 't1', name: 'Семья'),
-  Tag(id: 't2', name: 'Работа'),
-  Tag(id: 't3', name: 'Отпуск'),
-  Tag(id: 't4', name: 'Срочно'),
-];
-
 String _iso(int daysAgo) {
   final d = DateTime.now().subtract(Duration(days: daysAgo));
   return d.toIso8601String();
 }
 
 final mockOperations = [
-  Operation(id: 'o1', type: 'expense', amount: 2350, date: _iso(0), accountId: 'a2', categoryId: '551145669', comment: 'Пятёрочка', tagIds: ['t1']),
+  Operation(id: 'o1', type: 'expense', amount: 2350, date: _iso(0), accountId: 'a2', categoryId: '551145669', comment: 'Пятёрочка'),
   Operation(id: 'o2', type: 'expense', amount: 450, date: _iso(0), accountId: 'a1', categoryId: '551145671', comment: 'Метро'),
-  Operation(id: 'o3', type: 'income', amount: 95000, date: _iso(1), accountId: 'a3', categoryId: '551145678', comment: 'Зарплата', tagIds: ['t2']),
+  Operation(id: 'o3', type: 'income', amount: 95000, date: _iso(1), accountId: 'a3', categoryId: '551145678', comment: 'Зарплата'),
   Operation(id: 'o4', type: 'expense', amount: 1200, date: _iso(1), accountId: 'a2', categoryId: '551145663', comment: 'Кофейня'),
   Operation(id: 'o5', type: 'transfer', amount: 20000, date: _iso(2), accountId: 'a3', toAccountId: 'a4', comment: 'Перевод на накопления'),
   Operation(id: 'o6', type: 'expense', amount: 35000, date: _iso(3), accountId: 'a3', categoryId: '551145661', comment: 'Аренда квартиры'),
   Operation(id: 'o7', type: 'expense', amount: 890, date: _iso(4), accountId: 'a2', categoryId: '551145675', comment: 'Связь'),
-  Operation(id: 'o8', type: 'expense', amount: 3200, date: _iso(5), accountId: 'a2', categoryId: '551145663', comment: 'Кино и боулинг', tagIds: ['t1']),
-  Operation(id: 'o9', type: 'income', amount: 18000, date: _iso(6), accountId: 'a2', categoryId: '551145678', comment: 'Проект на фрилансе', tagIds: ['t2']),
+  Operation(id: 'o8', type: 'expense', amount: 3200, date: _iso(5), accountId: 'a2', categoryId: '551145663', comment: 'Кино и боулинг'),
+  Operation(id: 'o9', type: 'income', amount: 18000, date: _iso(6), accountId: 'a2', categoryId: '551145678', comment: 'Проект на фрилансе'),
   Operation(id: 'o10', type: 'expense', amount: 5400, date: _iso(7), accountId: 'a2', categoryId: '551145668', comment: 'Одежда'),
 ];
 

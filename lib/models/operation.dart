@@ -13,7 +13,6 @@ class Operation {
   final String accountId;
   final String? toAccountId;
   final String? categoryId;
-  final List<String>? tagIds;
   final String? comment;
   final bool isDeleted;
 
@@ -26,13 +25,12 @@ class Operation {
     required this.accountId,
     this.toAccountId,
     this.categoryId,
-    this.tagIds,
     this.comment,
     this.isDeleted = false,
   });
 
   Operation copyWith({bool? isDeleted}) =>
-      Operation(id: id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, tagIds: tagIds, comment: comment, isDeleted: isDeleted ?? this.isDeleted);
+      Operation(id: id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, isDeleted: isDeleted ?? this.isDeleted);
 
   factory Operation.fromJson(Map<String, dynamic> json) {
     final dateStr = json['date']?.toString() ?? '';
@@ -47,7 +45,6 @@ class Operation {
       accountId: json['account_id']?.toString() ?? '',
       toAccountId: json['to_account_id']?.toString() ?? json['transfer_account_id']?.toString(),
       categoryId: json['category_id']?.toString(),
-      tagIds: _parseTags(json['tags']),
       comment: json['comment']?.toString(),
       isDeleted: json['deleted_at'] != null || json['state']?.toString() == '2',
     );
@@ -69,11 +66,5 @@ class Operation {
   static double _parseAmount(String amount) {
     final v = double.tryParse(amount) ?? 0;
     return v.abs();
-  }
-
-  static List<String>? _parseTags(dynamic tags) {
-    if (tags is List) return tags.map((e) => e.toString()).toList();
-    if (tags is String && tags.isNotEmpty) return tags.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-    return null;
   }
 }

@@ -26,7 +26,6 @@ class _DebugScreenState extends State<DebugScreen> {
     'accounts.get',
     'operations.get',
     'categories.get',
-    'tags.get',
     'budget.get',
     'users.get',
   ];

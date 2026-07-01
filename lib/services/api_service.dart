@@ -1,7 +1,6 @@
 import '../models/account.dart';
 import '../models/operation.dart';
 import '../models/category.dart' as cat;
-import '../models/tag.dart';
 import '../models/user.dart';
 import 'api_client.dart';
 
@@ -29,11 +28,6 @@ class ApiService {
   Future<List<cat.Category>> getCategories() async {
     final json = await _client.get('categories.get');
     return _parseList(json, 'categories', cat.Category.fromJson);
-  }
-
-  Future<List<Tag>> getTags() async {
-    final json = await _client.get('tags.get');
-    return _parseList(json, 'tags', Tag.fromJson);
   }
 
   Future<BudgetInfo> getBudget() async {
@@ -82,15 +76,6 @@ class ApiService {
 
   Future<void> setCategory(Map<String, dynamic> body) async {
     await _client.post('categories.set', body: {'request': {'request_info': {'method': 'categories.set'}, 'request_data': body}});
-  }
-
-  Future<Map<String, dynamic>> addTag(Map<String, dynamic> body) async {
-    final json = await _client.post('tags.post', body: {'request': {'request_info': {'method': 'tags.post'}, 'request_data': body}});
-    return json;
-  }
-
-  Future<void> setTag(Map<String, dynamic> body) async {
-    await _client.post('tags.set', body: {'request': {'request_info': {'method': 'tags.set'}, 'request_data': body}});
   }
 
   List<T> _parseList<T>(Map<String, dynamic> data, String key, T Function(Map<String, dynamic>) fromJson) {

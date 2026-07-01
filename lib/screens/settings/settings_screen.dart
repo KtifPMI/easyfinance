@@ -8,8 +8,7 @@ import '../../services/update_service.dart';
 import '../../store/finance_store.dart';
 import '../../store/locale_store.dart';
 import '../../theme/theme.dart';
-import '../categories/categories_screen.dart';
-import '../tags/tags_screen.dart';
+
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -38,11 +37,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Основные', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
-          const SizedBox(height: 8),
-          _navItem(context, Icons.category_outlined, 'Категории', const CategoriesScreen()),
-          _navItem(context, Icons.label_outline, 'Теги', const TagsScreen()),
-          _divider(),
           Text('Приложение', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
           const SizedBox(height: 8),
           _langItem(context),
@@ -85,27 +79,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _navItem(BuildContext context, IconData icon, String title, Widget screen) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: InkWell(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => screen)),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.primary, size: 20),
-              const SizedBox(width: 12),
-              Text(title, style: TextStyle(fontSize: 15, color: AppColors.text)),
-              const Spacer(),
-              Icon(Icons.chevron_right, color: AppColors.textSecondary),
-            ],
-          ),
-        ),
       ),
     );
   }

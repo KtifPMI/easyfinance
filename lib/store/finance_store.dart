@@ -7,7 +7,6 @@ import '../models/category.dart' as cat;
 import '../models/goal.dart';
 import '../models/operation.dart';
 import '../models/recommendation.dart';
-import '../models/tag.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
@@ -23,7 +22,6 @@ class FinanceStore extends ChangeNotifier {
   List<Budget> _budgets = [];
   List<Goal> _goals = [];
   List<Recommendation> _recommendations = [];
-  List<Tag> _tags = [];
   bool _isLoading = false;
   bool _useMock = true;
   String? _error;
@@ -37,7 +35,6 @@ class FinanceStore extends ChangeNotifier {
     _operations = [...mockOperations];
     _categories = [...mockCategories];
     _budgets = [...mockBudgets];
-    _tags = [...mockTags];
     _useMock = true;
     _generateRecommendations();
   }
@@ -54,7 +51,6 @@ class FinanceStore extends ChangeNotifier {
     _operations = [];
     _categories = [];
     _budgets = [];
-    _tags = [];
     _goals = [];
     _useMock = true;
     _loadFromMock();
@@ -68,7 +64,6 @@ class FinanceStore extends ChangeNotifier {
   List<Budget> get budgets => _budgets.where((b) => !b.isDeleted).toList();
   List<Goal> get goals => _goals;
   List<Recommendation> get recommendations => _recommendations;
-  List<Tag> get tags => _tags;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   String? get error => _error;
@@ -145,12 +140,6 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      _tags = await api.getTags();
-    } on ApiException catch (e) {
-      _error = e.message;
-    }
-
-    try {
       final goals = await api.getGoals();
       for (final g in goals.map((g) => Goal.fromJson(g))) {
         final idx = _goals.indexWhere((e) => e.id == g.id);
@@ -173,7 +162,7 @@ class FinanceStore extends ChangeNotifier {
 
     _generateRecommendations();
 
-    _useMock = _accounts.isEmpty && _operations.isEmpty && _categories.isEmpty && _tags.isEmpty;
+    _useMock = _accounts.isEmpty && _operations.isEmpty && _categories.isEmpty;
     _isLoading = false;
     notifyListeners();
   }
@@ -717,37 +706,6 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     _categories.removeWhere((c) => c.id == id);
-    notifyListeners();
-  }
-
-  Future<void> addTag(String name) async {
-    final tag = Tag(id: DateTime.now().microsecondsSinceEpoch.toRadixString(36), name: name);
-    if (!_useMock && authService.isAuthenticated) {
-      try {
-        await authService.apiService.addTag({'tags': [{'name': name}]});
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка добавления тега: $e'; notifyListeners();
-      }
-    }
-    _tags.add(tag);
-    notifyListeners();
-  }
-
-  Future<void> deleteTag(String id) async {
-    if (!_useMock && authService.isAuthenticated) {
-      try {
-        await authService.apiService.setTag({
-          'tags': [{'id': id, 'deleted_at': DateTime.now().toIso8601String()}]
-        });
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка удаления тега: $e'; notifyListeners();
-      }
-    }
-    _tags.removeWhere((t) => t.id == id);
     notifyListeners();
   }
 
