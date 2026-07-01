@@ -71,32 +71,63 @@ class ReportsScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
               const SizedBox(height: 12),
-              ...store.categories.where((c) => c.type == 'expense').take(6).map((cat) {
-                final total = store.operations.where((o) => o.categoryId == cat.id && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
-                if (total == 0) return const SizedBox.shrink();
-                final percent = expense > 0 ? total / expense * 100 : 0.0;
-                final color = _parseColor(cat.color);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(cat.name, style: TextStyle(fontSize: 14, color: AppColors.text)),
-                          Text('${percent.round()}% · ${formatMoney(total)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-                        ],
+              (() {
+                final catTotals = store.categories
+                    .where((c) => c.type == 'expense')
+                    .map((c) => (cat: c, total: store.operations
+                        .where((o) => o.type == 'expense' && !o.isDeleted && o.categoryId == c.id)
+                        .fold<double>(0, (s, o) => s + o.amount)))
+                    .where((e) => e.total > 0)
+                    .toList()
+                  ..sort((a, b) => b.total.compareTo(a.total));
+                if (catTotals.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(child: Text('Нет расходов за этот месяц', style: TextStyle(fontSize: 14, color: AppColors.textSecondary))),
+                  );
+                }
+                final top = catTotals.take(6).toList();
+                final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
+                return Column(
+                  children: [
+                    ...top.map((e) {
+                      final percent = expense > 0 ? e.total / expense * 100 : 0.0;
+                      final color = _parseColor(e.cat.color);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(e.cat.name, style: TextStyle(fontSize: 14, color: AppColors.text)),
+                                Text('${percent.round()}% · ${formatMoney(e.total)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(4),
+                              child: Container(height: 6, color: AppColors.border, child: FractionallySizedBox(widthFactor: percent / 100, child: Container(color: color))),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    if (otherTotal > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Остальное', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+                            Text('${expense > 0 ? (otherTotal / expense * 100).round() : 0}% · ${formatMoney(otherTotal)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(height: 6, color: AppColors.border, child: FractionallySizedBox(widthFactor: percent / 100, child: Container(color: color))),
-                      ),
-                    ],
-                  ),
+                  ],
                 );
-              }),
+              })(),
             ],
           ),
         );
