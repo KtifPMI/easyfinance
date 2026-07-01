@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
 import '../../store/finance_store.dart';
@@ -64,7 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
 
       // 3. Формируем тело запроса
-      final body = jsonEncode({
+      final bodyMap = {
         'request': {
           'request_info': {
             'method': 'users.post',
@@ -78,15 +79,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           },
         },
-      });
+      };
 
-      // 4. Отправляем POST-запрос
-      final response = await apiClient.postRaw(uri, body);
+      final bodyString = jsonEncode(bodyMap);
+      final bodyBytes = utf8.encode(bodyString); // ← ЯВНО кодируем в UTF-8
+
+      if (kDebugMode) {
+        debugPrint('=== REGISTER REQUEST ===');
+        debugPrint('URL: $uri');
+        debugPrint('Body string: $bodyString');
+        debugPrint('Body bytes length: ${bodyBytes.length}');
+      }
+
+      // 4. Отправляем POST-запрос с явной кодировкой
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json',
+        },
+        body: bodyBytes, // ← Отправляем байты, а не строку
+      );
 
       // 5. ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ
       if (kDebugMode) {
         debugPrint('=== REGISTER RESPONSE ===');
         debugPrint('Status: ${response.statusCode}');
+        debugPrint('Headers: ${response.headers}');
         debugPrint('Body: ${response.body}');
       }
 
