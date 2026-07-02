@@ -45,12 +45,12 @@ class ApiService {
   Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body, {String? options}) async {
     final params = <String, String>{};
     if (options != null) params['options'] = options;
-    final json = await _client.post('accounts.post', params: params, body: {'request': {'request_info': {'method': 'accounts.post'}, 'request_data': body}});
+    final json = await _client.post('accounts.post', params: params, body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setAccount(Map<String, dynamic> body) async {
-    await _client.post('accounts.set', body: {'request': {'request_info': {'method': 'accounts.set'}, 'request_data': body}});
+    await _client.post('accounts.set', body: {'request': {'request_data': body}});
   }
 
   Future<Map<String, dynamic>> addOperation(Map<String, dynamic> body) async {
@@ -70,12 +70,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> addCategory(Map<String, dynamic> body) async {
-    final json = await _client.post('categories.post', body: {'request': {'request_info': {'method': 'categories.post'}, 'request_data': body}});
+    final json = await _client.post('categories.post', body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setCategory(Map<String, dynamic> body) async {
-    await _client.post('categories.set', body: {'request': {'request_info': {'method': 'categories.set'}, 'request_data': body}});
+    await _client.post('categories.set', body: {'request': {'request_data': body}});
   }
 
   List<T> _parseList<T>(Map<String, dynamic> data, String key, T Function(Map<String, dynamic>) fromJson) {
