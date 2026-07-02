@@ -137,10 +137,10 @@ class HomeScreen extends StatelessWidget {
                 }),
                 const SizedBox(height: 16),
               ],
-              if (plannedPayments.upcomingExpenses.isNotEmpty) ...[
-                Text(context.tr('home.upcoming_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+              if (plannedPayments.upcomingExpenses.isNotEmpty || plannedPayments.upcomingIncomes.isNotEmpty) ...[
+                Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
-                ...plannedPayments.upcomingExpenses.take(3).map((e) => _upcomingTile(e)),
+                ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(e)),
                 _manageButton(context),
                 const SizedBox(height: 16),
               ],
