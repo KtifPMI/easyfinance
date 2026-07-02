@@ -21,16 +21,30 @@ class _DebugScreenState extends State<DebugScreen> {
   bool _prettyPrint = true;
   final _paramsCtrl = TextEditingController();
   final _postBodyCtrl = TextEditingController();
+  String _postMethod = 'operations.post';
 
   static const methods = [
     'accounts.get',
+    'accounts.post',
+    'accounts.set',
     'operations.get',
+    'operations.post',
+    'operations.set',
     'categories.get',
+    'categories.post',
+    'categories.set',
     'budget.get',
+    'budget.post',
+    'budget.set',
     'users.get',
+    'users.post',
+    'goals.get',
+    'goals.post',
+    'goals.set',
   ];
 
-  static const _defaultPostBody = '''{
+  static const _templates = {
+    'operations.post': '''{
   "request": {
     "request_data": {
       "operations": [
@@ -51,7 +65,131 @@ class _DebugScreenState extends State<DebugScreen> {
       ]
     }
   }
-}''';
+}''',
+    'accounts.post': '''{
+  "request": {
+    "request_data": {
+      "accounts": [
+        {
+          "name": "Test Account",
+          "balance": "10000",
+          "type_id": "2",
+          "currency_id": "1"
+        }
+      ]
+    }
+  }
+}''',
+    'accounts.set': '''{
+  "request": {
+    "request_data": {
+      "accounts": [
+        {
+          "id": "ACCOUNT_ID",
+          "name": "Updated Name",
+          "balance": "20000"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.post': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "name": "New Category",
+          "type": "-1",
+          "custom": "1"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.set': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "id": "CATEGORY_ID",
+          "name": "Updated Category",
+          "type": "-1"
+        }
+      ]
+    }
+  }
+}''',
+    'budget.post': '''{
+  "request": {
+    "request_data": {
+      "budgets": [
+        {
+          "category_id": "551145669",
+          "planned": "30000"
+        }
+      ]
+    }
+  }
+}''',
+    'budget.set': '''{
+  "request": {
+    "request_data": {
+      "budgets": [
+        {
+          "category_id": "551145669",
+          "planned": "35000"
+        }
+      ]
+    }
+  }
+}''',
+    'users.post': '''{
+  "request": {
+    "request_data": {
+      "users": [
+        {
+          "id": "USER_ID",
+          "goals": [
+            {
+              "title": "New Goal",
+              "amount": 100000,
+              "amount_done": 0,
+              "end": "2026-12-31",
+              "done": 0
+            }
+          ]
+        }
+      ]
+    }
+  }
+}''',
+    'goals.post': '''{
+  "request": {
+    "request_data": {
+      "goals": [
+        {
+          "title": "Save for car",
+          "amount": 500000,
+          "amount_done": 0,
+          "end": "2026-12-31"
+        }
+      ]
+    }
+  }
+}''',
+    'goals.set': '''{
+  "request": {
+    "request_data": {
+      "goals": [
+        {
+          "id": "GOAL_ID",
+          "amount_done": 50000
+        }
+      ]
+    }
+  }
+}''',
+  };
 
   Map<String, String> _builtinParams(String method) {
     if (method == 'accounts.get') {
@@ -96,7 +234,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Future<void> _sendPost() async {
     setState(() {
-      _selectedMethod = 'POST';
+      _selectedMethod = 'POST $_postMethod';
       _loading = true;
       _response = null;
     });
@@ -117,7 +255,7 @@ class _DebugScreenState extends State<DebugScreen> {
           .replaceAll('TIME', timeStr)
           .replaceAll('CLIENT_ID', '${now.millisecondsSinceEpoch % 100000}');
 
-      final uri = api.buildPostUri('operations.post');
+      final uri = api.buildPostUri(_postMethod);
       final resp = await http.post(uri, body: body, headers: {'Content-Type': 'application/json'}).timeout(const Duration(seconds: 15));
 
       if (mounted) {
@@ -167,7 +305,7 @@ class _DebugScreenState extends State<DebugScreen> {
   @override
   void initState() {
     super.initState();
-    _postBodyCtrl.text = _defaultPostBody;
+    _postBodyCtrl.text = _templates['operations.post']!;
   }
 
   @override
@@ -190,7 +328,7 @@ class _DebugScreenState extends State<DebugScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _selectedMethod != null ? () => _callMethod(_selectedMethod!) : null,
+            onPressed: _selectedMethod != null && !_selectedMethod!.startsWith('POST ') ? () => _callMethod(_selectedMethod!) : null,
           ),
         ],
       ),
@@ -204,32 +342,30 @@ class _DebugScreenState extends State<DebugScreen> {
               itemBuilder: (context, i) {
                 final m = methods[i];
                 return MaterialButton(
-                  onPressed: _loading ? null : () => _callMethod(m),
-                  color: _selectedMethod == m ? Theme.of(context).colorScheme.primaryContainer : null,
+                  onPressed: _loading ? null : () {
+                    if (m.endsWith('.get')) {
+                      _callMethod(m);
+                    } else {
+                      setState(() {
+                        _postMethod = m;
+                        _postBodyCtrl.text = _templates[m] ?? _postBodyCtrl.text;
+                      });
+                    }
+                  },
+                  color: _postMethod == m || _selectedMethod == m ? Theme.of(context).colorScheme.primaryContainer : null,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
                       Icon(
-                        Icons.api,
+                        m.endsWith('.get') ? Icons.download : Icons.upload,
                         size: 20,
-                        color: _selectedMethod == m ? Theme.of(context).colorScheme.primary : null,
+                        color: _postMethod == m || _selectedMethod == m ? Theme.of(context).colorScheme.primary : null,
                       ),
                       const SizedBox(width: 12),
                       Expanded(child: Text(m, style: const TextStyle(fontSize: 15))),
-                      if (_loading && _selectedMethod == m) const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
-                      if (!_loading && _selectedMethod == m && _response != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _statusColor(_response!.statusCode).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${_response!.statusCode}',
-                            style: TextStyle(fontSize: 12, color: _statusColor(_response!.statusCode), fontWeight: FontWeight.w600),
-                          ),
-                        ),
+                      if (_loading && (_selectedMethod == m || _selectedMethod == 'POST $_postMethod'))
+                        const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
                     ],
                   ),
                 );
@@ -251,7 +387,20 @@ class _DebugScreenState extends State<DebugScreen> {
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
               style: const TextStyle(fontSize: 13),
-              onSubmitted: _selectedMethod != null ? (_) => _callMethod(_selectedMethod!) : null,
+              onSubmitted: _selectedMethod != null && !_selectedMethod!.startsWith('POST ') ? (_) => _callMethod(_selectedMethod!) : null,
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: TextField(
+              controller: _postBodyCtrl,
+              maxLines: 4,
+              decoration: InputDecoration(
+                labelText: 'POST body for $_postMethod',
+                isDense: true, border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
             ),
           ),
           Padding(
@@ -264,7 +413,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 textColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                child: Text(_loading ? 'Sending...' : '▶ POST Test Operation', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                child: Text(_loading ? 'Sending...' : '▶ POST $_postMethod', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
               ),
             ),
           ),
