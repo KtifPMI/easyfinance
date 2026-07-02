@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -11,6 +12,30 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   late final WebViewController _controller;
   bool _loading = true;
+  Timer? _fixTimer;
+
+  void _injectViewportFix() {
+    _controller.runJavaScript('''
+      (function() {
+        var meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.name = 'viewport';
+          document.head.appendChild(meta);
+        }
+        meta.content = 'width=360, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        document.documentElement.style.width = '360px';
+        document.documentElement.style.maxWidth = '100vw';
+        document.documentElement.style.overflowX = 'hidden';
+        document.body.style.width = '360px';
+        document.body.style.maxWidth = '100vw';
+        document.body.style.overflowX = 'hidden';
+        document.body.style.margin = '0 auto';
+        var els = document.querySelectorAll('iframe, [class*="support"], [class*="chat"], [class*="widget"], [id*="support"]');
+        for (var i = 0; i < els.length; i++) { els[i].style.display = 'none'; }
+      })();
+    ''');
+  }
 
   @override
   void initState() {
@@ -19,21 +44,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
-        onPageStarted: (_) => setState(() => _loading = true),
+        onPageStarted: (_) {
+          setState(() => _loading = true);
+          _fixTimer?.cancel();
+        },
         onPageFinished: (_) {
           setState(() => _loading = false);
-          _controller.runJavaScript('''
-            (function() {
-              var meta = document.querySelector('meta[name="viewport"]');
-              if (meta) meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
-              document.body.style.maxWidth = '100vw';
-              document.body.style.overflowX = 'hidden';
-            })();
-          ''');
+          _injectViewportFix();
+          _fixTimer = Timer(const Duration(milliseconds: 500), _injectViewportFix);
         },
         onNavigationRequest: (req) {
           final url = req.url;
-          // После успешной регистрации EasyFinance редиректит в личный кабинет
           if (url.contains('easyfinance.ru/my/') || url.contains('/v2/result')) {
             if (mounted) Navigator.pop(context);
             return NavigationDecision.prevent;
@@ -42,6 +63,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
       ))
       ..loadRequest(Uri.parse('https://easyfinance.ru/registration/'));
+  }
+
+  @override
+  void dispose() {
+    _fixTimer?.cancel();
+    super.dispose();
   }
 
   @override
