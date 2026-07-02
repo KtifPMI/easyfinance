@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
+import '../../services/api_client.dart' show ApiClient;
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
@@ -52,24 +52,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final store = context.read<FinanceStore>();
       final apiClient = store.apiClient;
 
-      // 1. Формируем URL-параметры для подписи
       final paramsStr = 'method=users.post&app_id=${apiClient.appId}';
       final sig = apiClient.calculateSig(paramsStr);
 
-      // 2. Формируем URL
-      final uri = Uri.parse('https://api.easyfinance.ru/v2/')
-          .replace(queryParameters: {
+      final uri = Uri.parse(ApiClient.baseUrl).replace(queryParameters: {
         'method': 'users.post',
         'app_id': apiClient.appId,
         'sig': sig,
       });
 
-      // 3. Формируем тело запроса
-      final bodyMap = {
+      final bodyString = jsonEncode({
         'request': {
-          'request_info': {
-            'method': 'users.post',
-          },
+          'request_info': {'method': 'users.post'},
           'request_data': {
             'user': {
               'login': login,
@@ -79,58 +73,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           },
         },
-      };
-
-      final bodyString = jsonEncode(bodyMap);
-      final bodyBytes = utf8.encode(bodyString); // ← ЯВНО кодируем в UTF-8
+      });
 
       if (kDebugMode) {
         debugPrint('=== REGISTER REQUEST ===');
         debugPrint('URL: $uri');
-        debugPrint('Body string: $bodyString');
-        debugPrint('Body bytes length: ${bodyBytes.length}');
+        debugPrint('Body: $bodyString');
       }
 
-      // 4. Отправляем POST-запрос с явной кодировкой
-      final response = await http.post(
-        uri,
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Accept': 'application/json',
-        },
-        body: bodyBytes, // ← Отправляем байты, а не строку
-      );
+      final response = await apiClient.postRaw(uri, bodyString);
 
-      // 5. ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ
       if (kDebugMode) {
         debugPrint('=== REGISTER RESPONSE ===');
         debugPrint('Status: ${response.statusCode}');
-        debugPrint('Headers: ${response.headers}');
         debugPrint('Body: ${response.body}');
       }
 
-      // 6. Парсим ответ
       final decoded = jsonDecode(response.body) as Map<String, dynamic>;
       final resp = decoded['response'] as Map<String, dynamic>?;
       final responseData = resp?['response_data'] as Map<String, dynamic>?;
 
-      // Проверяем наличие ошибок в ответе
       if (responseData != null && responseData.containsKey('errors')) {
         final errors = responseData['errors'] as List<dynamic>;
         if (errors.isNotEmpty) {
           final first = errors.first as Map<String, dynamic>;
           final text = first['text']?.toString();
           final code = first['code']?.toString() ?? '';
-          
-          // Если текст ошибки пустой, показываем код
-          if (text == null || text.isEmpty) {
-            throw Exception('Ошибка API (код: $code). Полный ответ: ${response.body}');
-          }
-          throw Exception('Ошибка $code: $text');
+          throw Exception(text != null && text.isNotEmpty
+              ? 'Ошибка $code: $text'
+              : 'Ошибка API (код: $code)');
         }
       }
 
-      // Проверяем response_error (другой формат ошибки)
       if (resp != null && resp.containsKey('response_error')) {
         final err = resp['response_error'] as Map<String, dynamic>;
         final text = err['error_message']?.toString() ?? 'Unknown error';
@@ -138,15 +112,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
         throw Exception('Ошибка $code: $text');
       }
 
-      // 7. Обрабатываем успешный ответ
       final users = responseData?['users'];
-      
+
       if (users != null) {
-        final userId = users['id']?.toString();
-        final accessToken = users['access_token']?.toString();
+        // users может быть массивом [{...}] или объектом {...}
+        final userMap = users is List && users.isNotEmpty
+            ? users.first as Map<String, dynamic>
+            : users as Map<String, dynamic>;
+        final userId = userMap['id']?.toString();
+        final accessToken = userMap['access_token']?.toString();
 
         if (accessToken != null && accessToken.isNotEmpty) {
-          // Партнёрское приложение — токен вернулся сразу
           apiClient.setAuth(accessToken: accessToken, userId: userId);
           await store.authService.saveCredentials(
             appId: apiClient.appId,
@@ -154,24 +130,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             accessToken: accessToken,
             userId: userId,
           );
-          
+
           if (mounted) {
             Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
           }
         } else {
-          // Обычное приложение — нужно авторизоваться через OAuth
           if (mounted) {
             setState(() => _error = 'Регистрация успешна! Теперь войдите через EasyFinance.ru');
             Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) {
-                Navigator.pop(context);
-              }
+              if (mounted) Navigator.pop(context);
             });
           }
         }
       } else {
         if (mounted) {
-          setState(() => _error = 'Неожиданный ответ сервера. Проверьте логи.');
+          setState(() => _error = 'Неожиданный ответ сервера');
         }
       }
     } catch (e) {
@@ -198,67 +171,59 @@ class _RegisterScreenState extends State<RegisterScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 40),
-              Text('Создать аккаунт', 
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.text)),
+              Text('Создать аккаунт',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.text)),
               const SizedBox(height: 32),
               TextField(
                 controller: _loginCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Логин', 
-                  filled: true, 
-                  fillColor: AppColors.card,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), 
-                    borderSide: BorderSide.none)),
+                    labelText: 'Логин',
+                    filled: true,
+                    fillColor: AppColors.card,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _passCtrl,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'Пароль (макс. 40 символов)', 
-                  filled: true, 
-                  fillColor: AppColors.card,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), 
-                    borderSide: BorderSide.none)),
+                    labelText: 'Пароль (макс. 40 символов)',
+                    filled: true,
+                    fillColor: AppColors.card,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _nameCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Имя', 
-                  filled: true, 
-                  fillColor: AppColors.card,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), 
-                    borderSide: BorderSide.none)),
+                    labelText: 'Имя',
+                    filled: true,
+                    fillColor: AppColors.card,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: _mailCtrl,
                 decoration: InputDecoration(
-                  labelText: 'Email', 
-                  filled: true, 
-                  fillColor: AppColors.card,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12), 
-                    borderSide: BorderSide.none)),
+                    labelText: 'Email',
+                    filled: true,
+                    fillColor: AppColors.card,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(12),
                   color: Colors.red[50],
-                  child: Text(_error!, 
-                    style: TextStyle(color: Colors.red[900], fontSize: 13)),
+                  child: Text(_error!, style: TextStyle(color: Colors.red[900], fontSize: 13)),
                 ),
               ],
               const SizedBox(height: 24),
-              AppButton(
-                title: 'Зарегистрироваться', 
-                onPressed: _register, 
-                loading: _loading),
+              AppButton(title: 'Зарегистрироваться', onPressed: _register, loading: _loading),
             ],
           ),
         ),

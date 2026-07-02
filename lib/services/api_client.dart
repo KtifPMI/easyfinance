@@ -246,6 +246,7 @@ class ApiClient {
           body: utf8.encode(body),
           headers: {
             'Content-Type': 'application/json; charset=utf-8',
+            'Accept': 'application/json',
           },
         )
         .timeout(_timeout);
