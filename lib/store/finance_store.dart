@@ -70,9 +70,6 @@ class FinanceStore extends ChangeNotifier {
   List<Recommendation> get recommendations => _recommendations;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
-  String? get error => _error;
-  void clearError() { _error = null; notifyListeners(); }
-
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
 

@@ -122,12 +122,8 @@ class UpdateService {
     );
     try {
       await downloadAndInstall(url, context);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка загрузки: $e'), backgroundColor: Colors.red),
-        );
-      }
+    } catch (_) {
+      // ошибка загрузки — без уродского уведомления
     } finally {
       if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
     }

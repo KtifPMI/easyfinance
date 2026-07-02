@@ -121,16 +121,10 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('auth.error', namedArgs: {'message': e.message})), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context, false);
-      }
+    } on ApiException catch (_) {
+      if (mounted) Navigator.pop(context, false);
+    } catch (_) {
+      if (mounted) Navigator.pop(context, false);
     }
   }
 
@@ -160,18 +154,10 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('auth.error', namedArgs: {'message': e.message})), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('auth.error_generic', namedArgs: {'details': e.toString()})), backgroundColor: Colors.red),
-        );
-      }
+    } on ApiException catch (_) {
+      if (mounted) Navigator.pop(context, false);
+    } catch (_) {
+      if (mounted) Navigator.pop(context, false);
     }
   }
 
