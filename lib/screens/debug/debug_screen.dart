@@ -8,6 +8,13 @@ import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
+class _MethodItem {
+  final String label;
+  final String apiMethod;
+
+  const _MethodItem(this.label, this.apiMethod);
+}
+
 class DebugScreen extends StatefulWidget {
   const DebugScreen({super.key});
   @override
@@ -24,23 +31,28 @@ class _DebugScreenState extends State<DebugScreen> {
   String _postMethod = 'operations.post';
 
   static const methods = [
-    'accounts.get',
-    'accounts.post',
-    'accounts.set',
-    'operations.get',
-    'operations.post',
-    'operations.set',
-    'categories.get',
-    'categories.post',
-    'categories.set',
-    'budget.get',
-    'budget.post',
-    'budget.set',
-    'users.get',
-    'users.post',
-    'goals.get',
-    'goals.post',
-    'goals.set',
+    _MethodItem('accounts.get', 'accounts.get'),
+    _MethodItem('accounts.post', 'accounts.post'),
+    _MethodItem('accounts.set', 'accounts.set'),
+    _MethodItem('operations.get', 'operations.get'),
+    _MethodItem('operations.post', 'operations.post'),
+    _MethodItem('operations.set', 'operations.set'),
+    _MethodItem('categories.get', 'categories.get'),
+    _MethodItem('categories.post — system_id', 'categories.post'),
+    _MethodItem('categories.post — name+custom', 'categories.post'),
+    _MethodItem('categories.post — id only', 'categories.post'),
+    _MethodItem('categories.post — category_id', 'categories.post'),
+    _MethodItem('categories.set — id', 'categories.set'),
+    _MethodItem('categories.set — name+custom', 'categories.set'),
+    _MethodItem('categories.set — system_id', 'categories.set'),
+    _MethodItem('budget.get', 'budget.get'),
+    _MethodItem('budget.post', 'budget.post'),
+    _MethodItem('budget.set', 'budget.set'),
+    _MethodItem('users.get', 'users.get'),
+    _MethodItem('users.post — with goals', 'users.post'),
+    _MethodItem('goals.get', 'goals.get'),
+    _MethodItem('goals.post', 'goals.post'),
+    _MethodItem('goals.set', 'goals.set'),
   ];
 
   static const _templates = {
@@ -93,7 +105,7 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 }''',
-    'categories.post': '''{
+    'categories.post — system_id': '''{
   "request": {
     "request_data": {
       "categories": [
@@ -105,13 +117,72 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 }''',
-    'categories.set': '''{
+    'categories.post — name+custom': '''{
   "request": {
     "request_data": {
       "categories": [
         {
-          "id": "CATEGORY_ID",
-          "name": "Updated Category",
+          "name": "New Category",
+          "type": "-1",
+          "custom": "1"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.post — id only': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "id": "551145658"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.post — category_id': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "category_id": "551145658"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.set — id': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "id": "551145658",
+          "deleted_at": null
+        }
+      ]
+    }
+  }
+}''',
+    'categories.set — name+custom': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "name": "New Category",
+          "type": "-1",
+          "custom": "1"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.set — system_id': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "system_id": "551145658",
           "type": "-1"
         }
       ]
@@ -142,7 +213,7 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 }''',
-    'users.post': '''{
+    'users.post — with goals': '''{
   "request": {
     "request_data": {
       "users": [
@@ -189,6 +260,11 @@ class _DebugScreenState extends State<DebugScreen> {
   }
 }''',
   };
+
+  String _templateKey(_MethodItem m) {
+    if (_templates.containsKey(m.label)) return m.label;
+    return m.apiMethod;
+  }
 
   Map<String, String> _builtinParams(String method) {
     if (method == 'accounts.get') {
@@ -340,30 +416,42 @@ class _DebugScreenState extends State<DebugScreen> {
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, i) {
                 final m = methods[i];
+                final isGet = m.apiMethod.endsWith('.get');
+                final tplKey = _templateKey(m);
                 return MaterialButton(
                   onPressed: _loading ? null : () {
-                    if (m.endsWith('.get')) {
-                      _callMethod(m);
+                    if (isGet) {
+                      _callMethod(m.apiMethod);
                     } else {
                       setState(() {
-                        _postMethod = m;
-                        _postBodyCtrl.text = _templates[m] ?? _postBodyCtrl.text;
+                        _postMethod = m.apiMethod;
+                        _postBodyCtrl.text = _templates[tplKey] ?? _postBodyCtrl.text;
                       });
                     }
                   },
-                  color: _postMethod == m || _selectedMethod == m ? Theme.of(context).colorScheme.primaryContainer : null,
+                  color: _postMethod == m.apiMethod && _postBodyCtrl.text == _templates[tplKey] || _selectedMethod == m.apiMethod
+                      ? Theme.of(context).colorScheme.primaryContainer : null,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
                       Icon(
-                        m.endsWith('.get') ? Icons.download : Icons.upload,
+                        isGet ? Icons.download : Icons.upload,
                         size: 20,
-                        color: _postMethod == m || _selectedMethod == m ? Theme.of(context).colorScheme.primary : null,
+                        color: (_postMethod == m.apiMethod && _postBodyCtrl.text == _templates[tplKey]) || _selectedMethod == m.apiMethod
+                            ? Theme.of(context).colorScheme.primary : null,
                       ),
                       const SizedBox(width: 12),
-                      Expanded(child: Text(m, style: const TextStyle(fontSize: 15))),
-                      if (_loading && (_selectedMethod == m || _selectedMethod == 'POST $_postMethod'))
+                      Expanded(
+                        child: Text(
+                          m.label,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: !isGet && !m.apiMethod.endsWith('.get') && m.label != m.apiMethod ? FontWeight.w400 : FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      if (_loading && (_selectedMethod == m.apiMethod || _selectedMethod == 'POST $_postMethod'))
                         const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
                     ],
                   ),
