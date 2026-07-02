@@ -11,7 +11,6 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   late final WebViewController _controller;
   bool _loading = true;
-  bool _initialLoadDone = false;
 
   @override
   void initState() {
@@ -21,17 +20,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onPageStarted: (_) => setState(() => _loading = true),
-        onPageFinished: (url) {
+        onPageFinished: (_) {
           setState(() => _loading = false);
-          _initialLoadDone = true;
-          // Если после начальной загрузки оказались на другом URL — регистрация прошла
-          if (url.contains('easyfinance.ru') && !url.contains('easyfinance.ru/registration')) {
-            if (mounted) Navigator.pop(context);
-          }
+          _controller.runJavaScript('''
+            (function() {
+              var meta = document.querySelector('meta[name="viewport"]');
+              if (meta) meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0';
+              document.body.style.maxWidth = '100vw';
+              document.body.style.overflowX = 'hidden';
+            })();
+          ''');
         },
         onNavigationRequest: (req) {
           final url = req.url;
-          if (_initialLoadDone && url.contains('easyfinance.ru') && !url.contains('easyfinance.ru/registration')) {
+          // После успешной регистрации EasyFinance редиректит в личный кабинет
+          if (url.contains('easyfinance.ru/my/') || url.contains('/v2/result')) {
             if (mounted) Navigator.pop(context);
             return NavigationDecision.prevent;
           }
