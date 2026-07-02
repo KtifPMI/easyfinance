@@ -64,11 +64,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: AppCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: InkWell(
-                onTap: () {
+                onTap: () async {
                   final store = context.read<FinanceStore>();
-                  context.read<PlannedPaymentStore>().clear();
-                  store.logout();
-                  Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+                  await context.read<PlannedPaymentStore>().clear();
+                  await store.logout();
+                  if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
                 },
                 child: Row(
                   children: [

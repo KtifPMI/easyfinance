@@ -11,11 +11,11 @@ import '../../utils/format.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  void _logout(BuildContext context) {
-    context.read<PlannedPaymentStore>().clear();
+  Future<void> _logout(BuildContext context) async {
+    await context.read<PlannedPaymentStore>().clear();
     final store = context.read<FinanceStore>();
-    store.logout();
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+    await store.logout();
+    if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
   }
 
   @override
