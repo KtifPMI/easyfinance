@@ -5,6 +5,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../../models/user.dart';
 import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
+import '../../store/planned_payment_store.dart';
 
 class OAuthWebViewScreen extends StatefulWidget {
   const OAuthWebViewScreen({super.key});
@@ -109,6 +110,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         store.saveUser(user);
       }
 
+      context.read<PlannedPaymentStore>().clear();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
@@ -146,6 +148,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         store.saveUser(user);
       }
 
+      context.read<PlannedPaymentStore>().clear();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,

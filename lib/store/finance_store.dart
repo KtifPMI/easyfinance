@@ -48,6 +48,7 @@ class FinanceStore extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('easyfinance_budgets');
     await prefs.remove('easyfinance_goals');
+    await prefs.remove('easyfinance_planned_payments');
     await authService.logout();
     _currentUser = null;
     _accounts = [];

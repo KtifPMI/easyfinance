@@ -11,6 +11,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   late final WebViewController _controller;
   bool _loading = true;
+  bool _initialLoadDone = false;
 
   @override
   void initState() {
@@ -20,11 +21,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onPageStarted: (_) => setState(() => _loading = true),
-        onPageFinished: (_) => setState(() => _loading = false),
+        onPageFinished: (url) {
+          setState(() => _loading = false);
+          _initialLoadDone = true;
+          // Если после начальной загрузки оказались на другом URL — регистрация прошла
+          if (url.contains('easyfinance.ru') && !url.contains('easyfinance.ru/registration')) {
+            if (mounted) Navigator.pop(context);
+          }
+        },
         onNavigationRequest: (req) {
           final url = req.url;
-          // После успешной регистрации EasyFinance редиректит в личный кабинет
-          if (url.contains('easyfinance.ru/my/') || url.contains('/v2/result')) {
+          if (_initialLoadDone && url.contains('easyfinance.ru') && !url.contains('easyfinance.ru/registration')) {
             if (mounted) Navigator.pop(context);
             return NavigationDecision.prevent;
           }
