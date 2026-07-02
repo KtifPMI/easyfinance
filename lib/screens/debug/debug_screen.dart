@@ -98,9 +98,8 @@ class _DebugScreenState extends State<DebugScreen> {
     "request_data": {
       "categories": [
         {
-          "name": "New Category",
-          "type": "-1",
-          "custom": "1"
+          "system_id": "551145658",
+          "type": "-1"
         }
       ]
     }
