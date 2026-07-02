@@ -63,6 +63,23 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
+              if (store.recommendations.isNotEmpty) ...[
+                Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                const SizedBox(height: 8),
+                ...store.recommendations.take(3).map((r) => Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: AppCard(
+                    child: Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text(r.title, style: TextStyle(fontSize: 13, color: AppColors.text))),
+                      ],
+                    ),
+                  ),
+                )),
+                const SizedBox(height: 16),
+              ],
               if (store.budgets.isNotEmpty) ...[
                 Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
@@ -92,20 +109,6 @@ class HomeScreen extends StatelessWidget {
                 }),
                 const SizedBox(height: 16),
               ],
-              if (plannedPayments.upcomingIncomes.isNotEmpty) ...[
-                Text(context.tr('home.upcoming_income'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
-                const SizedBox(height: 8),
-                ...plannedPayments.upcomingIncomes.take(3).map((e) => _upcomingTile(e)),
-                _manageButton(context),
-                const SizedBox(height: 16),
-              ],
-              if (plannedPayments.upcomingExpenses.isNotEmpty) ...[
-                Text(context.tr('home.upcoming_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
-                const SizedBox(height: 8),
-                ...plannedPayments.upcomingExpenses.take(3).map((e) => _upcomingTile(e)),
-                _manageButton(context),
-                const SizedBox(height: 16),
-              ],
               if (store.goals.isNotEmpty) ...[
                 Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
                 const SizedBox(height: 8),
@@ -132,6 +135,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   );
                 }),
+                const SizedBox(height: 16),
+              ],
+              if (plannedPayments.upcomingExpenses.isNotEmpty) ...[
+                Text(context.tr('home.upcoming_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                const SizedBox(height: 8),
+                ...plannedPayments.upcomingExpenses.take(3).map((e) => _upcomingTile(e)),
+                _manageButton(context),
+                const SizedBox(height: 16),
               ],
             ],
           ),
