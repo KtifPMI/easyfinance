@@ -51,6 +51,8 @@ class _MainTabsState extends State<MainTabs> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         onTap: (i) => setState(() => _index = i),
+        selectedLabelStyle: const TextStyle(fontSize: 10),
+        unselectedLabelStyle: const TextStyle(fontSize: 10),
         items: List.generate(6, (i) => BottomNavigationBarItem(
           icon: Icon(_icons[i]),
           activeIcon: Icon(_activeIcons[i]),

@@ -38,25 +38,25 @@ class FinHealthCard extends StatelessWidget {
           Text(context.tr('health.title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: items.map((item) {
               final (label, icon, value, threshold) = item;
               final c = _color(value, threshold);
               return Column(
                 children: [
                   Container(
-                    width: 54, height: 54,
+                    width: 52, height: 52,
                     decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: c, width: 3)),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(icon, size: 16, color: c),
-                        Text('$value%', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: c)),
+                        Icon(icon, size: 14, color: c),
+                        Text('$value%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: c)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  const SizedBox(height: 3),
+                  Text(label, style: TextStyle(fontSize: 9, color: AppColors.textSecondary)),
                 ],
               );
             }).toList(),
