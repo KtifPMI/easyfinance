@@ -10,7 +10,7 @@ import '../models/recommendation.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
-import '../services/mock_data.dart';
+import '../services/mock_data.dart' show mockAccounts, mockOperations, mockBudgets, mockCategories;
 
 class FinanceStore extends ChangeNotifier {
   final AuthService authService;
@@ -139,6 +139,7 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       _categories = await api.getCategories();
+      if (_categories.isEmpty) _categories = [...mockCategories];
     } on ApiException catch (e) {
       _error = e.message;
     }
