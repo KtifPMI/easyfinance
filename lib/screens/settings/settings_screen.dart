@@ -7,6 +7,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../services/update_service.dart';
 import '../../store/finance_store.dart';
 import '../../store/locale_store.dart';
+import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
 
 
@@ -65,6 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: InkWell(
                 onTap: () {
                   final store = context.read<FinanceStore>();
+                  context.read<PlannedPaymentStore>().clear();
                   store.logout();
                   Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
                 },

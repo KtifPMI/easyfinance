@@ -45,6 +45,9 @@ class FinanceStore extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('easyfinance_budgets');
+    await prefs.remove('easyfinance_goals');
     await authService.logout();
     _currentUser = null;
     _accounts = [];
@@ -53,7 +56,7 @@ class FinanceStore extends ChangeNotifier {
     _budgets = [];
     _goals = [];
     _useMock = true;
-    _loadFromMock();
+    notifyListeners();
   }
 
   bool get isAuthenticated => authService.isAuthenticated;

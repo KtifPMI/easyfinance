@@ -67,6 +67,13 @@ class PlannedPaymentStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_key);
+    _events = [];
+    notifyListeners();
+  }
+
   Future<void> toggleEnabled(String id) async {
     final idx = _events.indexWhere((e) => e.id == id);
     if (idx != -1) {

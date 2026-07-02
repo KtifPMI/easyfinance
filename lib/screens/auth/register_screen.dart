@@ -20,7 +20,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(NavigationDelegate(
         onPageStarted: (_) => setState(() => _loading = true),
-        onPageFinished: (_) => setState(() => _loading = false),
+        onPageFinished: (url) {
+          setState(() => _loading = false);
+          // Если после регистрации пользователь попал в личный кабинет — возвращаем на вход
+          if (url.contains('easyfinance.ru/my/') || url.contains('easyfinance.ru/')) {
+            if (mounted) Navigator.pop(context);
+          }
+        },
       ))
       ..loadRequest(Uri.parse('https://easyfinance.ru/registration/'));
   }
