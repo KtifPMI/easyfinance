@@ -139,7 +139,21 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       _categories = await api.getCategories();
-      if (_categories.isEmpty) _categories = [...mockCategories];
+      if (_categories.isEmpty) {
+        try {
+          await api.setCategory({
+            'categories': mockCategories.map((c) => {
+              'name': c.name,
+              'type': c.type == 'income' ? '1' : c.type == 'transfer' ? '0' : '-1',
+              'custom': '0',
+            }).toList(),
+          });
+          _categories = await api.getCategories();
+        } catch (_) {
+          // если API не дал создать — показываем мок
+          _categories = [...mockCategories];
+        }
+      }
     } on ApiException catch (e) {
       _error = e.message;
     }
