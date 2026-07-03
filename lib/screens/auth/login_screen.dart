@@ -28,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (restored && mounted) {
       setState(() => _loading = true);
       await store.fetchAllData();
-      await NotificationService().rescheduleAll();
+      NotificationService().rescheduleAll(); // fire-and-forget
       if (mounted) Navigator.pushReplacementNamed(context, '/main');
     }
   }

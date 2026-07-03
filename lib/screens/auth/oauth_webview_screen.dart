@@ -120,7 +120,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
       );
       await store.fetchAllData();
-      await NotificationService().rescheduleAll();
+      NotificationService().rescheduleAll(); // fire-and-forget
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
@@ -155,7 +155,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       );
 
       await store.fetchAllData();
-      await NotificationService().rescheduleAll();
+      NotificationService().rescheduleAll(); // fire-and-forget
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
