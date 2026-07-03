@@ -6,6 +6,7 @@ class ScreenScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final bool isLoading;
+  final Future<void> Function()? onRefresh;
 
   const ScreenScaffold({
     super.key,
@@ -14,6 +15,7 @@ class ScreenScaffold extends StatelessWidget {
     this.actions,
     this.floatingActionButton,
     this.isLoading = false,
+    this.onRefresh,
   });
 
   @override
@@ -26,12 +28,25 @@ class ScreenScaffold extends StatelessWidget {
           if (isLoading)
             const Center(child: CircularProgressIndicator())
           else
-            SingleChildScrollView(
-              padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
-              child: child,
-            ),
+            _buildBody(),
         ],
       ),
     );
+  }
+
+  Widget _buildBody() {
+    final scrollable = SingleChildScrollView(
+      padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
+      child: child,
+    );
+
+    if (onRefresh != null) {
+      return RefreshIndicator(
+        onRefresh: onRefresh!,
+        child: scrollable,
+      );
+    }
+
+    return scrollable;
   }
 }

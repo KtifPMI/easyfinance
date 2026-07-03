@@ -45,9 +45,9 @@ class RecommendationsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(r.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
+                            Text(r.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                             const SizedBox(height: 4),
-                            Text(r.description, style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                            Text(r.description, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                           ],
                         ),
                       ),

@@ -35,7 +35,7 @@ class FinHealthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.tr('health.title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+          Text(context.tr('health.title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -56,13 +56,13 @@ class FinHealthCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 3),
-                  Text(label, style: TextStyle(fontSize: 9, color: AppColors.textSecondary)),
+                  Text(label, style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
                 ],
               );
             }).toList(),
           ),
           const SizedBox(height: 8),
-          Text(context.tr('health.detail'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary), textAlign: TextAlign.center),
+          Text(context.tr('health.detail'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.center),
         ],
       ),
     );

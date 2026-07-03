@@ -12,6 +12,7 @@ import 'services/notification_service.dart';
 import 'store/finance_store.dart';
 import 'store/locale_store.dart';
 import 'store/planned_payment_store.dart';
+import 'store/theme_store.dart';
 import 'theme/theme.dart';
 
 void main() async {
@@ -41,6 +42,8 @@ void main() async {
   await localeStore.load();
   final plannedPaymentStore = PlannedPaymentStore();
   await plannedPaymentStore.load();
+  final themeStore = ThemeStore();
+  await themeStore.load();
 
   try {
     final notif = NotificationService();
@@ -57,6 +60,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FinanceStore(authService: authService, apiClient: apiClient)),
         ChangeNotifierProvider.value(value: localeStore),
         ChangeNotifierProvider.value(value: plannedPaymentStore),
+        ChangeNotifierProvider.value(value: themeStore),
       ],
       child: EasyLocalization(
         supportedLocales: const [Locale('ru'), Locale('en')],
@@ -74,6 +78,7 @@ class EasyFinanceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeStore = context.watch<ThemeStore>();
     return MaterialApp(
       title: 'EasyFinance',
       debugShowCheckedModeBanner: false,
@@ -81,6 +86,8 @@ class EasyFinanceApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: themeStore.themeMode,
       initialRoute: AppRouter.login,
       routes: AppRouter.routes,
       onGenerateRoute: AppRouter.onGenerateRoute,

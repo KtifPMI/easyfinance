@@ -55,7 +55,7 @@ class PlannedPaymentsScreen extends StatelessWidget {
   Widget _sectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 4),
-      child: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+      child: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
     );
   }
 
@@ -72,19 +72,19 @@ class PlannedPaymentsScreen extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20,
-                color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondary),
+                color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondaryFor(context)),
           ),
           title: Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
-              color: e.enabled ? AppColors.text : AppColors.textSecondary)),
+              color: e.enabled ? AppColors.textFor(context) : AppColors.textSecondaryFor(context))),
           subtitle: Text(
             e.isRecurring ? '${context.tr('planned_payments.day')} ${e.dayOfMonth}' : formatDate(e.date),
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context)),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(formatMoney(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
-                  color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondary)),
+                  color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondaryFor(context))),
               const SizedBox(width: 4),
               Switch(
                 value: e.enabled,

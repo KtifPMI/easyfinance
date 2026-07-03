@@ -43,12 +43,12 @@ class BankScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(context.tr('accounts.title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(context.tr('accounts.title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               const SizedBox(height: 8),
               if (store.accounts.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 24),
-                  child: Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondary))),
+                  child: Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
                 )
               else
                 ...store.accounts.map((a) => Padding(
@@ -68,14 +68,14 @@ class BankScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
-                                if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                               ],
                             ),
                           ),
-                          Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.text : AppColors.expense)),
+                          Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                           const SizedBox(width: 8),
-                          Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                          Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                         ],
                       ),
                     ),

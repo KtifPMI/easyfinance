@@ -52,7 +52,7 @@ class _ScreenHintState extends State<ScreenHint> {
           Expanded(child: Text(widget.text, style: const TextStyle(fontSize: 13))),
           GestureDetector(
             onTap: _dismiss,
-            child: Icon(Icons.close, size: 18, color: AppColors.textSecondary),
+            child: Icon(Icons.close, size: 18, color: AppColors.textSecondaryFor(context)),
           ),
         ],
       ),

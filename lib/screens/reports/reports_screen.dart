@@ -58,7 +58,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Row(
                 children: [
                   IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),
-                  Text(_monthLabel(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(_monthLabel(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   if (!isCurrent) IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
                   if (!isCurrent)
                     TextButton(
@@ -76,7 +76,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         children: [
                           Icon(Icons.arrow_downward, color: AppColors.success, size: 28),
                           const SizedBox(height: 4),
-                          Text(context.tr('reports.income'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(context.tr('reports.income'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                           const SizedBox(height: 4),
                           Text(formatMoney(monthIncome), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.success)),
                         ],
@@ -90,7 +90,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         children: [
                           Icon(Icons.arrow_upward, color: AppColors.expense, size: 28),
                           const SizedBox(height: 4),
-                          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                           const SizedBox(height: 4),
                           Text(formatMoney(monthExpense), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.expense)),
                         ],
@@ -104,18 +104,18 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(context.tr('reports.balance'), style: TextStyle(fontSize: 15, color: AppColors.text)),
+                    Text(context.tr('reports.balance'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
                     Text(formatMoney(balance), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: balance >= 0 ? AppColors.success : AppColors.expense)),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+              Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               const SizedBox(height: 12),
               if (catTotals.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: Text('Нет расходов за этот месяц', style: TextStyle(fontSize: 14, color: AppColors.textSecondary))),
+                  child: Center(child: Text('Нет расходов за этот месяц', style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
                 )
               else
                 ..._buildCategoryRows(catTotals, monthExpense),
@@ -141,8 +141,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(e.category.name, style: TextStyle(fontSize: 14, color: AppColors.text)),
-                  Text('${percent.round()}% · ${formatMoney(e.total)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                  Text(e.category.name, style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                  Text('${percent.round()}% · ${formatMoney(e.total)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                 ],
               ),
               const SizedBox(height: 4),
@@ -160,8 +160,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Остальное', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-              Text('${monthExpense > 0 ? (otherTotal / monthExpense * 100).round() : 0}% · ${formatMoney(otherTotal)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text('Остальное', style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+              Text('${monthExpense > 0 ? (otherTotal / monthExpense * 100).round() : 0}% · ${formatMoney(otherTotal)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),

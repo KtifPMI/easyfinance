@@ -20,7 +20,7 @@ class AppChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: active ? (activeColor ?? AppColors.primary) : AppColors.border),
         ),
-        child: Text(label, style: TextStyle(fontSize: 13, color: active ? Colors.white : AppColors.text)),
+        child: Text(label, style: TextStyle(fontSize: 13, color: active ? Colors.white : AppColors.textFor(context))),
       ),
     );
   }

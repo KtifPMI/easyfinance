@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
               if (store.recommendations.isNotEmpty) ...[
-                Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
                 ...store.recommendations.take(3).map((r) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
@@ -73,7 +73,7 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
                         const SizedBox(width: 10),
-                        Expanded(child: Text(r.title, style: TextStyle(fontSize: 13, color: AppColors.text))),
+                        Expanded(child: Text(r.title, style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
                       ],
                     ),
                   ),
@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               if (store.budgets.isNotEmpty) ...[
-                Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
                 ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
                   final cat = store.getCategory(b.categoryId);
@@ -95,13 +95,13 @@ class HomeScreen extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-                              Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                              Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                             ],
                           ),
                           const SizedBox(height: 8),
                           ProgressBar(percent: percent, color: color),
-                          Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                         ],
                       ),
                     ),
@@ -110,7 +110,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               if (store.goals.isNotEmpty) ...[
-                Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
                 ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
                   final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
@@ -122,14 +122,14 @@ class HomeScreen extends StatelessWidget {
                           Row(
                             children: [
                               Expanded(
-                                child: Text(g.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                                child: Text(g.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                               ),
-                              Text('${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              Text('${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                             ],
                           ),
                           const SizedBox(height: 8),
                           ProgressBar(percent: percent, color: _parseColor(g.color)),
-                          Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                         ],
                       ),
                     ),
@@ -138,7 +138,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               if (plannedPayments.upcomingExpenses.isNotEmpty || plannedPayments.upcomingIncomes.isNotEmpty) ...[
-                Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text)),
+                Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
                 ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(e)),
                 _manageButton(context),
@@ -177,8 +177,8 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-                Text(formatDate(e.date), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(formatDate(e.date), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
               ],
             ),
           ),

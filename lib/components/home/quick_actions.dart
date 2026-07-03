@@ -13,23 +13,23 @@ class QuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _action(Icons.add_circle_outline, context.tr('quick_actions.income'), AppColors.success, onAddIncome),
+        _action(context, Icons.add_circle_outline, context.tr('quick_actions.income'), AppColors.success, onAddIncome),
         const SizedBox(width: 8),
-        _action(Icons.remove_circle_outline, context.tr('quick_actions.expense'), AppColors.expense, onAddExpense),
+        _action(context, Icons.remove_circle_outline, context.tr('quick_actions.expense'), AppColors.expense, onAddExpense),
         const SizedBox(width: 8),
-        _action(Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, onAddTransfer),
+        _action(context, Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, onAddTransfer),
       ],
     );
   }
 
-  Widget _action(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _action(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.card,
+            color: AppColors.cardFor(context),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
           ),
@@ -37,7 +37,7 @@ class QuickActions extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 28),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),

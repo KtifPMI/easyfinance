@@ -8,6 +8,7 @@ import '../../services/update_service.dart';
 import '../../store/finance_store.dart';
 import '../../store/locale_store.dart';
 import '../../store/planned_payment_store.dart';
+import '../../store/theme_store.dart';
 import '../../theme/theme.dart';
 
 
@@ -38,9 +39,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Приложение', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          Text('Приложение', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           _langItem(context),
+          _darkModeItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
@@ -51,8 +53,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Проверить обновления', style: TextStyle(fontSize: 15, color: AppColors.text)),
-                    Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                    Text('Проверить обновления', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                    Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                   ],
                 ),
               ),
@@ -93,8 +95,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: TextStyle(fontSize: 15, color: AppColors.text)),
-            Text(value, style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text(title, style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Text(value, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           ],
         ),
       ),
@@ -115,10 +117,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('settings.language'), style: TextStyle(fontSize: 15, color: AppColors.text)),
-              Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(context.tr('settings.language'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _darkModeItem(BuildContext context) {
+    final themeStore = context.watch<ThemeStore>();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(context.tr('settings.dark_mode'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Switch(
+              value: themeStore.isDark,
+              onChanged: (_) => themeStore.toggle(),
+              activeColor: AppColors.primary,
+            ),
+          ],
         ),
       ),
     );

@@ -29,9 +29,9 @@ class OperationListItem extends StatelessWidget {
     return '';
   }
 
-  Color get _amountColor {
+  Color _amountColor(BuildContext context) {
     if (type == 'income') return AppColors.income;
-    if (type == 'expense') return AppColors.text;
+    if (type == 'expense') return AppColors.textFor(context);
     return AppColors.transfer;
   }
 
@@ -57,13 +57,13 @@ class OperationListItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   if (subtitle != null && subtitle!.isNotEmpty)
-                    Padding(padding: const EdgeInsets.only(top: 2), child: Text(subtitle!, style: TextStyle(fontSize: 13, color: AppColors.textSecondary))),
+                    Padding(padding: const EdgeInsets.only(top: 2), child: Text(subtitle!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
                 ],
               ),
             ),
-            Text('$_amountPrefix$amt $sym', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _amountColor)),
+            Text('$_amountPrefix$amt $sym', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _amountColor(context))),
           ],
         ),
       ),

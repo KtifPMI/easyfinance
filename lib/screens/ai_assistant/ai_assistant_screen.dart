@@ -133,9 +133,9 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.smart_toy_outlined, size: 64, color: AppColors.textSecondary),
+                            Icon(Icons.smart_toy_outlined, size: 64, color: AppColors.textSecondaryFor(context)),
                             const SizedBox(height: 16),
-                            Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+                            Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 16, color: AppColors.textSecondaryFor(context))),
                           ],
                         ),
                       )
@@ -160,7 +160,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                                 ),
                               ),
                               child: Text(msg['text'] ?? '',
-                                style: TextStyle(color: isUser ? Colors.white : AppColors.text, fontSize: 14),
+                                style: TextStyle(color: isUser ? Colors.white : AppColors.textFor(context), fontSize: 14),
                               ),
                             ),
                           );

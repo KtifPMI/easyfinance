@@ -79,7 +79,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           const SizedBox(height: 16),
           AppInput(label: context.tr('accounts.balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
-          Text(context.tr('accounts.type'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(context.tr('accounts.type'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _type,

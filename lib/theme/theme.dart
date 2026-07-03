@@ -16,6 +16,29 @@ class AppColors {
   static const danger = Color(0xFFDC2626);
   static const success = Color(0xFF16A34A);
   static const white = Color(0xFFFFFFFF);
+
+  static const darkBackground = Color(0xFF121212);
+  static const darkCard = Color(0xFF1E1E1E);
+  static const darkText = Color(0xFFE0E0E0);
+  static const darkTextSecondary = Color(0xFF9E9E9E);
+  static const darkBorder = Color(0xFF333333);
+  static const darkAppBar = Color(0xFF1E1E1E);
+  static const darkBottomBar = Color(0xFF1E1E1E);
+
+  static Color backgroundFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkBackground : background;
+
+  static Color cardFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkCard : card;
+
+  static Color textFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkText : text;
+
+  static Color textSecondaryFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkTextSecondary : textSecondary;
+
+  static Color borderFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkBorder : border;
 }
 
 class AppTheme {
@@ -48,6 +71,44 @@ class AppTheme {
     tabBarTheme: const TabBarThemeData(
       labelColor: AppColors.primary,
       unselectedLabelColor: AppColors.textSecondary,
+      indicatorColor: AppColors.primary,
+    ),
+  );
+
+  static ThemeData get dark => ThemeData(
+    useMaterial3: false,
+    scaffoldBackgroundColor: AppColors.darkBackground,
+    primaryColor: AppColors.primary,
+    brightness: Brightness.dark,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+      surface: AppColors.darkCard,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.darkAppBar,
+      foregroundColor: AppColors.darkText,
+      elevation: 0,
+      centerTitle: true,
+      titleTextStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.darkText),
+    ),
+    cardTheme: const CardThemeData(
+      color: AppColors.darkCard,
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(16))),
+      margin: EdgeInsets.zero,
+    ),
+    dividerTheme: const DividerThemeData(color: AppColors.darkBorder, thickness: 1, space: 1),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.darkBottomBar,
+      selectedItemColor: AppColors.primary,
+      unselectedItemColor: AppColors.darkTextSecondary,
+      type: BottomNavigationBarType.fixed,
+      elevation: 4,
+    ),
+    tabBarTheme: const TabBarThemeData(
+      labelColor: AppColors.primary,
+      unselectedLabelColor: AppColors.darkTextSecondary,
       indicatorColor: AppColors.primary,
     ),
   );

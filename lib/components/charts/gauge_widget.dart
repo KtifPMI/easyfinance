@@ -31,9 +31,9 @@ class GaugeWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('${clamped.round()}%', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.text)),
-            if (label != null) Text(label!, style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-            if (sublabel != null) Text(sublabel!, style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text('${clamped.round()}%', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+            if (label != null) Text(label!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+            if (sublabel != null) Text(sublabel!, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
           ],
         ),
       ),

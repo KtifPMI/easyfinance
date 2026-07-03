@@ -49,7 +49,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
           title: context.tr('budget.new'),
           child: Column(
             children: [
-              Text(context.tr('budget.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(context.tr('budget.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _categoryId,

@@ -37,6 +37,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               onPressed: () => Navigator.pushNamed(context, '/add-operation'),
             ),
           ],
+          onRefresh: () => store.fetchAllData(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -53,18 +54,18 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               ),
               const SizedBox(height: 16),
               if (grouped.isEmpty)
-                Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondary))))
+                Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
               else
                 ...grouped.map((entry) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 12, bottom: 4),
-                      child: Text(formatDayLabel(entry.key, context), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                      child: Text(formatDayLabel(entry.key, context), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12)),
+                      decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(12)),
                       child: Column(
                         children: entry.value.map((op) {
                           final cat = store.getCategory(op.categoryId);

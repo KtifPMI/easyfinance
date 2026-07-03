@@ -133,7 +133,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               const SizedBox(height: 20),
               AppInput(label: context.tr('operations.amount'), controller: _amountCtrl, keyboardType: TextInputType.number),
               const SizedBox(height: 16),
-              Text(context.tr('operations.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(context.tr('operations.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _accountId,
@@ -147,7 +147,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ),
               const SizedBox(height: 16),
               if (_type != 'transfer') ...[
-                Text(context.tr('operations.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                Text(context.tr('operations.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _categoryId,
@@ -161,7 +161,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 ),
               ],
               if (_type == 'transfer') ...[
-                Text(context.tr('operations.to_account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                Text(context.tr('operations.to_account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _toAccountId,
@@ -199,7 +199,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           ),
           child: Text(label, textAlign: TextAlign.center, style: TextStyle(
             fontSize: 14, fontWeight: FontWeight.w600,
-            color: active ? Colors.white : AppColors.text,
+            color: active ? Colors.white : AppColors.textFor(context),
           )),
         ),
       ),

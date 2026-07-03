@@ -59,12 +59,12 @@ class _MoreScreenState extends State<MoreScreen> {
                   children: [
                     Icon(icon, color: AppColors.primary, size: 24),
                     const SizedBox(width: 16),
-                    Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
+                    Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     const Spacer(),
                     if (_checking && screen == null)
                       const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                     else
-                      Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                      Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                   ],
                 ),
               ),

@@ -93,7 +93,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),
-                  Text(monthLabel, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(monthLabel, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
                 ],
               ),
@@ -101,7 +101,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [context.tr('calendar.mon'), context.tr('calendar.tue'), context.tr('calendar.wed'), context.tr('calendar.thu'), context.tr('calendar.fri'), context.tr('calendar.sat'), context.tr('calendar.sun')]
-                    .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textSecondary))))
+                    .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context)))))
                     .toList(),
               ),
               const SizedBox(height: 8),
@@ -119,7 +119,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                    Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     TextButton.icon(
                       icon: const Icon(Icons.add, size: 18),
                       label: Text(context.tr('operations.add')),
@@ -132,13 +132,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
               if (selectedOps.isEmpty && selectedPlanned.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16, bottom: 24),
-                  child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondary)),
+                  child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
                 )
               else ...[
                 if (selectedPlanned.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Text('Запланированные платежи', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                    child: Text('Запланированные платежи', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
                   ),
                   ...selectedPlanned.map((e) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -160,9 +160,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-                                  if (e.comment != null && e.comment!.isNotEmpty)
-                                    Text(e.comment!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                   Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                   if (e.comment != null && e.comment!.isNotEmpty)
+                                     Text(e.comment!, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),
@@ -177,7 +177,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   if (selectedPlanned.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: Text('Операции', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                      child: Text('Операции', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
                     ),
                   ...selectedOps.map((op) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -199,8 +199,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-                                  Text(store.getAccount(op.accountId)?.name ?? '', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                   Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                   Text(store.getAccount(op.accountId)?.name ?? '', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),
@@ -254,7 +254,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   color: isToday ? AppColors.primary : null,
                   shape: BoxShape.circle,
                 ),
-                child: Center(child: Text('$day', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isToday ? Colors.white : AppColors.text))),
+                child: Center(child: Text('$day', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isToday ? Colors.white : AppColors.textFor(context)))),
               ),
               if (hasOps || hasPlanned)
                 Row(

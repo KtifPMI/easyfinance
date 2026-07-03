@@ -18,7 +18,7 @@ class AppInput extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (label.isNotEmpty) Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w400)),
+        if (label.isNotEmpty) Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context), fontWeight: FontWeight.w400)),
         const SizedBox(height: 4),
         TextField(
           controller: controller,
@@ -26,12 +26,12 @@ class AppInput extends StatelessWidget {
           keyboardType: keyboardType,
           enabled: enabled,
           maxLines: maxLines,
-          style: TextStyle(fontSize: 15, color: AppColors.text),
+          style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.card,
             hintText: hint,
-            hintStyle: TextStyle(fontSize: 15, color: AppColors.textSecondary.withValues(alpha: 0.6)),
+            hintStyle: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: error != null ? AppColors.danger : AppColors.border),

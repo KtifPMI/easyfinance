@@ -56,7 +56,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('planned_payments.type'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+            Text(context.tr('planned_payments.type'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -92,7 +92,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(context.tr('planned_payments.recurring'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    Text(context.tr('planned_payments.recurring'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     Switch(
                       value: _isRecurring,
                       onChanged: (v) => setState(() => _isRecurring = v),
@@ -132,11 +132,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: selected ? color : AppColors.textSecondary),
+            Icon(icon, size: 18, color: selected ? color : AppColors.textSecondaryFor(context)),
             const SizedBox(width: 6),
             Text(
               context.tr('planned_payments.$type'),
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: selected ? color : AppColors.textSecondary),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: selected ? color : AppColors.textSecondaryFor(context)),
             ),
           ],
         ),

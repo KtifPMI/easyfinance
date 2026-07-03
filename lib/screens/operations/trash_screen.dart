@@ -10,7 +10,7 @@ class TrashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenScaffold(
       title: context.tr('operations.trash'),
-      child: Center(child: Text(context.tr('operations.trash_empty'), style: TextStyle(color: AppColors.textSecondary))),
+      child: Center(child: Text(context.tr('operations.trash_empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
     );
   }
 }

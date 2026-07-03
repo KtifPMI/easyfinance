@@ -55,14 +55,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const Spacer(),
               Icon(Icons.account_balance, size: 64, color: AppColors.primary),
               const SizedBox(height: 16),
-              Text('EasyFinance', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.text)),
+              Text('EasyFinance', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
               const SizedBox(height: 8),
-              Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
+              Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
               const SizedBox(height: 40),
               Text(
                 context.tr('auth.description'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: TextStyle(color: AppColors.textSecondaryFor(context), fontSize: 14),
               ),
               const Spacer(),
               AppButton(
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 12),
               TextButton(
                 onPressed: _skipLogin,
-                child: Text(context.tr('auth.skip'), style: TextStyle(color: AppColors.textSecondary)),
+                child: Text(context.tr('auth.skip'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
               ),
               const SizedBox(height: 48),
             ],

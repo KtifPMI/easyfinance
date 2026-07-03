@@ -371,7 +371,7 @@ class _DebugScreenState extends State<DebugScreen> {
           if (_selectedMethod == 'accounts.get')
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text(context.tr('debug.fields_added'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+              child: Text(context.tr('debug.fields_added'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
             ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

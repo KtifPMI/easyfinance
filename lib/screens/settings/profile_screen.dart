@@ -36,12 +36,12 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 20),
           CircleAvatar(radius: 40, backgroundColor: AppColors.primaryLight, child: Icon(Icons.person, size: 40, color: AppColors.primary)),
           const SizedBox(height: 12),
-          Text(name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.text)),
-          Text(email, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
+          Text(name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+          Text(email, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 24),
-          _info(context.tr('profile.reg_date'), regDate),
-          _info(context.tr('profile.tariff'), plan),
-          _info(context.tr('profile.sync'), syncLabel),
+          _info(context, context.tr('profile.reg_date'), regDate),
+          _info(context, context.tr('profile.tariff'), plan),
+          _info(context, context.tr('profile.sync'), syncLabel),
           const Spacer(),
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
@@ -59,15 +59,15 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _info(String label, String value) {
+  Widget _info(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: AppCard(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+            Text(label, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           ],
         ),
       ),

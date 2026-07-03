@@ -22,6 +22,7 @@ class PlanScreen extends StatelessWidget {
       builder: (context, store, _) {
         return ScreenScaffold(
           title: context.tr('budget.title'),
+          onRefresh: () => store.fetchAllData(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -29,7 +30,7 @@ class PlanScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('budget.budget'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(context.tr('budget.budget'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   GestureDetector(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBudgetScreen())),
                     child: Icon(Icons.add_circle_outline, color: AppColors.primary),
@@ -54,7 +55,7 @@ class PlanScreen extends StatelessWidget {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                 const SizedBox(width: 8),
                                 GestureDetector(
                                   onTap: () {
@@ -76,7 +77,7 @@ class PlanScreen extends StatelessWidget {
                                       ),
                                     );
                                   },
-                                  child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondary),
+                                  child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
                                 ),
                               ],
                             ),
@@ -85,7 +86,7 @@ class PlanScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         ProgressBar(percent: percent, color: color),
                         const SizedBox(height: 4),
-                        Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                       ],
                     ),
                   ),
@@ -95,7 +96,7 @@ class PlanScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('budget.goals'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.text)),
+                  Text(context.tr('budget.goals'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   GestureDetector(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
                     child: Icon(Icons.add_circle_outline, color: AppColors.primary),
@@ -123,7 +124,7 @@ class PlanScreen extends StatelessWidget {
                                   if (g.isCompleted)
                                     Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                                   else
-                                    Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                    Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),
@@ -141,7 +142,7 @@ class PlanScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
                         const SizedBox(height: 4),
-                        Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                        Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                       ],
                     ),
                   ),

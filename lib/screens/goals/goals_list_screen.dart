@@ -25,8 +25,9 @@ class GoalsListScreen extends StatelessWidget {
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
             ),
           ],
+          onRefresh: () => store.fetchAllData(),
           child: store.goals.isEmpty
-              ? Center(child: Text(context.tr('goals.empty'), style: TextStyle(color: AppColors.textSecondary)))
+              ? Center(child: Text(context.tr('goals.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(
                   children: store.goals.map((g) {
                     final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
@@ -57,7 +58,7 @@ class GoalsListScreen extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Expanded(child: Text(g.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text))),
+                                          Expanded(child: Text(g.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context)))),
                                           if (g.isCompleted)
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -70,7 +71,7 @@ class GoalsListScreen extends StatelessWidget {
                                       if (g.isCompleted)
                                         Text(context.tr('goals.achieved_title'), style: TextStyle(fontSize: 13, color: AppColors.success))
                                       else
-                                        Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                                        Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                     ],
                                   ),
                                 ),
@@ -91,10 +92,10 @@ class GoalsListScreen extends StatelessWidget {
                             if (g.isCompleted)
                               Text('100%', style: TextStyle(fontSize: 11, color: AppColors.success))
                             else
-                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${formatDateLong(g.deadline)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${formatDateLong(g.deadline)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                             if (!g.isCompleted && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
-                              Text(context.tr('goals.recommendation', namedArgs: {'amount': formatMoney(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                              Text(context.tr('goals.recommendation', namedArgs: {'amount': formatMoney(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                             ],
                           ],
                         ),

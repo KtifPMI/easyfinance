@@ -24,7 +24,7 @@ class AccountsScreen extends StatelessWidget {
             ),
           ],
           child: store.accounts.isEmpty
-              ? Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondary)))
+              ? Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(
                   children: store.accounts.map((a) {
                     final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
@@ -45,14 +45,14 @@ class AccountsScreen extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.text)),
-                                    if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                                    Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                    if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                                   ],
                                 ),
                               ),
-                              Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.text : AppColors.expense)),
+                              Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                               const SizedBox(width: 8),
-                              Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                              Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                             ],
                           ),
                         ),
