@@ -89,6 +89,8 @@
   "operations.delete_confirm": "Delete operation?",
   "operations.cancel": "Cancel",
   "operations.delete": "Delete",
+  "operations.refund": "Refund",
+  "operations.refund_confirm": "Create refund?",
   "operations.account_from": "From: {name}",
   "operations.account_to": "To: {name}",
   "operations.trash": "Trash",

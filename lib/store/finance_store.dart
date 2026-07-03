@@ -497,6 +497,22 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> refundOperation(Operation op) async {
+    final refundOp = Operation(
+      id: '',
+      type: 'income',
+      amount: op.amount,
+      currency: op.currency,
+      date: DateTime.now().toIso8601String().substring(0, 10),
+      accountId: op.accountId,
+      toAccountId: null,
+      categoryId: op.categoryId,
+      comment: 'Возврат: ${op.comment ?? ''}'.trimRight(),
+      isDeleted: false,
+    );
+    await addOperation(refundOp);
+  }
+
   void _updateBalancesOnAdd(Operation op) {
     if (op.type == 'expense') {
       final idx = _accounts.indexWhere((a) => a.id == op.accountId);

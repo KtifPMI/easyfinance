@@ -28,6 +28,28 @@ class OperationDetailScreen extends StatelessWidget {
           appBar: AppBar(
             title: Text(context.tr('operations.title_detail')),
             actions: [
+              if (op.type == 'expense')
+                IconButton(
+                  icon: const Icon(Icons.replay),
+                  tooltip: context.tr('operations.refund'),
+                  onPressed: () async {
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(context.tr('operations.refund_confirm')),
+                        content: Text('${formatMoney(op.amount)} — ${cat?.name ?? ''}'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('operations.cancel'))),
+                          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('operations.refund'))),
+                        ],
+                      ),
+                    );
+                    if (ok == true) {
+                      await store.refundOperation(op);
+                      if (context.mounted) Navigator.pop(context);
+                    }
+                  },
+                ),
               IconButton(
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: () => Navigator.pushNamed(context, '/add-operation',

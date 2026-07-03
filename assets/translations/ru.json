@@ -89,6 +89,8 @@
   "operations.delete_confirm": "Удалить операцию?",
   "operations.cancel": "Отмена",
   "operations.delete": "Удалить",
+  "operations.refund": "Возврат",
+  "operations.refund_confirm": "Создать возврат?",
   "operations.account_from": "Счёт: {name}",
   "operations.account_to": "На счёт: {name}",
   "operations.trash": "Корзина",
