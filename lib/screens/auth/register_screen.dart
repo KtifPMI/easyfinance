@@ -20,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           meta.name = 'viewport';
           document.head.appendChild(meta);
         }
-        meta.content = 'width=device-width, initial-scale=0.85, maximum-scale=1.0, user-scalable=no';
+        meta.content = 'width=device-width, initial-scale=0.7, maximum-scale=1.0, user-scalable=no';
         var iframes = document.querySelectorAll('iframe');
         for (var i = 0; i < iframes.length; i++) { iframes[i].style.display = 'none'; }
       })();

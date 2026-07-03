@@ -521,6 +521,11 @@ class FinanceStore extends ChangeNotifier {
     } else if (op.type == 'income') {
       final idx = _accounts.indexWhere((a) => a.id == op.accountId);
       if (idx >= 0) _accounts[idx] = _accounts[idx].copyWith(balance: _accounts[idx].balance - op.amount);
+    } else if (op.type == 'transfer') {
+      final fromIdx = _accounts.indexWhere((a) => a.id == op.accountId);
+      final toIdx = _accounts.indexWhere((a) => a.id == op.toAccountId);
+      if (fromIdx >= 0) _accounts[fromIdx] = _accounts[fromIdx].copyWith(balance: _accounts[fromIdx].balance + op.amount);
+      if (toIdx >= 0) _accounts[toIdx] = _accounts[toIdx].copyWith(balance: _accounts[toIdx].balance - op.amount);
     }
   }
 
@@ -530,7 +535,7 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.addAccount({
           'accounts': [{
             'name': account.name,
-            'balance': account.balance.abs().toString(),
+            'init_balance': account.balance.abs().toString(),
             'type_id': _accountTypeToApi(account.type),
             'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
@@ -553,7 +558,7 @@ class FinanceStore extends ChangeNotifier {
           'accounts': [{
             'id': account.id,
             'name': account.name,
-            'balance': account.balance.abs().toString(),
+            'init_balance': account.balance.abs().toString(),
             'type_id': _accountTypeToApi(account.type),
             'icon': _accountIconToApi(account.icon),
           }]
