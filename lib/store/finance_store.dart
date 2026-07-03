@@ -680,14 +680,26 @@ class FinanceStore extends ChangeNotifier {
 
     updateGoal(goalId, currentAmount: newAmount, isCompleted: completed);
 
+    final goalCategoryId = _categories
+        .where((c) =>
+            c.name == 'Инвестиционный расход' ||
+            c.name.contains('Инвестицион'))
+        .firstOrNull
+        ?.id;
+    final categoryId = goalCategoryId ??
+        _categories
+            .where((c) => c.name == 'Прочие расходы')
+            .firstOrNull
+            ?.id;
+
     addOperation(Operation(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       type: 'expense',
       amount: amount,
       date: DateTime.now().toIso8601String(),
       accountId: accountId,
-      categoryId: _categories.where((c) => c.name == 'Накопления' || c.name == 'Переводы').firstOrNull?.id,
-      comment: 'Пополнение цели: ${goal.title}',
+      categoryId: categoryId,
+      comment: '🎯 ${goal.title}',
     ));
   }
 
