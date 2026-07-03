@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
               if (plannedPayments.upcomingExpenses.isNotEmpty || plannedPayments.upcomingIncomes.isNotEmpty) ...[
                 Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
-                ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(e)),
+                ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e)),
                 _manageButton(context),
                 const SizedBox(height: 16),
               ],
@@ -159,7 +159,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _upcomingTile(FinancialEvent e) => Padding(
+  Widget _upcomingTile(BuildContext context, FinancialEvent e) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: AppCard(
       child: Row(
