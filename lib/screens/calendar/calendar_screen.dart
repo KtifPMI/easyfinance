@@ -5,8 +5,10 @@ import '../../components/common/app_card.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
+import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
 import '../../models/operation.dart';
+import '../../models/financial_event.dart';
 import '../../utils/format.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -33,8 +35,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FinanceStore>(
-      builder: (context, store, _) {
+    return Consumer2<FinanceStore, PlannedPaymentStore>(
+      builder: (context, store, plannedStore, _) {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
         final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
@@ -53,6 +55,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
           }
         }
 
+        final plannedByDate = <DateTime, List<FinancialEvent>>{};
+        for (final e in plannedStore.events) {
+          if (!e.enabled) continue;
+          final date = _occurrenceInMonth(e, _currentMonth);
+          if (date != null) {
+            final key = DateTime(date.year, date.month, date.day);
+            plannedByDate.putIfAbsent(key, () => []);
+            plannedByDate[key]!.add(e);
+          }
+        }
+
         final dayCells = <Widget>[];
         for (int i = 0; i < offset; i++) {
           dayCells.add(const SizedBox.shrink());
@@ -62,18 +75,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
           final isToday = date == today;
           final isSelected = date == _selectedDate;
           final hasOps = opsByDate.containsKey(date);
-          dayCells.add(_dayCell(d, isToday, isSelected, hasOps, () {
+          final hasPlanned = plannedByDate.containsKey(date);
+          dayCells.add(_dayCell(d, isToday, isSelected, hasOps, hasPlanned, () {
             setState(() => _selectedDate = date);
           }));
         }
 
         final selectedOps = opsByDate[_selectedDate] ?? <Operation>[];
+        final selectedPlanned = plannedByDate[_selectedDate] ?? <FinancialEvent>[];
 
         return ScreenScaffold(
           title: context.tr('calendar.title'),
           child: Column(
             children: [
-              ScreenHint(hintId: 'calendar', text: 'Нажмите на день, чтобы увидеть все операции за эту дату. Можно листать месяцы стрелками.'),
+              ScreenHint(hintId: 'calendar', text: 'Нажмите на день, чтобы увидеть все операции и запланированные платежи за эту дату. Можно листать месяцы стрелками.'),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -114,43 +129,89 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 const SizedBox(height: 8),
               ],
-              if (selectedOps.isEmpty)
+              if (selectedOps.isEmpty && selectedPlanned.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 16, bottom: 24),
                   child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondary)),
                 )
-              else
-                ...selectedOps.map((op) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: AppCard(
-                    child: InkWell(
-                      onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40, height: 40,
-                            decoration: BoxDecoration(
-                              color: (op.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
+              else ...[
+                if (selectedPlanned.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text('Запланированные платежи', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                  ),
+                  ...selectedPlanned.map((e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      child: InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: e),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40, height: 40,
+                              decoration: BoxDecoration(
+                                color: AppColors.warning.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: AppColors.warning),
                             ),
-                            child: Icon(op.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: op.type == 'income' ? AppColors.success : AppColors.expense),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
-                                Text(store.getAccount(op.accountId)?.name ?? '', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                              ],
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                                  if (e.comment != null && e.comment!.isNotEmpty)
+                                    Text(e.comment!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                ],
+                              ),
                             ),
-                          ),
-                          Text(formatMoney(op.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
-                        ],
+                            Text(formatMoney(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.warning)),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                )),
+                  )),
+                ],
+                if (selectedOps.isNotEmpty) ...[
+                  if (selectedPlanned.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 4),
+                      child: Text('Операции', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+                    ),
+                  ...selectedOps.map((op) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: AppCard(
+                      child: InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40, height: 40,
+                              decoration: BoxDecoration(
+                                color: (op.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(op.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: op.type == 'income' ? AppColors.success : AppColors.expense),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.text)),
+                                  Text(store.getAccount(op.accountId)?.name ?? '', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                                ],
+                              ),
+                            ),
+                            Text(formatMoney(op.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )),
+                ],
+              ],
             ],
           ),
         );
@@ -158,7 +219,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _dayCell(int day, bool isToday, bool isSelected, bool hasOps, VoidCallback onTap) {
+  DateTime? _occurrenceInMonth(FinancialEvent e, DateTime month) {
+    if (e.isRecurring && e.dayOfMonth != null) {
+      final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
+      final day = e.dayOfMonth! > daysInMonth ? daysInMonth : e.dayOfMonth!;
+      return DateTime(month.year, month.month, day);
+    }
+    if (e.specificDate != null) {
+      final d = DateTime.tryParse(e.specificDate!);
+      if (d != null && d.year == month.year && d.month == month.month) return d;
+    }
+    if (e.date.isNotEmpty) {
+      final d = DateTime.tryParse(e.date);
+      if (d != null && d.year == month.year && d.month == month.month) return d;
+    }
+    return null;
+  }
+
+  Widget _dayCell(int day, bool isToday, bool isSelected, bool hasOps, bool hasPlanned, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -178,8 +256,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 child: Center(child: Text('$day', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isToday ? Colors.white : AppColors.text))),
               ),
-              if (hasOps)
-                Container(width: 4, height: 4, decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+              if (hasOps || hasPlanned)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (hasOps)
+                      Container(width: 4, height: 4, decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
+                    if (hasOps && hasPlanned)
+                      const SizedBox(width: 3),
+                    if (hasPlanned)
+                      Container(width: 4, height: 4, decoration: BoxDecoration(color: AppColors.warning, shape: BoxShape.circle)),
+                  ],
+                ),
             ],
           ),
         ),

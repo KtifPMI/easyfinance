@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/financial_event.dart';
+import '../services/notification_service.dart';
 
 class PlannedPaymentStore extends ChangeNotifier {
   static const _key = 'easyfinance_planned_payments';
@@ -48,6 +49,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     _events.add(event);
     _recalcDates();
     await save();
+    NotificationService().rescheduleAll();
     notifyListeners();
   }
 
@@ -57,6 +59,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       _events[idx] = updated;
       _recalcDates();
       await save();
+      NotificationService().rescheduleAll();
       notifyListeners();
     }
   }
@@ -64,6 +67,7 @@ class PlannedPaymentStore extends ChangeNotifier {
   Future<void> remove(String id) async {
     _events.removeWhere((e) => e.id == id);
     await save();
+    NotificationService().rescheduleAll();
     notifyListeners();
   }
 
@@ -91,6 +95,7 @@ class PlannedPaymentStore extends ChangeNotifier {
         enabled: !old.enabled,
       );
       await save();
+      NotificationService().rescheduleAll();
       notifyListeners();
     }
   }

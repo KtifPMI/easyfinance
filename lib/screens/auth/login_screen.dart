@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
+import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
@@ -27,6 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (restored && mounted) {
       setState(() => _loading = true);
       await store.fetchAllData();
+      await NotificationService().rescheduleAll();
       if (mounted) Navigator.pushReplacementNamed(context, '/main');
     }
   }

@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../models/user.dart';
 import '../../services/api_client.dart';
+import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 
@@ -118,6 +119,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
       );
       await store.fetchAllData();
+      await NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
@@ -151,6 +153,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       );
 
       await store.fetchAllData();
+      await NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
