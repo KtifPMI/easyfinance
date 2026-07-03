@@ -166,8 +166,8 @@ class NotificationService {
       'dailyFinanceCheck',
       'checkGoals',
       frequency: const Duration(hours: 24),
-      existingWorkPolicy: ExistingWorkPolicy.replace,
-      constraints: Constraints(networkType: NetworkType.not_required),
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+      constraints: Constraints(networkType: NetworkType.notRequired),
     );
   }
 }
