@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -11,7 +10,6 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   late final WebViewController _controller;
   bool _loading = true;
-  Timer? _fixTimer;
 
   void _injectViewportFix() {
     _controller.runJavaScript('''
@@ -23,16 +21,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           document.head.appendChild(meta);
         }
         meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-        document.documentElement.style.width = '100%';
-        document.documentElement.style.maxWidth = '100%';
-        document.documentElement.style.overflowX = 'hidden';
-        document.body.style.width = '100%';
-        document.body.style.maxWidth = '100%';
-        document.body.style.overflowX = 'hidden';
-        document.body.style.margin = '0';
-        document.body.style.padding = '0';
-        var els = document.querySelectorAll('iframe, [class*="support"], [class*="chat"], [class*="widget"], [id*="support"]');
-        for (var i = 0; i < els.length; i++) { els[i].style.display = 'none'; }
+        var iframes = document.querySelectorAll('iframe');
+        for (var i = 0; i < iframes.length; i++) { iframes[i].style.display = 'none'; }
       })();
     ''');
   }
@@ -46,12 +36,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ..setNavigationDelegate(NavigationDelegate(
         onPageStarted: (_) {
           setState(() => _loading = true);
-          _fixTimer?.cancel();
         },
         onPageFinished: (_) {
           setState(() => _loading = false);
           _injectViewportFix();
-          _fixTimer = Timer(const Duration(milliseconds: 500), _injectViewportFix);
         },
         onNavigationRequest: (req) {
           final url = req.url;
@@ -67,7 +55,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _fixTimer?.cancel();
     super.dispose();
   }
 
