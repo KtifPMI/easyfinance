@@ -16,9 +16,9 @@ class AppChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: active ? (activeColor ?? AppColors.primary) : AppColors.card,
+          color: active ? (activeColor ?? AppColors.primary) : AppColors.cardFor(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: active ? (activeColor ?? AppColors.primary) : AppColors.border),
+          border: Border.all(color: active ? (activeColor ?? AppColors.primary) : AppColors.borderFor(context)),
         ),
         child: Text(label, style: TextStyle(fontSize: 13, color: active ? Colors.white : AppColors.textFor(context))),
       ),

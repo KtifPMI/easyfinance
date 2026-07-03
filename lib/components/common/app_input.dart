@@ -29,16 +29,16 @@ class AppInput extends StatelessWidget {
           style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.card,
+            fillColor: AppColors.cardFor(context),
             hintText: hint,
             hintStyle: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: error != null ? AppColors.danger : AppColors.border),
+              borderSide: BorderSide(color: error != null ? AppColors.danger : AppColors.borderFor(context)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.border),
+              borderSide: BorderSide(color: AppColors.borderFor(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

@@ -24,6 +24,7 @@ class AppColors {
   static const darkBorder = Color(0xFF333333);
   static const darkAppBar = Color(0xFF1E1E1E);
   static const darkBottomBar = Color(0xFF1E1E1E);
+  static const darkPrimaryLight = Color(0xFF1B3A1D);
 
   static Color backgroundFor(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkBackground : background;
@@ -39,6 +40,9 @@ class AppColors {
 
   static Color borderFor(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkBorder : border;
+
+  static Color primaryLightFor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark ? darkPrimaryLight : primaryLight;
 }
 
 class AppTheme {

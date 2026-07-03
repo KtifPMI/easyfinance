@@ -84,7 +84,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           DropdownButtonFormField<String>(
             initialValue: _type,
             decoration: InputDecoration(
-              filled: true, fillColor: AppColors.card,
+              filled: true, fillColor: AppColors.cardFor(context),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),

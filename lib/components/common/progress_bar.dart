@@ -18,7 +18,7 @@ class ProgressBar extends StatelessWidget {
       child: Container(
         height: height,
         width: double.infinity,
-        color: AppColors.border,
+        color: AppColors.borderFor(context),
         child: FractionallySizedBox(
           alignment: Alignment.centerLeft,
           widthFactor: clamped / 100,

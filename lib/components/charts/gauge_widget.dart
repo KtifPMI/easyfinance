@@ -25,7 +25,7 @@ class GaugeWidget extends StatelessWidget {
 
     return CustomPaint(
       size: Size(size, size),
-      painter: _GaugePainter(percent: clamped, color: color, strokeWidth: strokeWidth),
+      painter: _GaugePainter(percent: clamped, color: color, strokeWidth: strokeWidth, bgColor: AppColors.borderFor(context)),
       child: SizedBox(
         width: size, height: size,
         child: Column(
@@ -45,8 +45,9 @@ class _GaugePainter extends CustomPainter {
   final double percent;
   final Color color;
   final double strokeWidth;
+  final Color bgColor;
 
-  _GaugePainter({required this.percent, required this.color, required this.strokeWidth});
+  _GaugePainter({required this.percent, required this.color, required this.strokeWidth, required this.bgColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -55,7 +56,7 @@ class _GaugePainter extends CustomPainter {
     final rect = Rect.fromCircle(center: center, radius: radius);
 
     final bgPaint = Paint()
-      ..color = AppColors.border
+      ..color = bgColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;

@@ -125,9 +125,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-            color: selected ? color.withValues(alpha: 0.15) : AppColors.card,
+            color: selected ? color.withValues(alpha: 0.15) : AppColors.cardFor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? color : AppColors.border),
+          border: Border.all(color: selected ? color : AppColors.borderFor(context)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

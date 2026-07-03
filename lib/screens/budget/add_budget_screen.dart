@@ -54,7 +54,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _categoryId,
                 decoration: InputDecoration(
-                  filled: true, fillColor: AppColors.card,
+                  filled: true, fillColor: AppColors.cardFor(context),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),

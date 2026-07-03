@@ -153,7 +153,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                               padding: const EdgeInsets.all(12),
                               constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
                               decoration: BoxDecoration(
-                                color: isUser ? AppColors.primary : AppColors.card,
+                                color: isUser ? AppColors.primary : AppColors.cardFor(context),
                                 borderRadius: BorderRadius.circular(12).copyWith(
                                   bottomRight: isUser ? Radius.zero : const Radius.circular(12),
                                   bottomLeft: isUser ? const Radius.circular(12) : Radius.zero,
@@ -169,7 +169,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
               ),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                decoration: BoxDecoration(color: AppColors.background, boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2))]),
+                decoration: BoxDecoration(color: AppColors.backgroundFor(context), boxShadow: [BoxShadow(color: Theme.of(context).brightness == Brightness.dark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2))]),
                 child: Row(
                   children: [
                     Expanded(
@@ -177,7 +177,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                         controller: _ctrl,
                         decoration: InputDecoration(
                           hintText: context.tr('ai_assistant.placeholder'),
-                          filled: true, fillColor: AppColors.card,
+                          filled: true, fillColor: AppColors.cardFor(context),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         ),

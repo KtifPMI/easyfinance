@@ -148,7 +148,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               const SizedBox(height: 4),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Container(height: 6, color: AppColors.border, child: FractionallySizedBox(widthFactor: percent / 100, child: Container(color: color))),
+                child: Container(height: 6, color: AppColors.borderFor(context), child: FractionallySizedBox(widthFactor: percent / 100, child: Container(color: color))),
               ),
             ],
           ),

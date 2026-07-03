@@ -138,7 +138,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               DropdownButtonFormField<String>(
                 initialValue: _accountId,
                 decoration: InputDecoration(
-                  filled: true, fillColor: AppColors.card,
+                  filled: true, fillColor: AppColors.cardFor(context),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
@@ -152,7 +152,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _categoryId,
                   decoration: InputDecoration(
-                    filled: true, fillColor: AppColors.card,
+                    filled: true, fillColor: AppColors.cardFor(context),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
@@ -166,7 +166,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _toAccountId,
                   decoration: InputDecoration(
-                    filled: true, fillColor: AppColors.card,
+                    filled: true, fillColor: AppColors.cardFor(context),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
@@ -193,9 +193,9 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: active ? AppColors.primary : AppColors.card,
+            color: active ? AppColors.primary : AppColors.cardFor(context),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: active ? AppColors.primary : AppColors.border),
+            border: Border.all(color: active ? AppColors.primary : AppColors.borderFor(context)),
           ),
           child: Text(label, textAlign: TextAlign.center, style: TextStyle(
             fontSize: 14, fontWeight: FontWeight.w600,
