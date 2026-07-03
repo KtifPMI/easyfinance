@@ -22,14 +22,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           meta.name = 'viewport';
           document.head.appendChild(meta);
         }
-        meta.content = 'width=360, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-        document.documentElement.style.width = '360px';
-        document.documentElement.style.maxWidth = '100vw';
+        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        document.documentElement.style.width = '100%';
+        document.documentElement.style.maxWidth = '100%';
         document.documentElement.style.overflowX = 'hidden';
-        document.body.style.width = '360px';
-        document.body.style.maxWidth = '100vw';
+        document.body.style.width = '100%';
+        document.body.style.maxWidth = '100%';
         document.body.style.overflowX = 'hidden';
-        document.body.style.margin = '0 auto';
+        document.body.style.margin = '0';
+        document.body.style.padding = '0';
         var els = document.querySelectorAll('iframe, [class*="support"], [class*="chat"], [class*="widget"], [id*="support"]');
         for (var i = 0; i < els.length; i++) { els[i].style.display = 'none'; }
       })();
