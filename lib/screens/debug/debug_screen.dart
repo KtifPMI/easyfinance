@@ -38,13 +38,6 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('operations.post', 'operations.post'),
     _MethodItem('operations.set', 'operations.set'),
     _MethodItem('categories.get', 'categories.get'),
-    _MethodItem('categories.post — system_id', 'categories.post'),
-    _MethodItem('categories.post — name+custom', 'categories.post'),
-    _MethodItem('categories.post — id only', 'categories.post'),
-    _MethodItem('categories.post — category_id', 'categories.post'),
-    _MethodItem('categories.set — id', 'categories.set'),
-    _MethodItem('categories.set — name+custom', 'categories.set'),
-    _MethodItem('categories.set — system_id', 'categories.set'),
     _MethodItem('budget.get', 'budget.get'),
     _MethodItem('budget.post', 'budget.post'),
     _MethodItem('budget.set', 'budget.set'),
@@ -100,90 +93,6 @@ class _DebugScreenState extends State<DebugScreen> {
           "id": "ACCOUNT_ID",
           "name": "Updated Name",
           "balance": "20000"
-        }
-      ]
-    }
-  }
-}''',
-    'categories.post — system_id': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "system_id": "551145658",
-          "type": "-1"
-        }
-      ]
-    }
-  }
-}''',
-    'categories.post — name+custom': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "name": "New Category",
-          "type": "-1",
-          "custom": "1"
-        }
-      ]
-    }
-  }
-}''',
-    'categories.post — id only': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "id": "551145658"
-        }
-      ]
-    }
-  }
-}''',
-    'categories.post — category_id': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "category_id": "551145658"
-        }
-      ]
-    }
-  }
-}''',
-    'categories.set — id': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "id": "551145658",
-          "deleted_at": null
-        }
-      ]
-    }
-  }
-}''',
-    'categories.set — name+custom': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "name": "New Category",
-          "type": "-1",
-          "custom": "1"
-        }
-      ]
-    }
-  }
-}''',
-    'categories.set — system_id': '''{
-  "request": {
-    "request_data": {
-      "categories": [
-        {
-          "system_id": "551145658",
-          "type": "-1"
         }
       ]
     }

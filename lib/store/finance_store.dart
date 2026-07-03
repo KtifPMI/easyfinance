@@ -137,19 +137,7 @@ class FinanceStore extends ChangeNotifier {
     try {
       _categories = await api.getCategories();
       if (_categories.isEmpty) {
-        try {
-          await api.setCategory({
-            'categories': mockCategories.map((c) => {
-              'name': c.name,
-              'type': c.type == 'income' ? '1' : c.type == 'transfer' ? '0' : '-1',
-              'custom': '0',
-            }).toList(),
-          });
-          _categories = await api.getCategories();
-        } catch (_) {
-          // если API не дал создать — показываем мок
-          _categories = [...mockCategories];
-        }
+        _categories = [...mockCategories];
       }
     } on ApiException catch (e) {
       _error = e.message;
@@ -666,63 +654,6 @@ class FinanceStore extends ChangeNotifier {
         );
       }).toList();
     }
-  }
-
-  Future<void> addCategory(cat.Category category) async {
-    if (!_useMock && authService.isAuthenticated) {
-      try {
-        await authService.apiService.setCategory({
-          'categories': [{
-            'name': category.name,
-            'type': category.type == 'income' ? '1' : '-1',
-            'custom': '1',
-          }]
-        });
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка добавления категории: $e'; notifyListeners();
-      }
-    }
-    _categories.add(category);
-    notifyListeners();
-  }
-
-  Future<void> updateCategory(cat.Category category) async {
-    if (!_useMock && authService.isAuthenticated) {
-      try {
-        await authService.apiService.setCategory({
-          'categories': [{
-            'id': category.id,
-            'name': category.name,
-            'type': category.type == 'income' ? '1' : '-1',
-          }]
-        });
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка обновления категории: $e'; notifyListeners();
-      }
-    }
-    final idx = _categories.indexWhere((c) => c.id == category.id);
-    if (idx >= 0) _categories[idx] = category;
-    notifyListeners();
-  }
-
-  Future<void> deleteCategory(String id) async {
-    if (!_useMock && authService.isAuthenticated) {
-      try {
-        await authService.apiService.setCategory({
-          'categories': [{'id': id, 'deleted_at': DateTime.now().toIso8601String()}]
-        });
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка удаления категории: $e'; notifyListeners();
-      }
-    }
-    _categories.removeWhere((c) => c.id == id);
-    notifyListeners();
   }
 
   Future<void> addGoal(Goal g) async {

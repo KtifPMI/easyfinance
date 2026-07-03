@@ -7,7 +7,6 @@ import '../../services/update_service.dart';
 import '../../theme/theme.dart';
 import '../planned_payments/planned_payments_screen.dart';
 import '../bank/bank_screen.dart';
-import '../categories/categories_screen.dart';
 import '../debug/debug_screen.dart';
 import '../recommendations/recommendations_screen.dart';
 import '../settings/settings_screen.dart';
@@ -34,7 +33,6 @@ class _MoreScreenState extends State<MoreScreen> {
     final items = [
       (Icons.calendar_today, context.tr('more.planned_payments'), const PlannedPaymentsScreen()),
       (Icons.account_balance, context.tr('more.easybank'), const BankScreen()),
-      (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.system_update_outlined, 'Обновление', null),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),

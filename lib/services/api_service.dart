@@ -69,15 +69,6 @@ class ApiService {
     return list.cast<Map<String, dynamic>>();
   }
 
-  Future<Map<String, dynamic>> addCategory(Map<String, dynamic> body) async {
-    final json = await _client.post('categories.post', body: {'request': {'request_data': body}});
-    return json;
-  }
-
-  Future<void> setCategory(Map<String, dynamic> body) async {
-    await _client.post('categories.set', body: {'request': {'request_data': body}});
-  }
-
   List<T> _parseList<T>(Map<String, dynamic> data, String key, T Function(Map<String, dynamic>) fromJson) {
     final list = data[key] as List<dynamic>?;
     if (list == null) return [];
