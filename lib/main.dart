@@ -17,8 +17,13 @@ import 'theme/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  tz_data.initializeTimeZones();
-  await Workmanager().initialize(notificationCallbackDispatcher);
+
+  try {
+    tz_data.initializeTimeZones();
+    await Workmanager().initialize(notificationCallbackDispatcher);
+  } catch (e, stack) {
+    debugPrint('Workmanager init error: $e\n$stack');
+  }
 
   FlutterError.onError = (details) {
     FlutterError.presentError(details);
@@ -37,10 +42,14 @@ void main() async {
   final plannedPaymentStore = PlannedPaymentStore();
   await plannedPaymentStore.load();
 
-  final notif = NotificationService();
-  await notif.init();
-  await notif.rescheduleAll();
-  await notif.registerDailyTask();
+  try {
+    final notif = NotificationService();
+    await notif.init();
+    await notif.rescheduleAll();
+    await notif.registerDailyTask();
+  } catch (e, stack) {
+    debugPrint('Notification init error: $e\n$stack');
+  }
 
   runApp(
     MultiProvider(
