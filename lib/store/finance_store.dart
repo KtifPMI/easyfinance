@@ -157,10 +157,8 @@ class FinanceStore extends ChangeNotifier {
 
     for (var i = 0; i < _budgets.length; i++) {
       final b = _budgets[i];
-      final ops = _operations.where((o) =>
-        o.categoryId == b.categoryId && o.type == 'expense');
-      final total = ops.fold(0.0, (sum, o) => sum + o.amount);
-      _budgets[i] = b.copyWith(spent: total);
+      final spent = _calcSpentForMonth(b.categoryId);
+      _budgets[i] = b.copyWith(spent: spent);
     }
     await _saveBudgets();
 
@@ -610,9 +608,20 @@ class FinanceStore extends ChangeNotifier {
   }
 
   Future<void> addBudget(Budget b) async {
-    _budgets.add(b);
+    final spent = _calcSpentForMonth(b.categoryId);
+    _budgets.add(b.copyWith(spent: spent));
     await _saveBudgets();
     notifyListeners();
+  }
+
+  double _calcSpentForMonth(String categoryId) {
+    final now = DateTime.now();
+    final ops = _operations.where((o) {
+      if (o.categoryId != categoryId || o.type != 'expense' || o.isDeleted) return false;
+      final d = DateTime.tryParse(o.date.substring(0, 10));
+      return d != null && d.year == now.year && d.month == now.month;
+    });
+    return ops.fold(0.0, (sum, o) => sum + o.amount);
   }
 
   Future<void> deleteBudget(String id) async {
