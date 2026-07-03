@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 
 const String _reminderChannelId = 'easyfinance_reminders';
@@ -82,13 +83,15 @@ class NotificationService {
   }
 
   Future<void> _scheduleInactiveReminder() async {
+    final scheduledDate = tz.TZDateTime.now(tz.local).add(const Duration(days: 5));
     await _plugin?.zonedSchedule(
       _inactiveNotificationId,
       'Давно не заходили',
       'Пора проверить свои финансы!',
-      DateTime.now().add(const Duration(days: 5)),
+      scheduledDate,
       _details(),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -98,7 +101,7 @@ class NotificationService {
     if (raw == null) return;
 
     final events = jsonDecode(raw) as List<dynamic>;
-    final today = DateTime.now();
+    final today = tz.TZDateTime.now(tz.local);
     int notifId = _plannedBaseId;
 
     for (final e in events) {
@@ -108,7 +111,7 @@ class NotificationService {
       final eventDate = DateTime.tryParse(dateStr);
       if (eventDate == null) continue;
 
-      final remindAt = DateTime(eventDate.year, eventDate.month, eventDate.day - 1, 10, 0);
+      final remindAt = tz.TZDateTime(tz.local, eventDate.year, eventDate.month, eventDate.day - 1, 10, 0);
       if (remindAt.isAfter(today)) {
         await _plugin?.zonedSchedule(
           notifId++,
@@ -117,6 +120,7 @@ class NotificationService {
           remindAt,
           _details(),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         );
       }
     }

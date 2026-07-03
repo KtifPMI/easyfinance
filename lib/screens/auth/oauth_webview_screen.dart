@@ -103,6 +103,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   Future<void> _handleToken(String token) async {
     try {
       final store = context.read<FinanceStore>();
+      final plannedStore = context.read<PlannedPaymentStore>();
       store.apiClient.setAuth(accessToken: token);
 
       final user = await _fetchUser();
@@ -111,7 +112,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         store.saveUser(user);
       }
 
-      context.read<PlannedPaymentStore>().clear();
+      await plannedStore.clear();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
@@ -133,6 +134,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   Future<void> _handleCode(String code) async {
     try {
       final store = context.read<FinanceStore>();
+      final plannedStore = context.read<PlannedPaymentStore>();
       final token = await store.apiClient.exchangeCodeForToken(code);
       if (token.isEmpty) throw ApiException('Empty token', 'OAUTH_FAIL');
 
@@ -144,7 +146,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         store.saveUser(user);
       }
 
-      context.read<PlannedPaymentStore>().clear();
+      await plannedStore.clear();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,

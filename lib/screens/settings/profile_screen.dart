@@ -12,8 +12,9 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
-    await context.read<PlannedPaymentStore>().clear();
+    final plannedStore = context.read<PlannedPaymentStore>();
     final store = context.read<FinanceStore>();
+    await plannedStore.clear();
     await store.logout();
     if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
   }
