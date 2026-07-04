@@ -95,6 +95,7 @@
   "operations.account_to": "На счёт: {name}",
   "operations.trash": "Корзина",
   "operations.trash_empty": "Корзина пуста",
+  "operations.use_template": "Использовать шаблон",
 
   "categories.title": "Категории",
   "categories.incomes": "Доходы",

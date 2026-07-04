@@ -95,6 +95,7 @@
   "operations.account_to": "To: {name}",
   "operations.trash": "Trash",
   "operations.trash_empty": "Trash is empty",
+  "operations.use_template": "Use Template",
 
   "categories.title": "Categories",
   "categories.incomes": "Income",

@@ -141,9 +141,32 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
         return ScreenScaffold(
           title: _isEditing ? context.tr('operations.edit') : context.tr('operations.add'),
+          child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (store.templates.isNotEmpty && !_isEditing && widget.templateId == null) ...[
+                InkWell(
+                  onTap: () => _showTemplatePicker(context, store),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
+                        const SizedBox(width: 12),
+                        Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.primary)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               Row(
                 children: [
                   _typeBtn('expense', context.tr('operations.type_expense')),
@@ -205,6 +228,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               AppButton(title: context.tr('operations.save'), onPressed: _save),
             ],
           ),
+          ),
         );
       },
     );
@@ -226,6 +250,45 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             fontSize: 14, fontWeight: FontWeight.w600,
             color: active ? Colors.white : AppColors.textFor(context),
           )),
+        ),
+      ),
+    );
+  }
+
+  void _showTemplatePicker(BuildContext context, FinanceStore store) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            ),
+            ...store.templates.map((t) => ListTile(
+              leading: Icon(
+                t.type == 'income' ? Icons.trending_up : t.type == 'transfer' ? Icons.swap_horiz : Icons.trending_down,
+                color: t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense,
+              ),
+              title: Text(t.name),
+              subtitle: t.amount > 0 ? Text('${t.type == 'income' ? '+' : '-'}${t.amount.toStringAsFixed(0)} ₽',
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))) : null,
+              onTap: () {
+                Navigator.pop(ctx);
+                setState(() {
+                  _type = t.type;
+                  if (t.amount > 0) _amountCtrl.text = t.amount.toStringAsFixed(0);
+                  _accountId = t.accountId;
+                  _categoryId = t.categoryId;
+                  _toAccountId = t.toAccountId;
+                  if (t.comment != null) _commentCtrl.text = t.comment!;
+                  if (t.tags != null) _tagsCtrl.text = t.tags!;
+                });
+              },
+            )),
+            const SizedBox(height: 8),
+          ],
         ),
       ),
     );

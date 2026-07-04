@@ -158,7 +158,12 @@ class FinanceStore extends ChangeNotifier {
     } on ApiException catch (_) {}
 
     try {
-      _templates = await api.getTemplates();
+      final apiTemplates = await api.getTemplates();
+      final localIds = _templates.map((t) => t.id).toSet();
+      for (final t in apiTemplates) {
+        if (!localIds.contains(t.id)) _templates.add(t);
+      }
+      await _saveTemplates();
     } on ApiException catch (_) {}
 
     try {
@@ -172,6 +177,8 @@ class FinanceStore extends ChangeNotifier {
         }
       }
     } on ApiException catch (_) {}
+
+    _recalcAccountBalances();
 
     for (var i = 0; i < _budgets.length; i++) {
       final b = _budgets[i];
@@ -438,7 +445,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     _operations.insert(0, op);
-    _updateBalancesOnAdd(op);
+    _recalcAccountBalances();
     _generateRecommendations();
     notifyListeners();
   }
@@ -486,10 +493,9 @@ class FinanceStore extends ChangeNotifier {
     }
     final idx = _operations.indexWhere((o) => o.id == op.id);
     if (idx >= 0) {
-      _updateBalancesOnDelete(_operations[idx]);
       _operations[idx] = op;
-      _updateBalancesOnAdd(op);
     }
+    _recalcAccountBalances();
     _generateRecommendations();
     notifyListeners();
   }
@@ -510,9 +516,11 @@ class FinanceStore extends ChangeNotifier {
         _error = 'Ошибка удаления: $e'; notifyListeners();
       }
     }
-    if (!op.isDeleted) _updateBalancesOnDelete(op);
-    final idx = _operations.indexWhere((o) => o.id == id);
-    _operations[idx] = _operations[idx].copyWith(isDeleted: true);
+    if (!op.isDeleted) {
+      final idx = _operations.indexWhere((o) => o.id == id);
+      _operations[idx] = _operations[idx].copyWith(isDeleted: true);
+    }
+    _recalcAccountBalances();
     _generateRecommendations();
     notifyListeners();
   }
@@ -698,6 +706,26 @@ class FinanceStore extends ChangeNotifier {
       return d != null && d.year == now.year && d.month == now.month;
     });
     return ops.fold(0.0, (sum, o) => sum + o.amount);
+  }
+
+  void _recalcAccountBalances() {
+    for (var i = 0; i < _accounts.length; i++) {
+      final a = _accounts[i];
+      double balance = a.initBalance;
+      for (final op in _operations.where((o) => !o.isDeleted)) {
+        if (op.type == 'expense' && op.accountId == a.id) {
+          balance -= op.amount;
+        } else if (op.type == 'income' && op.accountId == a.id) {
+          balance += op.amount;
+        } else if (op.type == 'transfer') {
+          if (op.accountId == a.id) balance -= op.amount;
+          if (op.toAccountId == a.id) balance += op.amount;
+        }
+      }
+      if ((balance - a.balance).abs() > 0.01) {
+        _accounts[i] = a.copyWith(balance: balance);
+      }
+    }
   }
 
   Future<void> deleteBudget(String id) async {
