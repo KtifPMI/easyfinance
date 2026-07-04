@@ -262,5 +262,16 @@
   "tags.cancel": "Отмена",
   "tags.confirm_delete": "Удалить тег?",
 
-  "more.tags": "Теги"
+  "more.tags": "Теги",
+
+  "templates.title": "Шаблоны",
+  "templates.empty": "Нет шаблонов",
+  "templates.new": "Новый шаблон",
+  "templates.name": "Название шаблона",
+  "templates.amount": "Сумма",
+  "templates.comment": "Комментарий",
+  "templates.save": "Сохранить",
+  "templates.delete": "Удалить",
+  "templates.cancel": "Отмена",
+  "templates.confirm_delete": "Удалить шаблон?"
 }

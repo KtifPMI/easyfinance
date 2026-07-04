@@ -6,7 +6,9 @@ import '../models/budget.dart';
 import '../models/category.dart' as cat;
 import '../models/goal.dart';
 import '../models/operation.dart';
+import '../models/operation_template.dart';
 import '../models/recommendation.dart';
+import '../models/tag.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
@@ -22,12 +24,15 @@ class FinanceStore extends ChangeNotifier {
   List<Budget> _budgets = [];
   List<Goal> _goals = [];
   List<Recommendation> _recommendations = [];
+  List<Tag> _tags = [];
+  List<OperationTemplate> _templates = [];
   bool _isLoading = false;
   bool _useMock = true;
   String? _error;
 
   FinanceStore({required this.authService, required this.apiClient}) {
     _loadFromMock();
+    _loadTemplates();
   }
 
   void _loadFromMock() {
@@ -49,6 +54,7 @@ class FinanceStore extends ChangeNotifier {
     await prefs.remove('easyfinance_budgets');
     await prefs.remove('easyfinance_goals');
     await prefs.remove('easyfinance_planned_payments');
+    await prefs.remove('easyfinance_templates');
     await authService.logout();
     _currentUser = null;
     _accounts = [];
@@ -56,6 +62,8 @@ class FinanceStore extends ChangeNotifier {
     _categories = [];
     _budgets = [];
     _goals = [];
+    _tags = [];
+    _templates = [];
     _useMock = true;
     notifyListeners();
   }
@@ -68,6 +76,8 @@ class FinanceStore extends ChangeNotifier {
   List<Budget> get budgets => _budgets.where((b) => !b.isDeleted).toList();
   List<Goal> get goals => _goals;
   List<Recommendation> get recommendations => _recommendations;
+  List<Tag> get tags => _tags;
+  List<OperationTemplate> get templates => _templates;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
@@ -142,6 +152,14 @@ class FinanceStore extends ChangeNotifier {
     } on ApiException catch (e) {
       _error = e.message;
     }
+
+    try {
+      _tags = await api.getTags();
+    } on ApiException catch (_) {}
+
+    try {
+      _templates = await api.getTemplates();
+    } on ApiException catch (_) {}
 
     try {
       final goals = await api.getGoals();
@@ -403,6 +421,7 @@ class FinanceStore extends ChangeNotifier {
             if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
             if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
+            if (op.tags != null) 'tags': op.tags,
             'accepted': true,
             'client_id': clientId,
             'created_at': isoStr,
@@ -453,6 +472,7 @@ class FinanceStore extends ChangeNotifier {
             'transfer_account_id': op.toAccountId,
             'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
             if (op.comment != null) 'comment': op.comment,
+            if (op.tags != null) 'tags': op.tags,
             'accepted': true,
             'updated_at': dateStr,
             'deleted_at': null,
@@ -548,15 +568,29 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        await authService.apiService.addAccount({
+        final now = DateTime.now().toIso8601String();
+        final newAccount = account.copyWith();
+        final resp = await authService.apiService.addAccount({
           'accounts': [{
             'name': account.name,
-            'init_balance': account.balance.abs().toString(),
+            'init_balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
+            'state': '0',
             'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
+            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
+            'updated_at': now,
           }]
         }, options: 'client');
+        final accounts = resp['accounts'] as List<dynamic>?;
+        if (accounts != null && accounts.isNotEmpty) {
+          final serverId = accounts[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _accounts.add(newAccount.copyWith(id: serverId));
+            notifyListeners();
+            return;
+          }
+        }
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
       } catch (e) {
@@ -570,13 +604,18 @@ class FinanceStore extends ChangeNotifier {
   Future<void> updateAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
+        final now = DateTime.now().toIso8601String();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': account.id,
             'name': account.name,
-            'init_balance': account.balance.abs().toString(),
+            'init_balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
+            'state': '0',
+            'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
+            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
+            'updated_at': now,
           }]
         });
       } on ApiException catch (e) {
@@ -593,10 +632,26 @@ class FinanceStore extends ChangeNotifier {
   Future<void> deleteAccount(String id) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
+        final account = _accounts.firstWhere((a) => a.id == id);
+        final now = DateTime.now().toIso8601String();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
-            'deleted_at': DateTime.now().toIso8601String(),
+            'init_balance': account.initBalance.toStringAsFixed(2),
+            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
+            'updated_at': now,
+            'deleted_at': now,
+          }]
+        });
+      } on StateError {
+        final now = DateTime.now().toIso8601String();
+        await authService.apiService.setAccount({
+          'accounts': [{
+            'id': id,
+            'init_balance': '0.00',
+            'created_at': now,
+            'updated_at': now,
+            'deleted_at': now,
           }]
         });
       } on ApiException catch (e) {
@@ -752,5 +807,96 @@ class FinanceStore extends ChangeNotifier {
       final list = jsonDecode(raw) as List<dynamic>;
       _goals = list.map((e) => Goal.fromLocalJson(e as Map<String, dynamic>)).toList();
     }
+  }
+
+  // --- Templates ---
+
+  Future<void> addTemplate(OperationTemplate t) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        final now = DateTime.now().toIso8601String();
+        final typeCode = t.type == 'expense' ? '0' : t.type == 'income' ? '1' : '2';
+        final resp = await authService.apiService.addTemplate({
+          'operationPatterns': [{
+            'name': t.name,
+            'type': typeCode,
+            'amount': t.amount.toStringAsFixed(2),
+            if (t.accountId != null) 'account_id': t.accountId,
+            if (t.categoryId != null) 'category_id': t.categoryId,
+            if (t.toAccountId != null) 'transfer_account_id': t.toAccountId,
+            if (t.comment != null) 'comment': t.comment,
+            if (t.tags != null) 'tags': t.tags,
+            'created_at': now,
+            'updated_at': now,
+          }]
+        }, options: 'client');
+        final patterns = resp['operationPatterns'] as List<dynamic>?;
+        if (patterns != null && patterns.isNotEmpty) {
+          final serverId = patterns[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _templates.add(OperationTemplate(
+              id: serverId, name: t.name, type: t.type, amount: t.amount,
+              accountId: t.accountId, categoryId: t.categoryId, toAccountId: t.toAccountId,
+              comment: t.comment, tags: t.tags, createdAt: now, updatedAt: now,
+            ));
+            await _saveTemplates();
+            notifyListeners();
+            return;
+          }
+        }
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка добавления шаблона: $e'; notifyListeners();
+      }
+    }
+    _templates.add(t);
+    await _saveTemplates();
+    notifyListeners();
+  }
+
+  Future<void> deleteTemplate(String id) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        final now = DateTime.now().toIso8601String();
+        await authService.apiService.setTemplate({
+          'operationPatterns': [{'id': id, 'deleted_at': now}]
+        });
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления шаблона: $e'; notifyListeners();
+      }
+    }
+    _templates.removeWhere((t) => t.id == id);
+    await _saveTemplates();
+    notifyListeners();
+  }
+
+  Future<void> _saveTemplates() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = _templates.map((t) => t.toJson()).toList();
+    await prefs.setString('easyfinance_templates', jsonEncode(data));
+  }
+
+  Future<void> _loadTemplates() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString('easyfinance_templates');
+    if (raw != null) {
+      final list = jsonDecode(raw) as List<dynamic>;
+      _templates = list.map((e) => OperationTemplate.fromLocalJson(e as Map<String, dynamic>)).toList();
+    }
+  }
+
+  // --- Tags ---
+
+  Future<void> deleteTag(String id) async {
+    _tags.removeWhere((t) => t.id == id);
+    notifyListeners();
+  }
+
+  List<String> getTagsForOperation(Operation op) {
+    if (op.tags == null || op.tags!.isEmpty) return [];
+    return op.tags!.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
   }
 }

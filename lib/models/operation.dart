@@ -14,6 +14,7 @@ class Operation {
   final String? toAccountId;
   final String? categoryId;
   final String? comment;
+  final String? tags;
   final bool isDeleted;
 
   Operation({
@@ -26,11 +27,12 @@ class Operation {
     this.toAccountId,
     this.categoryId,
     this.comment,
+    this.tags,
     this.isDeleted = false,
   });
 
-  Operation copyWith({bool? isDeleted}) =>
-      Operation(id: id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, isDeleted: isDeleted ?? this.isDeleted);
+  Operation copyWith({bool? isDeleted, String? tags}) =>
+      Operation(id: id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, tags: tags ?? this.tags, isDeleted: isDeleted ?? this.isDeleted);
 
   factory Operation.fromJson(Map<String, dynamic> json) {
     final dateStr = json['date']?.toString() ?? '';
@@ -46,6 +48,7 @@ class Operation {
       toAccountId: json['to_account_id']?.toString() ?? json['transfer_account_id']?.toString(),
       categoryId: json['category_id']?.toString(),
       comment: json['comment']?.toString(),
+      tags: json['tags']?.toString(),
       isDeleted: json['deleted_at'] != null || json['state']?.toString() == '2',
     );
   }

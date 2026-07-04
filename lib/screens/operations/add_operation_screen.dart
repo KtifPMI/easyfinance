@@ -12,8 +12,9 @@ class AddOperationScreen extends StatefulWidget {
   final String? type;
   final String? operationId;
   final String? presetDate;
+  final String? templateId;
 
-  const AddOperationScreen({super.key, this.type, this.operationId, this.presetDate});
+  const AddOperationScreen({super.key, this.type, this.operationId, this.presetDate, this.templateId});
 
   @override
   State<AddOperationScreen> createState() => _AddOperationScreenState();
@@ -26,6 +27,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   String? _toAccountId;
   final _amountCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
+  final _tagsCtrl = TextEditingController();
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
@@ -48,17 +50,35 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_isEditing && !_loaded) {
+    if (!_loaded) {
       _loaded = true;
       final store = context.read<FinanceStore>();
-      final op = store.operations.where((o) => o.id == widget.operationId).firstOrNull;
-      if (op != null) {
-        _type = op.type;
-        _amountCtrl.text = op.amount.toStringAsFixed(0);
-        _accountId = op.accountId;
-        _categoryId = op.categoryId;
-        _toAccountId = op.toAccountId;
-        if (op.comment != null) _commentCtrl.text = op.comment!;
+
+      if (widget.templateId != null) {
+        final t = store.templates.where((t) => t.id == widget.templateId).firstOrNull;
+        if (t != null) {
+          _type = t.type;
+          _amountCtrl.text = t.amount > 0 ? t.amount.toStringAsFixed(0) : '';
+          _accountId = t.accountId;
+          _categoryId = t.categoryId;
+          _toAccountId = t.toAccountId;
+          if (t.comment != null) _commentCtrl.text = t.comment!;
+          if (t.tags != null) _tagsCtrl.text = t.tags!;
+          return;
+        }
+      }
+
+      if (_isEditing) {
+        final op = store.operations.where((o) => o.id == widget.operationId).firstOrNull;
+        if (op != null) {
+          _type = op.type;
+          _amountCtrl.text = op.amount.toStringAsFixed(0);
+          _accountId = op.accountId;
+          _categoryId = op.categoryId;
+          _toAccountId = op.toAccountId;
+          if (op.comment != null) _commentCtrl.text = op.comment!;
+          if (op.tags != null) _tagsCtrl.text = op.tags!;
+        }
       }
     }
   }
@@ -67,6 +87,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   void dispose() {
     _amountCtrl.dispose();
     _commentCtrl.dispose();
+    _tagsCtrl.dispose();
     super.dispose();
   }
 
@@ -89,6 +110,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         toAccountId: _type == 'transfer' ? _toAccountId : null,
         categoryId: catId,
         comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+        tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
       ));
     } else {
       store.addOperation(Operation(
@@ -100,6 +122,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         toAccountId: _type == 'transfer' ? _toAccountId : null,
         categoryId: catId,
         comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+        tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
       ));
     }
 
@@ -176,6 +199,8 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ],
               const SizedBox(height: 16),
               AppInput(label: context.tr('operations.comment'), controller: _commentCtrl),
+              const SizedBox(height: 16),
+              AppInput(label: context.tr('operations.tags'), controller: _tagsCtrl),
               const SizedBox(height: 24),
               AppButton(title: context.tr('operations.save'), onPressed: _save),
             ],

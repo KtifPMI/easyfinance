@@ -80,6 +80,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           return OperationListItem(
                             title: title,
                             subtitle: op.comment ?? acc?.name ?? '',
+                            tags: store.getTagsForOperation(op),
                             amount: op.amount,
                             type: op.type,
                             icon: iconData,

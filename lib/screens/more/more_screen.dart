@@ -12,6 +12,8 @@ import '../recommendations/recommendations_screen.dart';
 import '../settings/settings_screen.dart';
 import '../settings/profile_screen.dart';
 import '../ai_assistant/ai_assistant_screen.dart';
+import '../templates/templates_screen.dart';
+import '../tags/tags_screen.dart';
 
 class MoreScreen extends StatefulWidget {
   const MoreScreen({super.key});
@@ -36,6 +38,8 @@ class _MoreScreenState extends State<MoreScreen> {
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.system_update_outlined, 'Обновление', null),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
+      (Icons.description_outlined, context.tr('templates.title'), const TemplatesScreen()),
+      (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
       (Icons.person_outline, context.tr('more.profile'), const ProfileScreen()),
       (Icons.bug_report_outlined, 'Debug API', const DebugScreen()),

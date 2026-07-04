@@ -2,6 +2,8 @@ import '../models/account.dart';
 import '../models/operation.dart';
 import '../models/category.dart' as cat;
 import '../models/user.dart';
+import '../models/tag.dart';
+import '../models/operation_template.dart';
 import 'api_client.dart';
 
 class ApiService {
@@ -40,6 +42,27 @@ class ApiService {
     final list = json['users'] as List<dynamic>?;
     if (list == null || list.isEmpty) throw ApiException('User not found', 'NOT_FOUND');
     return User.fromJson(list.first as Map<String, dynamic>);
+  }
+
+  Future<List<Tag>> getTags() async {
+    final json = await _client.get('tags.get');
+    return _parseList(json, 'tags', Tag.fromJson);
+  }
+
+  Future<List<OperationTemplate>> getTemplates() async {
+    final json = await _client.get('operationPatterns.get');
+    return _parseList(json, 'operationPatterns', OperationTemplate.fromJson);
+  }
+
+  Future<Map<String, dynamic>> addTemplate(Map<String, dynamic> body, {String? options}) async {
+    final params = <String, String>{};
+    if (options != null) params['options'] = options;
+    final json = await _client.post('operationPatterns.post', params: params, body: {'request': {'request_data': body}});
+    return json;
+  }
+
+  Future<void> setTemplate(Map<String, dynamic> body) async {
+    await _client.post('operationPatterns.set', body: {'request': {'request_data': body}});
   }
 
   Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body, {String? options}) async {

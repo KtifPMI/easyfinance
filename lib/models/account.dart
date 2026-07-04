@@ -28,6 +28,9 @@ class Account {
   final String type;
   final bool includeInTotal;
   final bool isArchived;
+  final double initBalance;
+  final String createdAt;
+  final String updatedAt;
 
   Account({
     required this.id,
@@ -39,15 +42,19 @@ class Account {
     this.type = 'account',
     this.includeInTotal = true,
     this.isArchived = false,
+    this.initBalance = 0,
+    this.createdAt = '',
+    this.updatedAt = '',
   });
 
-  Account copyWith({double? balance}) =>
-      Account(id: id, name: name, balance: balance ?? this.balance, currency: currency, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived);
+  Account copyWith({String? id, double? balance}) =>
+      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt);
 
   factory Account.fromJson(Map<String, dynamic> json) {
     final icon = json['icon']?.toString() ?? '';
     final state = int.tryParse(json['state']?.toString() ?? '0') ?? 0;
     final isArchived = state == 2;
+    final initBalance = double.tryParse(json['init_balance']?.toString() ?? '0')?.abs() ?? 0;
     return Account(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
@@ -58,6 +65,9 @@ class Account {
       type: _parseAccountType(json['type_id']),
       includeInTotal: !isArchived && json['include_in_total']?.toString() != '0',
       isArchived: isArchived,
+      initBalance: initBalance,
+      createdAt: json['created_at']?.toString() ?? '',
+      updatedAt: json['updated_at']?.toString() ?? '',
     );
   }
 

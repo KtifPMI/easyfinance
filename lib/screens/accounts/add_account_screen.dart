@@ -52,6 +52,20 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     if (name.isEmpty) return;
     final balance = double.tryParse(_balanceCtrl.text.replaceAll(',', '.')) ?? 0;
 
+    String createdAt = '';
+    String updatedAt = '';
+    double initBalance = balance;
+
+    if (_isEditing) {
+      final existing = store.accounts.where((a) => a.id == widget.accountId).firstOrNull;
+      if (existing != null) {
+        createdAt = existing.createdAt;
+        updatedAt = existing.updatedAt;
+        initBalance = existing.initBalance;
+      }
+    }
+
+    final now = DateTime.now().toIso8601String();
     final account = Account(
       id: _isEditing ? widget.accountId! : DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       name: name,
@@ -59,6 +73,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       type: _type,
       icon: _type == 'card' ? 'credit_card' : _type == 'savings' ? 'savings' : 'cash',
       color: _type == 'card' ? '#FFD700' : _type == 'savings' ? '#FF9800' : '#16A34A',
+      initBalance: initBalance,
+      createdAt: createdAt.isNotEmpty ? createdAt : now,
+      updatedAt: now,
     );
 
     if (_isEditing) {

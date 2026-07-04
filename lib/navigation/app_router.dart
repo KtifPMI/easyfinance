@@ -41,6 +41,7 @@ class AppRouter {
           type: args?['type'] as String?,
           operationId: args?['operationId'] as String?,
           presetDate: args?['presetDate'] as String?,
+          templateId: args?['templateId'] as String?,
         ),
         settings: settings,
       );

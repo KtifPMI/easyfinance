@@ -87,6 +87,21 @@ class OperationDetailScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 if (op.comment != null) Text(op.comment!, style: TextStyle(color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 8),
+                if (op.tags != null && op.tags!.isNotEmpty) ...[
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: op.tags!.split(',').where((e) => e.trim().isNotEmpty).map((t) => Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text('#${t.trim()}', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (acc != null) Text(context.tr('operations.account_from', namedArgs: {'name': acc.name}), style: TextStyle(color: AppColors.textSecondaryFor(context))),
                 if (toAcc != null) Text(context.tr('operations.account_to', namedArgs: {'name': toAcc.name}), style: TextStyle(color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 8),

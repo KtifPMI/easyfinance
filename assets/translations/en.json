@@ -262,5 +262,16 @@
   "tags.cancel": "Cancel",
   "tags.confirm_delete": "Delete tag?",
 
-  "more.tags": "Tags"
+  "more.tags": "Tags",
+
+  "templates.title": "Templates",
+  "templates.empty": "No templates",
+  "templates.new": "New Template",
+  "templates.name": "Template name",
+  "templates.amount": "Amount",
+  "templates.comment": "Comment",
+  "templates.save": "Save",
+  "templates.delete": "Delete",
+  "templates.cancel": "Cancel",
+  "templates.confirm_delete": "Delete template?"
 }

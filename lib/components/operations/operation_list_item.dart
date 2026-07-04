@@ -4,6 +4,7 @@ import '../../theme/theme.dart';
 class OperationListItem extends StatelessWidget {
   final String title;
   final String? subtitle;
+  final List<String> tags;
   final double amount;
   final String type;
   final String? currency;
@@ -15,6 +16,7 @@ class OperationListItem extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
+    this.tags = const [],
     required this.amount,
     required this.type,
     this.currency = 'RUB',
@@ -60,6 +62,14 @@ class OperationListItem extends StatelessWidget {
                   Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   if (subtitle != null && subtitle!.isNotEmpty)
                     Padding(padding: const EdgeInsets.only(top: 2), child: Text(subtitle!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
+                  if (tags.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Wrap(
+                        spacing: 4,
+                        children: tags.map((t) => Text('#$t', style: TextStyle(fontSize: 11, color: AppColors.primary))).toList(),
+                      ),
+                    ),
                 ],
               ),
             ),
