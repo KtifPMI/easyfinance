@@ -61,8 +61,8 @@ class ApiService {
     return json;
   }
 
-  Future<void> setTemplate(Map<String, dynamic> body) async {
-    await _client.post('operationPatterns.set', body: {'request': {'request_data': body}});
+  Future<void> setTemplate(Map<String, dynamic> body, {required String operationPatternId}) async {
+    await _client.post('operationPatterns.set', params: {'operation_pattern_id': operationPatternId}, body: {'request': {'request_data': body}});
   }
 
   Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body, {String? options}) async {
@@ -72,8 +72,8 @@ class ApiService {
     return json;
   }
 
-  Future<void> setAccount(Map<String, dynamic> body) async {
-    await _client.post('accounts.set', body: {'request': {'request_data': body}});
+  Future<void> setAccount(Map<String, dynamic> body, {required String accountId}) async {
+    await _client.post('accounts.set', params: {'account_id': accountId}, body: {'request': {'request_data': body}});
   }
 
   Future<Map<String, dynamic>> addOperation(Map<String, dynamic> body) async {

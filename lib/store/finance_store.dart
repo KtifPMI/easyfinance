@@ -505,6 +505,7 @@ class FinanceStore extends ChangeNotifier {
     _operations.insert(0, op);
     _recalcAccountBalances();
     _generateRecommendations();
+    await _saveCache();
     notifyListeners();
   }
 
@@ -555,6 +556,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _generateRecommendations();
+    await _saveCache();
     notifyListeners();
   }
 
@@ -580,6 +582,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _generateRecommendations();
+    await _saveCache();
     notifyListeners();
   }
 
@@ -653,6 +656,7 @@ class FinanceStore extends ChangeNotifier {
           final serverId = accounts[0]['id']?.toString();
           if (serverId != null && serverId.isNotEmpty) {
             _accounts.add(newAccount.copyWith(id: serverId));
+            await _saveCache();
             notifyListeners();
             return;
           }
@@ -664,6 +668,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     _accounts.add(account);
+    await _saveCache();
     notifyListeners();
   }
 
@@ -683,7 +688,7 @@ class FinanceStore extends ChangeNotifier {
             'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
             'updated_at': now,
           }]
-        });
+        }, accountId: account.id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
       } catch (e) {
@@ -692,6 +697,7 @@ class FinanceStore extends ChangeNotifier {
     }
     final idx = _accounts.indexWhere((a) => a.id == account.id);
     if (idx >= 0) _accounts[idx] = account;
+    await _saveCache();
     notifyListeners();
   }
 
@@ -708,7 +714,7 @@ class FinanceStore extends ChangeNotifier {
             'updated_at': now,
             'deleted_at': now,
           }]
-        });
+        }, accountId: id);
       } on StateError {
         final now = DateTime.now().toIso8601String();
         await authService.apiService.setAccount({
@@ -719,7 +725,7 @@ class FinanceStore extends ChangeNotifier {
             'updated_at': now,
             'deleted_at': now,
           }]
-        });
+        }, accountId: id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
       } catch (e) {
@@ -727,6 +733,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     _accounts.removeWhere((a) => a.id == id);
+    await _saveCache();
     notifyListeners();
   }
 
@@ -901,9 +908,13 @@ class FinanceStore extends ChangeNotifier {
     if (!_useMock && authService.isAuthenticated) {
       try {
         final now = DateTime.now().toIso8601String();
-        final typeCode = t.type == 'expense' ? '0' : t.type == 'income' ? '1' : '2';
+        final typeCode = t.type == 'expense' ? 0 : t.type == 'income' ? 1 : 2;
+        final clientId = DateTime.now().millisecondsSinceEpoch.toString();
+        final userId = authService.userId ?? '';
         final resp = await authService.apiService.addTemplate({
           'operationPatterns': [{
+            'client_id': clientId,
+            'user_id': userId,
             'name': t.name,
             'type': typeCode,
             'amount': t.amount.toStringAsFixed(2),
@@ -947,7 +958,7 @@ class FinanceStore extends ChangeNotifier {
         final now = DateTime.now().toIso8601String();
         await authService.apiService.setTemplate({
           'operationPatterns': [{'id': id, 'deleted_at': now}]
-        });
+        }, operationPatternId: id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
       } catch (e) {
