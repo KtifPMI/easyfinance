@@ -50,6 +50,28 @@ class Account {
   Account copyWith({String? id, double? balance}) =>
       Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt);
 
+  Map<String, dynamic> toJson() => {
+    'id': id, 'name': name, 'balance': balance, 'currency': currency,
+    'icon': icon, 'color': color, 'type': type,
+    'include_in_total': includeInTotal, 'is_archived': isArchived,
+    'init_balance': initBalance, 'created_at': createdAt, 'updated_at': updatedAt,
+  };
+
+  factory Account.fromLocalJson(Map<String, dynamic> json) => Account(
+    id: json['id']?.toString() ?? '',
+    name: json['name']?.toString() ?? '',
+    balance: (json['balance'] as num?)?.toDouble() ?? 0,
+    currency: json['currency']?.toString() ?? 'RUB',
+    icon: json['icon']?.toString() ?? 'cash',
+    color: json['color']?.toString() ?? '#16A34A',
+    type: json['type']?.toString() ?? 'account',
+    includeInTotal: json['include_in_total'] == true,
+    isArchived: json['is_archived'] == true,
+    initBalance: (json['init_balance'] as num?)?.toDouble() ?? 0,
+    createdAt: json['created_at']?.toString() ?? '',
+    updatedAt: json['updated_at']?.toString() ?? '',
+  );
+
   factory Account.fromJson(Map<String, dynamic> json) {
     final icon = json['icon']?.toString() ?? '';
     final state = int.tryParse(json['state']?.toString() ?? '0') ?? 0;

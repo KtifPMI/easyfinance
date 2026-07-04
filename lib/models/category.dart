@@ -58,6 +58,22 @@ class Category {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': id, 'name': name, 'type': type,
+    'icon': icon, 'color': color,
+    'parent_id': parentId, 'is_default': isDefault,
+  };
+
+  factory Category.fromLocalJson(Map<String, dynamic> json) => Category(
+    id: json['id']?.toString() ?? '',
+    name: json['name']?.toString() ?? '',
+    type: _parseType(json['type']),
+    icon: json['icon']?.toString() ?? 'help',
+    color: json['color']?.toString() ?? '#6B7280',
+    parentId: json['parent_id']?.toString(),
+    isDefault: json['is_default'] == true,
+  );
+
   static String _parseType(dynamic type) {
     if (type is String) {
       if (type == '-1') return 'expense';

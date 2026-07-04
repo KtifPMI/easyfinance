@@ -31,8 +31,41 @@ class FinanceStore extends ChangeNotifier {
   String? _error;
 
   FinanceStore({required this.authService, required this.apiClient}) {
-    _loadFromMock();
+    _loadFromCache();
     _loadTemplates();
+  }
+
+  Future<void> _loadFromCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accountsRaw = prefs.getString('easyfinance_cached_accounts');
+    final operationsRaw = prefs.getString('easyfinance_cached_operations');
+    final categoriesRaw = prefs.getString('easyfinance_cached_categories');
+    final tagsRaw = prefs.getString('easyfinance_cached_tags');
+    final userRaw = prefs.getString('easyfinance_cached_user');
+    if (accountsRaw != null) {
+      final list = jsonDecode(accountsRaw) as List<dynamic>;
+      _accounts = list.map((e) => Account.fromLocalJson(e as Map<String, dynamic>)).toList();
+      _useMock = false;
+    }
+    if (operationsRaw != null) {
+      final list = jsonDecode(operationsRaw) as List<dynamic>;
+      _operations = list.map((e) => Operation.fromLocalJson(e as Map<String, dynamic>)).toList();
+      _useMock = false;
+    }
+    if (categoriesRaw != null) {
+      final list = jsonDecode(categoriesRaw) as List<dynamic>;
+      _categories = list.map((e) => cat.Category.fromLocalJson(e as Map<String, dynamic>)).toList();
+      _useMock = false;
+    }
+    if (tagsRaw != null) {
+      final list = jsonDecode(tagsRaw) as List<dynamic>;
+      _tags = list.map((e) => Tag.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    if (userRaw != null) {
+      try { _currentUser = User.fromJson(jsonDecode(userRaw) as Map<String, dynamic>); } catch (_) {}
+    }
+    _generateRecommendations();
+    notifyListeners();
   }
 
   void _loadFromMock() {
@@ -42,6 +75,25 @@ class FinanceStore extends ChangeNotifier {
     _budgets = [...mockBudgets];
     _useMock = true;
     _generateRecommendations();
+  }
+
+  Future<void> _saveCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_accounts.isNotEmpty) {
+      await prefs.setString('easyfinance_cached_accounts', jsonEncode(_accounts.map((a) => a.toJson()).toList()));
+    }
+    if (_operations.isNotEmpty) {
+      await prefs.setString('easyfinance_cached_operations', jsonEncode(_operations.map((o) => o.toJson()).toList()));
+    }
+    if (_categories.isNotEmpty) {
+      await prefs.setString('easyfinance_cached_categories', jsonEncode(_categories.map((c) => c.toJson()).toList()));
+    }
+    if (_tags.isNotEmpty) {
+      await prefs.setString('easyfinance_cached_tags', jsonEncode(_tags.map((t) => t.toJson()).toList()));
+    }
+    if (_currentUser != null) {
+      await prefs.setString('easyfinance_cached_user', jsonEncode(_currentUser!.toJson()));
+    }
   }
 
   void saveUser(User user) {
@@ -55,6 +107,11 @@ class FinanceStore extends ChangeNotifier {
     await prefs.remove('easyfinance_goals');
     await prefs.remove('easyfinance_planned_payments');
     await prefs.remove('easyfinance_templates');
+    await prefs.remove('easyfinance_cached_accounts');
+    await prefs.remove('easyfinance_cached_operations');
+    await prefs.remove('easyfinance_cached_categories');
+    await prefs.remove('easyfinance_cached_tags');
+    await prefs.remove('easyfinance_cached_user');
     await authService.logout();
     _currentUser = null;
     _accounts = [];
@@ -191,6 +248,7 @@ class FinanceStore extends ChangeNotifier {
 
     _useMock = _accounts.isEmpty && _operations.isEmpty && _categories.isEmpty;
     _isLoading = false;
+    await _saveCache();
     notifyListeners();
   }
 

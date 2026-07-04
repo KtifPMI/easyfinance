@@ -49,4 +49,11 @@ class User {
       registeredAt: registeredAt,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'name': name, 'email': email, 'login': login,
+    'account_type': accountType, 'currency': currency,
+    'tariff_end': tariffEnd?.toIso8601String(),
+    'created_at': registeredAt?.toIso8601String(),
+  };
 }

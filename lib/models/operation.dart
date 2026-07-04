@@ -34,6 +34,27 @@ class Operation {
   Operation copyWith({bool? isDeleted, String? tags}) =>
       Operation(id: id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, tags: tags ?? this.tags, isDeleted: isDeleted ?? this.isDeleted);
 
+  Map<String, dynamic> toJson() => {
+    'id': id, 'type': type, 'amount': amount, 'currency': currency,
+    'date': date, 'account_id': accountId,
+    'to_account_id': toAccountId, 'category_id': categoryId,
+    'comment': comment, 'tags': tags, 'is_deleted': isDeleted,
+  };
+
+  factory Operation.fromLocalJson(Map<String, dynamic> json) => Operation(
+    id: json['id']?.toString() ?? '',
+    type: _parseOpType(json['type']),
+    amount: (json['amount'] as num?)?.toDouble() ?? 0,
+    currency: json['currency']?.toString() ?? 'RUB',
+    date: json['date']?.toString() ?? '',
+    accountId: json['account_id']?.toString() ?? '',
+    toAccountId: json['to_account_id']?.toString(),
+    categoryId: json['category_id']?.toString(),
+    comment: json['comment']?.toString(),
+    tags: json['tags']?.toString(),
+    isDeleted: json['is_deleted'] == true,
+  );
+
   factory Operation.fromJson(Map<String, dynamic> json) {
     final dateStr = json['date']?.toString() ?? '';
     final timeStr = json['time']?.toString() ?? '00:00:00';
