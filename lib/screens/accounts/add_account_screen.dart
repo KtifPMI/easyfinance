@@ -59,7 +59,18 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       final existing = store.accounts.where((a) => a.id == widget.accountId).firstOrNull;
       if (existing != null) {
         createdAt = existing.createdAt;
-        initBalance = existing.initBalance;
+        double opsDelta = 0;
+        for (final op in store.operations.where((o) => !o.isDeleted)) {
+          if (op.type == 'expense' && op.accountId == existing.id) {
+            opsDelta -= op.amount;
+          } else if (op.type == 'income' && op.accountId == existing.id) {
+            opsDelta += op.amount;
+          } else if (op.type == 'transfer') {
+            if (op.accountId == existing.id) opsDelta -= op.amount;
+            if (op.toAccountId == existing.id) opsDelta += op.amount;
+          }
+        }
+        initBalance = balance - opsDelta;
       }
     }
 

@@ -21,7 +21,8 @@ class PlanScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         final sb = store.serverBudget;
-        final totalPlanned = sb?.planned ?? 0;
+        final serverPlanned = sb?.planned ?? 0;
+        final totalPlanned = serverPlanned > 0 ? serverPlanned : store.budgets.fold(0.0, (sum, b) => sum + b.limit);
         final totalSpent = sb?.spent ?? 0;
         final serverPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
         final monthIncome = store.monthIncome;

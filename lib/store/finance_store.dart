@@ -665,6 +665,7 @@ class FinanceStore extends ChangeNotifier {
     }
     final idx = _accounts.indexWhere((a) => a.id == account.id);
     if (idx >= 0) _accounts[idx] = account;
+    _recalcAccountBalances();
     await _saveCache();
     notifyListeners();
   }
