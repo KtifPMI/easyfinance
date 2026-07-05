@@ -220,6 +220,8 @@
   "auth.wrong_pin": "Wrong PIN code",
   "auth.pins_dont_match": "PIN codes don't match",
   "auth.forgot_pin": "Forgot PIN?",
+  "auth.forgot_pin_confirm": "To reset your PIN, you'll need to log in again. Continue?",
+  "auth.forgot_pin_action": "Reset",
 
   "ai_assistant.title": "AI Assistant",
   "ai_assistant.greeting": "I'm your AI assistant. In demo mode I answer questions about financial management.",

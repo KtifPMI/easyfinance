@@ -218,6 +218,7 @@ class FinanceStore extends ChangeNotifier {
       }
       await _saveTemplates();
     } on ApiException catch (_) {}
+    notifyListeners();
 
     try {
       _serverBudget = await api.getBudget();

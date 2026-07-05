@@ -220,6 +220,8 @@
   "auth.wrong_pin": "Неверный PIN-код",
   "auth.pins_dont_match": "PIN-коды не совпадают",
   "auth.forgot_pin": "Забыли PIN?",
+  "auth.forgot_pin_confirm": "Для сброса PIN-кода потребуется заново войти в аккаунт. Продолжить?",
+  "auth.forgot_pin_action": "Сбросить",
 
   "ai_assistant.title": "ИИ-ассистент",
   "ai_assistant.greeting": "Я ваш ИИ-ассистент. В демо-версии я отвечаю на вопросы об управлении финансами.",

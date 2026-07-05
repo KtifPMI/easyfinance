@@ -114,14 +114,14 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final store = context.read<FinanceStore>();
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
     final now = DateTime.now().toIso8601String();
 
-    store.addTemplate(OperationTemplate(
+    await store.addTemplate(OperationTemplate(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       name: name,
       type: _type,
@@ -132,7 +132,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
       createdAt: now,
       updatedAt: now,
     ));
-    Navigator.pop(context);
+    if (mounted) Navigator.pop(context);
   }
 
   @override

@@ -98,13 +98,22 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   void _onForgotPin() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('easyfinance_pin');
-    setState(() {
-      _hasExistingPin = false;
-      _step = 1;
-      _pin = '';
-    });
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('auth.forgot_pin')),
+        content: Text(context.tr('auth.forgot_pin_confirm')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('budget.cancel'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('auth.forgot_pin_action'), style: TextStyle(color: AppColors.expense))),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('easyfinance_pin');
+      if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+    }
   }
 
   @override
