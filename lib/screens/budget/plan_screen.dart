@@ -23,7 +23,7 @@ class PlanScreen extends StatelessWidget {
         final sb = store.serverBudget;
         final totalPlanned = sb?.planned ?? 0;
         final totalSpent = sb?.spent ?? 0;
-        final serverPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0, 100) : 0.0;
+        final serverPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
         final monthIncome = store.monthIncome;
         final monthExpense = store.monthExpense;
 

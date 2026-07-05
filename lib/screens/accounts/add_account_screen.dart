@@ -53,14 +53,12 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     final balance = double.tryParse(_balanceCtrl.text.replaceAll(',', '.')) ?? 0;
 
     String createdAt = '';
-    String updatedAt = '';
     double initBalance = balance;
 
     if (_isEditing) {
       final existing = store.accounts.where((a) => a.id == widget.accountId).firstOrNull;
       if (existing != null) {
         createdAt = existing.createdAt;
-        updatedAt = existing.updatedAt;
         initBalance = existing.initBalance;
       }
     }

@@ -150,7 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Switch(
               value: themeStore.isDark,
               onChanged: (_) => themeStore.toggle(),
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
           ],
         ),
@@ -171,14 +171,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: _pinEnabled,
               onChanged: (v) async {
                 final prefs = await SharedPreferences.getInstance();
+                final nav = Navigator.of(context);
                 if (v) {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PinScreen()));
+                  nav.push(MaterialPageRoute(builder: (_) => const PinScreen()));
                 } else {
                   await prefs.remove('easyfinance_pin');
                 }
                 if (mounted) setState(() => _pinEnabled = v);
               },
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
           ],
         ),

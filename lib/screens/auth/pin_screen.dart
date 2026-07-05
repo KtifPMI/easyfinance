@@ -1,10 +1,8 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/screen_scaffold.dart';
-import '../../components/common/app_card.dart';
 import '../../theme/theme.dart';
 
 class PinScreen extends StatefulWidget {
@@ -165,7 +163,7 @@ class _PinScreenState extends State<PinScreen> {
           height: 16,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: filled ? AppColors.primary : AppColors.surfaceFor(context),
+            color: filled ? AppColors.primary : AppColors.cardFor(context),
             border: Border.all(color: _error.isNotEmpty ? AppColors.expense : AppColors.textSecondaryFor(context)),
           ),
         );
@@ -197,7 +195,7 @@ class _PinScreenState extends State<PinScreen> {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: d == '⌫' ? AppColors.backgroundFor(context) : AppColors.surfaceFor(context),
+                  color: d == '⌫' ? AppColors.backgroundFor(context) : AppColors.cardFor(context),
                   borderRadius: BorderRadius.circular(36),
                 ),
                 alignment: Alignment.center,

@@ -70,15 +70,6 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _loadFromMock() {
-    _accounts = [...mockAccounts];
-    _operations = [...mockOperations];
-    _categories = [...mockCategories];
-    _budgets = [...mockBudgets];
-    _useMock = true;
-    _generateRecommendations();
-  }
-
   Future<void> _saveCache() async {
     final prefs = await SharedPreferences.getInstance();
     if (_accounts.isNotEmpty) {
@@ -140,24 +131,7 @@ class FinanceStore extends ChangeNotifier {
   BudgetInfo? get serverBudget => _serverBudget;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
-
-  double get monthIncome {
-    final now = DateTime.now();
-    return operations.where((o) {
-      if (o.type != 'income') return false;
-      final d = DateTime.tryParse(o.date.substring(0, 10));
-      return d != null && d.year == now.year && d.month == now.month;
-    }).fold(0.0, (sum, o) => sum + o.amount);
-  }
-
-  double get monthExpense {
-    final now = DateTime.now();
-    return operations.where((o) {
-      if (o.type != 'expense') return false;
-      final d = DateTime.tryParse(o.date.substring(0, 10));
-      return d != null && d.year == now.year && d.month == now.month;
-    }).fold(0.0, (sum, o) => sum + o.amount);
-  }
+  String? get error => _error;
 
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
@@ -626,38 +600,6 @@ class FinanceStore extends ChangeNotifier {
       isDeleted: false,
     );
     await addOperation(refundOp);
-  }
-
-  void _updateBalancesOnAdd(Operation op) {
-    if (op.type == 'expense') {
-      final idx = _accounts.indexWhere((a) => a.id == op.accountId);
-      if (idx >= 0) _accounts[idx] = _accounts[idx].copyWith(balance: _accounts[idx].balance - op.amount);
-      final bIdx = _budgets.indexWhere((b) => b.categoryId == op.categoryId);
-      if (bIdx >= 0) _budgets[bIdx] = _budgets[bIdx].copyWith(spent: _budgets[bIdx].spent + op.amount);
-    } else if (op.type == 'income') {
-      final idx = _accounts.indexWhere((a) => a.id == op.accountId);
-      if (idx >= 0) _accounts[idx] = _accounts[idx].copyWith(balance: _accounts[idx].balance + op.amount);
-    } else if (op.type == 'transfer') {
-      final fromIdx = _accounts.indexWhere((a) => a.id == op.accountId);
-      final toIdx = _accounts.indexWhere((a) => a.id == op.toAccountId);
-      if (fromIdx >= 0) _accounts[fromIdx] = _accounts[fromIdx].copyWith(balance: _accounts[fromIdx].balance - op.amount);
-      if (toIdx >= 0) _accounts[toIdx] = _accounts[toIdx].copyWith(balance: _accounts[toIdx].balance + op.amount);
-    }
-  }
-
-  void _updateBalancesOnDelete(Operation op) {
-    if (op.type == 'expense') {
-      final idx = _accounts.indexWhere((a) => a.id == op.accountId);
-      if (idx >= 0) _accounts[idx] = _accounts[idx].copyWith(balance: _accounts[idx].balance + op.amount);
-    } else if (op.type == 'income') {
-      final idx = _accounts.indexWhere((a) => a.id == op.accountId);
-      if (idx >= 0) _accounts[idx] = _accounts[idx].copyWith(balance: _accounts[idx].balance - op.amount);
-    } else if (op.type == 'transfer') {
-      final fromIdx = _accounts.indexWhere((a) => a.id == op.accountId);
-      final toIdx = _accounts.indexWhere((a) => a.id == op.toAccountId);
-      if (fromIdx >= 0) _accounts[fromIdx] = _accounts[fromIdx].copyWith(balance: _accounts[fromIdx].balance + op.amount);
-      if (toIdx >= 0) _accounts[toIdx] = _accounts[toIdx].copyWith(balance: _accounts[toIdx].balance - op.amount);
-    }
   }
 
   Future<void> addAccount(Account account) async {
