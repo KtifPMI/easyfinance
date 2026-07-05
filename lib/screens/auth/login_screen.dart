@@ -30,17 +30,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final hasPin = prefs.getString('easyfinance_pin')?.isNotEmpty ?? false;
 
     if (restored && mounted) {
-      setState(() => _loading = true);
+      // Navigate immediately with cached data, refresh in background
+      Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
       await store.fetchAllData();
-      NotificationService().rescheduleAll(); // fire-and-forget
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
-      }
+      NotificationService().rescheduleAll();
     } else if (mounted && !store.useMock) {
-      // Session expired or no internet, but we have cached data
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
-      }
+      Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
     }
   }
 
