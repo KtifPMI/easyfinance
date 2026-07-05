@@ -14,79 +14,72 @@ class TemplatesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FinanceStore>(
-      builder: (context, store, _) {
-        return ScreenScaffold(
-          title: context.tr('templates.title'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTemplateScreen())),
-            ),
-          ],
-          child: store.templates.isEmpty
-              ? Center(child: Text(context.tr('templates.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: store.templates.length,
-                  itemBuilder: (context, index) {
-                    final t = store.templates[index];
-                    final typeLabel = t.type == 'income' ? context.tr('operations.type_income')
-                        : t.type == 'transfer' ? context.tr('operations.type_transfer')
-                        : context.tr('operations.type_expense');
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: AppCard(
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: (t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense).withValues(alpha: 0.15),
-                            child: Icon(
-                              t.type == 'income' ? Icons.trending_up : t.type == 'transfer' ? Icons.swap_horiz : Icons.trending_down,
-                              color: t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense,
-                              size: 20,
-                            ),
-                          ),
-                          title: Text(t.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                          subtitle: Text(typeLabel, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (t.amount > 0)
-                                Text('${t.type == 'income' ? '+' : '-'}${t.amount.toStringAsFixed(0)} ₽',
-                                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
-                                        color: t.type == 'income' ? AppColors.income : AppColors.expense)),
-                              const SizedBox(width: 4),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline, size: 20),
-                                onPressed: () async {
-                                  final ok = await showDialog<bool>(
-                                    context: context,
-                                    builder: (ctx) => AlertDialog(
-                                      title: Text(context.tr('templates.confirm_delete')),
-                                      actions: [
-                                        TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('templates.cancel'))),
-                                        TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('templates.delete'))),
-                                      ],
-                                    ),
-                                  );
-                                  if (ok == true) store.deleteTemplate(t.id);
-                                },
+    final store = context.watch<FinanceStore>();
+
+    return ScreenScaffold(
+      title: context.tr('templates.title'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTemplateScreen())),
+        ),
+      ],
+      child: store.templates.isEmpty
+          ? Center(child: Text(context.tr('templates.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
+          : Column(children: store.templates.map((t) {
+              final typeLabel = t.type == 'income' ? context.tr('operations.type_income')
+                  : t.type == 'transfer' ? context.tr('operations.type_transfer')
+                  : context.tr('operations.type_expense');
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: AppCard(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: (t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense).withValues(alpha: 0.15),
+                      child: Icon(
+                        t.type == 'income' ? Icons.trending_up : t.type == 'transfer' ? Icons.swap_horiz : Icons.trending_down,
+                        color: t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(t.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    subtitle: Text(typeLabel, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (t.amount > 0)
+                          Text('${t.type == 'income' ? '+' : '-'}${t.amount.toStringAsFixed(0)} ₽',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                                  color: t.type == 'income' ? AppColors.income : AppColors.expense)),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, size: 20),
+                          onPressed: () async {
+                            final ok = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: Text(context.tr('templates.confirm_delete')),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('templates.cancel'))),
+                                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('templates.delete'))),
+                                ],
                               ),
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.pushNamed(context, '/add-operation', arguments: {
-                              'type': t.type,
-                              'templateId': t.id,
-                            });
+                            );
+                            if (ok == true) store.deleteTemplate(t.id);
                           },
                         ),
-                      ),
-                    );
-                  },
+                      ],
+                    ),
+                    onTap: () {
+                      Navigator.pushNamed(context, '/add-operation', arguments: {
+                        'type': t.type,
+                        'templateId': t.id,
+                      });
+                    },
+                  ),
                 ),
-        );
-      },
+              );
+            }).toList()),
     );
   }
 }
