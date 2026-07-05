@@ -951,6 +951,7 @@ class FinanceStore extends ChangeNotifier {
       final list = jsonDecode(raw) as List<dynamic>;
       _templates = list.map((e) => OperationTemplate.fromLocalJson(e as Map<String, dynamic>)).toList();
     }
+    notifyListeners();
   }
 
   // --- Tags ---

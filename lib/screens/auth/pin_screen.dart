@@ -31,6 +31,7 @@ class _PinScreenState extends State<PinScreen> {
     final pin = prefs.getString('easyfinance_pin');
     setState(() {
       _hasExistingPin = pin != null && pin.isNotEmpty;
+      _step = _hasExistingPin ? 0 : 1;
       _loading = false;
     });
   }
