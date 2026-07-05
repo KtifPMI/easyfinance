@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -10,6 +11,7 @@ import '../../store/locale_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../store/theme_store.dart';
 import '../../theme/theme.dart';
+import '../auth/pin_screen.dart';
 
 
 class SettingsScreen extends StatefulWidget {
@@ -20,16 +22,24 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _appVersion = '';
+  bool _pinEnabled = false;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    _loadPinStatus();
   }
 
   Future<void> _loadVersion() async {
     final info = await PackageInfo.fromPlatform();
     if (mounted) setState(() => _appVersion = info.version);
+  }
+
+  Future<void> _loadPinStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pin = prefs.getString('easyfinance_pin');
+    if (mounted) setState(() => _pinEnabled = pin != null && pin.isNotEmpty);
   }
 
   @override
@@ -43,6 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           _langItem(context),
           _darkModeItem(context),
+          _pinItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
@@ -139,6 +150,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Switch(
               value: themeStore.isDark,
               onChanged: (_) => themeStore.toggle(),
+              activeColor: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pinItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(context.tr('settings.pin_code'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Switch(
+              value: _pinEnabled,
+              onChanged: (v) async {
+                final prefs = await SharedPreferences.getInstance();
+                if (v) {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PinScreen()));
+                } else {
+                  await prefs.remove('easyfinance_pin');
+                }
+                if (mounted) setState(() => _pinEnabled = v);
+              },
               activeColor: AppColors.primary,
             ),
           ],

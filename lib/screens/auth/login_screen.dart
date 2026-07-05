@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
@@ -25,11 +26,21 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _tryRestore() async {
     final store = context.read<FinanceStore>();
     final restored = await store.authService.tryRestoreSession();
+    final prefs = await SharedPreferences.getInstance();
+    final hasPin = prefs.getString('easyfinance_pin')?.isNotEmpty ?? false;
+
     if (restored && mounted) {
       setState(() => _loading = true);
       await store.fetchAllData();
       NotificationService().rescheduleAll(); // fire-and-forget
-      if (mounted) Navigator.pushReplacementNamed(context, '/main');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
+      }
+    } else if (mounted && !store.useMock) {
+      // Session expired or no internet, but we have cached data
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
+      }
     }
   }
 

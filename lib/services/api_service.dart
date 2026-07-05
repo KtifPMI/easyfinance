@@ -102,12 +102,16 @@ class ApiService {
     final budget = data['budget'] as Map<String, dynamic>?;
     final planned = double.tryParse(budget?['planned']?.toString() ?? '0') ?? 0;
     final spent = double.tryParse(budget?['spent']?.toString() ?? '0') ?? 0;
-    return BudgetInfo(planned: planned, spent: spent);
+    final dateStart = budget?['date_start']?.toString() ?? '';
+    final dateEnd = budget?['date_end']?.toString() ?? '';
+    return BudgetInfo(planned: planned, spent: spent, dateStart: dateStart, dateEnd: dateEnd);
   }
 }
 
 class BudgetInfo {
   final double planned;
   final double spent;
-  BudgetInfo({required this.planned, required this.spent});
+  final String dateStart;
+  final String dateEnd;
+  BudgetInfo({required this.planned, required this.spent, this.dateStart = '', this.dateEnd = ''});
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/oauth_webview_screen.dart';
+import '../screens/auth/pin_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/debug/debug_screen.dart';
 import '../screens/operations/add_operation_screen.dart';
@@ -14,6 +15,7 @@ class AppRouter {
   static const String login = '/login';
   static const String oauth = '/oauth';
   static const String register = '/register';
+  static const String pin = '/pin';
   static const String main = '/main';
   static const String addOperation = '/add-operation';
   static const String operationDetail = '/operation-detail';
@@ -25,6 +27,7 @@ class AppRouter {
     login: (_) => const LoginScreen(),
     oauth: (_) => const OAuthWebViewScreen(),
     register: (_) => const RegisterScreen(),
+    pin: (_) => const PinScreen(),
     main: (_) => const MainTabs(),
     addOperation: (_) => const AddOperationScreen(),
     operationDetail: (_) => const OperationDetailScreen(),

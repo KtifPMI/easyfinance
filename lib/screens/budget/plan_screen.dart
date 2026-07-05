@@ -20,6 +20,13 @@ class PlanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
+        final sb = store.serverBudget;
+        final totalPlanned = sb?.planned ?? 0;
+        final totalSpent = sb?.spent ?? 0;
+        final serverPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0, 100) : 0.0;
+        final monthIncome = store.monthIncome;
+        final monthExpense = store.monthExpense;
+
         return ScreenScaffold(
           title: context.tr('budget.title'),
           onRefresh: () => store.fetchAllData(),
@@ -27,6 +34,55 @@ class PlanScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ScreenHint(hintId: 'plan', text: 'Бюджеты и цели. Установите лимит по категории (например, «Продукты» — 30 000 ₽), чтобы следить за перерасходом. Цели помогут копить на крупные покупки.'),
+
+              if (sb != null || monthIncome > 0 || monthExpense > 0) ...[
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+                          const SizedBox(width: 8),
+                          Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(child: _statBlock(context, context.tr('budget.income'), monthIncome, AppColors.income)),
+                            const SizedBox(width: 16),
+                            Expanded(child: _statBlock(context, context.tr('budget.expense'), monthExpense, AppColors.expense)),
+                          ],
+                        ),
+                      if (sb != null) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(context.tr('budget.planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                            Text(formatMoney(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                            Text(formatMoney(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ProgressBar(percent: serverPercent, color: serverPercent > 100 ? AppColors.expense : AppColors.primary),
+                        const SizedBox(height: 4),
+                        Text('${serverPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -220,5 +276,16 @@ class PlanScreen extends StatelessWidget {
   Color _parseColor(String hex) {
     hex = hex.replaceAll('#', '');
     return Color(int.parse('FF$hex', radix: 16));
+  }
+
+  Widget _statBlock(BuildContext context, String label, double amount, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 4),
+        Text(formatMoney(amount), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
+      ],
+    );
   }
 }

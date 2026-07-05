@@ -12,6 +12,7 @@ import '../models/tag.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 import '../services/mock_data.dart' show mockAccounts, mockOperations, mockBudgets, mockCategories;
 
 class FinanceStore extends ChangeNotifier {
@@ -26,6 +27,7 @@ class FinanceStore extends ChangeNotifier {
   List<Recommendation> _recommendations = [];
   List<Tag> _tags = [];
   List<OperationTemplate> _templates = [];
+  BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
   String? _error;
@@ -135,8 +137,28 @@ class FinanceStore extends ChangeNotifier {
   List<Recommendation> get recommendations => _recommendations;
   List<Tag> get tags => _tags;
   List<OperationTemplate> get templates => _templates;
+  BudgetInfo? get serverBudget => _serverBudget;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
+
+  double get monthIncome {
+    final now = DateTime.now();
+    return operations.where((o) {
+      if (o.type != 'income') return false;
+      final d = DateTime.tryParse(o.date.substring(0, 10));
+      return d != null && d.year == now.year && d.month == now.month;
+    }).fold(0.0, (sum, o) => sum + o.amount);
+  }
+
+  double get monthExpense {
+    final now = DateTime.now();
+    return operations.where((o) {
+      if (o.type != 'expense') return false;
+      final d = DateTime.tryParse(o.date.substring(0, 10));
+      return d != null && d.year == now.year && d.month == now.month;
+    }).fold(0.0, (sum, o) => sum + o.amount);
+  }
+
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
 
@@ -221,6 +243,10 @@ class FinanceStore extends ChangeNotifier {
         if (!localIds.contains(t.id)) _templates.add(t);
       }
       await _saveTemplates();
+    } on ApiException catch (_) {}
+
+    try {
+      _serverBudget = await api.getBudget();
     } on ApiException catch (_) {}
 
     try {
