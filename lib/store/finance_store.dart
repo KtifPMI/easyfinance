@@ -611,15 +611,13 @@ class FinanceStore extends ChangeNotifier {
         final resp = await authService.apiService.addAccount({
           'accounts': [{
             'name': account.name,
-            'init_balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
+            'balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'state': '0',
+            'state': '1',
             'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
-            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
-            'updated_at': now,
           }]
-        }, options: 'client');
+        });
         final accounts = resp['accounts'] as List<dynamic>?;
         if (accounts != null && accounts.isNotEmpty) {
           final serverId = accounts[0]['id']?.toString();
@@ -644,18 +642,15 @@ class FinanceStore extends ChangeNotifier {
   Future<void> updateAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = DateTime.now().toIso8601String();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': account.id,
             'name': account.name,
-            'init_balance': account.initBalance.toStringAsFixed(2),
+            'balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'state': '0',
+            'state': '1',
             'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
-            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
-            'updated_at': now,
           }]
         }, accountId: account.id);
       } on ApiException catch (e) {
@@ -679,9 +674,8 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
-            'init_balance': account.initBalance.toStringAsFixed(2),
-            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
-            'updated_at': now,
+            'type_id': _accountTypeToApi(account.type),
+            'state': '2',
             'deleted_at': now,
           }]
         }, accountId: id);
@@ -690,9 +684,8 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
-            'init_balance': '0.00',
-            'created_at': now,
-            'updated_at': now,
+            'type_id': '1',
+            'state': '2',
             'deleted_at': now,
           }]
         }, accountId: id);

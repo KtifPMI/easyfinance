@@ -46,7 +46,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final store = context.read<FinanceStore>();
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
@@ -88,9 +88,16 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     );
 
     if (_isEditing) {
-      store.updateAccount(account);
+      await store.updateAccount(account);
     } else {
-      store.addAccount(account);
+      await store.addAccount(account);
+    }
+    if (!mounted) return;
+    if (store.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+      );
+      return;
     }
     Navigator.pop(context);
   }

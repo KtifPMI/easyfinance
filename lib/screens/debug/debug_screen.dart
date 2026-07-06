@@ -79,9 +79,11 @@ class _DebugScreenState extends State<DebugScreen> {
       "accounts": [
         {
           "name": "Test Account",
-          "balance": "10000",
+          "init_balance": "10000",
           "type_id": "2",
-          "currency_id": "1"
+          "state": "1",
+          "currency_id": "1",
+          "icon": "accountimage1"
         }
       ]
     }
@@ -94,7 +96,11 @@ class _DebugScreenState extends State<DebugScreen> {
         {
           "id": "ACCOUNT_ID",
           "name": "Updated Name",
-          "balance": "20000"
+          "init_balance": "20000",
+          "type_id": "2",
+          "state": "1",
+          "currency_id": "1",
+          "icon": "accountimage1"
         }
       ]
     }
