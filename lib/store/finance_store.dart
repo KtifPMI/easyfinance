@@ -14,6 +14,7 @@ import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/mock_data.dart' show mockAccounts, mockOperations, mockBudgets, mockCategories;
+import '../utils/format.dart';
 
 class FinanceStore extends ChangeNotifier {
   final AuthService authService;
@@ -523,7 +524,7 @@ class FinanceStore extends ChangeNotifier {
     if (!_useMock && authService.isAuthenticated) {
       try {
         final now = DateTime.now();
-        final dateStr = now.toIso8601String();
+        final dateStr = formatApiDateTime(now);
         final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
         final amount = op.type == 'income' ? op.amount : -op.amount;
 
@@ -568,7 +569,7 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setOperation({
           'operations': [{
             'id': op.id,
-            'deleted_at': DateTime.now().toIso8601String(),
+            'deleted_at': formatApiDateTime(),
           }]
         });
       } on ApiException catch (e) {
@@ -606,7 +607,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = DateTime.now().toIso8601String();
+        final now = formatApiDateTime();
         final newAccount = account.copyWith();
         final resp = await authService.apiService.addAccount({
           'accounts': [{
@@ -644,7 +645,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> updateAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = DateTime.now().toIso8601String();
+        final now = formatApiDateTime();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': account.id,
@@ -674,7 +675,7 @@ class FinanceStore extends ChangeNotifier {
     if (!_useMock && authService.isAuthenticated) {
       try {
         final account = _accounts.firstWhere((a) => a.id == id);
-        final now = DateTime.now().toIso8601String();
+        final now = formatApiDateTime();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
@@ -685,7 +686,7 @@ class FinanceStore extends ChangeNotifier {
           }]
         }, accountId: id);
       } on StateError {
-        final now = DateTime.now().toIso8601String();
+        final now = formatApiDateTime();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
@@ -876,7 +877,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addTemplate(OperationTemplate t) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = DateTime.now().toIso8601String();
+        final now = formatApiDateTime();
         final typeCode = t.type == 'expense' ? 0 : t.type == 'income' ? 1 : 2;
         final clientId = DateTime.now().millisecondsSinceEpoch.toString();
         final userId = authService.userId ?? '';
@@ -924,7 +925,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> deleteTemplate(String id) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = DateTime.now().toIso8601String();
+        final now = formatApiDateTime();
         await authService.apiService.setTemplate({
           'operationPatterns': [{'id': id, 'deleted_at': now}]
         }, operationPatternId: id);
