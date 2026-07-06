@@ -38,6 +38,7 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('operations.post', 'operations.post'),
     _MethodItem('operations.set', 'operations.set'),
     _MethodItem('categories.get', 'categories.get'),
+    _MethodItem('currencies.get', 'currencies.get'),
     _MethodItem('budget.get', 'budget.get'),
     _MethodItem('budget.post', 'budget.post'),
     _MethodItem('budget.set', 'budget.set'),
@@ -46,6 +47,7 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('goals.get', 'goals.get'),
     _MethodItem('goals.post', 'goals.post'),
     _MethodItem('goals.set', 'goals.set'),
+    _MethodItem('operationPatterns.get', 'operationPatterns.get'),
   ];
 
   static const _templates = {
