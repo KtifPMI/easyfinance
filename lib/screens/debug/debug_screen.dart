@@ -83,7 +83,9 @@ class _DebugScreenState extends State<DebugScreen> {
           "type_id": "2",
           "state": "1",
           "currency_id": "1",
-          "icon": "accountimage1"
+          "icon": "accountimage1",
+          "created_at": "DATE",
+          "updated_at": "DATE"
         }
       ]
     }
@@ -100,7 +102,8 @@ class _DebugScreenState extends State<DebugScreen> {
           "type_id": "2",
           "state": "1",
           "currency_id": "1",
-          "icon": "accountimage1"
+          "icon": "accountimage1",
+          "updated_at": "DATE"
         }
       ]
     }

@@ -11,6 +11,7 @@ import '../../store/locale_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../store/theme_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/format.dart';
 import '../auth/pin_screen.dart';
 
 
@@ -49,6 +50,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _profileSection(context),
+          const SizedBox(height: 8),
           Text('Приложение', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           _langItem(context),
@@ -223,4 +226,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _divider() => const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Divider(height: 1));
+
+  Widget _profileSection(BuildContext context) {
+    final store = context.watch<FinanceStore>();
+    final user = store.currentUser;
+    final name = user?.name ?? context.tr('profile.demo_user');
+    final email = user?.email ?? 'demo@easyfinance.ru';
+    final regDate = user?.registeredAt != null ? formatDateLong(user!.registeredAt!.toIso8601String()) : '—';
+    final plan = user?.isPremium == true ? context.tr('profile.premium') : context.tr('profile.free');
+    final syncLabel = user != null ? 'EasyFinance.ru' : context.tr('profile.local_data');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('profile.title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 8),
+        _infoItem('Имя', name),
+        _infoItem('Email', email),
+        _infoItem(context.tr('profile.tariff'), plan),
+        _infoItem(context.tr('profile.reg_date'), regDate),
+        _infoItem(context.tr('profile.sync'), syncLabel),
+      ],
+    );
+  }
 }

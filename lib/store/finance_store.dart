@@ -616,6 +616,8 @@ class FinanceStore extends ChangeNotifier {
             'state': '1',
             'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
+            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
+            'updated_at': now,
           }]
         });
         final accounts = resp['accounts'] as List<dynamic>?;
@@ -642,6 +644,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> updateAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
+        final now = DateTime.now().toIso8601String();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': account.id,
@@ -651,6 +654,7 @@ class FinanceStore extends ChangeNotifier {
             'state': '1',
             'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
+            'updated_at': now,
           }]
         }, accountId: account.id);
       } on ApiException catch (e) {
@@ -676,6 +680,7 @@ class FinanceStore extends ChangeNotifier {
             'id': id,
             'type_id': _accountTypeToApi(account.type),
             'state': '2',
+            'updated_at': now,
             'deleted_at': now,
           }]
         }, accountId: id);
@@ -686,6 +691,7 @@ class FinanceStore extends ChangeNotifier {
             'id': id,
             'type_id': '1',
             'state': '2',
+            'updated_at': now,
             'deleted_at': now,
           }]
         }, accountId: id);
