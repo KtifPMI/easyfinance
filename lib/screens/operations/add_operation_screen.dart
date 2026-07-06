@@ -91,7 +91,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final store = context.read<FinanceStore>();
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
     if (amount <= 0) return;
@@ -100,33 +100,32 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     final catId = _type != 'transfer' ? (_categoryId ?? store.categories.where((c) => c.type == _type).firstOrNull?.id) : null;
     if (_type != 'transfer' && catId == null) return;
 
+    final op = Operation(
+      id: _isEditing ? widget.operationId! : DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+      type: _type,
+      amount: amount,
+      date: _dateStr(),
+      accountId: _accountId ?? store.accounts.first.id,
+      toAccountId: _type == 'transfer' ? _toAccountId : null,
+      categoryId: catId,
+      comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+      tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
+    );
+
     if (_isEditing) {
-      store.updateOperation(Operation(
-        id: widget.operationId!,
-        type: _type,
-        amount: amount,
-        date: _dateStr(),
-        accountId: _accountId ?? store.accounts.first.id,
-        toAccountId: _type == 'transfer' ? _toAccountId : null,
-        categoryId: catId,
-        comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
-        tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
-      ));
+      await store.updateOperation(op);
     } else {
-      store.addOperation(Operation(
-        id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-        type: _type,
-        amount: amount,
-        date: _dateStr(),
-        accountId: _accountId ?? store.accounts.first.id,
-        toAccountId: _type == 'transfer' ? _toAccountId : null,
-        categoryId: catId,
-        comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
-        tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
-      ));
+      await store.addOperation(op);
     }
 
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    if (store.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    Navigator.pop(context);
   }
 
   @override
