@@ -611,7 +611,7 @@ class FinanceStore extends ChangeNotifier {
         final resp = await authService.apiService.addAccount({
           'accounts': [{
             'name': account.name,
-            'balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
+            'init_balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
             'state': '1',
             'currency_id': '1',
@@ -649,7 +649,7 @@ class FinanceStore extends ChangeNotifier {
           'accounts': [{
             'id': account.id,
             'name': account.name,
-            'balance': account.initBalance.toStringAsFixed(2),
+            'init_balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
             'state': '1',
             'currency_id': '1',
