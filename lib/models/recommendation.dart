@@ -30,6 +30,8 @@ class Recommendation {
     if (id.startsWith('no_budget_')) return 'no_budget';
     if (id.startsWith('idle_cash_')) return 'idle_cash';
     if (id.startsWith('goal_close_')) return 'goal_close';
+    if (id == 'top_cats') return 'expense_structure';
+    if (id == 'no_emergency') return 'emergency_fund';
     return id;
   }
 }
