@@ -20,6 +20,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _nameCtrl = TextEditingController();
   final _balanceCtrl = TextEditingController();
   String _type = 'account';
+  String _currencyId = '1';
 
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
@@ -35,8 +36,14 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         _nameCtrl.text = acc.name;
         _balanceCtrl.text = acc.balance.toStringAsFixed(0);
         _type = acc.type;
+        _currencyId = acc.currencyId ?? '1';
       }
     }
+  }
+
+  String _currencyLabel(String id) {
+    const codes = {'1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF', '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT', '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK'};
+    return '${codes[id] ?? 'RUB'} ($id)';
   }
 
   @override
@@ -80,6 +87,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       name: name,
       balance: balance,
       type: _type,
+      currencyId: _currencyId,
       icon: _type == 'card' ? 'credit_card' : _type == 'savings' ? 'savings' : 'cash',
       color: _type == 'card' ? '#FFD700' : _type == 'savings' ? '#FF9800' : '#16A34A',
       initBalance: initBalance,
@@ -104,6 +112,15 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final store = context.watch<FinanceStore>();
+    final currencies = store.currencies;
+    final currencyItems = currencies.isNotEmpty
+        ? currencies.map((c) => DropdownMenuItem(
+            value: c['id']?.toString() ?? '1',
+            child: Text('${c['code'] ?? c['name'] ?? 'RUB'}'),
+          )).toList()
+        : _defaultCurrencyItems();
+
     return ScreenScaffold(
       title: _isEditing ? context.tr('accounts.edit') : context.tr('accounts.new'),
       child: Column(
@@ -129,6 +146,19 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             ],
             onChanged: (v) => setState(() => _type = v!),
           ),
+          const SizedBox(height: 16),
+          Text(context.tr('accounts.currency'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _currencyId,
+            decoration: InputDecoration(
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            items: currencyItems,
+            onChanged: (v) => setState(() => _currencyId = v!),
+          ),
           const SizedBox(height: 24),
           AppButton(title: context.tr('accounts.save'), onPressed: _save),
           if (_isEditing) ...[
@@ -142,6 +172,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         ],
       ),
     );
+  }
+
+  List<DropdownMenuItem<String>> _defaultCurrencyItems() {
+    const codes = {'1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF', '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT', '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK'};
+    return codes.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList();
   }
 
   void _delete(BuildContext context) {

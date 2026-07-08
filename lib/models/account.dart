@@ -23,6 +23,7 @@ class Account {
   final String name;
   double balance;
   final String currency;
+  final String? currencyId;
   final String icon;
   final String color;
   final String type;
@@ -37,6 +38,7 @@ class Account {
     required this.name,
     required this.balance,
     this.currency = 'RUB',
+    this.currencyId,
     this.icon = 'cash',
     this.color = '#16A34A',
     this.type = 'account',
@@ -47,12 +49,12 @@ class Account {
     this.updatedAt = '',
   });
 
-  Account copyWith({String? id, double? balance}) =>
-      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt);
+  Account copyWith({String? id, double? balance, String? currencyId}) =>
+      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt);
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'balance': balance, 'currency': currency,
-    'icon': icon, 'color': color, 'type': type,
+    'currency_id': currencyId, 'icon': icon, 'color': color, 'type': type,
     'include_in_total': includeInTotal, 'is_archived': isArchived,
     'init_balance': initBalance, 'created_at': createdAt, 'updated_at': updatedAt,
   };
@@ -62,6 +64,7 @@ class Account {
     name: json['name']?.toString() ?? '',
     balance: (json['balance'] as num?)?.toDouble() ?? 0,
     currency: json['currency']?.toString() ?? 'RUB',
+    currencyId: json['currency_id']?.toString(),
     icon: json['icon']?.toString() ?? 'cash',
     color: json['color']?.toString() ?? '#16A34A',
     type: json['type']?.toString() ?? 'account',
@@ -77,11 +80,13 @@ class Account {
     final state = int.tryParse(json['state']?.toString() ?? '0') ?? 0;
     final isArchived = state == 2;
     final initBalance = double.tryParse(json['init_balance']?.toString() ?? '0')?.abs() ?? 0;
+    final currencyId = json['currency_id']?.toString();
     return Account(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
       balance: double.tryParse(json['balance']?.toString() ?? '0')?.abs() ?? 0,
-      currency: _currencyIdToCode[json['currency_id']?.toString()] ?? json['currency_char_code']?.toString() ?? 'RUB',
+      currency: _currencyIdToCode[currencyId] ?? json['currency_char_code']?.toString() ?? 'RUB',
+      currencyId: currencyId,
       icon: _iconMap[icon] ?? 'credit_card',
       color: _iconColor[icon] ?? '#16A34A',
       type: _parseAccountType(json['type_id']),

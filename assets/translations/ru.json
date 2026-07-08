@@ -61,6 +61,7 @@
   "accounts.type.card": "Карта",
   "accounts.type.savings": "Накопительный",
   "accounts.type.credit": "Кредитная карта",
+  "accounts.currency": "Валюта",
   "accounts.save": "Сохранить",
   "accounts.delete": "Удалить счёт",
   "accounts.confirm_delete": "Удалить счёт? Все операции по нему сохранятся.",

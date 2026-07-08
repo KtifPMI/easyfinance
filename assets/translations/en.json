@@ -61,6 +61,7 @@
   "accounts.type.card": "Card",
   "accounts.type.savings": "Savings",
   "accounts.type.credit": "Credit Card",
+  "accounts.currency": "Currency",
   "accounts.save": "Save",
   "accounts.delete": "Delete Account",
   "accounts.confirm_delete": "Delete account? Operations will be kept.",

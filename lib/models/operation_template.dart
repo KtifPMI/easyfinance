@@ -33,7 +33,7 @@ class OperationTemplate {
       amount: double.tryParse(json['amount']?.toString() ?? '0')?.abs() ?? 0,
       accountId: json['account_id']?.toString(),
       categoryId: json['category_id']?.toString(),
-      toAccountId: json['transfer_account_id']?.toString(),
+      toAccountId: json['to_account_id']?.toString() ?? json['transfer_account_id']?.toString(),
       comment: json['comment']?.toString(),
       tags: json['tags']?.toString(),
       createdAt: json['created_at']?.toString() ?? '',
@@ -57,7 +57,7 @@ class OperationTemplate {
     'amount': amount,
     'account_id': accountId,
     'category_id': categoryId,
-    'transfer_account_id': toAccountId,
+    'to_account_id': toAccountId,
     'comment': comment,
     'tags': tags,
   };

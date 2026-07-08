@@ -28,6 +28,8 @@ class FinanceStore extends ChangeNotifier {
   List<Recommendation> _recommendations = [];
   List<Tag> _tags = [];
   List<OperationTemplate> _templates = [];
+  List<Map<String, dynamic>> _currencies = [];
+  List<Map<String, dynamic>> _systemCategories = [];
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
@@ -129,6 +131,8 @@ class FinanceStore extends ChangeNotifier {
   List<Recommendation> get recommendations => _recommendations;
   List<Tag> get tags => _tags;
   List<OperationTemplate> get templates => _templates;
+  List<Map<String, dynamic>> get currencies => _currencies;
+  List<Map<String, dynamic>> get systemCategories => _systemCategories;
   BudgetInfo? get serverBudget => _serverBudget;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
@@ -223,6 +227,14 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       _serverBudget = await api.getBudget();
+    } on ApiException catch (_) {}
+
+    try {
+      _currencies = await api.getCurrencies();
+    } on ApiException catch (_) {}
+
+    try {
+      _systemCategories = await api.getSystemCategories();
     } on ApiException catch (_) {}
 
     try {
@@ -485,7 +497,7 @@ class FinanceStore extends ChangeNotifier {
             'amount': amount.toStringAsFixed(2),
             'date': isoStr,
             'time': timeStr,
-            if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
+            if (op.toAccountId != null) 'to_account_id': op.toAccountId,
             if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
             if (op.tags != null) 'tags': op.tags,
@@ -537,7 +549,7 @@ class FinanceStore extends ChangeNotifier {
             'amount': amount.toStringAsFixed(2),
             'date': dateStr,
             'time': timeStr,
-            'transfer_account_id': op.toAccountId,
+            'to_account_id': op.toAccountId,
             'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
             if (op.comment != null) 'comment': op.comment,
             if (op.tags != null) 'tags': op.tags,
@@ -569,6 +581,7 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setOperation({
           'operations': [{
             'id': op.id,
+            'state': '2',
             'deleted_at': formatApiDateTime(),
           }]
         });
@@ -614,8 +627,8 @@ class FinanceStore extends ChangeNotifier {
             'name': account.name,
             'init_balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'state': '1',
-            'currency_id': '1',
+            'state': '0',
+            if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
             'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
             'updated_at': now,
@@ -652,8 +665,8 @@ class FinanceStore extends ChangeNotifier {
             'name': account.name,
             'init_balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'state': '1',
-            'currency_id': '1',
+            'state': '0',
+            if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
             'updated_at': now,
           }]
@@ -682,7 +695,7 @@ class FinanceStore extends ChangeNotifier {
             'name': account.name,
             'init_balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'currency_id': '1',
+            if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
             'state': '2',
             'updated_at': now,
@@ -713,6 +726,104 @@ class FinanceStore extends ChangeNotifier {
     _accounts.removeWhere((a) => a.id == id);
     await _saveCache();
     notifyListeners();
+  }
+
+  // --- Categories ---
+
+  Future<void> addCategory(cat.Category c) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        final typeCode = c.type == 'expense' ? '-1' : '1';
+        final resp = await authService.apiService.addCategory({
+          'categories': [{
+            'name': c.name,
+            'type': typeCode,
+            'icon': _categoryIconToApi(c.icon),
+            if (c.parentId != null) 'parent_id': c.parentId,
+            'created_at': now,
+            'updated_at': now,
+          }]
+        }, options: 'client');
+        final categories = resp['categories'] as List<dynamic>?;
+        if (categories != null && categories.isNotEmpty) {
+          final serverId = categories[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _categories.add(cat.Category(
+              id: serverId, name: c.name, type: c.type, icon: c.icon, parentId: c.parentId, isDefault: false,
+            ));
+            await _saveCache();
+            notifyListeners();
+            return;
+          }
+        }
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка добавления категории: $e'; notifyListeners();
+      }
+    }
+    _categories.add(c);
+    await _saveCache();
+    notifyListeners();
+  }
+
+  Future<void> updateCategory(cat.Category c) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        final typeCode = c.type == 'expense' ? '-1' : '1';
+        await authService.apiService.setCategory({
+          'categories': [{
+            'id': c.id,
+            'name': c.name,
+            'type': typeCode,
+            'icon': _categoryIconToApi(c.icon),
+            'parent_id': c.parentId,
+            'updated_at': now,
+          }]
+        }, categoryId: c.id);
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления категории: $e'; notifyListeners();
+      }
+    }
+    final idx = _categories.indexWhere((x) => x.id == c.id);
+    if (idx >= 0) _categories[idx] = c;
+    await _saveCache();
+    notifyListeners();
+  }
+
+  Future<void> deleteCategory(String id) async {
+    if (!_useMock && authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        await authService.apiService.setCategory({
+          'categories': [{'id': id, 'deleted_at': now}]
+        }, categoryId: id);
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления категории: $e'; notifyListeners();
+      }
+    }
+    _categories.removeWhere((x) => x.id == id);
+    await _saveCache();
+    notifyListeners();
+  }
+
+  String _categoryIconToApi(String icon) {
+    const map = <String, String>{
+      'food': 'catimg1', 'transport': 'catimg2', 'housing': 'catimg3', 'shopping': 'catimg4',
+      'health': 'catimg5', 'entertainment': 'catimg6', 'education': 'catimg7', 'travel': 'catimg8',
+      'salary': 'catimg9', 'freelance': 'catimg10', 'business': 'catimg11', 'gift': 'catimg12',
+      'car': 'catimg13', 'sports': 'catimg14', 'dining': 'catimg15', 'utilities': 'catimg16',
+      'internet': 'catimg17', 'clothing': 'catimg18', 'children': 'catimg19', 'pets': 'catimg20',
+      'taxes': 'catimg21', 'insurance': 'catimg22', 'invest': 'catimg23', 'rent': 'catimg24',
+      'other_income': 'catimg25', 'other_expense': 'catimg26',
+    };
+    return map[icon] ?? 'catimg26';
   }
 
   String _accountTypeToApi(String type) {
@@ -898,7 +1009,7 @@ class FinanceStore extends ChangeNotifier {
             'amount': t.amount.toStringAsFixed(2),
             if (t.accountId != null) 'account_id': t.accountId,
             if (t.categoryId != null) 'category_id': t.categoryId,
-            if (t.toAccountId != null) 'transfer_account_id': t.toAccountId,
+            if (t.toAccountId != null) 'to_account_id': t.toAccountId,
             if (t.comment != null) 'comment': t.comment,
             if (t.tags != null) 'tags': t.tags,
             'created_at': now,
