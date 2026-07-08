@@ -50,6 +50,10 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
   ];
 
+  static const webMethods = [
+    _MethodItem('📊 Tachometers', 'https://easyfinance.ru/my/info/get-tachometers'),
+  ];
+
   static const _templates = {
     'operations.post': '''{
   "request": {
@@ -227,6 +231,36 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 
+  Future<void> _callWeb(String url) async {
+    setState(() {
+      _selectedMethod = url;
+      _loading = true;
+      _response = null;
+    });
+
+    try {
+      final api = context.read<FinanceStore>().apiClient;
+      final resp = await api.getDirect(url);
+      if (mounted) {
+        setState(() {
+          _response = DebugResponse(
+            statusCode: resp.statusCode,
+            body: '--- REQUEST ---\nGET $url\nAuthorization: Bearer <token>\n\n--- RESPONSE (${resp.statusCode}) ---\n${_formatBody(resp.body)}',
+            url: url,
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _response = DebugResponse(statusCode: 0, body: 'Exception: $e', url: '');
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   Future<void> _sendPost() async {
     setState(() {
       _selectedMethod = 'POST $_postMethod';
@@ -379,11 +413,22 @@ class _DebugScreenState extends State<DebugScreen> {
               },
             ),
           ),
-          if (_selectedMethod == 'accounts.get')
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text(context.tr('debug.fields_added'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Text('--- Web (direct) ---', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondaryFor(context))),
+          ),
+          ...webMethods.map((m) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _loading ? null : () => _callWeb(m.apiMethod),
+                icon: const Icon(Icons.language, size: 18),
+                label: Text(m.label, style: const TextStyle(fontSize: 13)),
+              ),
             ),
+          )),
+          if (_selectedMethod == 'accounts.get')
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: TextField(

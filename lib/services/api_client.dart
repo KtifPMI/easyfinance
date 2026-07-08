@@ -223,6 +223,16 @@ class ApiClient {
     );
   }
 
+  Future<http.Response> getDirect(String url, {Map<String, String>? headers}) async {
+    final hdrs = <String, String>{
+      if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
+      'Accept': 'application/json',
+      ...?headers,
+    };
+    final response = await _httpClient.get(Uri.parse(url), headers: hdrs).timeout(_timeout);
+    return response;
+  }
+
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
     final response = await _httpClient.get(uri).timeout(_timeout);
