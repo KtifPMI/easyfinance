@@ -679,7 +679,11 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
+            'name': account.name,
+            'init_balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
+            'currency_id': '1',
+            'icon': _accountIconToApi(account.icon),
             'state': '2',
             'updated_at': now,
             'deleted_at': now,
@@ -690,7 +694,11 @@ class FinanceStore extends ChangeNotifier {
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
+            'name': 'Deleted Account',
+            'init_balance': '0.00',
             'type_id': '1',
+            'currency_id': '1',
+            'icon': 'accountimage1',
             'state': '2',
             'updated_at': now,
             'deleted_at': now,
