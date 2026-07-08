@@ -36,4 +36,12 @@ class PdaApiService {
     if (list == null) return [];
     return list.cast<Map<String, dynamic>>();
   }
+
+  /// report — get server-side report data
+  Future<Map<String, dynamic>> getReport({String? from, String? to}) async {
+    final params = <String, String>{};
+    if (from != null) params['date_from'] = from;
+    if (to != null) params['date_to'] = to;
+    return await _client.post('report', params: params);
+  }
 }

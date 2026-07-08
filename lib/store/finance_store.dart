@@ -889,7 +889,49 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addBudget(Budget b) async {
     final spent = _calcSpentForMonth(b.categoryId);
+    if (_hasPdaToken()) {
+      try {
+        final resp = await authService.pdaService.processBudget({
+          'category_id': b.categoryId,
+          'plan_amount': b.limit.toStringAsFixed(2),
+        });
+        final serverId = resp['id']?.toString();
+        if (serverId != null && serverId.isNotEmpty) {
+          _budgets.add(Budget(
+            id: serverId, name: b.name, categoryId: b.categoryId,
+            limit: b.limit, spent: spent, period: b.period,
+          ));
+          await _saveBudgets();
+          notifyListeners();
+          return;
+        }
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка создания бюджета: $e'; notifyListeners();
+      }
+    }
     _budgets.add(b.copyWith(spent: spent));
+    await _saveBudgets();
+    notifyListeners();
+  }
+
+  Future<void> updateBudget(Budget b) async {
+    if (_hasPdaToken()) {
+      try {
+        await authService.pdaService.processBudget({
+          'id': b.id,
+          'category_id': b.categoryId,
+          'plan_amount': b.limit.toStringAsFixed(2),
+        });
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления бюджета: $e'; notifyListeners();
+      }
+    }
+    final idx = _budgets.indexWhere((x) => x.id == b.id);
+    if (idx >= 0) _budgets[idx] = b;
     await _saveBudgets();
     notifyListeners();
   }
@@ -925,6 +967,18 @@ class FinanceStore extends ChangeNotifier {
   }
 
   Future<void> deleteBudget(String id) async {
+    if (_hasPdaToken()) {
+      try {
+        await authService.pdaService.processBudget({
+          'id': id,
+          'deleted_at': formatApiDateTime(),
+        });
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления бюджета: $e'; notifyListeners();
+      }
+    }
     final idx = _budgets.indexWhere((b) => b.id == id);
     if (idx >= 0) _budgets[idx] = _budgets[idx].copyWith(isDeleted: true);
     await _saveBudgets();
