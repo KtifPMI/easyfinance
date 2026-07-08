@@ -199,26 +199,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              title: Text(context.tr('settings.language_ru')),
-              leading: Icon(Icons.check_circle, color: current == 'ru' ? AppColors.primary : Colors.transparent),
+            ...['ru', 'en', 'es', 'it', 'fr', 'de', 'pt', 'tr'].map((code) => ListTile(
+              title: Text(context.tr('settings.language_$code')),
+              leading: Icon(Icons.check_circle, color: current == code ? AppColors.primary : Colors.transparent),
               onTap: () {
-                const locale = Locale('ru');
+                final locale = Locale(code);
                 context.read<LocaleStore>().setLocale(locale);
                 context.setLocale(locale);
                 Navigator.pop(ctx);
               },
-            ),
-            ListTile(
-              title: Text(context.tr('settings.language_en')),
-              leading: Icon(Icons.check_circle, color: current == 'en' ? AppColors.primary : Colors.transparent),
-              onTap: () {
-                const locale = Locale('en');
-                context.read<LocaleStore>().setLocale(locale);
-                context.setLocale(locale);
-                Navigator.pop(ctx);
-              },
-            ),
+            )),
           ],
         ),
       ),

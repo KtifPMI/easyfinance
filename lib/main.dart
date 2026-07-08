@@ -63,7 +63,10 @@ void main() async {
         ChangeNotifierProvider.value(value: themeStore),
       ],
       child: EasyLocalization(
-        supportedLocales: const [Locale('ru'), Locale('en')],
+        supportedLocales: const [
+          Locale('ru'), Locale('en'), Locale('es'), Locale('it'),
+          Locale('fr'), Locale('de'), Locale('pt'), Locale('tr'),
+        ],
         path: 'assets/translations',
         fallbackLocale: const Locale('ru'),
         startLocale: localeStore.locale,
