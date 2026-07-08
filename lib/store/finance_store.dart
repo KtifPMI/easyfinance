@@ -141,7 +141,7 @@ class FinanceStore extends ChangeNotifier {
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
 
-  double get totalBalance => _accounts.where((a) => a.includeInTotal).fold(0, (s, a) => s + a.balance);
+  double get totalBalance => _accounts.fold<num>(0, (s, a) => s + a.balance).toDouble();
   double get monthIncome {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);

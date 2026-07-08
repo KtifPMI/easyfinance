@@ -79,12 +79,12 @@ class Account {
     final icon = json['icon']?.toString() ?? '';
     final state = int.tryParse(json['state']?.toString() ?? '0') ?? 0;
     final isArchived = state == 2;
-    final initBalance = double.tryParse(json['init_balance']?.toString() ?? '0')?.abs() ?? 0;
+    final initBalance = double.tryParse(json['init_balance']?.toString() ?? '0') ?? 0;
     final currencyId = json['currency_id']?.toString();
     return Account(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
-      balance: double.tryParse(json['balance']?.toString() ?? '0')?.abs() ?? 0,
+      balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0,
       currency: _currencyIdToCode[currencyId] ?? json['currency_char_code']?.toString() ?? 'RUB',
       currencyId: currencyId,
       icon: _iconMap[icon] ?? 'credit_card',
