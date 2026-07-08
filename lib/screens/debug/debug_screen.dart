@@ -252,7 +252,7 @@ class _DebugScreenState extends State<DebugScreen> {
         setState(() {
           _response = DebugResponse(
             statusCode: resp.statusCode,
-            body: '--- REQUEST ---\nGET $url\n$authInfo\n\n--- RESPONSE (${resp.statusCode}) ---\n${_formatBody(resp.body)}',
+            body: '--- REQUEST ---\nGET $url\n$authInfo\n\n--- RESPONSE HEADERS ---\n${resp.headers?.entries.map((e) => '${e.key}: ${e.value}').join('\n') ?? 'N/A'}\n\n--- RESPONSE BODY (${resp.body.length} chars) ---\n${resp.body.isEmpty ? '(empty)' : _formatBody(resp.body)}',
             url: url,
           );
         });

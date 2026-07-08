@@ -246,10 +246,10 @@ class ApiClient {
     );
   }
 
-  Future<http.Response> getDirect(String url, {Map<String, String>? headers, bool useBearer = true}) async {
+  Future<DebugResponse> getDirect(String url, {Map<String, String>? headers}) async {
     var finalUrl = url;
     final hdrs = <String, String>{
-      'Accept': 'application/json',
+      'Accept': '*/*',
       'X-Requested-With': 'XMLHttpRequest',
       ...?headers,
     };
@@ -257,8 +257,6 @@ class ApiClient {
     if (_webSessionId != null) {
       hdrs['Cookie'] = 'PHPSESSID=$_webSessionId';
     } else if (_accessToken != null) {
-      // Try access_token as query param first (works like v2 API),
-      // fall back to Bearer header
       final parsed = Uri.parse(url);
       final params = Map<String, String>.from(parsed.queryParameters);
       params['access_token'] = _accessToken!;
@@ -266,7 +264,12 @@ class ApiClient {
     }
 
     final response = await _httpClient.get(Uri.parse(finalUrl), headers: hdrs).timeout(_timeout);
-    return response;
+    return DebugResponse(
+      statusCode: response.statusCode,
+      body: response.body,
+      url: finalUrl,
+      headers: Map<String, String>.from(response.headers.map((k, v) => MapEntry(k.toLowerCase(), v))),
+    );
   }
 
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
@@ -373,5 +376,6 @@ class DebugResponse {
   final int statusCode;
   final String body;
   final String url;
-  DebugResponse({required this.statusCode, required this.body, required this.url});
+  final Map<String, String>? headers;
+  DebugResponse({required this.statusCode, required this.body, required this.url, this.headers});
 }
