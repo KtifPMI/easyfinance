@@ -28,6 +28,9 @@ class _DebugScreenState extends State<DebugScreen> {
   bool _prettyPrint = true;
   final _paramsCtrl = TextEditingController();
   final _postBodyCtrl = TextEditingController();
+  final _webLoginCtrl = TextEditingController();
+  final _webPassCtrl = TextEditingController();
+  bool _webLoggedIn = false;
   String _postMethod = 'operations.post';
 
   static const methods = [
@@ -240,13 +243,54 @@ class _DebugScreenState extends State<DebugScreen> {
 
     try {
       final api = context.read<FinanceStore>().apiClient;
-      final resp = await api.getDirect(url);
+
+      // try Bearer first, fall back to session cookie
+      final resp = await api.getDirect(url, useBearer: !_webLoggedIn);
+      final authInfo = _webLoggedIn
+          ? 'Cookie: PHPSESSID=${api.webSessionId}'
+          : 'Authorization: Bearer <token>';
+
       if (mounted) {
         setState(() {
           _response = DebugResponse(
             statusCode: resp.statusCode,
-            body: '--- REQUEST ---\nGET $url\nAuthorization: Bearer <token>\n\n--- RESPONSE (${resp.statusCode}) ---\n${_formatBody(resp.body)}',
+            body: '--- REQUEST ---\nGET $url\n$authInfo\n\n--- RESPONSE (${resp.statusCode}) ---\n${_formatBody(resp.body)}',
             url: url,
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _response = DebugResponse(statusCode: 0, body: 'Exception: $e', url: '');
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _webLogin() async {
+    final login = _webLoginCtrl.text.trim();
+    final pass = _webPassCtrl.text.trim();
+    if (login.isEmpty || pass.isEmpty) return;
+
+    setState(() {
+      _selectedMethod = 'Web Login';
+      _loading = true;
+      _response = null;
+    });
+
+    try {
+      final api = context.read<FinanceStore>().apiClient;
+      await api.loginWeb(login, pass);
+      _webLoggedIn = true;
+      if (mounted) {
+        setState(() {
+          _response = DebugResponse(
+            statusCode: 200,
+            body: 'Web login OK. PHPSESSID: ${api.webSessionId}',
+            url: '',
           );
         });
       }
@@ -341,6 +385,8 @@ class _DebugScreenState extends State<DebugScreen> {
   void dispose() {
     _paramsCtrl.dispose();
     _postBodyCtrl.dispose();
+    _webLoginCtrl.dispose();
+    _webPassCtrl.dispose();
     super.dispose();
   }
 
@@ -417,6 +463,29 @@ class _DebugScreenState extends State<DebugScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: Text('--- Web (direct) ---', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondaryFor(context))),
           ),
+          if (!_webLoggedIn)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              child: Row(
+                children: [
+                  Expanded(child: TextField(controller: _webLoginCtrl, decoration: const InputDecoration(hintText: 'Web login', isDense: true, border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)), style: const TextStyle(fontSize: 13))),
+                  const SizedBox(width: 8),
+                  Expanded(child: TextField(controller: _webPassCtrl, obscureText: true, decoration: const InputDecoration(hintText: 'Password', isDense: true, border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)), style: const TextStyle(fontSize: 13))),
+                  const SizedBox(width: 8),
+                  SizedBox(height: 36, child: ElevatedButton(onPressed: _loading ? null : _webLogin, child: const Text('Login', style: TextStyle(fontSize: 12)))),
+                ],
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              child: Row(
+                children: [
+                  Expanded(child: Text('Web session: active', style: TextStyle(fontSize: 12, color: Colors.green))),
+                  SizedBox(height: 28, child: TextButton(onPressed: () { context.read<FinanceStore>().apiClient.clearWebSession(); setState(() => _webLoggedIn = false); }, child: const Text('Logout', style: TextStyle(fontSize: 12)))),
+                ],
+              ),
+            ),
           ...webMethods.map((m) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             child: SizedBox(

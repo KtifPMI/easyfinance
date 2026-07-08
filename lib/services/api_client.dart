@@ -24,6 +24,10 @@ class ApiClient {
   String? get accessToken => _accessToken;
   String? get userId => _userId;
 
+  String? _webSessionId;
+
+  String? get webSessionId => _webSessionId;
+
   void setAuth({required String accessToken, String? userId}) {
     _accessToken = accessToken;
     _userId = userId;
@@ -32,6 +36,25 @@ class ApiClient {
   void clearAuth() {
     _accessToken = null;
     _userId = null;
+    _webSessionId = null;
+  }
+
+  void clearWebSession() {
+    _webSessionId = null;
+  }
+
+  Future<void> loginWeb(String login, String password) async {
+    final uri = Uri.parse('https://easyfinance.ru/login/');
+    final resp = await _httpClient.post(uri, body: {'login': login, 'pass': password}).timeout(_timeout);
+    final setCookie = resp.headers['set-cookie'];
+    if (setCookie != null) {
+      final match = RegExp(r'PHPSESSID=([^;]+)').firstMatch(setCookie);
+      if (match != null) {
+        _webSessionId = match.group(1);
+        return;
+      }
+    }
+    throw ApiException('Web login failed: no PHPSESSID cookie', 'WEB_LOGIN_FAIL');
   }
 
   void dispose() {
@@ -223,10 +246,12 @@ class ApiClient {
     );
   }
 
-  Future<http.Response> getDirect(String url, {Map<String, String>? headers}) async {
+  Future<http.Response> getDirect(String url, {Map<String, String>? headers, bool useBearer = true}) async {
     final hdrs = <String, String>{
-      if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
       'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      if (useBearer && _accessToken != null) 'Authorization': 'Bearer $_accessToken',
+      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
       ...?headers,
     };
     final response = await _httpClient.get(Uri.parse(url), headers: hdrs).timeout(_timeout);
