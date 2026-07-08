@@ -119,6 +119,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         accessToken: token,
         userId: user?.id,
       );
+      store.authService.pdaClient.setAuthToken(token);
       await store.fetchAllData();
       NotificationService().rescheduleAll(); // fire-and-forget
       if (mounted) {
@@ -153,6 +154,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         accessToken: token,
         userId: user?.id,
       );
+      store.authService.pdaClient.setAuthToken(token);
 
       await store.fetchAllData();
       NotificationService().rescheduleAll(); // fire-and-forget

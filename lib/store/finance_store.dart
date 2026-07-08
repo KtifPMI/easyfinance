@@ -249,6 +249,20 @@ class FinanceStore extends ChangeNotifier {
       }
     } on ApiException catch (_) {}
 
+    try {
+      if (_hasPdaToken()) {
+        final pdaGoals = await authService.pdaService.getTargets();
+        for (final g in pdaGoals.map((g) => Goal.fromJson(g))) {
+          final idx = _goals.indexWhere((e) => e.id == g.id);
+          if (idx >= 0) {
+            _goals[idx] = g;
+          } else {
+            _goals.add(g);
+          }
+        }
+      }
+    } on ApiException catch (_) {}
+
     _recalcAccountBalances();
 
     for (var i = 0; i < _budgets.length; i++) {
@@ -951,7 +965,41 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
+  String _fmtDate(String iso) {
+    final d = DateTime.tryParse(iso);
+    if (d == null) return '';
+    return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+  }
+
+  bool _hasPdaToken() => authService.pdaClient.authToken != null;
+
   Future<void> addGoal(Goal g) async {
+    if (_hasPdaToken()) {
+      try {
+        final resp = await authService.pdaService.processTarget({
+          'title': g.title,
+          'amount': g.targetAmount.toStringAsFixed(2),
+          'amount_done': g.currentAmount.toStringAsFixed(2),
+          'end': _fmtDate(g.deadline),
+          if (g.accountId != null) 'account': g.accountId!,
+        });
+        final serverId = resp['id']?.toString();
+        if (serverId != null && serverId.isNotEmpty) {
+          _goals.add(Goal(
+            id: serverId, title: g.title, targetAmount: g.targetAmount,
+            currentAmount: g.currentAmount, deadline: g.deadline, icon: g.icon, color: g.color,
+            isCompleted: g.isCompleted, accountId: g.accountId,
+          ));
+          await _saveGoals();
+          notifyListeners();
+          return;
+        }
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка создания цели: $e'; notifyListeners();
+      }
+    }
     _goals.add(g);
     await _saveGoals();
     notifyListeners();
@@ -959,9 +1007,28 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted}) async {
     final idx = _goals.indexWhere((g) => g.id == id);
-    if (idx >= 0) {
-      _goals[idx] = _goals[idx].copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
+    if (idx < 0) return;
+    final g = _goals[idx];
+
+    if (_hasPdaToken()) {
+      try {
+        await authService.pdaService.processTarget({
+          'id': id,
+          'title': g.title,
+          'amount': g.targetAmount.toStringAsFixed(2),
+          'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
+          'end': _fmtDate(g.deadline),
+          'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
+          if (g.accountId != null) 'account': g.accountId!,
+        });
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления цели: $e'; notifyListeners();
+      }
     }
+
+    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
     await _saveGoals();
     notifyListeners();
   }
@@ -973,7 +1040,7 @@ class FinanceStore extends ChangeNotifier {
     final newAmount = goal.currentAmount + amount;
     final completed = newAmount >= goal.targetAmount;
 
-    updateGoal(goalId, currentAmount: newAmount, isCompleted: completed);
+    await updateGoal(goalId, currentAmount: newAmount, isCompleted: completed);
 
     final goalCategoryId = _categories
         .where((c) =>
@@ -999,6 +1066,15 @@ class FinanceStore extends ChangeNotifier {
   }
 
   Future<void> deleteGoal(String id) async {
+    if (_hasPdaToken()) {
+      try {
+        await authService.pdaService.deleteTarget(id);
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления цели: $e'; notifyListeners();
+      }
+    }
     _goals.removeWhere((g) => g.id == id);
     await _saveGoals();
     notifyListeners();
