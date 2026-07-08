@@ -280,6 +280,9 @@ class FinanceStore extends ChangeNotifier {
     final monthIncome = _operations.where((o) => o.type == 'income' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
     final monthExpense = _operations.where((o) => o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
 
+    String fmt(double v) => v.toStringAsFixed(0);
+    String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
+
     // 1 — budget overspent or near limit
     for (final b in _budgets.where((b) => !b.isDeleted)) {
       final cat = _categories.where((c) => c.id == b.categoryId).firstOrNull;
@@ -288,14 +291,18 @@ class FinanceStore extends ChangeNotifier {
         _recommendations.add(Recommendation(
           id: 'b_overspent_${b.id}', type: 'risk', severity: 'high',
           title: 'Лимит превышен: $name',
-          description: 'Потрачено ${b.spent.toStringAsFixed(0)} ₽ при лимите ${b.limit.toStringAsFixed(0)} ₽ (превышение ${(b.spent - b.limit).toStringAsFixed(0)} ₽, ${(b.spent / b.limit * 100).round()}% от лимита).',
+          description: 'Потрачено ${fmt(b.spent)} ₽ при лимите ${fmt(b.limit)} ₽.',
+          titleArgs: {'name': name},
+          descArgs: {'spent': fmt(b.spent), 'limit': fmt(b.limit), 'overspent': fmt(b.spent - b.limit), 'pct': pct(b.spent, b.limit)},
         ));
       } else if (b.spent > b.limit * 0.8) {
         final remaining = b.limit - b.spent;
         _recommendations.add(Recommendation(
           id: 'b_near_${b.id}', type: 'optimization', severity: 'medium',
           title: 'Близок к лимиту: $name',
-          description: 'Использовано ${b.spent.toStringAsFixed(0)} ₽ из ${b.limit.toStringAsFixed(0)} ₽ (${(b.spent / b.limit * 100).round()}%). Осталось всего ${remaining.toStringAsFixed(0)} ₽ до конца месяца.',
+          description: 'Использовано ${fmt(b.spent)} ₽ из ${fmt(b.limit)} ₽.',
+          titleArgs: {'name': name},
+          descArgs: {'spent': fmt(b.spent), 'limit': fmt(b.limit), 'pct': pct(b.spent, b.limit), 'remaining': fmt(remaining)},
         ));
       }
     }
@@ -325,13 +332,16 @@ class FinanceStore extends ChangeNotifier {
           _recommendations.add(Recommendation(
             id: 'high_food', type: 'risk', severity: 'high',
             title: 'Высокие расходы на питание',
-            description: 'На питание уходит ${foodRatio.round()}% дохода (${allFood.toStringAsFixed(0)} ₽ из ${monthIncome.toStringAsFixed(0)} ₽). Рекомендуется не более 30%.',
+            description: 'На питание уходит ${foodRatio.round()}% дохода.',
+            descArgs: {'pct': foodRatio.round().toString(), 'amount': fmt(allFood), 'income': fmt(monthIncome)},
           ));
         } else if (foodRatio > 30) {
           _recommendations.add(Recommendation(
             id: 'food_warning', type: 'optimization', severity: 'medium',
             title: 'Питание отнимает ${foodRatio.round()}% дохода',
-            description: 'Потрачено ${allFood.toStringAsFixed(0)} ₽ из ${monthIncome.toStringAsFixed(0)} ₽. Постарайтесь уложиться в 30%.',
+            description: 'Потрачено ${fmt(allFood)} ₽ из ${fmt(monthIncome)} ₽.',
+            titleArgs: {'pct': foodRatio.round().toString()},
+            descArgs: {'amount': fmt(allFood), 'income': fmt(monthIncome)},
           ));
         }
       }
@@ -339,7 +349,9 @@ class FinanceStore extends ChangeNotifier {
         _recommendations.add(Recommendation(
           id: 'dining_freq', type: 'optimization', severity: 'low',
           title: '$diningCount раз(а) в кафе за месяц',
-          description: 'На кафе и рестораны ушло ${diningTotal.toStringAsFixed(0)} ₽ (${(diningTotal / monthIncome * 100).round()}% дохода). Домашняя еда поможет сэкономить.',
+          description: 'На кафе и рестораны ушло ${fmt(diningTotal)} ₽.',
+          titleArgs: {'count': diningCount.toString()},
+          descArgs: {'amount': fmt(diningTotal), 'pct': pct(diningTotal, monthIncome)},
         ));
       }
     }
@@ -355,11 +367,14 @@ class FinanceStore extends ChangeNotifier {
       if (!budgetedCats.contains(entry.key)) {
         final cat = _categories.where((c) => c.id == entry.key).firstOrNull;
         if (cat != null && entry.value > 1000) {
-          final pct = monthExpense > 0 ? (entry.value / monthExpense * 100).round() : 0;
           _recommendations.add(Recommendation(
             id: 'no_budget_${entry.key}', type: 'optimization', severity: 'medium',
             title: 'Нет бюджета для «${cat.name}»',
-            description: 'Потрачено ${entry.value.toStringAsFixed(0)} ₽ ($pct% от всех расходов). Установите бюджет, чтобы контролировать эту категорию.',
+            description: 'Потрачено ${fmt(entry.value)} ₽.',
+            actionType: 'create_budget',
+            actionPayload: entry.key,
+            titleArgs: {'name': cat.name},
+            descArgs: {'amount': fmt(entry.value), 'pct': pct(entry.value, monthExpense)},
           ));
         }
       }
@@ -380,7 +395,9 @@ class FinanceStore extends ChangeNotifier {
         _recommendations.add(Recommendation(
           id: 'high_housing', type: 'risk', severity: 'high',
           title: 'Жильё — ${housingRatio.round()}% от дохода',
-          description: 'На жильё уходит ${housingTotal.toStringAsFixed(0)} ₽ из ${monthIncome.toStringAsFixed(0)} ₽ (${housingRatio.round()}%). Рекомендуется не более 30%.',
+          description: 'На жильё уходит ${fmt(housingTotal)} ₽ из ${fmt(monthIncome)} ₽.',
+          titleArgs: {'pct': housingRatio.round().toString()},
+          descArgs: {'amount': fmt(housingTotal), 'income': fmt(monthIncome), 'pct': housingRatio.round().toString()},
         ));
       }
     }
@@ -392,21 +409,24 @@ class FinanceStore extends ChangeNotifier {
         _recommendations.add(Recommendation(
           id: 'negative_savings', type: 'risk', severity: 'high',
           title: 'Расходы превышают доходы',
-          description: 'Доход ${monthIncome.toStringAsFixed(0)} ₽, расходы ${monthExpense.toStringAsFixed(0)} ₽ (дефицит ${(monthExpense - monthIncome).toStringAsFixed(0)} ₽). Пересмотрите бюджет.',
+          description: 'Доход ${fmt(monthIncome)} ₽, расходы ${fmt(monthExpense)} ₽.',
+          descArgs: {'income': fmt(monthIncome), 'expense': fmt(monthExpense), 'deficit': fmt(monthExpense - monthIncome)},
         ));
       } else if (savingsRate < 10) {
         final saveAmt = monthIncome - monthExpense;
         _recommendations.add(Recommendation(
           id: 'low_savings', type: 'risk', severity: 'medium',
           title: 'Низкая норма сбережения',
-          description: 'Откладывается ${saveAmt.toStringAsFixed(0)} ₽ (${savingsRate.round()}% от ${monthIncome.toStringAsFixed(0)} ₽). Цель — минимум 20% (${(monthIncome * 0.2).toStringAsFixed(0)} ₽).',
+          description: 'Откладывается ${fmt(saveAmt)} ₽ (${savingsRate.round()}%).',
+          descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome), 'target': fmt(monthIncome * 0.2)},
         ));
       } else if (savingsRate >= 20) {
         final saveAmt = monthIncome - monthExpense;
         _recommendations.add(Recommendation(
           id: 'good_savings', type: 'tip', severity: 'low',
           title: 'Хорошая норма сбережения',
-          description: 'Отложено ${saveAmt.toStringAsFixed(0)} ₽ (${savingsRate.round()}% от ${monthIncome.toStringAsFixed(0)} ₽). Отличный результат!',
+          description: 'Отложено ${fmt(saveAmt)} ₽ (${savingsRate.round()}).',
+          descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome)},
         ));
       }
     }
@@ -420,13 +440,14 @@ class FinanceStore extends ChangeNotifier {
       if (topCatList.length >= 2) {
         final parts = topCatList.map((e) {
           final cat = _categories.where((c) => c.id == e.key).firstOrNull;
-          final pct = (e.value / monthExpense * 100).round();
-          return '${cat?.name ?? e.key} ${e.value.toStringAsFixed(0)} ₽ ($pct%)';
+          final p = (e.value / monthExpense * 100).round();
+          return '${cat?.name ?? e.key} ${fmt(e.value)} ₽ ($p%)';
         }).join(', ');
         _recommendations.add(Recommendation(
           id: 'top_cats', type: 'tip', severity: 'low',
           title: 'Структура расходов',
           description: 'Основные статьи: $parts.',
+          descArgs: {'items': parts},
         ));
       }
     }
@@ -440,7 +461,10 @@ class FinanceStore extends ChangeNotifier {
       _recommendations.add(Recommendation(
         id: 'no_emergency', type: 'tip', severity: 'low',
         title: 'Создайте финансовую подушку',
-        description: 'Рекомендуется резерв 3–6 месячных расходов ($suggested ₽). Добавьте цель «Подушка безопасности» в разделе целей.',
+        description: 'Рекомендуется резерв 3–6 месячных расходов ($suggested ₽).',
+        actionType: 'create_goal',
+        actionPayload: 'emergency',
+        descArgs: {'amount': suggested},
       ));
     }
 
@@ -449,8 +473,10 @@ class FinanceStore extends ChangeNotifier {
       if (a.icon == 'cash' && a.balance > 50000) {
         _recommendations.add(Recommendation(
           id: 'idle_cash_${a.id}', type: 'optimization', severity: 'low',
-          title: '${a.balance.toStringAsFixed(0)} ₽ наличными без движения',
-          description: 'На счету «${a.name}» ${a.balance.toStringAsFixed(0)} ₽. Часть можно перенести на накопительный счёт или вклад.',
+          title: '${fmt(a.balance)} ₽ наличными без движения',
+          description: 'На счету «${a.name}» ${fmt(a.balance)} ₽.',
+          titleArgs: {'amount': fmt(a.balance)},
+          descArgs: {'name': a.name, 'amount': fmt(a.balance)},
         ));
       }
     }
@@ -462,7 +488,9 @@ class FinanceStore extends ChangeNotifier {
         _recommendations.add(Recommendation(
           id: 'goal_close_${g.id}', type: 'tip', severity: 'low',
           title: 'Цель «${g.title}» почти достигнута',
-          description: 'Накоплено ${g.currentAmount.toStringAsFixed(0)} ₽ из ${g.targetAmount.toStringAsFixed(0)} ₽ (${progress.round()}%). Осталось ${(g.targetAmount - g.currentAmount).toStringAsFixed(0)} ₽.',
+          description: 'Накоплено ${fmt(g.currentAmount)} ₽ из ${fmt(g.targetAmount)} ₽.',
+          titleArgs: {'title': g.title},
+          descArgs: {'current': fmt(g.currentAmount), 'target': fmt(g.targetAmount), 'pct': progress.round().toString(), 'remaining': fmt(g.targetAmount - g.currentAmount)},
         ));
       }
     }
@@ -472,7 +500,7 @@ class FinanceStore extends ChangeNotifier {
       _recommendations.add(Recommendation(
         id: 'all_good', type: 'tip', severity: 'low',
         title: 'Всё в порядке!',
-        description: 'Сейчас нет рекомендаций. Добавляйте операции и ставьте цели — советы появятся автоматически.',
+        description: 'Сейчас нет рекомендаций. Добавляйте операции и ставьте цели.',
       ));
     }
   }

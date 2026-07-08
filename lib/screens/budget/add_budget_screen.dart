@@ -9,7 +9,8 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
 class AddBudgetScreen extends StatefulWidget {
-  const AddBudgetScreen({super.key});
+  final String? categoryId;
+  const AddBudgetScreen({super.key, this.categoryId});
 
   @override
   State<AddBudgetScreen> createState() => _AddBudgetScreenState();
@@ -18,6 +19,12 @@ class AddBudgetScreen extends StatefulWidget {
 class _AddBudgetScreenState extends State<AddBudgetScreen> {
   final _limitCtrl = TextEditingController();
   String? _categoryId;
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryId = widget.categoryId;
+  }
 
   @override
   void dispose() {
