@@ -247,14 +247,25 @@ class ApiClient {
   }
 
   Future<http.Response> getDirect(String url, {Map<String, String>? headers, bool useBearer = true}) async {
+    var finalUrl = url;
     final hdrs = <String, String>{
       'Accept': 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
-      if (useBearer && _accessToken != null) 'Authorization': 'Bearer $_accessToken',
-      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
       ...?headers,
     };
-    final response = await _httpClient.get(Uri.parse(url), headers: hdrs).timeout(_timeout);
+
+    if (_webSessionId != null) {
+      hdrs['Cookie'] = 'PHPSESSID=$_webSessionId';
+    } else if (_accessToken != null) {
+      // Try access_token as query param first (works like v2 API),
+      // fall back to Bearer header
+      final parsed = Uri.parse(url);
+      final params = Map<String, String>.from(parsed.queryParameters);
+      params['access_token'] = _accessToken!;
+      finalUrl = parsed.replace(queryParameters: params).toString();
+    }
+
+    final response = await _httpClient.get(Uri.parse(finalUrl), headers: hdrs).timeout(_timeout);
     return response;
   }
 

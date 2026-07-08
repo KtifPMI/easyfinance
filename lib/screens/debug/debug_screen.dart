@@ -243,12 +243,10 @@ class _DebugScreenState extends State<DebugScreen> {
 
     try {
       final api = context.read<FinanceStore>().apiClient;
-
-      // try Bearer first, fall back to session cookie
-      final resp = await api.getDirect(url, useBearer: !_webLoggedIn);
-      final authInfo = _webLoggedIn
+      final resp = await api.getDirect(url);
+      final authInfo = api.webSessionId != null
           ? 'Cookie: PHPSESSID=${api.webSessionId}'
-          : 'Authorization: Bearer <token>';
+          : 'Query: access_token=<token>';
 
       if (mounted) {
         setState(() {
