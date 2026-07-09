@@ -188,19 +188,19 @@ class FinanceStore extends ChangeNotifier {
           userId: user.id,
         );
       }
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     try {
       _accounts = await api.getAccounts();
     } on ApiException catch (e) {
       _error = e.message;
-    }
+    } catch (_) {}
 
     try {
       _operations = await api.getOperations();
     } on ApiException catch (e) {
       _error = e.message;
-    }
+    } catch (_) {}
 
     try {
       _categories = await api.getCategories();
@@ -209,11 +209,11 @@ class FinanceStore extends ChangeNotifier {
       }
     } on ApiException catch (e) {
       _error = e.message;
-    }
+    } catch (_) {}
 
     try {
       _tags = await api.getTags();
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     try {
       final apiTemplates = await api.getTemplates();
@@ -222,20 +222,20 @@ class FinanceStore extends ChangeNotifier {
         if (!localIds.contains(t.id)) _templates.add(t);
       }
       await _saveTemplates();
-    } on ApiException catch (_) {}
+    } catch (_) {}
     notifyListeners();
 
     try {
       _serverBudget = await api.getBudget();
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     try {
       _currencies = await api.getCurrencies();
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     try {
       _systemCategories = await api.getSystemCategories();
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     try {
       final goals = await api.getGoals();
@@ -247,21 +247,19 @@ class FinanceStore extends ChangeNotifier {
           _goals.add(g);
         }
       }
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     try {
-      if (_hasPdaToken()) {
-        final pdaGoals = await authService.pdaService.getTargets();
-        for (final g in pdaGoals.map((g) => Goal.fromJson(g))) {
-          final idx = _goals.indexWhere((e) => e.id == g.id);
-          if (idx >= 0) {
-            _goals[idx] = g;
-          } else {
-            _goals.add(g);
-          }
+      final pdaGoals = await authService.pdaService.getTargets();
+      for (final g in pdaGoals.map((g) => Goal.fromJson(g))) {
+        final idx = _goals.indexWhere((e) => e.id == g.id);
+        if (idx >= 0) {
+          _goals[idx] = g;
+        } else {
+          _goals.add(g);
         }
       }
-    } on ApiException catch (_) {}
+    } catch (_) {}
 
     _recalcAccountBalances();
 
