@@ -26,7 +26,7 @@ class UpdateService {
       final response = await http.get(
         Uri.parse(_apiUrl),
         headers: {'Accept': 'application/vnd.github.v3+json'},
-      );
+      ).timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) return null;
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -69,8 +69,31 @@ class UpdateService {
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/easyfinance.apk');
 
-    final response = await http.get(Uri.parse(url));
-    await file.writeAsBytes(response.bodyBytes);
+    final client = http.Client();
+    try {
+      final request = http.Request('GET', Uri.parse(url));
+      final response = await client.send(request).timeout(const Duration(minutes: 5));
+      final contentLength = response.contentLength ?? 0;
+
+      final sink = file.openWrite();
+      int downloaded = 0;
+      await for (final chunk in response.stream) {
+        sink.add(chunk);
+        downloaded += chunk.length;
+        if (contentLength > 0 && context.mounted) {
+          final progress = (downloaded / contentLength * 100).round();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Загрузка... $progress%'),
+              duration: const Duration(milliseconds: 500),
+            ),
+          );
+        }
+      }
+      await sink.close();
+    } finally {
+      client.close();
+    }
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,7 +146,11 @@ class UpdateService {
     try {
       await downloadAndInstall(url, context);
     } catch (_) {
-      // ошибка загрузки — без уродского уведомления
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ошибка загрузки обновления'), backgroundColor: Colors.red),
+        );
+      }
     } finally {
       if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
     }
