@@ -170,11 +170,12 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   }
 
   Future<void> _showPdaDialog(FinanceStore store, User? user) async {
-    final login = user?.email.isNotEmpty == true ? user!.email
+    final userLogin = user?.email.isNotEmpty == true ? user!.email
         : user?.login.isNotEmpty == true ? user!.login : null;
-    if (login == null || login.isEmpty) return;
+    if (userLogin == null || userLogin.isEmpty) return;
 
     final ctrl = TextEditingController();
+    final useLogin = user?.login.isNotEmpty == true && user?.email.isNotEmpty == true;
     final submitted = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -186,7 +187,9 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
           children: [
             const Text('Введите пароль от EasyFinance, чтобы синхронизировать цели и бюджеты с сервером.'),
             const SizedBox(height: 16),
-            Text('Email: $login', style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text('Логин: $userLogin', style: const TextStyle(fontWeight: FontWeight.w600)),
+            if (useLogin)
+              Text('Email: ${user!.email}', style: TextStyle(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 12),
             TextField(
               controller: ctrl,
@@ -212,25 +215,36 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     if (submitted != true || ctrl.text.isEmpty) return;
 
     final pwdMd5 = md5.convert(utf8.encode(ctrl.text)).toString();
-    try {
-      await store.authService.pdaClient.authenticate(login, pwdMd5);
-      final pdaToken = store.authService.pdaClient.authToken;
-      if (pdaToken != null) {
-        await store.authService.savePdaToken(pdaToken);
-        await store.fetchAllData();
+    final attempts = [userLogin];
+    if (useLogin) attempts.add(user!.login);
+
+    for (final attempt in attempts) {
+      try {
+        await store.authService.pdaClient.authenticate(attempt, pwdMd5);
+        final pdaToken = store.authService.pdaClient.authToken;
+        if (pdaToken != null) {
+          await store.authService.savePdaToken(pdaToken);
+          await store.fetchAllData();
+        }
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Синхронизация включена'), backgroundColor: Colors.green),
+          );
+        }
+        return;
+      } on ApiException catch (_) {
+        // try next login variant
       }
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка PDA: ${e.message}'), backgroundColor: Colors.red),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка PDA: $e'), backgroundColor: Colors.red),
-        );
-      }
+    }
+
+    // Both attempts failed
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ошибка: неверный логин или пароль. Цели будут сохранены локально.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

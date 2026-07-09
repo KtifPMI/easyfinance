@@ -34,11 +34,22 @@ class PdaApiClient {
     }
 
     final json = jsonDecode(resp.body) as Map<String, dynamic>;
+
+    final errors = json['errors'] as List<dynamic>?;
+    if (errors != null && errors.isNotEmpty) {
+      final first = errors.first as Map<String, dynamic>;
+      throw ApiException(
+        first['text']?.toString() ?? 'PDA auth error',
+        first['code']?.toString() ?? 'PDA_AUTH_ERROR',
+      );
+    }
+
     final data = json['data'] as Map<String, dynamic>?;
-    if (data == null || data['auth_token'] == null) {
+    final token = data?['auth_token']?.toString() ?? json['auth_token']?.toString();
+    if (token == null || token.isEmpty) {
       throw ApiException('PDA auth failed: no auth_token', 'NO_TOKEN');
     }
-    _authToken = data['auth_token']!.toString();
+    _authToken = token;
   }
 
   Future<Map<String, dynamic>> post(String endpoint, {Map<String, String>? params}) async {
