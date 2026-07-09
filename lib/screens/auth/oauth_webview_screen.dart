@@ -232,7 +232,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
           );
         }
         return;
-      } on ApiException catch (_) {
+      } catch (_) {
         // try next login variant
       }
     }
