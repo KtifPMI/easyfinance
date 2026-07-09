@@ -21,11 +21,11 @@ class PdaApiClient {
     _authToken = null;
   }
 
-  Future<void> authenticate(String login, String passwordMd5) async {
+  Future<void> authenticate(String login, String password) async {
     final resp = await _httpClient
         .post(Uri.parse('${baseUrl}authenticate'), body: {
           'login': login,
-          'password_md5': passwordMd5,
+          'password': password,
         })
         .timeout(_timeout);
 

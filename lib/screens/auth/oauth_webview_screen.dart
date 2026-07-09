@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -214,13 +213,13 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
 
     if (submitted != true || ctrl.text.isEmpty) return;
 
-    final pwdMd5 = md5.convert(utf8.encode(ctrl.text)).toString();
+    final password = ctrl.text;
     final attempts = [userLogin];
     if (useLogin) attempts.add(user!.login);
 
     for (final attempt in attempts) {
       try {
-        await store.authService.pdaClient.authenticate(attempt, pwdMd5);
+        await store.authService.pdaClient.authenticate(attempt, password);
         final pdaToken = store.authService.pdaClient.authToken;
         if (pdaToken != null) {
           await store.authService.savePdaToken(pdaToken);
