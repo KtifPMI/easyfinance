@@ -662,7 +662,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = formatApiDateTime();
+        final now = _fmtSimpleDt();
         final newAccount = account.copyWith();
         final resp = await authService.apiService.addAccount({
           'accounts': [{
@@ -700,7 +700,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> updateAccount(Account account) async {
     if (!_useMock && authService.isAuthenticated) {
       try {
-        final now = formatApiDateTime();
+        final now = _fmtSimpleDt();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': account.id,
@@ -730,7 +730,7 @@ class FinanceStore extends ChangeNotifier {
     if (!_useMock && authService.isAuthenticated) {
       try {
         final account = _accounts.firstWhere((a) => a.id == id);
-        final now = formatApiDateTime();
+        final now = _fmtSimpleDt();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
@@ -745,7 +745,7 @@ class FinanceStore extends ChangeNotifier {
           }]
         }, accountId: id);
       } on StateError {
-        final now = formatApiDateTime();
+        final now = _fmtSimpleDt();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
@@ -1023,6 +1023,11 @@ class FinanceStore extends ChangeNotifier {
     final d = DateTime.tryParse(iso);
     if (d == null) return '';
     return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+  }
+
+  String _fmtSimpleDt() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
   }
 
   bool _hasPdaToken() => authService.pdaClient.authToken != null;
