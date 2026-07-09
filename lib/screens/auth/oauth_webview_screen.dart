@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -119,8 +121,8 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         accessToken: token,
         userId: user?.id,
       );
-      await store.authService.savePdaToken(token);
       await store.fetchAllData();
+      await _showPdaDialog(store, user);
       NotificationService().rescheduleAll(); // fire-and-forget
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
@@ -154,9 +156,8 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         accessToken: token,
         userId: user?.id,
       );
-      await store.authService.savePdaToken(token);
-
       await store.fetchAllData();
+      await _showPdaDialog(store, user);
       NotificationService().rescheduleAll(); // fire-and-forget
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
@@ -165,6 +166,71 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       if (mounted) Navigator.pop(context, false);
     } catch (_) {
       if (mounted) Navigator.pop(context, false);
+    }
+  }
+
+  Future<void> _showPdaDialog(FinanceStore store, User? user) async {
+    final login = user?.email.isNotEmpty == true ? user!.email
+        : user?.login.isNotEmpty == true ? user!.login : null;
+    if (login == null || login.isEmpty) return;
+
+    final ctrl = TextEditingController();
+    final submitted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Синхронизация целей'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Введите пароль от EasyFinance, чтобы синхронизировать цели и бюджеты с сервером.'),
+            const SizedBox(height: 16),
+            Text('Email: $login', style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Пароль', border: const OutlineInputBorder()),
+              autofocus: true,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Пропустить'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Войти'),
+          ),
+        ],
+      ),
+    );
+
+    if (submitted != true || ctrl.text.isEmpty) return;
+
+    final pwdMd5 = md5.convert(utf8.encode(ctrl.text)).toString();
+    try {
+      await store.authService.pdaClient.authenticate(login, pwdMd5);
+      final pdaToken = store.authService.pdaClient.authToken;
+      if (pdaToken != null) {
+        await store.authService.savePdaToken(pdaToken);
+        await store.fetchAllData();
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка PDA: ${e.message}'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка PDA: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
