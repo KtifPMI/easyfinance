@@ -250,6 +250,18 @@ class FinanceStore extends ChangeNotifier {
     } catch (_) {}
 
     try {
+      final templateGoals = await api.getGoalTemplates();
+      for (final g in templateGoals.map((g) => Goal.fromOpPattern(g))) {
+        final idx = _goals.indexWhere((e) => e.id == g.id);
+        if (idx >= 0) {
+          _goals[idx] = g;
+        } else {
+          _goals.add(g);
+        }
+      }
+    } catch (_) {}
+
+    try {
       final pdaGoals = await authService.pdaService.getTargets();
       for (final g in pdaGoals.map((g) => Goal.fromJson(g))) {
         final idx = _goals.indexWhere((e) => e.id == g.id);
@@ -1057,6 +1069,42 @@ class FinanceStore extends ChangeNotifier {
         _error = 'Ошибка создания цели: $e'; notifyListeners();
       }
     }
+
+    if (authService.isAuthenticated) {
+      try {
+        final api = authService.apiService;
+        final now = formatApiDateTime();
+        final resp = await api.addGoalTemplate({
+          'operationPatterns': [{
+            'name': g.title,
+            'type': '4',
+            'amount': g.targetAmount.toStringAsFixed(2),
+            if (g.accountId != null) 'account_id': g.accountId,
+            'created_at': now,
+            'updated_at': now,
+          }]
+        });
+        final patterns = resp['operationPatterns'] as List<dynamic>?;
+        if (patterns != null && patterns.isNotEmpty) {
+          final serverId = patterns[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _goals.add(Goal(
+              id: serverId, title: g.title, targetAmount: g.targetAmount,
+              currentAmount: g.currentAmount, deadline: g.deadline, icon: g.icon, color: g.color,
+              isCompleted: g.isCompleted, accountId: g.accountId,
+            ));
+            await _saveGoals();
+            notifyListeners();
+            return;
+          }
+        }
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка создания цели: $e'; notifyListeners();
+      }
+    }
+
     _goals.add(g);
     await _saveGoals();
     notifyListeners();
@@ -1078,6 +1126,25 @@ class FinanceStore extends ChangeNotifier {
           'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
           if (g.accountId != null) 'account': g.accountId!,
         });
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления цели: $e'; notifyListeners();
+      }
+    } else if (authService.isAuthenticated) {
+      try {
+        final api = authService.apiService;
+        final now = formatApiDateTime();
+        await api.setGoalTemplate({
+          'operationPatterns': [{
+            'id': id,
+            'name': g.title,
+            'type': '4',
+            'amount': g.targetAmount.toStringAsFixed(2),
+            if (g.accountId != null) 'account_id': g.accountId,
+            'updated_at': now,
+          }]
+        }, id: id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
       } catch (e) {
@@ -1126,6 +1193,17 @@ class FinanceStore extends ChangeNotifier {
     if (_hasPdaToken()) {
       try {
         await authService.pdaService.deleteTarget(id);
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления цели: $e'; notifyListeners();
+      }
+    } else if (authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        await authService.apiService.setGoalTemplate({
+          'operationPatterns': [{'id': id, 'deleted_at': now}]
+        }, id: id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
       } catch (e) {

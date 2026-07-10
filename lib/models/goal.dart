@@ -60,6 +60,22 @@ class Goal {
     'transferAccountId': transferAccountId,
   };
 
+  factory Goal.fromOpPattern(Map<String, dynamic> json) {
+    final amount = double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0;
+    final amountDone = double.tryParse(json['amount_done']?.toString() ?? '0') ?? 0.0;
+    return Goal(
+      id: json['id']?.toString() ?? '',
+      title: json['name']?.toString() ?? '',
+      targetAmount: amount,
+      currentAmount: amountDone,
+      deadline: json['end']?.toString() ?? '',
+      icon: 'star',
+      color: '#16A34A',
+      isCompleted: amount > 0 && amountDone >= amount,
+      accountId: json['account_id']?.toString(),
+    );
+  }
+
   factory Goal.fromLocalJson(Map<String, dynamic> json) => Goal(
     id: json['id'] as String? ?? '',
     title: json['title'] as String? ?? '',

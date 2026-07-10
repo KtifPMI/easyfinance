@@ -46,10 +46,18 @@ class OperationTemplate {
       if (type == '0') return 'expense';
       if (type == '1') return 'income';
       if (type == '2') return 'transfer';
+      if (type == '4') return 'goal';
     }
-    if (type is int) return type == 0 ? 'expense' : type == 1 ? 'income' : 'transfer';
+    if (type is int) {
+      if (type == 0) return 'expense';
+      if (type == 1) return 'income';
+      if (type == 2) return 'transfer';
+      if (type == 4) return 'goal';
+    }
     return 'expense';
   }
+
+  bool get isGoal => type == 'goal';
 
   Map<String, dynamic> toMap() => {
     'name': name,
