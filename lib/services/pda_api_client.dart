@@ -30,26 +30,31 @@ class PdaApiClient {
         .timeout(_timeout);
 
     if (resp.statusCode != 200) {
-      throw ApiException('PDA auth failed: HTTP ${resp.statusCode}', resp.statusCode.toString());
+      throw ApiException('PDA auth failed: HTTP ${resp.statusCode}', 'PDA_HTTP');
     }
 
     final json = jsonDecode(resp.body) as Map<String, dynamic>;
 
-    final errors = json['errors'] as List<dynamic>?;
-    if (errors != null && errors.isNotEmpty) {
-      final first = errors.first as Map<String, dynamic>;
-      throw ApiException(
-        first['text']?.toString() ?? 'PDA auth error',
-        first['code']?.toString() ?? 'PDA_AUTH_ERROR',
-      );
+    final errors = json['errors'];
+    if (errors != null && errors is String && errors.isNotEmpty) {
+      if (errors.contains('PRO') || errors.contains('тариф') || errors.contains('tariff')) {
+        throw ApiException(
+          'Для синхронизации целей и бюджетов с сервером нужен PRO-тариф EasyFinance.',
+          'PDA_TARIFF',
+        );
+      }
+      throw ApiException(errors.replaceAll(RegExp(r'<[^>]*>'), '').trim(), 'PDA_AUTH_ERROR');
     }
 
     final data = json['data'] as Map<String, dynamic>?;
-    final token = data?['auth_token']?.toString() ?? json['auth_token']?.toString();
-    if (token == null || token.isEmpty) {
-      throw ApiException('PDA auth failed: no auth_token', 'NO_TOKEN');
+    final token = data?['auth_token']?.toString()
+        ?? json['auth_token']?.toString()
+        ?? json['hash']?.toString();
+    if (token != null && token.isNotEmpty) {
+      _authToken = token;
+      return;
     }
-    _authToken = token;
+    throw ApiException('Не удалось получить токен авторизации', 'PDA_NO_TOKEN');
   }
 
   Future<Map<String, dynamic>> post(String endpoint, {Map<String, String>? params}) async {
@@ -72,13 +77,18 @@ class PdaApiClient {
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
 
-    final errors = json['errors'] as List<dynamic>?;
-    if (errors != null && errors.isNotEmpty) {
-      final first = errors.first as Map<String, dynamic>;
-      throw ApiException(
-        first['text']?.toString() ?? 'PDA error for $endpoint',
-        first['code']?.toString() ?? 'PDA_ERROR',
-      );
+    final errors = json['errors'];
+    if (errors != null) {
+      if (errors is String && errors.isNotEmpty) {
+        throw ApiException(errors.replaceAll(RegExp(r'<[^>]*>'), '').trim(), 'PDA_ERROR');
+      }
+      if (errors is List && errors.isNotEmpty) {
+        final first = errors.first as Map<String, dynamic>;
+        throw ApiException(
+          first['text']?.toString() ?? 'PDA error for $endpoint',
+          first['code']?.toString() ?? 'PDA_ERROR',
+        );
+      }
     }
 
     return json['data'] as Map<String, dynamic>? ?? json;

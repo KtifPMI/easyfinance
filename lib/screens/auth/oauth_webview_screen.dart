@@ -217,6 +217,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     final attempts = [userLogin];
     if (useLogin) attempts.add(user!.login);
 
+    String? lastErrorMsg;
     for (final attempt in attempts) {
       try {
         await store.authService.pdaClient.authenticate(attempt, password);
@@ -231,18 +232,20 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
           );
         }
         return;
+      } on ApiException catch (e) {
+        lastErrorMsg = e.message;
+        if (e.code == 'PDA_TARIFF') break;
       } catch (_) {
-        // try next login variant
+        lastErrorMsg = null;
       }
     }
 
-    // Both attempts failed
     if (mounted) {
+      final msg = lastErrorMsg != null
+          ? 'Ошибка: $lastErrorMsg'
+          : 'Ошибка: неверный логин или пароль. Цели будут сохранены локально.';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ошибка: неверный логин или пароль. Цели будут сохранены локально.'),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(msg), backgroundColor: Colors.red),
       );
     }
   }
