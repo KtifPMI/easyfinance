@@ -46,6 +46,9 @@ jobs:
           flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.log 2>&1
           status=$?
           cat analyze.log
+          while IFS= read -r line; do
+            echo "::error::${line}"
+          done < analyze.log
           exit $status
 
       - name: Upload analyzer log
