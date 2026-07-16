@@ -75,7 +75,6 @@ class GoalsListScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                              ],
                                 if (!g.isCompleted)
                                   GestureDetector(
                                     onTap: () => _showDepositDialog(context, g, store),
@@ -86,7 +85,7 @@ class GoalsListScreen extends StatelessWidget {
                                     ),
                                   ),
                                 IconButton(
-                                  icon: Icon(Icons.delete_outline, size: 20, color: AppColors.error),
+                                  icon: Icon(Icons.delete_outline, size: 20, color: AppColors.danger),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
                                   onPressed: () => _confirmDelete(context, g, store),
@@ -128,7 +127,7 @@ class GoalsListScreen extends StatelessWidget {
               store.deleteGoal(goal.id);
               Navigator.pop(ctx);
             },
-            child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.error)),
+            child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
