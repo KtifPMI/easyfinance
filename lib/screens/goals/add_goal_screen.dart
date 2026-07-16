@@ -1,7 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/goal.dart';
@@ -31,7 +29,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   DateTime? _firstPaymentDate;
   DateTime? _targetDate;
   bool _isCompleted = false;
-  bool _isLoading = false;
   bool _calculating = false;
 
   static const _saveCategories = {
@@ -88,7 +85,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     return _parseSum(cleaned, 0);
   }
 
-  int _parseSum(String s, int i) {
+  double _parseSum(String s, int i) {
     double result = _parseProduct(s, i);
     while (i < s.length) {
       final c = s[i];
@@ -96,7 +93,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       else if (c == '-') { i++; result -= _parseProduct(s, i); }
       else break;
     }
-    return result.round();
+    return result;
   }
 
   double _parseProduct(String s, int i) {
@@ -115,10 +112,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       i++;
       final val = _parseSum(s, i);
       if (i < s.length && s[i] == ')') i++;
-      return val.toDouble();
+      return val;
     }
     final start = i;
-    while (i < s.length && (s[i].isDigit || s[i] == '.')) i++;
+    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) i++;
     return double.tryParse(s.substring(start, i)) ?? 0;
   }
 
@@ -182,14 +179,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     if (!_canSave) return;
     final store = context.read<FinanceStore>();
     final total = _parseAmount(_totalCtrl.text);
-    final monthly = _parseAmount(_monthlyCtrl.text);
     final endStr = _targetDate != null
         ? '${_targetDate!.year}-${_targetDate!.month.toString().padLeft(2, '0')}-${_targetDate!.day.toString().padLeft(2, '0')}'
         : '';
-    final firstPaymentStr = _firstPaymentDate != null
-        ? '${_firstPaymentDate!.year}-${_firstPaymentDate!.month.toString().padLeft(2, '0')}-${_firstPaymentDate!.day.toString().padLeft(2, '0')}'
-        : '';
-
     store.addGoal(Goal(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       title: _titleCtrl.text.trim(),
