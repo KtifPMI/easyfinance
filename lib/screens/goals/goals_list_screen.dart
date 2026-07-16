@@ -98,7 +98,7 @@ class GoalsListScreen extends StatelessWidget {
                             if (g.isCompleted)
                               Text('100%', style: TextStyle(fontSize: 11, color: AppColors.success))
                             else
-                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${formatDateLong(g.deadline)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : 'Без срока'}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                             if (!g.isCompleted && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
                               Text(context.tr('goals.recommendation', namedArgs: {'amount': formatMoney(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
@@ -163,10 +163,15 @@ class GoalsListScreen extends StatelessWidget {
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? 0;
                 if (amount > 0 && accountId != null) {
-                  store.depositToGoal(goal.id, amount, accountId!);
+                  await store.depositToGoal(goal.id, amount, accountId!);
+                  if (!ctx.mounted) return;
+                  if (store.error != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
+                    return;
+                  }
                   final newGoal = store.goals.where((g) => g.id == goal.id).firstOrNull;
                   if (newGoal != null && newGoal.isCompleted) {
                     Navigator.pop(ctx);

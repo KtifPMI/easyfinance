@@ -51,9 +51,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     final isEdit = widget.existing != null;
     return ScreenScaffold(
       title: context.tr(isEdit ? 'planned_payments.edit' : 'planned_payments.add'),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
+      child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(context.tr('planned_payments.type'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
@@ -113,7 +111,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               onPressed: _save,
             ),
           ],
-        ),
       ),
     );
   }
@@ -159,9 +156,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     final now = DateTime.now();
     String date;
     if (_isRecurring && dayOfMonth != null) {
-      var next = DateTime(now.year, now.month, dayOfMonth);
+      var next = _dateForDay(now.year, now.month, dayOfMonth);
       if (next.isBefore(DateTime(now.year, now.month, now.day))) {
-        next = DateTime(now.year, now.month + 1, dayOfMonth);
+        next = _dateForDay(now.year, now.month + 1, dayOfMonth);
       }
       date = next.toIso8601String().substring(0, 10);
     } else {
@@ -189,5 +186,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     }
 
     Navigator.pop(context);
+  }
+
+  DateTime _dateForDay(int year, int month, int day) {
+    final lastDay = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, day > lastDay ? lastDay : day);
   }
 }

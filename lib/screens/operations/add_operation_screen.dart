@@ -140,8 +140,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
         return ScreenScaffold(
           title: _isEditing ? context.tr('operations.edit') : context.tr('operations.add'),
-          child: SingleChildScrollView(
-          child: Column(
+           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (store.templates.isNotEmpty && !_isEditing && widget.templateId == null) ...[
@@ -161,8 +160,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                         const SizedBox(width: 12),
                         Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.primary)),
                       ],
-                    ),
-                  ),
+         ),
                 ),
                 const SizedBox(height: 16),
               ],

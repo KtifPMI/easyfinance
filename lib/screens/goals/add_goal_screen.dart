@@ -175,14 +175,14 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     return total > 0;
   }
 
-  void _save() {
+  Future<void> _save() async {
     if (!_canSave) return;
     final store = context.read<FinanceStore>();
     final total = _parseAmount(_totalCtrl.text);
     final endStr = _targetDate != null
         ? '${_targetDate!.year}-${_targetDate!.month.toString().padLeft(2, '0')}-${_targetDate!.day.toString().padLeft(2, '0')}'
         : '';
-    store.addGoal(Goal(
+    await store.addGoal(Goal(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       title: _titleCtrl.text.trim(),
       targetAmount: total,
@@ -192,6 +192,11 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
       currencyId: _currencyId,
     ));
+    if (!mounted) return;
+    if (store.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
+      return;
+    }
     Navigator.pop(context);
   }
 

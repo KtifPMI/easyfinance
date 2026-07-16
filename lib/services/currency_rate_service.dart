@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +20,7 @@ class CurrencyRateService {
           .get(uri, headers: {'User-Agent': 'EasyFinance/1.0'})
           .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode != 200) return {};
+      if (response.statusCode != 200) return await _loadCache() ?? {};
 
       final rates = _parseXml(response.body);
       if (rates.isNotEmpty) await _saveCache(rates);
@@ -76,11 +75,15 @@ class CurrencyRateService {
   }
 
   static Future<Map<String, double>?> _loadCache() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_cacheKey);
-    if (raw == null) return null;
-    final decoded = jsonDecode(raw) as Map<String, dynamic>;
-    return decoded.map((k, v) => MapEntry(k, (v as num).toDouble()));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKey);
+      if (raw == null) return null;
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return decoded.map((k, v) => MapEntry(k, (v as num).toDouble()));
+    } catch (_) {
+      return null;
+    }
   }
 
   static Future<void> _saveCache(Map<String, double> rates) async {

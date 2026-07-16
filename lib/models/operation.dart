@@ -31,8 +31,8 @@ class Operation {
     this.isDeleted = false,
   });
 
-  Operation copyWith({bool? isDeleted, String? tags}) =>
-      Operation(id: id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, tags: tags ?? this.tags, isDeleted: isDeleted ?? this.isDeleted);
+  Operation copyWith({String? id, bool? isDeleted, String? tags}) =>
+      Operation(id: id ?? this.id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, tags: tags ?? this.tags, isDeleted: isDeleted ?? this.isDeleted);
 
   Map<String, dynamic> toJson() => {
     'id': id, 'type': type, 'amount': amount, 'currency': currency,

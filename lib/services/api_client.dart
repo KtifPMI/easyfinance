@@ -308,13 +308,18 @@ class ApiClient {
     Map<String, dynamic>? body,
   }) async {
     final uri = _buildUri(method, params ?? {});
-    final response = await _httpClient
-        .post(
-          uri,
-          body: body != null ? jsonEncode(body) : null,
-          headers: {'Content-Type': 'application/json'},
-        )
-        .timeout(_timeout);
+    final encodedBody = body != null ? jsonEncode(body) : null;
+    http.Response response;
+    try {
+      response = await _httpClient
+          .post(uri, body: encodedBody, headers: {'Content-Type': 'application/json; charset=utf-8'})
+          .timeout(_timeout);
+    } on TimeoutException {
+      // Reuse the same signed URL and transact_key for an idempotent retry.
+      response = await _httpClient
+          .post(uri, body: encodedBody, headers: {'Content-Type': 'application/json; charset=utf-8'})
+          .timeout(_timeout);
+    }
     return _handleResponse(response);
   }
 

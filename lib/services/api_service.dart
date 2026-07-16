@@ -10,11 +10,18 @@ class ApiService {
   final ApiClient _client;
   ApiService(this._client);
 
+  String _transactKey() => DateTime.now().microsecondsSinceEpoch.toString();
+
+  Map<String, String> _writeParams([Map<String, String> extra = const {}]) => {
+    'transact_key': _transactKey(),
+    ...extra,
+  };
+
   ApiClient get client => _client;
 
   Future<List<Account>> getAccounts() async {
     final json = await _client.get('accounts.get', params: {
-      'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,created_at,updated_at,user_id',
+      'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,icon,include_in_total,created_at,updated_at,user_id',
     });
     return _parseList(json, 'accounts', Account.fromJson);
   }
@@ -57,12 +64,12 @@ class ApiService {
   Future<Map<String, dynamic>> addTemplate(Map<String, dynamic> body, {String? options}) async {
     final params = <String, String>{};
     if (options != null) params['options'] = options;
-    final json = await _client.post('operationPatterns.post', params: params, body: {'request': {'request_data': body}});
+    final json = await _client.post('operationPatterns.post', params: _writeParams(params), body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setTemplate(Map<String, dynamic> body, {required String operationPatternId}) async {
-    await _client.post('operationPatterns.set', params: {'operation_pattern_id': operationPatternId}, body: {'request': {'request_data': body}});
+    await _client.post('operationPatterns.set', params: _writeParams({'operation_pattern_id': operationPatternId}), body: {'request': {'request_data': body}});
   }
 
   Future<List<Map<String, dynamic>>> getCurrencies() async {
@@ -82,34 +89,34 @@ class ApiService {
   Future<Map<String, dynamic>> addCategory(Map<String, dynamic> body, {String? options}) async {
     final params = <String, String>{};
     if (options != null) params['options'] = options;
-    final json = await _client.post('categories.post', params: params, body: {'request': {'request_data': body}});
+    final json = await _client.post('categories.post', params: _writeParams(params), body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setCategory(Map<String, dynamic> body, {required String categoryId, String? options}) async {
     final params = <String, String>{'category_id': categoryId};
     if (options != null) params['options'] = options;
-    await _client.post('categories.set', params: params, body: {'request': {'request_data': body}});
+    await _client.post('categories.set', params: _writeParams(params), body: {'request': {'request_data': body}});
   }
 
   Future<Map<String, dynamic>> addAccount(Map<String, dynamic> body, {String? options}) async {
     final params = <String, String>{};
     if (options != null) params['options'] = options;
-    final json = await _client.post('accounts.post', params: params, body: {'request': {'request_data': body}});
+    final json = await _client.post('accounts.post', params: _writeParams({...params, 'options': 'client'}), body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setAccount(Map<String, dynamic> body, {required String accountId}) async {
-    await _client.post('accounts.set', params: {'account_id': accountId}, body: {'request': {'request_data': body}});
+    await _client.post('accounts.set', params: _writeParams({'account_id': accountId}), body: {'request': {'request_data': body}});
   }
 
   Future<Map<String, dynamic>> addOperation(Map<String, dynamic> body) async {
-    final json = await _client.post('operations.post', body: {'request': {'request_data': body}});
+    final json = await _client.post('operations.post', params: _writeParams({'options': 'client'}), body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setOperation(Map<String, dynamic> body) async {
-    await _client.post('operations.set', body: {'request': {'request_data': body}});
+    await _client.post('operations.set', params: _writeParams(), body: {'request': {'request_data': body}});
   }
 
   Future<List<Map<String, dynamic>>> getGoals() async {
@@ -127,12 +134,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> addTarget(Map<String, dynamic> body) async {
-    final json = await _client.post('targets.post', body: {'request': {'request_data': {'targets': [body]}}});
+    final json = await _client.post('targets.post', params: _writeParams({'options': 'client'}), body: {'request': {'request_data': {'targets': [body]}}});
     return json;
   }
 
   Future<void> setTarget(Map<String, dynamic> body, {required String targetId}) async {
-    await _client.post('targets.set', body: {'request': {'request_data': {'targets': [{'id': targetId, ...body}]}}});
+    await _client.post('targets.set', params: _writeParams({'target_id': targetId}), body: {'request': {'request_data': {'targets': [{'id': targetId, ...body}]}}});
   }
 
   Future<List<Map<String, dynamic>>> getGoalTemplates() async {
@@ -149,12 +156,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> addGoalTemplate(Map<String, dynamic> body) async {
-    final json = await _client.post('operationPatterns.post', params: {'options': 'client'}, body: {'request': {'request_data': body}});
+    final json = await _client.post('operationPatterns.post', params: _writeParams({'options': 'client'}), body: {'request': {'request_data': body}});
     return json;
   }
 
   Future<void> setGoalTemplate(Map<String, dynamic> body, {required String id}) async {
-    await _client.post('operationPatterns.set', params: {'operation_pattern_id': id}, body: {'request': {'request_data': body}});
+    await _client.post('operationPatterns.set', params: _writeParams({'operation_pattern_id': id}), body: {'request': {'request_data': body}});
   }
 
   List<T> _parseList<T>(Map<String, dynamic> data, String key, T Function(Map<String, dynamic>) fromJson) {

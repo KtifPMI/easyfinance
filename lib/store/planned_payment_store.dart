@@ -12,11 +12,12 @@ class PlannedPaymentStore extends ChangeNotifier {
 
   List<FinancialEvent> get upcomingEvents {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final result = _events.where((e) {
       if (!e.enabled) return false;
       if (e.date.isEmpty) return false;
       final d = DateTime.tryParse(e.date);
-      return d != null && d.isAfter(now);
+      return d != null && !d.isBefore(today);
     }).toList();
     result.sort((a, b) => a.date.compareTo(b.date));
     return result;
@@ -49,7 +50,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     _events.add(event);
     _recalcDates();
     await save();
-    NotificationService().rescheduleAll();
+    await NotificationService().rescheduleAll();
     notifyListeners();
   }
 
@@ -59,7 +60,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       _events[idx] = updated;
       _recalcDates();
       await save();
-      NotificationService().rescheduleAll();
+      await NotificationService().rescheduleAll();
       notifyListeners();
     }
   }
@@ -67,7 +68,7 @@ class PlannedPaymentStore extends ChangeNotifier {
   Future<void> remove(String id) async {
     _events.removeWhere((e) => e.id == id);
     await save();
-    NotificationService().rescheduleAll();
+    await NotificationService().rescheduleAll();
     notifyListeners();
   }
 
@@ -95,7 +96,7 @@ class PlannedPaymentStore extends ChangeNotifier {
         enabled: !old.enabled,
       );
       await save();
-      NotificationService().rescheduleAll();
+      await NotificationService().rescheduleAll();
       notifyListeners();
     }
   }
@@ -105,9 +106,9 @@ class PlannedPaymentStore extends ChangeNotifier {
     for (int i = 0; i < _events.length; i++) {
       final e = _events[i];
       if (e.isRecurring && e.dayOfMonth != null) {
-        var next = DateTime(now.year, now.month, e.dayOfMonth!);
+        var next = _dateForDay(now.year, now.month, e.dayOfMonth!);
         if (next.isBefore(DateTime(now.year, now.month, now.day))) {
-          next = DateTime(now.year, now.month + 1, e.dayOfMonth!);
+          next = _dateForDay(now.year, now.month + 1, e.dayOfMonth!);
         }
         _events[i] = FinancialEvent(
           id: e.id,
@@ -136,5 +137,10 @@ class PlannedPaymentStore extends ChangeNotifier {
         );
       }
     }
+  }
+
+  DateTime _dateForDay(int year, int month, int day) {
+    final lastDay = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, day > lastDay ? lastDay : day);
   }
 }

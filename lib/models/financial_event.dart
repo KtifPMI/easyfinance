@@ -30,9 +30,9 @@ class FinancialEvent {
     }
     if (isRecurring && dayOfMonth != null) {
       final now = DateTime.now();
-      var next = DateTime(now.year, now.month, dayOfMonth!);
+      var next = _dateForDay(now.year, now.month, dayOfMonth!);
       if (next.isBefore(DateTime(now.year, now.month, now.day))) {
-        next = DateTime(now.year, now.month + 1, dayOfMonth!);
+        next = _dateForDay(now.year, now.month + 1, dayOfMonth!);
       }
       return next;
     }
@@ -41,6 +41,11 @@ class FinancialEvent {
       if (d != null) return d;
     }
     return DateTime.now();
+  }
+
+  DateTime _dateForDay(int year, int month, int day) {
+    final lastDay = DateTime(year, month + 1, 0).day;
+    return DateTime(year, month, day > lastDay ? lastDay : day);
   }
 
   Map<String, dynamic> toJson() => {

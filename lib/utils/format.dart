@@ -25,20 +25,23 @@ String formatSignedMoney(double amount, {String currency = 'RUB'}) {
 }
 
 String formatDate(String iso) {
-  final d = DateTime.parse(iso);
+  final d = DateTime.tryParse(iso);
+  if (d == null) return iso;
   final locale = Intl.defaultLocale ?? 'ru';
   final month = DateFormat.MMM(locale).format(d);
   return '${d.day.toString().padLeft(2, '0')} $month';
 }
 
 String formatDateLong(String iso) {
-  final d = DateTime.parse(iso);
+  final d = DateTime.tryParse(iso);
+  if (d == null) return iso;
   final locale = Intl.defaultLocale ?? 'ru';
   return DateFormat.yMMMd(locale).format(d);
 }
 
 String formatDayLabel(String iso, BuildContext context) {
-  final date = DateTime.parse(iso);
+  final date = DateTime.tryParse(iso);
+  if (date == null) return iso;
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final tomorrow = today.add(const Duration(days: 1));

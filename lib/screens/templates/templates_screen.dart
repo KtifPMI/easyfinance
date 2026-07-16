@@ -140,8 +140,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
 
         return ScreenScaffold(
           title: context.tr('templates.new'),
-          child: SingleChildScrollView(
-            child: Column(
+           child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppInput(label: context.tr('templates.name'), controller: _nameCtrl),
@@ -190,8 +189,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
                 const SizedBox(height: 24),
                 AppButton(title: context.tr('templates.save'), onPressed: _save),
               ],
-            ),
-          ),
+           ),
         );
       },
     );

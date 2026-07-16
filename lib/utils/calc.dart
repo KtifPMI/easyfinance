@@ -54,7 +54,8 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
 }
 
 bool isInPeriod(String dateIso, DateTime start, DateTime end) {
-  final d = DateTime.parse(dateIso);
+  final d = DateTime.tryParse(dateIso);
+  if (d == null) return false;
   return !d.isBefore(start) && !d.isAfter(end);
 }
 

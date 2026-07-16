@@ -133,8 +133,8 @@ class NotificationService {
 
     final goals = jsonDecode(raw) as List<dynamic>;
     final close = goals.where((g) {
-      final done = (g['amount_done'] as num?)?.toDouble() ?? 0;
-      final total = (g['amount'] as num?)?.toDouble() ?? 0;
+      final done = ((g['currentAmount'] ?? g['amount_done']) as num?)?.toDouble() ?? 0;
+      final total = ((g['targetAmount'] ?? g['amount']) as num?)?.toDouble() ?? 0;
       return total > 0 && (done / total) >= 0.8 && (done / total) < 1.0;
     }).toList();
 
