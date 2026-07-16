@@ -41,11 +41,6 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     }
   }
 
-  String _currencyLabel(String id) {
-    const codes = {'1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF', '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT', '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK'};
-    return '${codes[id] ?? 'RUB'} ($id)';
-  }
-
   @override
   void dispose() {
     _nameCtrl.dispose();

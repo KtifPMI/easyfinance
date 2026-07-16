@@ -89,9 +89,15 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     double result = _parseProduct(s, i);
     while (i < s.length) {
       final c = s[i];
-      if (c == '+') { i++; result += _parseProduct(s, i); }
-      else if (c == '-') { i++; result -= _parseProduct(s, i); }
-      else break;
+      if (c == '+') {
+        i++;
+        result += _parseProduct(s, i);
+      } else if (c == '-') {
+        i++;
+        result -= _parseProduct(s, i);
+      } else {
+        break;
+      }
     }
     return result;
   }
@@ -100,9 +106,16 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     double result = _parseAtom(s, i);
     while (i < s.length) {
       final c = s[i];
-      if (c == '*') { i++; result *= _parseAtom(s, i); }
-      else if (c == '/') { i++; final d = _parseAtom(s, i); if (d != 0) result /= d; }
-      else break;
+      if (c == '*') {
+        i++;
+        result *= _parseAtom(s, i);
+      } else if (c == '/') {
+        i++;
+        final d = _parseAtom(s, i);
+        if (d != 0) result /= d;
+      } else {
+        break;
+      }
     }
     return result;
   }
@@ -115,7 +128,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
       return val;
     }
     final start = i;
-    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) i++;
+    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) {
+      i++;
+    }
     return double.tryParse(s.substring(start, i)) ?? 0;
   }
 
@@ -255,7 +270,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
             _label('Хочу'),
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               decoration: _decoration(),
               items: const [
                 DropdownMenuItem(value: 'pay', child: Text('Выплатить')),

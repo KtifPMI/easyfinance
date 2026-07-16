@@ -21,8 +21,8 @@ class Recommendation {
     this.descArgs = const {},
   });
 
-  String get titleKey => 'recommend.${_baseId}.title';
-  String get descKey => 'recommend.${_baseId}.desc';
+  String get titleKey => 'recommend.$_baseId.title';
+  String get descKey => 'recommend.$_baseId.desc';
 
   String get _baseId {
     if (id.startsWith('b_overspent_')) return 'budget_overspent';
