@@ -10,6 +10,7 @@ class Goal {
   bool isCompleted;
   final String? accountId;
   final String? transferAccountId;
+  final String? currencyId;
 
   Goal({
     required this.id,
@@ -23,6 +24,7 @@ class Goal {
     this.isCompleted = false,
     this.accountId,
     this.transferAccountId,
+    this.currencyId,
   });
 
   factory Goal.fromJson(Map<String, dynamic> json, {Map<String, double>? accountBalances}) {
@@ -45,6 +47,7 @@ class Goal {
       color: '#16A34A',
       isCompleted: (json['done']?.toString() == '1') || (amount > 0 && amountDone >= amount),
       accountId: accountId,
+      currencyId: json['currency_id']?.toString(),
     );
   }
 
@@ -60,6 +63,7 @@ class Goal {
     'isCompleted': isCompleted,
     'accountId': accountId,
     'transferAccountId': transferAccountId,
+    'currencyId': currencyId,
   };
 
   factory Goal.fromOpPattern(Map<String, dynamic> json) {
@@ -90,6 +94,7 @@ class Goal {
     isCompleted: json['isCompleted'] as bool? ?? false,
     accountId: json['accountId'] as String?,
     transferAccountId: json['transferAccountId'] as String?,
+    currencyId: json['currencyId'] as String?,
   );
 
   Goal copyWith({double? currentAmount, bool? isCompleted}) =>
@@ -100,5 +105,6 @@ class Goal {
         monthlyRecommendation: monthlyRecommendation,
         isCompleted: isCompleted ?? this.isCompleted,
         accountId: accountId, transferAccountId: transferAccountId,
+        currencyId: currencyId,
       );
 }

@@ -1047,7 +1047,7 @@ class FinanceStore extends ChangeNotifier {
           'amount_done': g.currentAmount.toStringAsFixed(2),
           'end': g.deadline.isNotEmpty ? g.deadline : null,
           'visible': '1',
-          'currency_id': '1',
+          'currency_id': g.currencyId ?? '1',
           if (g.accountId != null) 'account_id': g.accountId,
         });
         final targets = resp['targets'] as List<dynamic>?;
@@ -1151,7 +1151,7 @@ class FinanceStore extends ChangeNotifier {
           'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
           'end': g.deadline.isNotEmpty ? g.deadline : null,
           'visible': '1',
-          'currency_id': '1',
+          'currency_id': g.currencyId ?? '1',
           'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
           if (g.accountId != null) 'account_id': g.accountId,
         }, targetId: id);
