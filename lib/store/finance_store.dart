@@ -1045,9 +1045,9 @@ class FinanceStore extends ChangeNotifier {
           'title': g.title,
           'amount': g.targetAmount.toStringAsFixed(2),
           'amount_done': g.currentAmount.toStringAsFixed(2),
-          'end': g.deadline.isNotEmpty ? g.deadline : null,
           'visible': '1',
           'currency_id': g.currencyId ?? '1',
+          if (g.deadline.isNotEmpty) 'end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
         });
         final targets = resp['targets'] as List<dynamic>?;
@@ -1149,10 +1149,9 @@ class FinanceStore extends ChangeNotifier {
           'title': g.title,
           'amount': g.targetAmount.toStringAsFixed(2),
           'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
-          'end': g.deadline.isNotEmpty ? g.deadline : null,
           'visible': '1',
           'currency_id': g.currencyId ?? '1',
-          'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
+          if (g.deadline.isNotEmpty) 'end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
         }, targetId: id);
         _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
@@ -1245,7 +1244,6 @@ class FinanceStore extends ChangeNotifier {
       try {
         await authService.apiService.setTarget({
           'visible': '0',
-          'deleted_at': formatApiDateTime(),
         }, targetId: id);
         _goals.removeWhere((g) => g.id == id);
         await _saveGoals();
