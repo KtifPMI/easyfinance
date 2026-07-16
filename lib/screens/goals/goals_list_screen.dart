@@ -87,7 +87,7 @@ class GoalsListScreen extends StatelessWidget {
                                 IconButton(
                                   icon: Icon(Icons.delete_outline, size: 20, color: AppColors.danger),
                                   padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
+                                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                                   onPressed: () => _confirmDelete(context, g, store),
                                 ),
                               ],
