@@ -1047,7 +1047,7 @@ class FinanceStore extends ChangeNotifier {
           'amount_done': g.currentAmount.toStringAsFixed(2),
           'visible': '1',
           'currency_id': g.currencyId ?? '1',
-          if (g.deadline.isNotEmpty) 'end': g.deadline,
+          if (g.deadline.isNotEmpty) 'date_end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
         });
         final targets = resp['targets'] as List<dynamic>?;
@@ -1151,7 +1151,7 @@ class FinanceStore extends ChangeNotifier {
           'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
           'visible': '1',
           'currency_id': g.currencyId ?? '1',
-          if (g.deadline.isNotEmpty) 'end': g.deadline,
+          if (g.deadline.isNotEmpty) 'date_end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
         }, targetId: id);
         _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
