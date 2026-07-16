@@ -151,6 +151,9 @@
   "goals.savings": "Poupanças",
   "goals.transfers": "Transferências",
   "goals.top_up_goal": "Contribuição para meta: {title}",
+  "goals.delete": "Excluir",
+  "goals.delete_title": "Excluir meta",
+  "goals.delete_confirm": "Excluir meta «{title}»?",
 
   "calendar.title": "Calendário",
   "calendar.mon": "Seg",

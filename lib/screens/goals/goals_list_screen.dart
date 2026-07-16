@@ -75,6 +75,7 @@ class GoalsListScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
+                              ],
                                 if (!g.isCompleted)
                                   GestureDetector(
                                     onTap: () => _showDepositDialog(context, g, store),
@@ -84,6 +85,12 @@ class GoalsListScreen extends StatelessWidget {
                                       child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
                                     ),
                                   ),
+                                IconButton(
+                                  icon: Icon(Icons.delete_outline, size: 20, color: AppColors.error),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  onPressed: () => _confirmDelete(context, g, store),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 12),
@@ -105,6 +112,26 @@ class GoalsListScreen extends StatelessWidget {
                 ),
         );
       },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, Goal goal, FinanceStore store) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('goals.delete_title')),
+        content: Text(context.tr('goals.delete_confirm', namedArgs: {'title': goal.title})),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
+          TextButton(
+            onPressed: () {
+              store.deleteGoal(goal.id);
+              Navigator.pop(ctx);
+            },
+            child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
     );
   }
 

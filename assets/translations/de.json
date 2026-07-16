@@ -151,6 +151,9 @@
   "goals.savings": "Ersparnisse",
   "goals.transfers": "Überweisungen",
   "goals.top_up_goal": "Zieleinzahlung: {title}",
+  "goals.delete": "Löschen",
+  "goals.delete_title": "Ziel löschen",
+  "goals.delete_confirm": "Ziel «{title}» löschen?",
 
   "calendar.title": "Kalender",
   "calendar.mon": "Mo",

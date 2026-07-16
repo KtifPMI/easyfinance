@@ -151,6 +151,9 @@
   "goals.savings": "Birikimler",
   "goals.transfers": "Transferler",
   "goals.top_up_goal": "Hedefe katkı: {title}",
+  "goals.delete": "Sil",
+  "goals.delete_title": "Hedefi sil",
+  "goals.delete_confirm": "«{title}» hedefi silinsin mi?",
 
   "calendar.title": "Takvim",
   "calendar.mon": "Pzt",

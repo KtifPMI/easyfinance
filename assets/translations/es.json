@@ -151,6 +151,9 @@
   "goals.savings": "Ahorros",
   "goals.transfers": "Transferencias",
   "goals.top_up_goal": "Aporte a meta: {title}",
+  "goals.delete": "Eliminar",
+  "goals.delete_title": "Eliminar meta",
+  "goals.delete_confirm": "¿Eliminar meta «{title}»?",
 
   "calendar.title": "Calendario",
   "calendar.mon": "Lun",

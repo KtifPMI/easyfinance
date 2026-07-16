@@ -151,6 +151,9 @@
   "goals.savings": "Risparmi",
   "goals.transfers": "Trasferimenti",
   "goals.top_up_goal": "Contributo obiettivo: {title}",
+  "goals.delete": "Elimina",
+  "goals.delete_title": "Elimina obiettivo",
+  "goals.delete_confirm": "Eliminare l'obiettivo «{title}»?",
 
   "calendar.title": "Calendario",
   "calendar.mon": "Lun",

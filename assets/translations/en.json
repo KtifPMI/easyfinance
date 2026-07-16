@@ -151,6 +151,9 @@
   "goals.savings": "Savings",
   "goals.transfers": "Transfers",
   "goals.top_up_goal": "Goal top-up: {title}",
+  "goals.delete": "Delete",
+  "goals.delete_title": "Delete goal",
+  "goals.delete_confirm": "Delete goal «{title}»?",
 
   "calendar.title": "Calendar",
   "calendar.mon": "Mon",

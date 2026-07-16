@@ -151,6 +151,9 @@
   "goals.savings": "Накопления",
   "goals.transfers": "Переводы",
   "goals.top_up_goal": "Пополнение цели: {title}",
+  "goals.delete": "Удалить",
+  "goals.delete_title": "Удалить цель",
+  "goals.delete_confirm": "Удалить цель «{title}»?",
 
   "calendar.title": "Календарь",
   "calendar.mon": "Пн",
