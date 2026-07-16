@@ -119,6 +119,22 @@ class ApiService {
     return list.cast<Map<String, dynamic>>();
   }
 
+  Future<List<Map<String, dynamic>>> getTargets() async {
+    final json = await _client.get('targets.get');
+    final list = json['targets'] as List<dynamic>?;
+    if (list == null) return [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> addTarget(Map<String, dynamic> body) async {
+    final json = await _client.post('targets.post', body: {'request': {'request_data': body}});
+    return json;
+  }
+
+  Future<void> setTarget(Map<String, dynamic> body, {required String targetId}) async {
+    await _client.post('targets.set', params: {'target_id': targetId}, body: {'request': {'request_data': body}});
+  }
+
   Future<List<Map<String, dynamic>>> getGoalTemplates() async {
     final json = await _client.get('operationPatterns.get');
     final list = json['operationPatterns'] as List<dynamic>?;

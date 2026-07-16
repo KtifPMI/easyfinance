@@ -237,9 +237,12 @@ class FinanceStore extends ChangeNotifier {
       _systemCategories = await api.getSystemCategories();
     } catch (_) {}
 
+    final existingGoalIds = _goals.map((g) => g.id).toSet();
+
     try {
-      final goals = await api.getGoals();
-      for (final g in goals.map((g) => Goal.fromJson(g))) {
+      final targets = await api.getTargets();
+      for (final g in targets.map((g) => Goal.fromJson(g))) {
+        existingGoalIds.add(g.id);
         final idx = _goals.indexWhere((e) => e.id == g.id);
         if (idx >= 0) {
           _goals[idx] = g;
@@ -252,24 +255,17 @@ class FinanceStore extends ChangeNotifier {
     try {
       final templateGoals = await api.getGoalTemplates();
       for (final g in templateGoals.map((g) => Goal.fromOpPattern(g))) {
-        final idx = _goals.indexWhere((e) => e.id == g.id);
-        if (idx >= 0) {
-          _goals[idx] = g;
-        } else {
-          _goals.add(g);
-        }
+        if (existingGoalIds.contains(g.id)) continue;
+        _goals.add(g);
+        existingGoalIds.add(g.id);
       }
     } catch (_) {}
 
     try {
       final pdaGoals = await authService.pdaService.getTargets();
       for (final g in pdaGoals.map((g) => Goal.fromJson(g))) {
-        final idx = _goals.indexWhere((e) => e.id == g.id);
-        if (idx >= 0) {
-          _goals[idx] = g;
-        } else {
-          _goals.add(g);
-        }
+        if (existingGoalIds.contains(g.id)) continue;
+        _goals.add(g);
       }
     } catch (_) {}
 
@@ -1043,6 +1039,38 @@ class FinanceStore extends ChangeNotifier {
   bool _hasPdaToken() => authService.pdaClient.authToken != null;
 
   Future<void> addGoal(Goal g) async {
+    if (authService.isAuthenticated) {
+      try {
+        final resp = await authService.apiService.addTarget({
+          'title': g.title,
+          'amount': g.targetAmount.toStringAsFixed(2),
+          'amount_done': g.currentAmount.toStringAsFixed(2),
+          'end': g.deadline.isNotEmpty ? g.deadline : null,
+          'visible': '1',
+          'currency_id': '1',
+          if (g.accountId != null) 'account_id': g.accountId,
+        });
+        final targets = resp['targets'] as List<dynamic>?;
+        if (targets != null && targets.isNotEmpty) {
+          final serverId = targets[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _goals.add(Goal(
+              id: serverId, title: g.title, targetAmount: g.targetAmount,
+              currentAmount: g.currentAmount, deadline: g.deadline, icon: g.icon, color: g.color,
+              isCompleted: g.isCompleted, accountId: g.accountId,
+            ));
+            await _saveGoals();
+            notifyListeners();
+            return;
+          }
+        }
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка создания цели: $e'; notifyListeners();
+      }
+    }
+
     if (_hasPdaToken()) {
       try {
         final resp = await authService.pdaService.processTarget({
@@ -1114,6 +1142,29 @@ class FinanceStore extends ChangeNotifier {
     final idx = _goals.indexWhere((g) => g.id == id);
     if (idx < 0) return;
     final g = _goals[idx];
+
+    if (authService.isAuthenticated) {
+      try {
+        await authService.apiService.setTarget({
+          'title': g.title,
+          'amount': g.targetAmount.toStringAsFixed(2),
+          'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
+          'end': g.deadline.isNotEmpty ? g.deadline : null,
+          'visible': '1',
+          'currency_id': '1',
+          'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
+          if (g.accountId != null) 'account_id': g.accountId,
+        }, targetId: id);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
+        await _saveGoals();
+        notifyListeners();
+        return;
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка обновления цели: $e'; notifyListeners();
+      }
+    }
 
     if (_hasPdaToken()) {
       try {
@@ -1190,6 +1241,23 @@ class FinanceStore extends ChangeNotifier {
   }
 
   Future<void> deleteGoal(String id) async {
+    if (authService.isAuthenticated) {
+      try {
+        await authService.apiService.setTarget({
+          'visible': '0',
+          'deleted_at': formatApiDateTime(),
+        }, targetId: id);
+        _goals.removeWhere((g) => g.id == id);
+        await _saveGoals();
+        notifyListeners();
+        return;
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления цели: $e'; notifyListeners();
+      }
+    }
+
     if (_hasPdaToken()) {
       try {
         await authService.pdaService.deleteTarget(id);

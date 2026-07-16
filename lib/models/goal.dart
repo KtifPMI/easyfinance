@@ -30,7 +30,9 @@ class Goal {
     final amountDone = double.tryParse(json['amount_done']?.toString() ?? '0') ?? 0.0;
     final endStr = json['end']?.toString() ?? '';
     final parts = endStr.split('.');
-    final deadline = parts.length == 3 ? '${parts[2]}-${parts[1]}-${parts[0]}' : '';
+    final deadline = parts.length == 3 && parts[2].length == 4
+        ? '${parts[2]}-${parts[1]}-${parts[0]}'
+        : endStr;
     final accountsList = json['accounts'] as List<dynamic>?;
     final accountId = json['account']?.toString() ?? (accountsList?.isNotEmpty == true ? (accountsList!.first as Map<String, dynamic>)['account_id']?.toString() : null);
     return Goal(
