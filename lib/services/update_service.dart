@@ -21,7 +21,7 @@ class UpdateService {
   static Future<UpdateInfo?> check() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      final current = info.version;
+      final current = info.version.split('+').first;
 
       final response = await http.get(
         Uri.parse(_apiUrl),
@@ -30,7 +30,7 @@ class UpdateService {
       if (response.statusCode != 200) return null;
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final tag = (data['tag_name'] as String?)?.replaceFirst('v', '') ?? '';
+      final tag = (data['tag_name'] as String?)?.replaceFirst('v', '').split('+').first ?? '';
       if (tag.isEmpty) return null;
 
       if (!_isNewer(tag, current)) return null;
@@ -56,8 +56,8 @@ class UpdateService {
   }
 
   static bool _isNewer(String latest, String current) {
-    final l = latest.split('.').map(int.tryParse).whereType<int>().toList();
-    final c = current.split('.').map(int.tryParse).whereType<int>().toList();
+    final l = latest.split('.').map((s) => int.tryParse(s.split('+').first)).whereType<int>().toList();
+    final c = current.split('.').map((s) => int.tryParse(s.split('+').first)).whereType<int>().toList();
     for (int i = 0; i < l.length && i < c.length; i++) {
       if (l[i] > c[i]) return true;
       if (l[i] < c[i]) return false;
