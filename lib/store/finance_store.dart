@@ -241,7 +241,7 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       final targets = await api.getTargets();
-      for (final g in targets.map((g) => Goal.fromJson(g))) {
+      for (final g in targets.where((t) => t['visible']?.toString() != '0').map((g) => Goal.fromJson(g))) {
         existingGoalIds.add(g.id);
         final idx = _goals.indexWhere((e) => e.id == g.id);
         if (idx >= 0) {
@@ -263,7 +263,7 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       final pdaGoals = await authService.pdaService.getTargets();
-      for (final g in pdaGoals.map((g) => Goal.fromJson(g))) {
+      for (final g in pdaGoals.where((t) => t['visible']?.toString() != '0').map((g) => Goal.fromJson(g))) {
         if (existingGoalIds.contains(g.id)) continue;
         _goals.add(g);
       }
