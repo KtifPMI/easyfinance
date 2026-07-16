@@ -41,7 +41,19 @@ jobs:
         run: flutter pub get
 
       - name: Analyze code
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        run: |
+          set +e
+          flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.log 2>&1
+          status=$?
+          cat analyze.log
+          exit $status
+
+      - name: Upload analyzer log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyzer-log
+          path: analyze.log
 
       - name: Run tests
         run: flutter test
