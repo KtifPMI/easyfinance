@@ -194,6 +194,12 @@ class PlanScreen extends StatelessWidget {
                                   child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
                                 ),
                               ),
+                            IconButton(
+                              icon: Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                              onPressed: () => _confirmDelete(context, g, store),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -270,6 +276,26 @@ class PlanScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, Goal goal, FinanceStore store) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('goals.delete_title')),
+        content: Text(context.tr('goals.delete_confirm', namedArgs: {'title': goal.title})),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
+          TextButton(
+            onPressed: () {
+              store.deleteGoal(goal.id);
+              Navigator.pop(ctx);
+            },
+            child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.danger)),
+          ),
+        ],
       ),
     );
   }
