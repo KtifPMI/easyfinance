@@ -127,12 +127,12 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> addTarget(Map<String, dynamic> body) async {
-    final json = await _client.post('targets.post', body: {'request': {'request_data': body}});
+    final json = await _client.post('targets.post', body: {'request': {'request_data': {'targets': [body]}}});
     return json;
   }
 
   Future<void> setTarget(Map<String, dynamic> body, {required String targetId}) async {
-    await _client.post('targets.set', params: {'target_id': targetId}, body: {'request': {'request_data': body}});
+    await _client.post('targets.set', body: {'request': {'request_data': {'targets': [{'id': targetId, ...body}]}}});
   }
 
   Future<List<Map<String, dynamic>>> getGoalTemplates() async {
