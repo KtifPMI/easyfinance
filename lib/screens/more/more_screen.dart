@@ -11,6 +11,7 @@ import '../recommendations/recommendations_screen.dart';
 import '../settings/settings_screen.dart';
 import '../ai_assistant/ai_assistant_screen.dart';
 import '../templates/templates_screen.dart';
+import '../goals/goals_list_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -19,6 +20,7 @@ class MoreScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       (Icons.calendar_today, context.tr('more.planned_payments'), const PlannedPaymentsScreen()),
+      (Icons.flag_outlined, context.tr('more.goals'), const GoalsListScreen()),
       (Icons.account_balance, context.tr('more.easybank'), const AccountsScreen()),
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
