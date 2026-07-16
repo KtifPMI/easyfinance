@@ -14,6 +14,7 @@ import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/mock_data.dart' show mockAccounts, mockOperations, mockBudgets, mockCategories;
+import '../services/currency_rate_service.dart';
 import '../utils/format.dart';
 
 class FinanceStore extends ChangeNotifier {
@@ -30,6 +31,8 @@ class FinanceStore extends ChangeNotifier {
   List<OperationTemplate> _templates = [];
   List<Map<String, dynamic>> _currencies = [];
   List<Map<String, dynamic>> _systemCategories = [];
+  Map<String, double> _rates = {'RUB': 1.0};
+  DateTime? _ratesUpdatedAt;
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
@@ -134,6 +137,7 @@ class FinanceStore extends ChangeNotifier {
   List<Map<String, dynamic>> get currencies => _currencies;
   List<Map<String, dynamic>> get systemCategories => _systemCategories;
   BudgetInfo? get serverBudget => _serverBudget;
+  Map<String, double> get rates => _rates;
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   String? get error => _error;
@@ -231,6 +235,11 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       _currencies = await api.getCurrencies();
+    } catch (_) {}
+
+    try {
+      _rates = {'RUB': 1.0, ...await CurrencyRateService.fetchRates()};
+      _ratesUpdatedAt = DateTime.now();
     } catch (_) {}
 
     try {

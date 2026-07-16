@@ -63,6 +63,30 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
+              if (store.rates.length > 1) ...[
+                Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                const SizedBox(height: 8),
+                AppCard(
+                  child: Row(
+                    children: [
+                      for (final code in ['USD', 'EUR'])
+                        if (store.rates.containsKey(code)) ...[
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Text(code, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                const SizedBox(width: 8),
+                                Text(store.rates[code]!.toStringAsFixed(4), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                        ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
               if (store.recommendations.isNotEmpty) ...[
                 Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
