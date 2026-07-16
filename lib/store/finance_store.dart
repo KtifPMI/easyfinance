@@ -1047,6 +1047,7 @@ class FinanceStore extends ChangeNotifier {
           'amount_done': g.currentAmount.toStringAsFixed(2),
           'visible': '1',
           'currency_id': g.currencyId ?? '1',
+          'date_begin': formatApiDateTime().split(' ')[0],
           if (g.deadline.isNotEmpty) 'date_end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
         });
