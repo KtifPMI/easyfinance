@@ -224,8 +224,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               AppInput(label: context.tr('operations.tags'), controller: _tagsCtrl),
               const SizedBox(height: 24),
               AppButton(title: context.tr('operations.save'), onPressed: _save),
-            ],
-          ),
+           ],
           ),
         );
       },
