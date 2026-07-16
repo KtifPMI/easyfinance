@@ -309,7 +309,7 @@ class ApiClient {
   }) async {
     final uri = _buildUri(method, params ?? {});
     final encodedBody = body != null ? jsonEncode(body) : null;
-    http.Response response;
+    late http.Response response;
     try {
       response = await _httpClient
           .post(uri, body: encodedBody, headers: {'Content-Type': 'application/json; charset=utf-8'})

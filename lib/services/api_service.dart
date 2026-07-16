@@ -12,10 +12,11 @@ class ApiService {
 
   String _transactKey() => DateTime.now().microsecondsSinceEpoch.toString();
 
-  Map<String, String> _writeParams([Map<String, String> extra = const {}]) => {
-    'transact_key': _transactKey(),
-    ...extra,
-  };
+  Map<String, String> _writeParams([Map<String, String>? extra]) {
+    final params = <String, String>{'transact_key': _transactKey()};
+    if (extra != null) params.addAll(extra);
+    return params;
+  }
 
   ApiClient get client => _client;
 
