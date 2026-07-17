@@ -1236,17 +1236,19 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted}) async {
+  Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted, String? title, double? targetAmount}) async {
     _error = null;
     final idx = _goals.indexWhere((g) => g.id == id);
     if (idx < 0) return;
     final g = _goals[idx];
+    final newTitle = title ?? g.title;
+    final newTarget = targetAmount ?? g.targetAmount;
 
     if (authService.isAuthenticated) {
       try {
         await authService.apiService.setTarget({
-          'title': g.title,
-          'amount': g.targetAmount.toStringAsFixed(2),
+          'title': newTitle,
+          'amount': newTarget.toStringAsFixed(2),
           'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
           'visible': '1',
           'currency_id': g.currencyId ?? '1',
@@ -1254,7 +1256,7 @@ class FinanceStore extends ChangeNotifier {
           if (g.deadline.isNotEmpty) 'date_end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
         }, targetId: id);
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1269,15 +1271,15 @@ class FinanceStore extends ChangeNotifier {
       try {
         await authService.pdaService.processTarget({
           'id': id,
-          'title': g.title,
-          'amount': g.targetAmount.toStringAsFixed(2),
+          'title': newTitle,
+          'amount': newTarget.toStringAsFixed(2),
           'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
           'end': _fmtDate(g.deadline),
           'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
           if (g.accountId != null) 'account': g.accountId!,
         });
         _error = null;
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1293,15 +1295,15 @@ class FinanceStore extends ChangeNotifier {
         await api.setGoalTemplate({
           'operationPatterns': [{
             'id': id,
-            'name': g.title,
+            'name': newTitle,
             'type': '4',
-            'amount': g.targetAmount.toStringAsFixed(2),
+            'amount': newTarget.toStringAsFixed(2),
             if (g.accountId != null) 'account_id': g.accountId,
             'updated_at': now,
           }]
         }, id: id);
         _error = null;
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1313,7 +1315,7 @@ class FinanceStore extends ChangeNotifier {
     }
 
     if (authService.isAuthenticated) return;
-    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted);
+    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
     await _saveGoals();
     notifyListeners();
   }

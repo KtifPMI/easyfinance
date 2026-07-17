@@ -105,9 +105,9 @@ class Goal {
     currencyId: json['currencyId'] as String?,
   );
 
-  Goal copyWith({double? currentAmount, bool? isCompleted}) =>
+  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount}) =>
       Goal(
-        id: id, title: title, targetAmount: targetAmount,
+        id: id, title: title ?? this.title, targetAmount: targetAmount ?? this.targetAmount,
         currentAmount: currentAmount ?? this.currentAmount,
         startDate: startDate,
         deadline: deadline, icon: icon, color: color,

@@ -5,6 +5,7 @@ import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../models/budget.dart';
 import '../../models/goal.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -94,61 +95,64 @@ class PlanScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              ...store.budgets.map((b) {
-                final cat = store.getCategory(b.categoryId);
-                final percent = getBudgetPercent(b);
-                final color = _parseColor(cat?.color ?? '#6B7280');
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                                const SizedBox(width: 8),
-                                GestureDetector(
-                                  onTap: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: Text(context.tr('budget.confirm_delete')),
-                                        content: Text(b.name ?? cat?.name ?? ''),
-                                        actions: [
-                                          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
-                                          TextButton(
-                                            onPressed: () {
-                                              store.deleteBudget(b.id);
-                                              Navigator.pop(ctx);
-                                            },
-                                            child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
-                                          ),
-                                        ],
+                  const SizedBox(height: 12),
+                  ...store.budgets.map((b) {
+                    final cat = store.getCategory(b.categoryId);
+                    final percent = getBudgetPercent(b);
+                    final color = _parseColor(cat?.color ?? '#6B7280');
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () => _editBudgetDialog(context, b, store),
+                        child: AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => AlertDialog(
+                                              title: Text(context.tr('budget.confirm_delete')),
+                                              content: Text(b.name ?? cat?.name ?? ''),
+                                              actions: [
+                                                TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    store.deleteBudget(b.id);
+                                                    Navigator.pop(ctx);
+                                                  },
+                                                  child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                        child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
                                       ),
-                                    );
-                                  },
-                                  child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
-                                ),
-                              ],
-                            ),
-                          ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              ProgressBar(percent: percent, color: color),
+                              const SizedBox(height: 4),
+                              Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        ProgressBar(percent: percent, color: color),
-                        const SizedBox(height: 4),
-                        Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+                      ),
+                    );
+                  }),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -161,11 +165,13 @@ class PlanScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              ...store.goals.map((g) {
-                final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: AppCard(
+                  ...store.goals.map((g) {
+                    final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: GestureDetector(
+                        onTap: () => _editGoalDialog(context, g, store),
+                        child: AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -209,8 +215,8 @@ class PlanScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                );
-              }),
+                  );
+                }),
             ],
           ),
         );
@@ -299,6 +305,82 @@ class PlanScreen extends StatelessWidget {
               Navigator.pop(ctx);
             },
             child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.danger)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editBudgetDialog(BuildContext context, Budget b, FinanceStore store) {
+    final limitCtrl = TextEditingController(text: b.limit.toStringAsFixed(2));
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Редактировать бюджет'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(b.name ?? store.getCategory(b.categoryId)?.name ?? ''),
+            const SizedBox(height: 12),
+            TextField(
+              controller: limitCtrl,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Лимит'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+          TextButton(
+            onPressed: () async {
+              final newLimit = double.tryParse(limitCtrl.text.replaceAll(',', '.')) ?? 0;
+              if (newLimit <= 0) return;
+              await store.updateBudget(b.copyWith(limit: newLimit));
+              if (!ctx.mounted) return;
+              if (store.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
+                return;
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Сохранить'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editGoalDialog(BuildContext context, Goal g, FinanceStore store) {
+    final titleCtrl = TextEditingController(text: g.title);
+    final totalCtrl = TextEditingController(text: g.targetAmount.toStringAsFixed(2));
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Редактировать цель'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Название')),
+            const SizedBox(height: 12),
+            TextField(controller: totalCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Сумма')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+          TextButton(
+            onPressed: () async {
+              final newTotal = double.tryParse(totalCtrl.text.replaceAll(',', '.')) ?? 0;
+              final newTitle = titleCtrl.text.trim();
+              if (newTotal <= 0 || newTitle.isEmpty) return;
+              await store.updateGoal(g.id, currentAmount: g.currentAmount, isCompleted: g.isCompleted, title: newTitle, targetAmount: newTotal);
+              if (!ctx.mounted) return;
+              if (store.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
+                return;
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Сохранить'),
           ),
         ],
       ),
