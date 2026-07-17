@@ -143,6 +143,20 @@ class ApiService {
     await _client.post('targets.set', params: _writeParams({'target_id': targetId}), body: {'request': {'request_data': {'targets': [{'id': targetId, ...body}]}}});
   }
 
+  Future<List<Map<String, dynamic>>> getBudgetCategories() async {
+    final json = await _client.get('budget.categoriesget');
+    return _parseList(json, 'budgets', (m) => m);
+  }
+
+  Future<Map<String, dynamic>> addBudgetCategory(Map<String, dynamic> body) async {
+    final json = await _client.post('budget.categoriespost', params: _writeParams({'options': 'client'}), body: {'request': {'request_data': body}});
+    return json;
+  }
+
+  Future<void> setBudgetCategory(Map<String, dynamic> body) async {
+    await _client.post('budget.categoriesset', params: _writeParams(), body: {'request': {'request_data': body}});
+  }
+
   Future<List<Map<String, dynamic>>> getGoalTemplates() async {
     final json = await _client.get('operationPatterns.get');
     final list = json['operationPatterns'] as List<dynamic>?;

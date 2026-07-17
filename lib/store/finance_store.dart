@@ -197,7 +197,6 @@ class FinanceStore extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    await _loadBudgets();
     await _loadGoals();
 
     final api = authService.apiService;
@@ -262,6 +261,20 @@ class FinanceStore extends ChangeNotifier {
       _systemCategories = await api.getSystemCategories();
     } catch (_) {}
 
+    try {
+      final apiBudgets = await api.getBudgetCategories();
+      _budgets = apiBudgets.map((b) => Budget(
+        id: b['id']?.toString() ?? '',
+        categoryId: b['category_id']?.toString() ?? '',
+        limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
+        spent: double.tryParse(b['spent']?.toString() ?? '0') ?? 0,
+        period: b['period']?.toString() ?? 'monthly',
+      )).toList();
+      await _saveBudgets();
+    } catch (_) {
+      await _loadBudgets();
+    }
+
     final existingGoalIds = _goals.map((g) => g.id).toSet();
 
     try {
@@ -293,13 +306,6 @@ class FinanceStore extends ChangeNotifier {
     } catch (_) {}
 
     _recalcAccountBalances();
-
-    for (var i = 0; i < _budgets.length; i++) {
-      final b = _budgets[i];
-      final spent = _calcSpentForMonth(b.categoryId);
-      _budgets[i] = b.copyWith(spent: spent);
-    }
-    await _saveBudgets();
 
     _generateRecommendations();
 
@@ -723,6 +729,7 @@ class FinanceStore extends ChangeNotifier {
             'state': '0',
             if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
+            'include_in_total': account.includeInTotal ? '1' : '0',
             'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
             'updated_at': now,
           }]
@@ -765,6 +772,7 @@ class FinanceStore extends ChangeNotifier {
             'state': '0',
             if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
+            'include_in_total': account.includeInTotal ? '1' : '0',
             'updated_at': now,
           }]
         }, accountId: account.id);
@@ -833,6 +841,8 @@ class FinanceStore extends ChangeNotifier {
             'name': c.name,
             'type': typeCode,
             'icon': _categoryIconToApi(c.icon),
+            'system_id': '0',
+            'custom': '1',
             if (c.parentId != null) 'parent_id': c.parentId,
             'created_at': now,
             'updated_at': now,
@@ -933,6 +943,7 @@ class FinanceStore extends ChangeNotifier {
       case 'card': return '2';
       case 'credit': return '8';
       case 'savings': return '5';
+      case 'electronic': return '15';
       default: return '1';
     }
   }
@@ -950,22 +961,28 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addBudget(Budget b) async {
     _error = null;
     final spent = _calcSpentForMonth(b.categoryId);
-    if (_hasPdaToken()) {
+    if (authService.isAuthenticated) {
       try {
-        final resp = await authService.pdaService.processBudget({
-          'category_id': b.categoryId,
-          'plan_amount': b.limit.toStringAsFixed(2),
+        final resp = await authService.apiService.addBudgetCategory({
+          'budgets': [{
+            'category_id': b.categoryId,
+            'planned': b.limit.toStringAsFixed(2),
+          }]
         });
-        final serverId = resp['id']?.toString();
-        if (serverId != null && serverId.isNotEmpty) {
-          _budgets.add(Budget(
-            id: serverId, name: b.name, categoryId: b.categoryId,
-            limit: b.limit, spent: spent, period: b.period,
-          ));
-          await _saveBudgets();
-          notifyListeners();
-          return;
+        final budgets = resp['budgets'] as List<dynamic>?;
+        if (budgets != null && budgets.isNotEmpty) {
+          final serverId = budgets[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _budgets.add(Budget(
+              id: serverId, name: b.name, categoryId: b.categoryId,
+              limit: b.limit, spent: spent, period: b.period,
+            ));
+            await _saveBudgets();
+            notifyListeners();
+            return;
+          }
         }
+        throw ApiException('Сервер не вернул ID бюджета', 'MISSING_BUDGET_ID');
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -981,12 +998,13 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> updateBudget(Budget b) async {
     _error = null;
-    if (_hasPdaToken()) {
+    if (authService.isAuthenticated) {
       try {
-        await authService.pdaService.processBudget({
-          'id': b.id,
-          'category_id': b.categoryId,
-          'plan_amount': b.limit.toStringAsFixed(2),
+        await authService.apiService.setBudgetCategory({
+          'budgets': [{
+            'id': b.id,
+            'planned': b.limit.toStringAsFixed(2),
+          }]
         });
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -1034,11 +1052,10 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteBudget(String id) async {
     _error = null;
-    if (_hasPdaToken()) {
+    if (authService.isAuthenticated) {
       try {
-        await authService.pdaService.processBudget({
-          'id': id,
-          'deleted_at': formatApiDateTime(),
+        await authService.apiService.setBudgetCategory({
+          'budgets': [{'id': id, 'deleted_at': formatApiDateTime()}]
         });
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
