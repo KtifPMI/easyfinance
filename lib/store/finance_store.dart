@@ -554,7 +554,7 @@ class FinanceStore extends ChangeNotifier {
       try {
         final now = DateTime.now();
         final operationDate = DateTime.tryParse(op.date) ?? now;
-        final dateStr = '${operationDate.year}-${operationDate.month.toString().padLeft(2, '0')}-${operationDate.day.toString().padLeft(2, '0')}';
+        final dateStr = formatApiDateTime(operationDate);
         final timeStr = '${operationDate.hour.toString().padLeft(2, '0')}:${operationDate.minute.toString().padLeft(2, '0')}:${operationDate.second.toString().padLeft(2, '0')}';
         final createdAt = formatApiDateTime(now);
         final amount = op.type == 'income' ? op.amount : -op.amount;
@@ -570,7 +570,7 @@ class FinanceStore extends ChangeNotifier {
             'amount': amount.toStringAsFixed(2),
             'date': dateStr,
             'time': timeStr,
-            if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
+            if (op.toAccountId != null) 'to_account_id': op.toAccountId,
             if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
             if (op.tags != null) 'tags': op.tags,
@@ -621,7 +621,7 @@ class FinanceStore extends ChangeNotifier {
       try {
         final now = DateTime.now();
         final operationDate = DateTime.tryParse(op.date) ?? now;
-        final dateStr = '${operationDate.year}-${operationDate.month.toString().padLeft(2, '0')}-${operationDate.day.toString().padLeft(2, '0')}';
+        final dateStr = formatApiDateTime(operationDate);
         final timeStr = '${operationDate.hour.toString().padLeft(2, '0')}:${operationDate.minute.toString().padLeft(2, '0')}:${operationDate.second.toString().padLeft(2, '0')}';
         final updatedAt = formatApiDateTime(now);
         final amount = op.type == 'income' ? op.amount : -op.amount;
@@ -636,8 +636,8 @@ class FinanceStore extends ChangeNotifier {
             'amount': amount.toStringAsFixed(2),
             'date': dateStr,
             'time': timeStr,
-            'transfer_account_id': op.toAccountId,
-            'transfer_amount': op.toAccountId != null ? op.amount.toStringAsFixed(2) : null,
+            if (op.toAccountId != null) 'to_account_id': op.toAccountId,
+            if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
             if (op.tags != null) 'tags': op.tags,
             'accepted': true,
