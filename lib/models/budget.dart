@@ -17,6 +17,6 @@ class Budget {
     this.isDeleted = false,
   });
 
-  Budget copyWith({double? spent, bool? isDeleted}) =>
-      Budget(id: id, name: name, categoryId: categoryId, limit: limit, spent: spent ?? this.spent, period: period, isDeleted: isDeleted ?? this.isDeleted);
+  Budget copyWith({double? spent, bool? isDeleted, double? limit}) =>
+      Budget(id: id, name: name, categoryId: categoryId, limit: limit ?? this.limit, spent: spent ?? this.spent, period: period, isDeleted: isDeleted ?? this.isDeleted);
 }

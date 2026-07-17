@@ -214,7 +214,6 @@ class PlanScreen extends StatelessWidget {
                         Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                       ],
                     ),
-                  ),
                   );
                 }),
             ],
