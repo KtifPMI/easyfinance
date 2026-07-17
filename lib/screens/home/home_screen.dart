@@ -13,6 +13,7 @@ import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../store/planned_payment_store.dart';
+import '../accounts/add_account_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -22,6 +23,7 @@ class HomeScreen extends StatelessWidget {
     return Consumer2<FinanceStore, PlannedPaymentStore>(
       builder: (context, store, plannedPayments, _) {
         final indicators = calcFinHealth(store.accounts, store.operations, store.budgets);
+        final accountType = store.currentUser?.accountType ?? 'individual';
 
         return ScreenScaffold(
           title: 'EasyFinance',
@@ -30,30 +32,7 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ScreenHint(hintId: 'home', text: 'Здесь вы видите общий баланс, бюджет на месяц и ближайшие платежи. Добавляйте доходы и расходы через кнопки быстрых действий.'),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)]),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
-                    const SizedBox(height: 4),
-                    Text(formatMoney(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _chip('+${formatMoney(store.monthIncome)}', AppColors.success),
-                        const SizedBox(width: 12),
-                        _chip('-${formatMoney(store.monthExpense)}', AppColors.expense),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              _buildBalanceBanner(context, store),
               const SizedBox(height: 16),
               QuickActions(
                 onAddIncome: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'}),
@@ -61,117 +40,238 @@ class HomeScreen extends StatelessWidget {
                 onAddTransfer: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'}),
               ),
               const SizedBox(height: 16),
+              if (accountType == 'entrepreneur') ...[
+                _buildAccountsSection(context, store),
+                const SizedBox(height: 16),
+              ],
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
-              if (store.rates.length > 1) ...[
-                Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 8),
-                AppCard(
-                  child: Row(
-                    children: [
-                      for (final code in ['USD', 'EUR'])
-                        if (store.rates.containsKey(code)) ...[
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Text(code, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                const SizedBox(width: 8),
-                                Text(store.rates[code]!.toStringAsFixed(4), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                        ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (store.recommendations.isNotEmpty) ...[
-                Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 8),
-                ...store.recommendations.take(3).map((r) => Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: AppCard(
-                    child: Row(
-                      children: [
-                        Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
-                        const SizedBox(width: 10),
-                        Expanded(child: Text(r.title, style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
-                      ],
-                    ),
-                  ),
-                )),
-                const SizedBox(height: 16),
-              ],
-              if (store.budgets.isNotEmpty) ...[
-                Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 8),
-                ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
-                  final cat = store.getCategory(b.categoryId);
-                  final percent = b.limit > 0 ? (b.spent / b.limit * 100) : 0.0;
-                  final color = cat?.color != null ? _parseColor(cat!.color) : AppColors.primary;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: AppCard(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                              Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ProgressBar(percent: percent, color: color),
-                          Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 16),
-              ],
-              if (store.goals.isNotEmpty) ...[
-                Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 8),
-                ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
-                  final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: AppCard(
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(g.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                              ),
-                              Text('${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ProgressBar(percent: percent, color: _parseColor(g.color)),
-                          Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 16),
-              ],
-              if (plannedPayments.upcomingExpenses.isNotEmpty || plannedPayments.upcomingIncomes.isNotEmpty) ...[
-                Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 8),
-                ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e)),
-                _manageButton(context),
-                const SizedBox(height: 16),
-              ],
+              _buildRatesSection(context, store),
+              _buildRecommendationsSection(context, store),
+              _buildBudgetsSection(context, store),
+              _buildGoalsSection(context, store),
+              _buildUpcomingPaymentsSection(context, plannedPayments),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBalanceBanner(BuildContext context, FinanceStore store) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)]),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+          const SizedBox(height: 4),
+          Text(formatMoney(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _chip('+${formatMoney(store.monthIncome)}', AppColors.success),
+              const SizedBox(width: 12),
+              _chip('-${formatMoney(store.monthExpense)}', AppColors.expense),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountsSection(BuildContext context, FinanceStore store) {
+    final accounts = store.accounts.where((a) => !a.isArchived).toList();
+    if (accounts.isEmpty) return const SizedBox.shrink();
+
+    final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('accounts.title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        ...accounts.map((a) => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: AppCard(
+            child: InkWell(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddAccountScreen(accountId: a.id))),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48, height: 48,
+                    decoration: BoxDecoration(color: _parseColor(a.color).withValues(alpha: 0.15), shape: BoxShape.circle),
+                    child: Icon(iconMap[a.icon] ?? Icons.account_balance, color: _parseColor(a.color)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        const SizedBox(height: 2),
+                        _typeBadge(a.type),
+                      ],
+                    ),
+                  ),
+                  Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                ],
+              ),
+            ),
+          ),
+        )),
+      ],
+    );
+  }
+
+  Widget _typeBadge(String type) {
+    final labels = {'account': 'Счёт', 'card': 'Карта', 'credit': 'Кредит', 'savings': 'Накопления', 'electronic': 'Электронный'};
+    final label = labels[type] ?? type;
+    return Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondary));
+  }
+
+  Widget _buildRatesSection(BuildContext context, FinanceStore store) {
+    if (store.rates.length <= 1) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        AppCard(
+          child: Row(
+            children: [
+              for (final code in ['USD', 'EUR'])
+                if (store.rates.containsKey(code)) ...[
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Text(code, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        const SizedBox(width: 8),
+                        Text(store.rates[code]!.toStringAsFixed(4), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildRecommendationsSection(BuildContext context, FinanceStore store) {
+    if (store.recommendations.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        ...store.recommendations.take(3).map((r) => Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: AppCard(
+            child: Row(
+              children: [
+                Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
+                const SizedBox(width: 10),
+                Expanded(child: Text(r.title, style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
+              ],
+            ),
+          ),
+        )),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildBudgetsSection(BuildContext context, FinanceStore store) {
+    if (store.budgets.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
+          final cat = store.getCategory(b.categoryId);
+          final percent = b.limit > 0 ? (b.spent / b.limit * 100) : 0.0;
+          final color = cat?.color != null ? _parseColor(cat!.color) : AppColors.primary;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: AppCard(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ProgressBar(percent: percent, color: color),
+                  Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                ],
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildGoalsSection(BuildContext context, FinanceStore store) {
+    if (store.goals.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
+          final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: AppCard(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(g.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      ),
+                      Text('${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ProgressBar(percent: percent, color: _parseColor(g.color)),
+                  Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                ],
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildUpcomingPaymentsSection(BuildContext context, PlannedPaymentStore plannedPayments) {
+    if (plannedPayments.upcomingExpenses.isEmpty && plannedPayments.upcomingIncomes.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e)),
+        _manageButton(context),
+        const SizedBox(height: 16),
+      ],
     );
   }
 
