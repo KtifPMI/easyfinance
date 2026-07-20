@@ -10,7 +10,6 @@ import '../../models/goal.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
-import '../../utils/format.dart';
 import '../goals/add_goal_screen.dart';
 import 'add_budget_screen.dart';
 
@@ -56,9 +55,9 @@ class PlanScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Row(
                           children: [
-                            Expanded(child: _statBlock(context, context.tr('budget.income'), monthIncome, AppColors.income)),
-                            const SizedBox(width: 16),
-                            Expanded(child: _statBlock(context, context.tr('budget.expense'), monthExpense, AppColors.expense)),
+                            Expanded(child: _statBlock(context, context.tr('budget.income'), store.fmt(monthIncome), AppColors.income)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
                           ],
                         ),
                       if (sb != null) ...[
@@ -67,7 +66,7 @@ class PlanScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(context.tr('budget.planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                            Text(formatMoney(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                            Text(store.fmt(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -75,7 +74,7 @@ class PlanScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                            Text(formatMoney(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
+                            Text(store.fmt(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
                           ],
                         ),
                         const SizedBox(height: 8),
@@ -247,7 +246,7 @@ class PlanScreen extends StatelessWidget {
               DropdownButtonFormField<String>(
                 initialValue: accountId,
                 decoration: InputDecoration(labelText: context.tr('goals.from_account')),
-                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${formatMoney(a.balance)})'))).toList(),
+                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${store.fmt(a.balance, fromCurrency: a.currency)})'))).toList(),
                 onChanged: (v) => setDState(() => accountId = v),
               ),
             ],
@@ -418,13 +417,13 @@ class PlanScreen extends StatelessWidget {
     return Color(int.parse('FF$hex', radix: 16));
   }
 
-  Widget _statBlock(BuildContext context, String label, double amount, Color color) {
+  Widget _statBlock(BuildContext context, String label, String formattedAmount, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 4),
-        Text(formatMoney(amount), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
+        Text(formattedAmount, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
       ],
     );
   }
