@@ -31,12 +31,10 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
 
         return ScreenScaffold(
           title: context.tr('operations.title'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => Navigator.pushNamed(context, '/add-operation'),
-            ),
-          ],
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.pushNamed(context, '/add-operation'),
+            child: const Icon(Icons.add),
+          ),
           onRefresh: () => store.fetchAllData(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

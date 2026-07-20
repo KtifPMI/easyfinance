@@ -32,6 +32,10 @@ class PlanScreen extends StatelessWidget {
         return ScreenScaffold(
           title: context.tr('budget.title'),
           onRefresh: () => store.fetchAllData(),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddChoice(context),
+            child: const Icon(Icons.add),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -89,10 +93,6 @@ class PlanScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(context.tr('budget.budget'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                  GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBudgetScreen())),
-                    child: Icon(Icons.add_circle_outline, color: AppColors.primary),
-                  ),
                 ],
               ),
                   const SizedBox(height: 12),
@@ -158,10 +158,6 @@ class PlanScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(context.tr('budget.goals'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                  GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
-                    child: Icon(Icons.add_circle_outline, color: AppColors.primary),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -308,6 +304,35 @@ class PlanScreen extends StatelessWidget {
             child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.danger)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAddChoice(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.account_balance_wallet, color: AppColors.primary),
+              title: Text(context.tr('budget.add_budget')),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBudgetScreen()));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.flag, color: AppColors.primary),
+              title: Text(context.tr('goals.add_goal')),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen()));
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

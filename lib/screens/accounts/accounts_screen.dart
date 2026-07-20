@@ -17,12 +17,10 @@ class AccountsScreen extends StatelessWidget {
       builder: (context, store, _) {
         return ScreenScaffold(
           title: context.tr('accounts.title'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
-            ),
-          ],
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
+            child: const Icon(Icons.add),
+          ),
           child: store.accounts.isEmpty
               ? Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(

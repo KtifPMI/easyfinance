@@ -86,6 +86,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
         return ScreenScaffold(
           title: context.tr('calendar.title'),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.pushNamed(context, '/add-operation', arguments: _selectedDate != null
+                ? {'presetDate': _selectedDate!.toIso8601String().substring(0, 10)}
+                : null),
+            child: const Icon(Icons.add),
+          ),
           child: Column(
             children: [
               ScreenHint(hintId: 'calendar', text: 'Нажмите на день, чтобы увидеть все операции и запланированные платежи за эту дату. Можно листать месяцы стрелками.'),
@@ -120,11 +126,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    TextButton.icon(
-                      icon: const Icon(Icons.add, size: 18),
-                      label: Text(context.tr('operations.add')),
-                      onPressed: () => Navigator.pushNamed(context, '/add-operation', arguments: {'presetDate': _selectedDate!.toIso8601String().substring(0, 10)}),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),

@@ -19,12 +19,10 @@ class GoalsListScreen extends StatelessWidget {
       builder: (context, store, _) {
         return ScreenScaffold(
           title: context.tr('goals.title'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
-            ),
-          ],
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
+            child: const Icon(Icons.add),
+          ),
           onRefresh: () => store.fetchAllData(),
           child: store.goals.isEmpty
               ? Center(child: Text(context.tr('goals.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))

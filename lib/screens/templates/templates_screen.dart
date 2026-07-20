@@ -18,12 +18,10 @@ class TemplatesScreen extends StatelessWidget {
 
     return ScreenScaffold(
       title: context.tr('templates.title'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTemplateScreen())),
-        ),
-      ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTemplateScreen())),
+        child: const Icon(Icons.add),
+      ),
       child: store.templates.isEmpty
           ? Center(child: Text(context.tr('templates.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
           : Column(children: store.templates.map((t) {
