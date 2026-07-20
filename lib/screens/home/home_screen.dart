@@ -12,6 +12,7 @@ import '../../models/financial_event.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
+import '../../utils/currency_utils.dart';
 import '../../store/planned_payment_store.dart';
 import '../accounts/add_account_screen.dart';
 
@@ -136,34 +137,108 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildRatesSection(BuildContext context, FinanceStore store) {
-    if (store.rates.length <= 1) return const SizedBox.shrink();
+    final codes = store.watchedCurrencies.where((c) => c != 'RUB' && store.rates.containsKey(c)).toList();
+    if (codes.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            GestureDetector(
+              onTap: () => _showCurrencyPicker(context, store),
+              child: Icon(Icons.tune, size: 20, color: AppColors.textSecondaryFor(context)),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         AppCard(
           child: Row(
             children: [
-              for (final code in ['USD', 'EUR'])
-                if (store.rates.containsKey(code)) ...[
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Text(code, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                        const SizedBox(width: 8),
-                        Text(store.rates[code]!.toStringAsFixed(4), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-                      ],
-                    ),
+              for (final code in codes) ...[
+                Expanded(
+                  child: Row(
+                    children: [
+                      Text(currencySymbol(code), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      const SizedBox(width: 6),
+                      Text(code, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      const Spacer(),
+                      Text(store.rates[code]!.toStringAsFixed(4), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                ],
+                ),
+                const SizedBox(width: 12),
+              ],
             ],
           ),
         ),
         const SizedBox(height: 16),
       ],
     );
+  }
+
+  void _showCurrencyPicker(BuildContext context, FinanceStore store) {
+    final allCodes = allCurrencyCodes.where((c) => c != 'RUB').toList();
+    final selected = List<String>.from(store.watchedCurrencies.where((c) => c != 'RUB'));
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setInnerState) => AlertDialog(
+          title: Text('Выберите валюты', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ...allCodes.map((code) => CheckboxListTile(
+                  value: selected.contains(code),
+                  title: Row(
+                    children: [
+                      Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Text(code, style: TextStyle(fontSize: 15)),
+                      const SizedBox(width: 8),
+                      Text(_currencyName(code), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
+                  onChanged: (v) {
+                    setInnerState(() {
+                      if (v == true) {
+                        selected.add(code);
+                      } else {
+                        selected.remove(code);
+                      }
+                    });
+                  },
+                  activeColor: AppColors.primary,
+                  controlAffinity: ListTileControlAffinity.trailing,
+                )),
+              ],
+            ),
+          ),
+          actions: [
+              TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Отмена'),
+            ),
+            TextButton(
+              onPressed: () {
+                final finalList = ['RUB', ...selected];
+                store.setWatchedCurrencies(finalList);
+                Navigator.pop(ctx);
+              },
+              child: Text('Сохранить', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _currencyName(String code) {
+    const names = {'USD': 'US Dollar', 'EUR': 'Euro', 'GBP': 'Pound', 'CHF': 'Franc', 'CNY': 'Yuan', 'JPY': 'Yen', 'BYN': 'Belarus Ruble', 'UAH': 'Hryvnia', 'KZT': 'Tenge', 'PLN': 'Zloty', 'CZK': 'Koruna', 'SEK': 'Krona', 'NOK': 'Krone'};
+    return names[code] ?? code;
   }
 
   Widget _buildRecommendationsSection(BuildContext context, FinanceStore store) {

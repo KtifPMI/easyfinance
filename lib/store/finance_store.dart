@@ -15,7 +15,9 @@ import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/mock_data.dart' show mockAccounts, mockOperations, mockBudgets, mockCategories;
 import '../services/currency_rate_service.dart';
+import '../services/currency_prefs_service.dart';
 import '../utils/format.dart';
+import '../utils/currency_utils.dart';
 
 class FinanceStore extends ChangeNotifier {
   final AuthService authService;
@@ -33,6 +35,7 @@ class FinanceStore extends ChangeNotifier {
   List<Map<String, dynamic>> _systemCategories = [];
   Map<String, double> _rates = {'RUB': 1.0};
   DateTime? _ratesUpdatedAt;
+  List<String> _watchedCurrencies = [];
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
@@ -153,6 +156,21 @@ class FinanceStore extends ChangeNotifier {
   BudgetInfo? get serverBudget => _serverBudget;
   Map<String, double> get rates => _rates;
   DateTime? get ratesUpdatedAt => _ratesUpdatedAt;
+  List<String> get watchedCurrencies => _watchedCurrencies;
+
+  Future<List<String>> _loadWatchedCurrencies() async {
+    final saved = await CurrencyPrefsService.load();
+    if (saved.isNotEmpty) return saved;
+    final accountCurrencies = _accounts.map((a) => a.currency).toSet().toList();
+    return deriveWatchedCurrencies(_currentUser?.currency, accountCurrencies);
+  }
+
+  Future<void> setWatchedCurrencies(List<String> codes) async {
+    _watchedCurrencies = codes;
+    await CurrencyPrefsService.save(codes);
+    notifyListeners();
+  }
+
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   String? get error => _error;
@@ -256,6 +274,8 @@ class FinanceStore extends ChangeNotifier {
       _rates = {'RUB': 1.0, ...await CurrencyRateService.fetchRates()};
       _ratesUpdatedAt = DateTime.now();
     } catch (_) {}
+
+    _watchedCurrencies = await _loadWatchedCurrencies();
 
     try {
       _systemCategories = await api.getSystemCategories();
