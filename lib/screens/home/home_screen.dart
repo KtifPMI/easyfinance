@@ -161,22 +161,29 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         AppCard(
-          child: Row(
+          padding: const EdgeInsets.all(12),
+          child: Column(
             children: [
-              for (final code in codes) ...[
-                Expanded(
+              for (int r = 0; r < (codes.length / 3).ceil(); r++)
+                Padding(
+                  padding: EdgeInsets.only(top: r > 0 ? 12 : 0),
                   child: Row(
                     children: [
-                      Text(currencySymbol(code), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                      const SizedBox(width: 6),
-                      Text(code, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                      const Spacer(),
-                      Text(store.rates[code]!.toStringAsFixed(4), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                      for (int c = 0; c < 3 && r * 3 + c < codes.length; c++)
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Text(currencySymbol(codes[r * 3 + c]), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                              const SizedBox(width: 4),
+                              Text(codes[r * 3 + c], style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                              const Spacer(),
+                              Text(store.rates[codes[r * 3 + c]]!.toStringAsFixed(1), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-              ],
             ],
           ),
         ),
