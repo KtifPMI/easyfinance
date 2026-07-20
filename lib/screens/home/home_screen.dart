@@ -403,7 +403,7 @@ class HomeScreen extends StatelessWidget {
       children: [
         Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         const SizedBox(height: 8),
-        ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e)),
+        ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e, store)),
         _manageButton(context),
         const SizedBox(height: 16),
       ],
@@ -418,7 +418,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _upcomingTile(BuildContext context, FinancialEvent e) => Padding(
+  Widget _upcomingTile(BuildContext context, FinancialEvent e, FinanceStore store) => Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: AppCard(
       child: Row(
