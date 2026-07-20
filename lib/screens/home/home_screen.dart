@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
               _buildRecommendationsSection(context, store),
               _buildBudgetsSection(context, store),
               _buildGoalsSection(context, store),
-              _buildUpcomingPaymentsSection(context, plannedPayments),
+              _buildUpcomingPaymentsSection(context, plannedPayments, store),
             ],
           ),
         );
@@ -396,7 +396,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildUpcomingPaymentsSection(BuildContext context, PlannedPaymentStore plannedPayments) {
+  Widget _buildUpcomingPaymentsSection(BuildContext context, PlannedPaymentStore plannedPayments, FinanceStore store) {
     if (plannedPayments.upcomingExpenses.isEmpty && plannedPayments.upcomingIncomes.isEmpty) return const SizedBox.shrink();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
