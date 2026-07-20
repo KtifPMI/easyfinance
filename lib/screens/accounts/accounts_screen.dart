@@ -50,7 +50,7 @@ class AccountsScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                              Text(store.fmt(a.balance, fromCurrency: a.currency), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                               const SizedBox(width: 8),
                               Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                             ],

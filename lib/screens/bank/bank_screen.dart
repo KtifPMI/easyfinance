@@ -38,7 +38,7 @@ class BankScreen extends StatelessWidget {
                   children: [
                     Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
                     const SizedBox(height: 4),
-                    Text(formatMoney(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+                    Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
@@ -73,7 +73,7 @@ class BankScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                          Text(store.fmt(a.balance, fromCurrency: a.currency), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                           const SizedBox(width: 8),
                           Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                         ],

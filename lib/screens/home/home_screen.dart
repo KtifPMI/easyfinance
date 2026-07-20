@@ -72,13 +72,13 @@ class HomeScreen extends StatelessWidget {
         children: [
           Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
           const SizedBox(height: 4),
-          Text(formatMoney(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
+          Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           Row(
             children: [
-              _chip('+${formatMoney(store.monthIncome)}', AppColors.success),
+              _chip('+${store.fmt(store.monthIncome)}', AppColors.success),
               const SizedBox(width: 12),
-              _chip('-${formatMoney(store.monthExpense)}', AppColors.expense),
+              _chip('-${store.fmt(store.monthExpense)}', AppColors.expense),
             ],
           ),
         ],
@@ -120,7 +120,7 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Text(formatMoney(a.balance), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                  Text(store.fmt(a.balance, fromCurrency: a.currency), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                 ],
               ),
             ),
@@ -146,9 +146,16 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-            GestureDetector(
-              onTap: () => _showCurrencyPicker(context, store),
-              child: Icon(Icons.tune, size: 20, color: AppColors.textSecondaryFor(context)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () => _showCurrencyPicker(context, store),
+                  child: Icon(Icons.tune, size: 20, color: AppColors.textSecondaryFor(context)),
+                ),
+                const SizedBox(width: 12),
+                _currencyDropdown(context, store),
+              ],
             ),
           ],
         ),
@@ -175,6 +182,59 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 16),
       ],
+    );
+  }
+
+  Widget _currencyDropdown(BuildContext context, FinanceStore store) {
+    final codes = store.watchedCurrencies.where((c) => store.rates.containsKey(c)).toList();
+    if (codes.length < 2) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: () => _showCurrencySwitcher(context, store, codes),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLightFor(context),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(store.displayCurrencySymbol, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+            const SizedBox(width: 4),
+            Icon(Icons.unfold_more, size: 14, color: AppColors.primary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showCurrencySwitcher(BuildContext context, FinanceStore store, List<String> codes) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Валюта отображения'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: codes.map((code) => RadioListTile<String>(
+            title: Row(
+              children: [
+                Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Text(code, style: TextStyle(fontSize: 15)),
+              ],
+            ),
+            value: code,
+            groupValue: store.displayCurrency,
+            onChanged: (v) {
+              if (v != null) {
+                store.setDisplayCurrency(v);
+                Navigator.pop(ctx);
+              }
+            },
+            activeColor: AppColors.primary,
+          )).toList(),
+        ),
+      ),
     );
   }
 
@@ -285,7 +345,7 @@ class HomeScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                      Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -325,7 +385,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   ProgressBar(percent: percent, color: _parseColor(g.color)),
-                  Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                  Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                 ],
               ),
             ),
@@ -381,7 +441,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          Text(formatMoney(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
+          Text(store.fmt(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
         ],
       ),
     ),

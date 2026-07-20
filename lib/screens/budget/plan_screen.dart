@@ -115,7 +115,7 @@ class PlanScreen extends StatelessWidget {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('${formatMoney(b.spent)} / ${formatMoney(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                      Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                       const SizedBox(width: 8),
                                       GestureDetector(
                                         onTap: () {
@@ -187,7 +187,7 @@ class PlanScreen extends StatelessWidget {
                                   if (g.isCompleted)
                                     Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                                   else
-                                    Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                    Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),

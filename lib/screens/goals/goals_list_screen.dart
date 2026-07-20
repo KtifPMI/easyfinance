@@ -71,7 +71,7 @@ class GoalsListScreen extends StatelessWidget {
                                       if (g.isCompleted)
                                         Text(context.tr('goals.achieved_title'), style: TextStyle(fontSize: 13, color: AppColors.success))
                                       else
-                                        Text('${formatMoney(g.currentAmount)} / ${formatMoney(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                        Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                     ],
                                   ),
                                 ),
@@ -101,7 +101,7 @@ class GoalsListScreen extends StatelessWidget {
                               Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : 'Без срока'}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                             if (!g.isCompleted && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
-                              Text(context.tr('goals.recommendation', namedArgs: {'amount': formatMoney(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                              Text(context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                             ],
                           ],
                         ),
@@ -155,7 +155,7 @@ class GoalsListScreen extends StatelessWidget {
               DropdownButtonFormField<String>(
                 initialValue: accountId,
                 decoration: InputDecoration(labelText: context.tr('goals.from_account')),
-                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${formatMoney(a.balance)})'))).toList(),
+                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${store.fmt(a.balance, fromCurrency: a.currency)})'))).toList(),
                 onChanged: (v) => setDState(() => accountId = v),
               ),
             ],

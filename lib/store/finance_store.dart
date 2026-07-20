@@ -36,6 +36,7 @@ class FinanceStore extends ChangeNotifier {
   Map<String, double> _rates = {'RUB': 1.0};
   DateTime? _ratesUpdatedAt;
   List<String> _watchedCurrencies = [];
+  String _displayCurrency = 'RUB';
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
@@ -78,6 +79,8 @@ class FinanceStore extends ChangeNotifier {
     if (userRaw != null) {
       try { _currentUser = User.fromJson(jsonDecode(userRaw) as Map<String, dynamic>); } catch (_) {}
     }
+    await _loadDisplayCurrency();
+    _watchedCurrencies = await _loadWatchedCurrencies();
     _generateRecommendations();
       notifyListeners();
     } catch (_) {
@@ -128,6 +131,7 @@ class FinanceStore extends ChangeNotifier {
     await prefs.remove('easyfinance_cached_categories');
     await prefs.remove('easyfinance_cached_tags');
     await prefs.remove('easyfinance_cached_user');
+    await prefs.remove('display_currency');
     await authService.logout();
     _currentUser = null;
     _accounts = [];
@@ -169,6 +173,31 @@ class FinanceStore extends ChangeNotifier {
     _watchedCurrencies = codes;
     await CurrencyPrefsService.save(codes);
     notifyListeners();
+  }
+
+  String get displayCurrency => _displayCurrency;
+  String get displayCurrencySymbol => currencySymbol(_displayCurrency);
+
+  Future<void> setDisplayCurrency(String code) async {
+    _displayCurrency = code;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('display_currency', code);
+    notifyListeners();
+  }
+
+  Future<void> _loadDisplayCurrency() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString('display_currency');
+    if (saved != null && allCurrencyCodes.contains(saved)) {
+      _displayCurrency = saved;
+    } else {
+      _displayCurrency = _currentUser?.currency ?? 'RUB';
+    }
+  }
+
+  String fmt(double amount, {String fromCurrency = 'RUB'}) {
+    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, _rates);
+    return formatMoney(converted, currency: _displayCurrency);
   }
 
   bool get isLoading => _isLoading;
@@ -276,6 +305,7 @@ class FinanceStore extends ChangeNotifier {
     } catch (_) {}
 
     _watchedCurrencies = await _loadWatchedCurrencies();
+    await _loadDisplayCurrency();
 
     try {
       _systemCategories = await api.getSystemCategories();
