@@ -5,7 +5,6 @@ import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
-import '../../utils/format.dart';
 import '../accounts/add_account_screen.dart';
 
 class BankScreen extends StatelessWidget {

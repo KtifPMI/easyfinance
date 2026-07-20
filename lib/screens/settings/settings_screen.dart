@@ -171,7 +171,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: InkWell(
           onTap: () {
-            final store = context.read<FinanceStore>();
             Navigator.push(context, MaterialPageRoute(builder: (_) => const _CurrencyManageScreen()));
           },
           child: Row(
