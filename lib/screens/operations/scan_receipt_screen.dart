@@ -80,42 +80,78 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   void _parseReceiptText(String text) {
     final lines = text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
-    final store = lines.isNotEmpty ? lines.first : '';
-    _parsedStore = store;
 
+    _parsedStore = _findStoreName(lines);
+    _parsedDate = _findDate(lines);
+    _parsedAmount = _findAmount(lines);
+
+    _amountCtrl.text = _parsedAmount;
+    _dateCtrl.text = _parsedDate;
+    _commentCtrl.text = _parsedStore.isNotEmpty ? 'Чек: $_parsedStore' : '';
+  }
+
+  String _findStoreName(List<String> lines) {
+    final skipWords = ['эклз', 'инн', 'ккт', 'рн ккт', 'фд', 'фп', 'зн ккт', 'кассовый', 'чека', 'чеком', 'ип', 'ооо', 'сайт', 'тел', 'адрес', 'огрн', 'эл', 'система', 'меркурий', 'штрих', 'атол', 'эвотор'];
+    for (final line in lines) {
+      final lower = line.toLowerCase();
+      final wordCount = lower.split(RegExp(r'\s+')).length;
+      if (wordCount < 3) continue;
+      if (skipWords.any((w) => lower.startsWith(w) || lower.contains(w))) continue;
+      if (RegExp(r'[а-яёa-z]{4,}').hasMatch(lower)) return line;
+    }
+    return lines.isNotEmpty ? lines.first : '';
+  }
+
+  String _findDate(List<String> lines) {
     final dateRegex = RegExp(r'(\d{2})[./](\d{2})[./](\d{2,4})');
     for (final line in lines) {
       final m = dateRegex.firstMatch(line);
       if (m != null) {
-        _parsedDate = '${m.group(3)!.padLeft(4, '20')}-${m.group(2)}-${m.group(1)}';
-        break;
+        final d = int.tryParse(m.group(1) ?? '') ?? 0;
+        final mo = int.tryParse(m.group(2) ?? '') ?? 0;
+        var y = int.tryParse(m.group(3) ?? '') ?? 0;
+        if (d < 1 || d > 31 || mo < 1 || mo > 12) continue;
+        if (y < 100) y += 2000;
+        if (y < 2000 || y > 2100) continue;
+        return '${y.toString().padLeft(4, '0')}-${mo.toString().padLeft(2, '0')}-${d.toString().padLeft(2, '0')}';
       }
     }
+    return '';
+  }
 
+  String _findAmount(List<String> lines) {
     for (int i = lines.length - 1; i >= 0; i--) {
       final line = lines[i].toLowerCase();
       if (['итог', 'сумма', 'к оплате', 'всего', 'cash', 'change', 'нал'].any((k) => line.contains(k))) {
-        final nums = _extractNumbers(lines[i]);
-        if (nums.isNotEmpty) { _parsedAmount = nums.last.toStringAsFixed(0); break; }
+        var nums = _extractSignificantNumbers(lines[i]);
+        if (nums.isEmpty && i + 1 < lines.length) nums = _extractSignificantNumbers(lines[i + 1]);
+        if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
       }
     }
-    if (_parsedAmount.isEmpty) {
-      for (int i = lines.length - 1; i >= 0; i--) {
-        final nums = _extractNumbers(lines[i]);
-        if (nums.isNotEmpty) { _parsedAmount = nums.last.toStringAsFixed(0); break; }
+    for (int i = lines.length - 1; i >= 0; i--) {
+      final line = lines[i];
+      if (line.contains('=') || line.startsWith('=')) {
+        final nums = _extractSignificantNumbers(line);
+        if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
       }
     }
-    _amountCtrl.text = _parsedAmount;
-    _dateCtrl.text = _parsedDate;
-    _commentCtrl.text = 'Чек: $_parsedStore';
+    final allNums = <double>[];
+    for (final line in lines) {
+      allNums.addAll(_extractSignificantNumbers(line));
+    }
+    if (allNums.isNotEmpty) {
+      allNums.sort();
+      return allNums.last.toStringAsFixed(0);
+    }
+    return '';
   }
 
-  List<double> _extractNumbers(String s) {
+  List<double> _extractSignificantNumbers(String s) {
     final parts = s.split(RegExp(r'[^\d.,]+')).where((p) => p.isNotEmpty).toList();
     final result = <double>[];
     for (final p in parts) {
       final v = double.tryParse(p.replaceAll(',', '.'));
-      if (v != null && v > 0) result.add(v);
+      if (v != null && v > 10) result.add(v);
     }
     return result;
   }
