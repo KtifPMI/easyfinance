@@ -27,6 +27,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   String _parsedDate = '';
   String? _selectedAccountId;
   String? _selectedCategoryId;
+  final _storeCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _dateCtrl = TextEditingController();
@@ -37,6 +38,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   @override
   void dispose() {
     _textRecognizer.close();
+    _storeCtrl.dispose();
     _commentCtrl.dispose();
     _amountCtrl.dispose();
     _dateCtrl.dispose();
@@ -114,6 +116,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
     _amountCtrl.text = _parsedAmount;
     _dateCtrl.text = _parsedDate;
+    _storeCtrl.text = _normalizeDisplay(_parsedStore);
     _commentCtrl.text = _parsedStore.isNotEmpty ? 'Чек: $_parsedStore' : '';
   }
 
@@ -135,6 +138,25 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         .replaceAll('X', 'х').replaceAll('x', 'х')
         .replaceAll('Y', 'у').replaceAll('y', 'у')
         .toLowerCase();
+  }
+
+  String _normalizeDisplay(String s) {
+    return s
+        .replaceAll('A', 'А').replaceAll('a', 'а')
+        .replaceAll('B', 'В').replaceAll('b', 'в')
+        .replaceAll('C', 'С').replaceAll('c', 'с')
+        .replaceAll('E', 'Е').replaceAll('e', 'е')
+        .replaceAll('H', 'Н').replaceAll('h', 'н')
+        .replaceAll('I', 'И').replaceAll('i', 'и')
+        .replaceAll('K', 'К').replaceAll('k', 'к')
+        .replaceAll('M', 'М').replaceAll('m', 'м')
+        .replaceAll('O', 'О').replaceAll('o', 'о')
+        .replaceAll('P', 'Р').replaceAll('p', 'р')
+        .replaceAll('T', 'Т').replaceAll('t', 'т')
+        .replaceAll('U', 'И').replaceAll('u', 'и')
+        .replaceAll('X', 'Х').replaceAll('x', 'х')
+        .replaceAll('Y', 'У').replaceAll('y', 'у')
+        .replaceAll('3', 'з');
   }
 
   String _findStoreName(List<String> lines) {
@@ -367,7 +389,15 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           ],
           Text('Магазин', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
-          Text(_parsedStore, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          TextField(
+            controller: _storeCtrl,
+            decoration: InputDecoration(
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context)),
+          ),
           const SizedBox(height: 16),
           Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
