@@ -24,6 +24,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   String _parsedAmount = '';
   String _parsedStore = '';
+  String _parsedStoreDisplay = '';
   String _parsedDate = '';
   String? _selectedAccountId;
   String? _selectedCategoryId;
@@ -84,6 +85,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     final lines = text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
 
     _parsedStore = _findStoreName(lines);
+    _parsedStoreDisplay = _normalizeDisplay(_parsedStore);
     _parsedDate = _findDate(lines);
     _parsedAmount = _findAmount(lines);
 
@@ -135,6 +137,30 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         .replaceAll('X', 'х').replaceAll('x', 'х')
         .replaceAll('Y', 'у').replaceAll('y', 'у')
         .toLowerCase();
+  }
+
+  String _normalizeDisplay(String s) {
+    return s
+        .replaceAll('A', 'А').replaceAll('a', 'а')
+        .replaceAll('B', 'В').replaceAll('b', 'в')
+        .replaceAll('C', 'С').replaceAll('c', 'с')
+        .replaceAll('D', 'Д').replaceAll('d', 'д')
+        .replaceAll('E', 'Е').replaceAll('e', 'е')
+        .replaceAll('H', 'Н').replaceAll('h', 'н')
+        .replaceAll('I', 'И').replaceAll('i', 'и')
+        .replaceAll('K', 'К').replaceAll('k', 'к')
+        .replaceAll('M', 'М').replaceAll('m', 'м')
+        .replaceAll('N', 'Л').replaceAll('n', 'л')
+        .replaceAll('O', 'О').replaceAll('o', 'о')
+        .replaceAll('P', 'Р').replaceAll('p', 'р')
+        .replaceAll('R', 'Г').replaceAll('r', 'г')
+        .replaceAll('T', 'Т').replaceAll('t', 'т')
+        .replaceAll('U', 'И').replaceAll('u', 'и')
+        .replaceAll('X', 'Х').replaceAll('x', 'х')
+        .replaceAll('Y', 'У').replaceAll('y', 'у')
+        .replaceAll('0', 'о').replaceAll('1', 'і')
+        .replaceAll('3', 'з').replaceAll('4', 'ч')
+        .replaceAll('6', 'б').replaceAll('9', 'г');
   }
 
   String _findStoreName(List<String> lines) {
@@ -367,7 +393,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           ],
           Text('Магазин', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
-          Text(_parsedStore, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          Text(_parsedStoreDisplay.isNotEmpty ? _parsedStoreDisplay : _parsedStore, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 16),
           Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),

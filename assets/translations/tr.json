@@ -128,6 +128,7 @@
   "budget.expense": "Giderler",
   "budget.planned": "Planlanmış",
   "budget.spent_total": "Harcanan",
+  "budget.add_budget": "Bütçe ekle",
 
   "goals.title": "Hedefler",
   "goals.empty": "Hedef yok",
@@ -154,6 +155,7 @@
   "goals.delete": "Sil",
   "goals.delete_title": "Hedefi sil",
   "goals.delete_confirm": "«{title}» hedefi silinsin mi?",
+  "goals.add_goal": "Hedef ekle",
 
   "calendar.title": "Takvim",
   "calendar.mon": "Pzt",

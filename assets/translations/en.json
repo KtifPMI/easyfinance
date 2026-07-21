@@ -128,6 +128,7 @@
   "budget.expense": "Expenses",
   "budget.planned": "Planned",
   "budget.spent_total": "Spent",
+  "budget.add_budget": "Add budget",
 
   "goals.title": "Goals",
   "goals.empty": "No goals",
@@ -154,6 +155,7 @@
   "goals.delete": "Delete",
   "goals.delete_title": "Delete goal",
   "goals.delete_confirm": "Delete goal «{title}»?",
+  "goals.add_goal": "Add goal",
 
   "calendar.title": "Calendar",
   "calendar.mon": "Mon",
@@ -191,6 +193,12 @@
   "settings.language_value": "English",
   "settings.language_ru": "Русский",
   "settings.language_en": "English",
+  "settings.language_es": "Español",
+  "settings.language_it": "Italiano",
+  "settings.language_fr": "Français",
+  "settings.language_de": "Deutsch",
+  "settings.language_pt": "Português",
+  "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Dark Mode",
   "settings.pin_code": "PIN code",
   "settings.tariff": "Tariff",

@@ -122,9 +122,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _langItem(BuildContext context) {
     final currentLocale = context.locale.languageCode;
-    final label = currentLocale == 'en'
-        ? context.tr('settings.language_en')
-        : context.tr('settings.language_ru');
+    final label = context.tr('settings.language_$currentLocale');
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: AppCard(

@@ -128,6 +128,7 @@
   "budget.expense": "Расходы",
   "budget.planned": "Запланировано",
   "budget.spent_total": "Потрачено",
+  "budget.add_budget": "Добавить бюджет",
 
   "goals.title": "Цели",
   "goals.empty": "Нет целей",
@@ -154,6 +155,7 @@
   "goals.delete": "Удалить",
   "goals.delete_title": "Удалить цель",
   "goals.delete_confirm": "Удалить цель «{title}»?",
+  "goals.add_goal": "Добавить цель",
 
   "calendar.title": "Календарь",
   "calendar.mon": "Пн",
@@ -191,6 +193,12 @@
   "settings.language_value": "Русский",
   "settings.language_ru": "Русский",
   "settings.language_en": "English",
+  "settings.language_es": "Español",
+  "settings.language_it": "Italiano",
+  "settings.language_fr": "Français",
+  "settings.language_de": "Deutsch",
+  "settings.language_pt": "Português",
+  "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Тёмная тема",
   "settings.pin_code": "PIN-код",
   "settings.tariff": "Тарифный план",

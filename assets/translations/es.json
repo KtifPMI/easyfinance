@@ -128,6 +128,7 @@
   "budget.expense": "Gastos",
   "budget.planned": "Planificado",
   "budget.spent_total": "Gastado",
+  "budget.add_budget": "Añadir presupuesto",
 
   "goals.title": "Metas",
   "goals.empty": "Sin metas",
@@ -154,6 +155,7 @@
   "goals.delete": "Eliminar",
   "goals.delete_title": "Eliminar meta",
   "goals.delete_confirm": "¿Eliminar meta «{title}»?",
+  "goals.add_goal": "Añadir objetivo",
 
   "calendar.title": "Calendario",
   "calendar.mon": "Lun",

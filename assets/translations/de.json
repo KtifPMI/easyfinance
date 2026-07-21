@@ -128,6 +128,7 @@
   "budget.expense": "Ausgaben",
   "budget.planned": "Geplant",
   "budget.spent_total": "Ausgegeben",
+  "budget.add_budget": "Budget hinzufügen",
 
   "goals.title": "Ziele",
   "goals.empty": "Keine Ziele",
@@ -154,6 +155,7 @@
   "goals.delete": "Löschen",
   "goals.delete_title": "Ziel löschen",
   "goals.delete_confirm": "Ziel «{title}» löschen?",
+  "goals.add_goal": "Ziel hinzufügen",
 
   "calendar.title": "Kalender",
   "calendar.mon": "Mo",
