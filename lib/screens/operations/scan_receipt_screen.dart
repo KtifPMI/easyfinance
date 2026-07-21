@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
 import '../../theme/theme.dart';
-import '../../components/common/app_button.dart';
 import '../../components/common/screen_scaffold.dart';
 
 class ScanReceiptScreen extends StatefulWidget {
@@ -45,6 +44,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   Future<void> _pickImage(ImageSource source) async {
     final picked = await _picker.pickImage(source: source, maxWidth: 2048);
     if (picked == null) return;
+    if (!mounted) return;
     setState(() {
       _image = File(picked.path);
       _scanning = true;
@@ -60,6 +60,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     try {
       final inputImage = InputImage.fromFile(_image!);
       final result = await _textRecognizer.processImage(inputImage);
+      if (!mounted) return;
       final text = result.text;
       if (text.isEmpty) {
         setState(() { _error = 'Не удалось распознать текст. Попробуйте другое фото.'; _scanning = false; });
@@ -72,6 +73,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         _showConfirm = true;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() { _error = 'Ошибка распознавания: $e'; _scanning = false; });
     }
   }
@@ -195,18 +197,30 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         Row(
           children: [
             Expanded(
-              child: AppButton(
-                title: 'Камера',
-                icon: Icons.camera_alt,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.camera_alt, size: 20),
+                label: const Text('Камера'),
                 onPressed: () => _pickImage(ImageSource.camera),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: AppButton(
-                title: 'Галерея',
-                icon: Icons.photo_library,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.photo_library, size: 20),
+                label: const Text('Галерея'),
                 onPressed: () => _pickImage(ImageSource.gallery),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
           ],
@@ -284,9 +298,15 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: AppButton(
-              title: 'Добавить расход',
+            child: ElevatedButton(
               onPressed: () => _save(store),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Добавить расход', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 8),
