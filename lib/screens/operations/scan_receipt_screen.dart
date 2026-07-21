@@ -92,13 +92,22 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   String _normalize(String s) {
     return s
-        .replaceAll('M', 'м').replaceAll('T', 'т').replaceAll('O', 'о')
-        .replaceAll('P', 'п').replaceAll('C', 'с').replaceAll('B', 'в')
-        .replaceAll('A', 'а').replaceAll('E', 'е').replaceAll('K', 'к')
-        .replaceAll('X', 'х').replaceAll('H', 'н').replaceAll('I', 'и')
-        .replaceAll('p', 'р').replaceAll('a', 'а').replaceAll('e', 'е')
-        .replaceAll('c', 'с').replaceAll('m', 'м').replaceAll('o', 'о')
-        .replaceAll('i', 'и').replaceAll('y', 'у').toLowerCase();
+        .replaceAll('A', 'а').replaceAll('a', 'а')
+        .replaceAll('B', 'в').replaceAll('b', 'в')
+        .replaceAll('C', 'с').replaceAll('c', 'с')
+        .replaceAll('E', 'е').replaceAll('e', 'е')
+        .replaceAll('H', 'н').replaceAll('h', 'н')
+        .replaceAll('I', 'и').replaceAll('i', 'и')
+        .replaceAll('K', 'к').replaceAll('k', 'к')
+        .replaceAll('M', 'м').replaceAll('m', 'м')
+        .replaceAll('O', 'о').replaceAll('o', 'о')
+        .replaceAll('P', 'р').replaceAll('p', 'р')
+        .replaceAll('R', 'г').replaceAll('r', 'г')
+        .replaceAll('T', 'т').replaceAll('t', 'т')
+        .replaceAll('U', 'и').replaceAll('u', 'и')
+        .replaceAll('X', 'х').replaceAll('x', 'х')
+        .replaceAll('Y', 'у').replaceAll('y', 'у')
+        .toLowerCase();
   }
 
   String _findStoreName(List<String> lines) {
@@ -148,7 +157,9 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   String _findAmount(List<String> lines) {
     for (int i = lines.length - 1; i >= 0; i--) {
       final norm = _normalize(lines[i]);
-      if (['итог', 'сумма', 'к оплате', 'всего'].any((k) => norm.contains(k))) {
+      final raw = lines[i].toLowerCase();
+      if (['итог', 'сумма', 'к оплате', 'всего'].any((k) => norm.contains(k)) ||
+          raw.contains('mtor') || raw.contains('cymma') || raw.contains('k onlate')) {
         var nums = _extractSignificantNumbers(lines[i]);
         if (nums.isEmpty && i + 1 < lines.length) nums = _extractSignificantNumbers(lines[i + 1]);
         if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
