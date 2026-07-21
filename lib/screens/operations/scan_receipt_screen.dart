@@ -90,14 +90,40 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     _commentCtrl.text = _parsedStore.isNotEmpty ? 'Чек: $_parsedStore' : '';
   }
 
+  String _normalize(String s) {
+    return s
+        .replaceAll('M', 'м').replaceAll('T', 'т').replaceAll('O', 'о')
+        .replaceAll('P', 'п').replaceAll('C', 'с').replaceAll('B', 'в')
+        .replaceAll('A', 'а').replaceAll('E', 'е').replaceAll('K', 'к')
+        .replaceAll('X', 'х').replaceAll('H', 'н').replaceAll('I', 'и')
+        .replaceAll('p', 'р').replaceAll('a', 'а').replaceAll('e', 'е')
+        .replaceAll('c', 'с').replaceAll('m', 'м').replaceAll('o', 'о')
+        .replaceAll('i', 'и').replaceAll('y', 'у').toLowerCase();
+  }
+
   String _findStoreName(List<String> lines) {
-    final skipWords = ['эклз', 'инн', 'ккт', 'рн ккт', 'фд', 'фп', 'зн ккт', 'кассовый', 'чека', 'чеком', 'ип', 'ооо', 'сайт', 'тел', 'адрес', 'огрн', 'эл', 'система', 'меркурий', 'штрих', 'атол', 'эвотор'];
+    final skipWords = ['эклз', 'инн', 'ккт', 'рн ккт', 'фд', 'фп', 'зн ккт', 'зн кт',
+      'кассовый', 'чека', 'чеком', 'ип', 'ооо', 'сайт', 'тел', 'адрес',
+      'огрн', 'эл', 'система', 'меркурий', 'штрих', 'атол', 'эвотор',
+      'рисунок', 'untitled', 'figma', 'telegram', 'explorer',
+      'каталог', 'catalog', 'easyfinance', 'яндекс', 'картинк'];
+
+    final storeClues = ['ресторан', 'магазин', 'кафе', 'бар', 'столовая',
+      'кальянная', 'кофейн', 'пиццер'];
+
     for (final line in lines) {
       final lower = line.toLowerCase();
-      final wordCount = lower.split(RegExp(r'\s+')).length;
-      if (wordCount < 3) continue;
-      if (skipWords.any((w) => lower.startsWith(w) || lower.contains(w))) continue;
-      if (RegExp(r'[а-яёa-z]{4,}').hasMatch(lower)) return line;
+      final norm = _normalize(line);
+      if (lower.length < 5) continue;
+      if (skipWords.any((w) => lower.contains(w) || norm.contains(w))) continue;
+      if (storeClues.any((c) => norm.contains(c))) return line;
+    }
+    for (final line in lines) {
+      final lower = line.toLowerCase();
+      final norm = _normalize(line);
+      if (lower.length < 5) continue;
+      if (skipWords.any((w) => lower.contains(w) || norm.contains(w))) continue;
+      if (RegExp(r'[а-яё]{4,}').hasMatch(norm)) return line;
     }
     return lines.isNotEmpty ? lines.first : '';
   }
@@ -121,19 +147,29 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   String _findAmount(List<String> lines) {
     for (int i = lines.length - 1; i >= 0; i--) {
-      final line = lines[i].toLowerCase();
-      if (['итог', 'сумма', 'к оплате', 'всего', 'cash', 'change', 'нал'].any((k) => line.contains(k))) {
+      final norm = _normalize(lines[i]);
+      if (['итог', 'сумма', 'к оплате', 'всего'].any((k) => norm.contains(k))) {
         var nums = _extractSignificantNumbers(lines[i]);
         if (nums.isEmpty && i + 1 < lines.length) nums = _extractSignificantNumbers(lines[i + 1]);
         if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
       }
     }
-    for (int i = lines.length - 1; i >= 0; i--) {
-      final line = lines[i];
-      if (line.contains('=') || line.startsWith('=')) {
+    final eqValues = <double, int>{};
+    for (final line in lines) {
+      if (line.contains('=')) {
         final nums = _extractSignificantNumbers(line);
-        if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
+        for (final n in nums) {
+          eqValues[n] = (eqValues[n] ?? 0) + 1;
+        }
       }
+    }
+    if (eqValues.isNotEmpty) {
+      double best = 0;
+      int bestCount = 0;
+      eqValues.forEach((val, count) {
+        if (count > bestCount) { best = val; bestCount = count; }
+      });
+      if (best > 0) return best.toStringAsFixed(0);
     }
     final allNums = <double>[];
     for (final line in lines) {
