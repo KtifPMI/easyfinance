@@ -145,18 +145,22 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         .replaceAll('A', 'А').replaceAll('a', 'а')
         .replaceAll('B', 'В').replaceAll('b', 'в')
         .replaceAll('C', 'С').replaceAll('c', 'с')
+        .replaceAll('D', 'Д').replaceAll('d', 'д')
         .replaceAll('E', 'Е').replaceAll('e', 'е')
         .replaceAll('H', 'Н').replaceAll('h', 'н')
         .replaceAll('I', 'И').replaceAll('i', 'и')
         .replaceAll('K', 'К').replaceAll('k', 'к')
         .replaceAll('M', 'М').replaceAll('m', 'м')
+        .replaceAll('N', 'Л').replaceAll('n', 'л')
         .replaceAll('O', 'О').replaceAll('o', 'о')
         .replaceAll('P', 'Р').replaceAll('p', 'р')
+        .replaceAll('R', 'Г').replaceAll('r', 'г')
         .replaceAll('T', 'Т').replaceAll('t', 'т')
         .replaceAll('U', 'И').replaceAll('u', 'и')
         .replaceAll('X', 'Х').replaceAll('x', 'х')
         .replaceAll('Y', 'У').replaceAll('y', 'у')
-        .replaceAll('3', 'з');
+        .replaceAll('3', 'з').replaceAll('0', 'о')
+        .replaceAll('6', 'б');
   }
 
   String _findStoreName(List<String> lines) {
@@ -227,7 +231,10 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       double best = 0;
       int bestCount = 0;
       eqValues.forEach((val, count) {
-        if (count > bestCount) { best = val; bestCount = count; }
+        if (count > bestCount || (count == bestCount && val > best)) {
+          best = val;
+          bestCount = count;
+        }
       });
       if (best > 0) return best.toStringAsFixed(0);
     }
@@ -246,7 +253,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     final parts = s.split(RegExp(r'[^\d.,]+')).where((p) => p.isNotEmpty).toList();
     final result = <double>[];
     for (final p in parts) {
-      final v = double.tryParse(p.replaceAll(',', '.'));
+      final cleaned = p.replaceAll(',', '.').replaceAll('О', '0').replaceAll('о', '0');
+      final v = double.tryParse(cleaned);
       if (v != null && v > 10) result.add(v);
     }
     return result;
