@@ -25,6 +25,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   String _parsedAmount = '';
   String _parsedStore = '';
   String _parsedDate = '';
+  String? _selectedAccountId;
+  String? _selectedCategoryId;
   final _commentCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _dateCtrl = TextEditingController();
@@ -41,7 +43,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(ImageSource source, FinanceStore store) async {
     final picked = await _picker.pickImage(source: source, maxWidth: 2048);
     if (picked == null) return;
     if (!mounted) return;
@@ -52,10 +54,10 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       _recognizedText = null;
       _showConfirm = false;
     });
-    await _scanReceipt();
+    await _scanReceipt(store);
   }
 
-  Future<void> _scanReceipt() async {
+  Future<void> _scanReceipt(FinanceStore store) async {
     if (_image == null) return;
     try {
       final inputImage = InputImage.fromFile(_image!);
@@ -66,7 +68,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         setState(() { _error = 'Не удалось распознать текст. Попробуйте другое фото.'; _scanning = false; });
         return;
       }
-      _parseReceiptText(text);
+      _parseReceiptText(text, store);
       setState(() {
         _recognizedText = text;
         _scanning = false;
@@ -78,12 +80,37 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     }
   }
 
-  void _parseReceiptText(String text) {
+  void _parseReceiptText(String text, FinanceStore store) {
     final lines = text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
 
     _parsedStore = _findStoreName(lines);
     _parsedDate = _findDate(lines);
     _parsedAmount = _findAmount(lines);
+
+    final normStore = _normalize(_parsedStore);
+    final categoryClues = {
+      'питание': ['ресторан', 'кафе', 'столовая', 'бар', 'кофейн', 'пиццер', 'еда', 'продукт'],
+      'автомобиль': ['авто', 'заправк', 'аэро', 'азс', 'шиномонтаж', 'сто'],
+      'досуг и отдых': ['кино', 'театр', 'концерт', 'парк', 'развлек'],
+      'домашнее хозяйство': ['магазин', 'хоз', 'стройматер', 'мебель'],
+      'проезд, транспорт': ['такси', 'метро', 'автобус', 'транспорт'],
+      'одежда, обувь, аксессуары': ['одежд', 'обувь', 'аксессуар'],
+    };
+    _selectedCategoryId = null;
+    for (final entry in categoryClues.entries) {
+      if (entry.value.any((c) => normStore.contains(c))) {
+        for (final c in store.categories) {
+          if (c.name.toLowerCase().contains(entry.key)) {
+            _selectedCategoryId = c.id;
+            break;
+          }
+        }
+        if (_selectedCategoryId != null) break;
+      }
+    }
+    _selectedCategoryId ??= store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
+
+    _selectedAccountId ??= store.accounts.isNotEmpty ? store.accounts.first.id : null;
 
     _amountCtrl.text = _parsedAmount;
     _dateCtrl.text = _parsedDate;
@@ -208,7 +235,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     if (amount <= 0) return;
     if (store.accounts.isEmpty) return;
 
-    final catId = store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
+    final catId = _selectedCategoryId ?? store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
     final now = DateTime.now();
     final dateStr = _dateCtrl.text.isNotEmpty
         ? '${_dateCtrl.text}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}'
@@ -219,7 +246,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       type: 'expense',
       amount: amount,
       date: dateStr,
-      accountId: store.accounts.first.id,
+      accountId: _selectedAccountId ?? store.accounts.first.id,
       categoryId: catId,
       comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : 'Чек: $_parsedStore',
     );
@@ -283,7 +310,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.camera_alt, size: 20),
                 label: const Text('Камера'),
-                onPressed: () => _pickImage(ImageSource.camera),
+                onPressed: () => _pickImage(ImageSource.camera, store),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -297,7 +324,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.photo_library, size: 20),
                 label: const Text('Галерея'),
-                onPressed: () => _pickImage(ImageSource.gallery),
+                onPressed: () => _pickImage(ImageSource.gallery, store),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -341,6 +368,32 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           Text('Магазин', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           Text(_parsedStore, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          const SizedBox(height: 16),
+          Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedAccountId,
+            decoration: InputDecoration(
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            items: store.accounts.map((a) => DropdownMenuItem<String>(value: a.id, child: Text(a.name))).toList(),
+            onChanged: (v) => setState(() => _selectedAccountId = v),
+          ),
+          const SizedBox(height: 16),
+          Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            initialValue: _selectedCategoryId,
+            decoration: InputDecoration(
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            items: store.categories.where((c) => c.type == 'expense').map((c) => DropdownMenuItem<String>(value: c.id, child: Text(c.name))).toList(),
+            onChanged: (v) => setState(() => _selectedCategoryId = v),
+          ),
           const SizedBox(height: 16),
           Text('Сумма расхода', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
