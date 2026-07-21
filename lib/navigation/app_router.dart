@@ -6,6 +6,7 @@ import '../screens/auth/register_screen.dart';
 import '../screens/debug/debug_screen.dart';
 import '../screens/operations/add_operation_screen.dart';
 import '../screens/operations/operation_detail_screen.dart';
+import '../screens/operations/scan_receipt_screen.dart';
 import '../screens/planned_payments/planned_payments_screen.dart';
 import '../screens/planned_payments/add_planned_payment_screen.dart';
 import '../models/financial_event.dart';
@@ -19,6 +20,7 @@ class AppRouter {
   static const String main = '/main';
   static const String addOperation = '/add-operation';
   static const String operationDetail = '/operation-detail';
+  static const String scanReceipt = '/scan-receipt';
   static const String debug = '/debug';
   static const String plannedPayments = '/planned-payments';
   static const String addPlannedPayment = '/add-planned-payment';
@@ -30,6 +32,7 @@ class AppRouter {
     pin: (_) => const PinScreen(),
     main: (_) => const MainTabs(),
     addOperation: (_) => const AddOperationScreen(),
+    scanReceipt: (_) => const ScanReceiptScreen(),
     operationDetail: (_) => const OperationDetailScreen(),
     debug: (_) => const DebugScreen(),
     plannedPayments: (_) => const PlannedPaymentsScreen(),

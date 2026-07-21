@@ -39,6 +39,7 @@ class HomeScreen extends StatelessWidget {
                 onAddIncome: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'}),
                 onAddExpense: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'}),
                 onAddTransfer: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'}),
+                onScan: () => Navigator.pushNamed(context, '/scan-receipt'),
               ),
               const SizedBox(height: 16),
               if (accountType == 'entrepreneur') ...[

@@ -16,3 +16,6 @@ ios/Flutter/Flutter.podspec
 
 # Credentials
 /lib/config.dart
+
+# Temp copies
+*копия*

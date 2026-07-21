@@ -6,18 +6,21 @@ class QuickActions extends StatelessWidget {
   final VoidCallback onAddIncome;
   final VoidCallback onAddExpense;
   final VoidCallback onAddTransfer;
+  final VoidCallback onScan;
 
-  const QuickActions({super.key, required this.onAddIncome, required this.onAddExpense, required this.onAddTransfer});
+  const QuickActions({super.key, required this.onAddIncome, required this.onAddExpense, required this.onAddTransfer, required this.onScan});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         _action(context, Icons.add_circle_outline, context.tr('quick_actions.income'), AppColors.success, onAddIncome),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         _action(context, Icons.remove_circle_outline, context.tr('quick_actions.expense'), AppColors.expense, onAddExpense),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         _action(context, Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, onAddTransfer),
+        const SizedBox(width: 6),
+        _action(context, Icons.document_scanner, 'Чек', AppColors.accent, onScan),
       ],
     );
   }
@@ -35,9 +38,9 @@ class QuickActions extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Icon(icon, color: color, size: 28),
+              Icon(icon, color: color, size: 26),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+              Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),
