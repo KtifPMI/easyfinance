@@ -69,8 +69,21 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           final cat = store.getCategory(op.categoryId);
                           final acc = store.getAccount(op.accountId);
                           final toAcc = store.getAccount(op.toAccountId);
-                          final iconData = op.type == 'transfer' ? Icons.swap_horiz : (cat != null ? _catIcon(cat.icon) : Icons.help_outline);
-                          final color = op.type == 'transfer' ? AppColors.transfer : (cat?.color != null ? _parseColor(cat!.color) : AppColors.textSecondary);
+                          final IconData iconData;
+                          final Color iconColor;
+                          if (op.type == 'transfer') {
+                            iconData = Icons.swap_horiz;
+                            iconColor = AppColors.transfer;
+                          } else if (cat != null && cat.name.toLowerCase().contains('инвестицион')) {
+                            iconData = Icons.track_changes;
+                            iconColor = AppColors.warning;
+                          } else if (op.type == 'expense') {
+                            iconData = Icons.trending_down;
+                            iconColor = AppColors.expense;
+                          } else {
+                            iconData = Icons.trending_up;
+                            iconColor = AppColors.success;
+                          }
                           final title = op.type == 'transfer'
                               ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
                               : cat?.name ?? context.tr('operations.no_category');
@@ -82,7 +95,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             amount: op.amount,
                             type: op.type,
                             icon: iconData,
-                            iconColor: color,
+                            iconColor: iconColor,
                             onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
                           );
                         }).toList(),
