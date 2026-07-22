@@ -27,7 +27,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   String _parsedDate = '';
   String? _selectedAccountId;
   String? _selectedCategoryId;
-  final _storeCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
   final _dateCtrl = TextEditingController();
@@ -38,7 +37,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   @override
   void dispose() {
     _textRecognizer.close();
-    _storeCtrl.dispose();
     _commentCtrl.dispose();
     _amountCtrl.dispose();
     _dateCtrl.dispose();
@@ -84,40 +82,19 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   void _parseReceiptText(String text, FinanceStore store) {
     final lines = text.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+    final normAll = _normalize(text);
 
     _parsedStore = _findStoreName(lines);
     _parsedDate = _findDate(lines);
     _parsedAmount = _findAmount(lines);
 
-    final normStore = _normalize(_parsedStore);
-    final categoryClues = {
-      'питание': ['ресторан', 'кафе', 'столовая', 'бар', 'кофейн', 'пиццер', 'еда', 'продукт'],
-      'автомобиль': ['авто', 'заправк', 'аэро', 'азс', 'шиномонтаж', 'сто'],
-      'досуг и отдых': ['кино', 'театр', 'концерт', 'парк', 'развлек'],
-      'домашнее хозяйство': ['магазин', 'хоз', 'стройматер', 'мебель'],
-      'проезд, транспорт': ['такси', 'метро', 'автобус', 'транспорт'],
-      'одежда, обувь, аксессуары': ['одежд', 'обувь', 'аксессуар'],
-    };
-    _selectedCategoryId = null;
-    for (final entry in categoryClues.entries) {
-      if (entry.value.any((c) => normStore.contains(c))) {
-        for (final c in store.categories) {
-          if (c.name.toLowerCase().contains(entry.key)) {
-            _selectedCategoryId = c.id;
-            break;
-          }
-        }
-        if (_selectedCategoryId != null) break;
-      }
-    }
+    _selectedCategoryId = _detectCategory(normAll, store.categories);
     _selectedCategoryId ??= store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
-
     _selectedAccountId ??= store.accounts.isNotEmpty ? store.accounts.first.id : null;
 
     _amountCtrl.text = _parsedAmount;
     _dateCtrl.text = _parsedDate;
-    _storeCtrl.text = _normalizeDisplay(_parsedStore);
-    _commentCtrl.text = _parsedStore.isNotEmpty ? 'Чек: $_parsedStore' : '';
+    _commentCtrl.text = _normalizeDisplay(_parsedStore);
   }
 
   String _normalize(String s) {
@@ -188,6 +165,28 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       if (RegExp(r'[а-яё]{4,}').hasMatch(norm)) return line;
     }
     return lines.isNotEmpty ? lines.first : '';
+  }
+
+  String? _detectCategory(String normalizedText, List<dynamic> categories) {
+    final categoryClues = {
+      'питание': ['ресторан', 'кафе', 'столовая', 'бар', 'кофейн', 'пиццер', 'еда', 'продукт', 'блюдо', 'порци', 'вино', 'пиво', 'кофе', 'чай', 'мясо', 'рыба', 'салат', 'суп', 'хлеб', 'молоко', 'сыр', 'колбас', 'напиток', 'сок', 'десерт', 'пицца', 'ролл', 'суши', 'бургер', 'картоф', 'свинин', 'курица', 'котлет', 'пельмен', 'блины', 'морожен', 'шоколад', 'торт', 'пирожн', 'бутерброд', 'азу', 'паста', 'макарон', 'масло', 'творог', 'яиц', 'говядин', 'лосось', 'креветк', 'кальмар'],
+      'автомобиль': ['авто', 'заправк', 'аэро', 'азс', 'шиномонтаж', 'сто', 'бензин', 'дизел', 'топлив', 'аи-95', 'аи-92'],
+      'досуг и отдых': ['кино', 'театр', 'концерт', 'парк', 'развлек', 'билет'],
+      'домашнее хозяйство': ['магазин', 'хоз', 'стройматер', 'мебель', 'обои', 'краск', 'ламинат'],
+      'проезд, транспорт': ['такси', 'метро', 'автобус', 'транспорт', 'билет'],
+      'одежда, обувь, аксессуары': ['одежд', 'обувь', 'аксессуар', 'футболк', 'штан', 'куртк', 'джинс', 'шапк'],
+      'медицина': ['лекарств', 'таблетк', 'аптеч', 'капел', 'микстур', 'пластыр', 'витамин', 'антибиотик'],
+    };
+    for (final entry in categoryClues.entries) {
+      if (entry.value.any((c) => normalizedText.contains(c))) {
+        for (final cat in categories) {
+          if (cat.name.toLowerCase().contains(entry.key)) {
+            return cat.id;
+          }
+        }
+      }
+    }
+    return null;
   }
 
   String _findDate(List<String> lines) {
@@ -395,18 +394,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             ),
             const SizedBox(height: 16),
           ],
-          Text('Магазин', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-          const SizedBox(height: 4),
-          TextField(
-            controller: _storeCtrl,
-            decoration: InputDecoration(
-              filled: true, fillColor: AppColors.cardFor(context),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            ),
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context)),
-          ),
-          const SizedBox(height: 16),
           Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
