@@ -225,11 +225,13 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   String _findAmount(List<String> lines) {
+    final kwNorm = ['итог', 'итого', 'сумма', 'суммы', 'к оплате', 'к onlate', 'всего', 'вcего'];
+    final kwRaw = ['mtor', 'cymma', 'k onlate', 'itorg', 'итorg'];
+
     for (int i = lines.length - 1; i >= 0; i--) {
       final norm = _normalize(lines[i]);
       final raw = lines[i].toLowerCase();
-      if (['итог', 'итого', 'сумма', 'к оплате', 'всего'].any((k) => norm.contains(k)) ||
-          raw.contains('mtor') || raw.contains('cymma') || raw.contains('k onlate')) {
+      if (kwNorm.any((k) => norm.contains(k)) || kwRaw.any((k) => raw.contains(k))) {
         var nums = _extractNumbersAfterKeyword(lines[i]);
         if (nums.isEmpty && i + 1 < lines.length) nums = _extractSignificantNumbers(lines[i + 1]);
         if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
@@ -260,11 +262,17 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   List<double> _extractSignificantNumbers(String s) {
-    final parts = s.split(RegExp(r'[^\d.,]+')).where((p) => p.isNotEmpty).toList();
+    var prepared = s.replaceAll('О', '0').replaceAll('о', '0');
+    final regex = RegExp(r'\d[\d\s.,]*\d|\d+');
+    final matches = regex.allMatches(prepared);
     final result = <double>[];
-    for (final p in parts) {
-      final cleaned = p.replaceAll(',', '.').replaceAll('О', '0').replaceAll('о', '0');
-      final v = double.tryParse(cleaned);
+    for (final m in matches) {
+      var numStr = m.group(0)!.replaceAll(' ', '').replaceAll(',', '.');
+      if (numStr.contains('.')) {
+        final parts = numStr.split('.');
+        if (parts.length > 2) numStr = parts.join('');
+      }
+      final v = double.tryParse(numStr);
       if (v != null && v > 10) result.add(v);
     }
     return result;
@@ -289,7 +297,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
     final after = line.substring(pos);
     final numPart = after.replaceAll(RegExp(r'^[^0-9]*'), '');
-    final cleaned = numPart.replaceAll(',', '.').replaceAll(RegExp(r'\s+'), '').replaceAll('О', '0').replaceAll('о', '0');
+    var cleaned = numPart.replaceAll(' ', '').replaceAll(',', '.').replaceAll('О', '0').replaceAll('о', '0');
+    if (cleaned.contains('.')) {
+      final parts = cleaned.split('.');
+      if (parts.length > 2) cleaned = parts.join('');
+    }
     final v = double.tryParse(cleaned);
     if (v != null && v > 0) return [v];
 
