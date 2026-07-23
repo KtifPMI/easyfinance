@@ -225,30 +225,42 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   String _findAmount(List<String> lines) {
-    final kwNorm = ['итог', 'итого', 'сумма', 'суммы', 'к оплате', 'к onlate', 'всего', 'вcего'];
-    final kwRaw = ['mtor', 'cymma', 'k onlate', 'itorg', 'итorg'];
+    final kwNorm = ['итог', 'итого', 'сумма', 'суммы', 'к оплате', 'к onlate', 'всего', 'вcего', 'мтог'];
+    final kwRaw = ['mtor', 'cymma', 'k onlate', 'itorg'];
 
     for (int i = lines.length - 1; i >= 0; i--) {
       final norm = _normalize(lines[i]);
       final raw = lines[i].toLowerCase();
       if (kwNorm.any((k) => norm.contains(k)) || kwRaw.any((k) => raw.contains(k))) {
         var nums = _extractNumbersAfterKeyword(lines[i]);
-        if (nums.isEmpty && i + 1 < lines.length) nums = _extractSignificantNumbers(lines[i + 1]);
-        if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
+        if (nums.isEmpty) {
+          for (int j = i + 1; j < lines.length && j <= i + 5; j++) {
+            final jNums = _extractSignificantNumbers(lines[j]);
+            if (jNums.isNotEmpty) { nums = jNums; break; }
+          }
+        }
+        if (nums.isNotEmpty && nums.last >= 20) return nums.last.toStringAsFixed(0);
       }
     }
-    final allNums = <double>[];
+    final eqValues = <double, int>{};
     for (final line in lines) {
       if (line.contains('=')) {
         final nums = _extractSignificantNumbers(line);
         for (final n in nums) {
-          allNums.add(n);
+          eqValues[n] = (eqValues[n] ?? 0) + 1;
         }
       }
     }
-    if (allNums.isNotEmpty) {
-      allNums.sort();
-      return allNums.last.toStringAsFixed(0);
+    if (eqValues.isNotEmpty) {
+      double best = 0;
+      int bestCount = 0;
+      eqValues.forEach((val, count) {
+        if (count > bestCount || (count == bestCount && val > best)) {
+          best = val;
+          bestCount = count;
+        }
+      });
+      if (best > 0) return best.toStringAsFixed(0);
     }
     final fallback = <double>[];
     for (final line in lines) {
