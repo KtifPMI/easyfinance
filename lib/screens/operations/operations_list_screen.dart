@@ -109,28 +109,4 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       },
     );
   }
-
-  IconData _catIcon(String icon) {
-    const map = {
-      'shopping_cart': Icons.shopping_cart, 'directions_car': Icons.directions_car, 'restaurant': Icons.restaurant,
-      'home': Icons.home, 'movie': Icons.movie, 'favorite': Icons.favorite, 'wifi': Icons.wifi,
-      'checkroom': Icons.checkroom, 'payments': Icons.payments, 'laptop': Icons.laptop,
-      'card_giftcard': Icons.card_giftcard, 'trending_up': Icons.trending_up,
-      'food': Icons.restaurant, 'transport': Icons.directions_car, 'dining': Icons.local_cafe,
-      'housing': Icons.home, 'shopping': Icons.shopping_bag, 'health': Icons.favorite,
-      'entertainment': Icons.movie, 'education': Icons.school, 'travel': Icons.flight,
-      'salary': Icons.payments, 'freelance': Icons.laptop, 'business': Icons.business,
-      'gift': Icons.card_giftcard, 'car': Icons.directions_car, 'sports': Icons.fitness_center,
-      'utilities': Icons.build, 'internet': Icons.wifi, 'clothing': Icons.checkroom,
-      'children': Icons.child_care, 'pets': Icons.pets, 'taxes': Icons.receipt_long,
-      'insurance': Icons.shield, 'invest': Icons.trending_up, 'rent': Icons.key,
-      'other_income': Icons.attach_money, 'other_expense': Icons.money_off,
-    };
-    return map[icon] ?? Icons.help_outline;
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
-  }
 }

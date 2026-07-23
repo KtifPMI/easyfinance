@@ -63,7 +63,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   if (!isCurrent)
                     TextButton(
                       onPressed: () => setState(() => _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1)),
-                      child: Text(context.tr('reports.today'),
+                      child: Text(context.tr('reports.today')),
                     ),
                 ],
               ),

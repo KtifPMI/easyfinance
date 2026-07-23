@@ -221,26 +221,28 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('home.display_currency'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: codes.map((code) => RadioListTile<String>(
-            title: Row(
-              children: [
-                Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                Text(code, style: TextStyle(fontSize: 15)),
-              ],
-            ),
-            value: code,
-            groupValue: store.displayCurrency,
-            onChanged: (v) {
-              if (v != null) {
-                store.setDisplayCurrency(v);
-                Navigator.pop(ctx);
-              }
-            },
-            activeColor: AppColors.primary,
-          )).toList(),
+        content: RadioGroup<String>(
+          groupValue: store.displayCurrency,
+          onChanged: (v) {
+            if (v != null) {
+              store.setDisplayCurrency(v);
+              Navigator.pop(ctx);
+            }
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: codes.map((code) => RadioListTile<String>(
+              title: Row(
+                children: [
+                  Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Text(code, style: TextStyle(fontSize: 15)),
+                ],
+              ),
+              value: code,
+              activeColor: AppColors.primary,
+            )).toList(),
+          ),
         ),
       ),
     );

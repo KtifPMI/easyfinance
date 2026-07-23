@@ -196,6 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               value: _pinEnabled,
               onChanged: (v) async {
                 final prefs = await SharedPreferences.getInstance();
+                if (!mounted) return;
                 final nav = Navigator.of(context);
                 if (v) {
                   nav.push(MaterialPageRoute(builder: (_) => const PinScreen()));

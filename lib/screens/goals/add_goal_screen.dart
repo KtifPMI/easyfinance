@@ -285,7 +285,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             if (_type != null) ...[
               _label(context.tr('goals.category')),
               DropdownButtonFormField<String>(
-                value: _categoryId,
+                initialValue: _categoryId,
                 decoration: _decoration(),
                 items: cats.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
                 onChanged: _onCategoryChanged,
@@ -302,24 +302,20 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 12),
 
             _label(context.tr('goals.status')),
-            Row(
-              children: [
-                Radio<String>(
-                  value: 'normal',
-                  groupValue: _status,
-                  onChanged: (v) => setState(() => _status = v!),
-                ),
-                Text(context.tr('goals.status_normal')),
-                const SizedBox(width: 24),
-                Radio<String>(
-                  value: 'favorite',
-                  groupValue: _status,
-                  onChanged: (v) => setState(() => _status = v!),
-                ),
-                Icon(Icons.star, size: 18, color: _status == 'favorite' ? AppColors.warning : AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Text(context.tr('goals.status_favorite')),
-              ],
+            RadioGroup<String>(
+              groupValue: _status,
+              onChanged: (v) => setState(() => _status = v!),
+              child: Row(
+                children: [
+                  Radio<String>(value: 'normal'),
+                  Text(context.tr('goals.status_normal')),
+                  const SizedBox(width: 24),
+                  Radio<String>(value: 'favorite'),
+                  Icon(Icons.star, size: 18, color: _status == 'favorite' ? AppColors.warning : AppColors.textSecondary),
+                  const SizedBox(width: 4),
+                  Text(context.tr('goals.status_favorite')),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -329,7 +325,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
             _label(context.tr('goals.goal_currency')),
             DropdownButtonFormField<String>(
-              value: _currencyId,
+              initialValue: _currencyId,
               decoration: _decoration(),
               items: currencies.map((c) {
                 final id = c['id']?.toString() ?? '';
@@ -342,7 +338,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
             _label(context.tr('goals.accounts_for_payment')),
             DropdownButtonFormField<String>(
-              value: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
+              initialValue: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
               decoration: _decoration(hint: context.tr('goals.select_accounts_hint')),
               items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name))).toList(),
               onChanged: (v) {
