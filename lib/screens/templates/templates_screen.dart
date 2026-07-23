@@ -55,6 +55,7 @@ class TemplatesScreen extends StatelessWidget {
                           onPressed: () async {
                             final ok = await showDialog<bool>(
                               context: context,
+                              barrierDismissible: false,
                               builder: (ctx) => AlertDialog(
                                 title: Text(context.tr('templates.confirm_delete')),
                                 actions: [

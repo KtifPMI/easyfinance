@@ -177,6 +177,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   void _delete(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('accounts.confirm_delete')),
         actions: [

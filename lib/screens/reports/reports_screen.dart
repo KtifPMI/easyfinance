@@ -28,8 +28,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _nextMonth() => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1));
 
   String _monthLabel() {
-    final months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    return '${months[_selectedMonth.month - 1]} ${_selectedMonth.year}';
+    final months = ['month.long.1', 'month.long.2', 'month.long.3', 'month.long.4', 'month.long.5', 'month.long.6', 'month.long.7', 'month.long.8', 'month.long.9', 'month.long.10', 'month.long.11', 'month.long.12'];
+    return '${context.tr(months[_selectedMonth.month - 1])} ${_selectedMonth.year}';
   }
 
   @override
@@ -63,7 +63,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   if (!isCurrent)
                     TextButton(
                       onPressed: () => setState(() => _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1)),
-                      child: const Text('Сегодня'),
+                      child: Text(context.tr('reports.today'),
                     ),
                 ],
               ),
@@ -115,7 +115,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               if (catTotals.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: Text('Нет расходов за этот месяц', style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
+                  child: Center(child: Text(context.tr('home.no_expenses'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
                 )
               else
                 ..._buildCategoryRows(catTotals, monthExpense),
@@ -160,7 +160,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Остальное', style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+              Text(context.tr('reports.other'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
               Text('${monthExpense > 0 ? (otherTotal / monthExpense * 100).round() : 0}% · ${formatMoney(otherTotal)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
             ],
           ),

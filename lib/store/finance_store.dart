@@ -13,7 +13,7 @@ import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
-import '../services/mock_data.dart' show mockAccounts, mockOperations, mockBudgets, mockCategories;
+import '../services/mock_data.dart' show mockCategories;
 import '../services/currency_rate_service.dart';
 import '../services/currency_prefs_service.dart';
 import '../utils/format.dart';
@@ -257,19 +257,25 @@ class FinanceStore extends ChangeNotifier {
           userId: user.id,
         );
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getUser error: $e');
+    }
 
     try {
       _accounts = await api.getAccounts();
     } on ApiException catch (e) {
       _error = e.message;
-    } catch (_) {}
+    } catch (e) {
+      _error ??= 'Ошибка загрузки счетов: $e';
+    }
 
     try {
       _operations = await api.getOperations();
     } on ApiException catch (e) {
       _error = e.message;
-    } catch (_) {}
+    } catch (e) {
+      _error ??= 'Ошибка загрузки операций: $e';
+    }
 
     try {
       _categories = await api.getCategories();
@@ -278,38 +284,52 @@ class FinanceStore extends ChangeNotifier {
       }
     } on ApiException catch (e) {
       _error = e.message;
-    } catch (_) {}
+    } catch (e) {
+      _error ??= 'Ошибка загрузки категорий: $e';
+    }
 
     try {
       _tags = await api.getTags();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getTags error: $e');
+    }
 
     try {
       final apiTemplates = await api.getTemplates();
       _templates = apiTemplates;
       await _saveTemplates();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getTemplates error: $e');
+    }
     notifyListeners();
 
     try {
       _serverBudget = await api.getBudget();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getBudget error: $e');
+    }
 
     try {
       _currencies = await api.getCurrencies();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getCurrencies error: $e');
+    }
 
     try {
       _rates = {'RUB': 1.0, ...await CurrencyRateService.fetchRates()};
       _ratesUpdatedAt = DateTime.now();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('fetchRates error: $e');
+    }
 
     _watchedCurrencies = await _loadWatchedCurrencies();
     await _loadDisplayCurrency();
 
     try {
       _systemCategories = await api.getSystemCategories();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getSystemCategories error: $e');
+    }
 
     try {
       final apiBudgets = await api.getBudgetCategories();
@@ -345,15 +365,9 @@ class FinanceStore extends ChangeNotifier {
         _goals.add(g);
         existingGoalIds.add(g.id);
       }
-    } catch (_) {}
-
-    try {
-      final pdaGoals = await authService.pdaService.getTargets();
-      for (final g in pdaGoals.where((t) => t['visible']?.toString() != '0').map((g) => Goal.fromJson(g))) {
-        if (existingGoalIds.contains(g.id)) continue;
-        _goals.add(g);
-      }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('getGoalTemplates error: $e');
+    }
 
     _recalcAccountBalances();
 
@@ -1159,12 +1173,6 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
-  String _fmtDate(String iso) {
-    final d = DateTime.tryParse(iso);
-    if (d == null) return '';
-    return '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
-  }
-
   String _fmtSimpleDt() {
     final now = DateTime.now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
@@ -1178,8 +1186,6 @@ class FinanceStore extends ChangeNotifier {
     final now = DateTime.now();
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
-
-  bool _hasPdaToken() => authService.pdaClient.authToken != null;
 
   Future<void> addGoal(Goal g) async {
     _error = null;
@@ -1208,34 +1214,6 @@ class FinanceStore extends ChangeNotifier {
             notifyListeners();
             return;
           }
-        }
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка создания цели: $e'; notifyListeners();
-      }
-    }
-
-    if (_hasPdaToken()) {
-      try {
-        final resp = await authService.pdaService.processTarget({
-          'title': g.title,
-          'amount': g.targetAmount.toStringAsFixed(2),
-          'amount_done': g.currentAmount.toStringAsFixed(2),
-          'end': _fmtDate(g.deadline),
-          if (g.accountId != null) 'account': g.accountId!,
-        });
-        final serverId = resp['id']?.toString();
-        if (serverId != null && serverId.isNotEmpty) {
-          _error = null;
-          _goals.add(Goal(
-            id: serverId, title: g.title, targetAmount: g.targetAmount,
-            currentAmount: g.currentAmount, deadline: g.deadline, icon: g.icon, color: g.color,
-            isCompleted: g.isCompleted, accountId: g.accountId,
-          ));
-          await _saveGoals();
-          notifyListeners();
-          return;
         }
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -1317,28 +1295,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
 
-    if (_hasPdaToken()) {
-      try {
-        await authService.pdaService.processTarget({
-          'id': id,
-          'title': newTitle,
-          'amount': newTarget.toStringAsFixed(2),
-          'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
-          'end': _fmtDate(g.deadline),
-          'done': (isCompleted ?? g.isCompleted) ? '1' : '0',
-          if (g.accountId != null) 'account': g.accountId!,
-        });
-        _error = null;
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
-        await _saveGoals();
-        notifyListeners();
-        return;
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка обновления цели: $e'; notifyListeners();
-      }
-    } else if (authService.isAuthenticated) {
+    if (authService.isAuthenticated) {
       try {
         final api = authService.apiService;
         final now = formatApiDateTime();
@@ -1430,20 +1387,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
 
-    if (_hasPdaToken()) {
-      try {
-        await authService.pdaService.deleteTarget(id);
-        _error = null;
-        _goals.removeWhere((g) => g.id == id);
-        await _saveGoals();
-        notifyListeners();
-        return;
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка удаления цели: $e'; notifyListeners();
-      }
-    } else if (authService.isAuthenticated) {
+    if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
         await authService.apiService.setGoalTemplate({

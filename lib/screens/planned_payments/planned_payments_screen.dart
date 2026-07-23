@@ -111,6 +111,7 @@ class PlannedPaymentsScreen extends StatelessWidget {
   void _delete(BuildContext context, FinancialEvent e) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('planned_payments.confirm_delete')),
         actions: [

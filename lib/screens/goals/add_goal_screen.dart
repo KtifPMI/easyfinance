@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -31,37 +32,37 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   bool _isCompleted = false;
   bool _calculating = false;
 
-  static const _saveCategories = {
-    '1': 'Бытовая техника',
-    '2': 'Дом',
-    '0': 'Автомобиль',
-    '3': 'Земельный участок',
-    '4': 'Квартира',
-    '5': 'Компьютер',
-    '6': 'Лечение',
-    '7': 'Мебель',
-    '8': 'Мотоцикл',
-    '9': 'Образование',
-    '10': 'Отпуск',
-    '11': 'Прочее',
-    '12': 'Ремонт квартиры/дома',
-    '13': 'Свадьба',
-    '14': 'Финансовая подушка',
-    '15': 'Шуба',
-    '16': 'Электроника',
-    '17': 'Ювелирные украшения',
+  Map<String, String> _saveCategories(BuildContext context) => {
+    '1': context.tr('goal_cat.appliances'),
+    '2': context.tr('goal_cat.home'),
+    '0': context.tr('goal_cat.auto'),
+    '3': context.tr('goal_cat.land'),
+    '4': context.tr('goal_cat.apartment'),
+    '5': context.tr('goal_cat.computer'),
+    '6': context.tr('goal_cat.medical'),
+    '7': context.tr('goal_cat.furniture'),
+    '8': context.tr('goal_cat.motorcycle'),
+    '9': context.tr('goal_cat.education'),
+    '10': context.tr('goal_cat.vacation'),
+    '11': context.tr('goal_cat.other'),
+    '12': context.tr('goal_cat.renovation'),
+    '13': context.tr('goal_cat.wedding'),
+    '14': context.tr('goal_cat.emergency_fund'),
+    '15': context.tr('goal_cat.fur_coat'),
+    '16': context.tr('goal_cat.electronics'),
+    '17': context.tr('goal_cat.jewelry'),
   };
 
-  static const _debtCategories = {
-    'debt_mortgage': 'Долг по ипотеке',
-    'debt_loan': 'Долг по кредитам',
-    'debt_card': 'Долг по кредитным картам',
-    'debt_other': 'Прочие долги',
+  Map<String, String> _debtCategories(BuildContext context) => {
+    'debt_mortgage': context.tr('goal_cat.debt_mortgage'),
+    'debt_loan': context.tr('goal_cat.debt_loan'),
+    'debt_card': context.tr('goal_cat.debt_card'),
+    'debt_other': context.tr('goal_cat.debt_other'),
   };
 
-  Map<String, String> get _currentCategories {
-    if (_type == 'save') return _saveCategories;
-    if (_type == 'pay' || _type == 'mortgage') return _debtCategories;
+  Map<String, String> _currentCategories(BuildContext context) {
+    if (_type == 'save') return _saveCategories(context);
+    if (_type == 'pay' || _type == 'mortgage') return _debtCategories(context);
     return {};
   }
 
@@ -145,7 +146,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
   void _onCategoryChanged(String? id) {
     if (id == null) return;
-    final cats = _currentCategories;
+    final cats = _currentCategories(context);
     setState(() {
       _categoryId = id;
       _categoryName = cats[id] ?? '';
@@ -220,10 +221,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     final store = context.watch<FinanceStore>();
     final currencies = store.currencies;
     final accounts = store.accounts;
-    final cats = _currentCategories;
+    final cats = _currentCategories(context);
 
     return ScreenScaffold(
-      title: 'Финансовая цель',
+      title: context.tr('goals.goal_type'),
       actions: [
         IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
       ],
@@ -253,7 +254,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                        child: Text('Изменить', style: TextStyle(fontSize: 11, color: Colors.white)),
+                        child: Text(context.tr('goals.change_photo'), style: TextStyle(fontSize: 11, color: Colors.white)),
                       ),
                     ),
                   ),
@@ -261,28 +262,28 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Center(child: Text('Открывается в новом окне', style: TextStyle(fontSize: 11, color: AppColors.textSecondary))),
+            Center(child: Text(context.tr('goals.opens_in_new_window'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary))),
             const SizedBox(height: 24),
 
             // Блок 1
-            Text('Основные параметры', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.main_params'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
-            _label('Хочу'),
+            _label(context.tr('goals.want_to')),
             DropdownButtonFormField<String>(
               initialValue: _type,
               decoration: _decoration(),
-              items: const [
-                DropdownMenuItem(value: 'pay', child: Text('Выплатить')),
-                DropdownMenuItem(value: 'save', child: Text('Накопить')),
-                DropdownMenuItem(value: 'mortgage', child: Text('Долг по ипотеке')),
+              items: [
+                DropdownMenuItem(value: 'pay', child: Text(context.tr('goals.type_pay'))),
+                DropdownMenuItem(value: 'save', child: Text(context.tr('goals.type_save'))),
+                DropdownMenuItem(value: 'mortgage', child: Text(context.tr('goals.type_mortgage'))),
               ],
               onChanged: _onTypeChanged,
             ),
             const SizedBox(height: 12),
 
             if (_type != null) ...[
-              _label('Категория'),
+              _label(context.tr('goals.category')),
               DropdownButtonFormField<String>(
                 value: _categoryId,
                 decoration: _decoration(),
@@ -292,7 +293,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               const SizedBox(height: 12),
             ],
 
-            _label('Наименование'),
+            _label(context.tr('goals.goal_name')),
             TextFormField(
               controller: _titleCtrl,
               decoration: _decoration(),
@@ -300,7 +301,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
             const SizedBox(height: 12),
 
-            _label('Статус'),
+            _label(context.tr('goals.status')),
             Row(
               children: [
                 Radio<String>(
@@ -308,7 +309,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   groupValue: _status,
                   onChanged: (v) => setState(() => _status = v!),
                 ),
-                Text('Обычная'),
+                Text(context.tr('goals.status_normal')),
                 const SizedBox(width: 24),
                 Radio<String>(
                   value: 'favorite',
@@ -317,16 +318,16 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                 ),
                 Icon(Icons.star, size: 18, color: _status == 'favorite' ? AppColors.warning : AppColors.textSecondary),
                 const SizedBox(width: 4),
-                Text('Избранная'),
+                Text(context.tr('goals.status_favorite')),
               ],
             ),
             const SizedBox(height: 24),
 
             // Блок 2
-            Text('Финансовые привязки', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.financial_links'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
-            _label('Валюта цели'),
+            _label(context.tr('goals.goal_currency')),
             DropdownButtonFormField<String>(
               value: _currencyId,
               decoration: _decoration(),
@@ -339,24 +340,24 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
             const SizedBox(height: 12),
 
-            _label('Счета для погашения'),
+            _label(context.tr('goals.accounts_for_payment')),
             DropdownButtonFormField<String>(
               value: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
-              decoration: _decoration(hint: 'Выберите счета привязанные к фин. цели'),
+              decoration: _decoration(hint: context.tr('goals.select_accounts_hint')),
               items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name))).toList(),
               onChanged: (v) {
                 if (v != null) setState(() => _selectedAccountIds = [v]);
               },
             ),
             const SizedBox(height: 4),
-            Text('Я должен: 0 ${_currencyLabel(currencies)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(context.tr('goals.debt_label', namedArgs: {'currency': _currencyLabel(currencies)}), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 24),
 
             // Блок 3
-            Text('Параметры выплат и расчеты', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.payment_params'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
-            _label('Всего к выплате'),
+            _label(context.tr('goals.total_to_pay')),
             TextFormField(
               controller: _totalCtrl,
               focusNode: _totalFocus,
@@ -371,30 +372,30 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               },
               onChanged: (_) => setState(() {}),
             ),
-            Text('Пример: 12 + 33 * 45 <Enter>', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text(context.tr('goals.calc_hint'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             const SizedBox(height: 12),
 
-            _label('Дата первого взноса'),
+            _label(context.tr('goals.first_payment_date')),
             _datePicker(context, _firstPaymentDate, (d) {
               setState(() => _firstPaymentDate = d);
               _recalcFromMonthly();
             }),
             const SizedBox(height: 12),
 
-            _label('Я могу выплачивать ежемесячно'),
+            _label(context.tr('goals.monthly_payment')),
             TextFormField(
               controller: _monthlyCtrl,
               decoration: _decoration(),
               keyboardType: TextInputType.number,
               onChanged: (_) => _recalcFromMonthly(),
             ),
-            Text('Выводится усредненная сумма к выплате за 30 дней', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text(context.tr('goals.monthly_hint'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
 
-            Center(child: Text('или', style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic))),
+            Center(child: Text(context.tr('goals.or'), style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic))),
             const SizedBox(height: 8),
 
-            _label('Мне нужно выплатить к дате'),
+            _label(context.tr('goals.target_date')),
             _datePicker(context, _targetDate, (d) {
               setState(() => _targetDate = d);
               _recalcFromDate();
@@ -402,10 +403,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 24),
 
             // Блок 4
-            Text('Дополнительно', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.additional'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
-            _label('Комментарии'),
+            _label(context.tr('goals.comments')),
             TextFormField(
               controller: _commentCtrl,
               decoration: _decoration(),
@@ -416,7 +417,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             CheckboxListTile(
               value: _isCompleted,
               onChanged: (v) => setState(() => _isCompleted = v ?? false),
-              title: Text('Фин. цель выполнена'),
+              title: Text(context.tr('goals.goal_completed')),
               secondary: Icon(Icons.emoji_events, color: _isCompleted ? AppColors.warning : AppColors.textSecondary),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
@@ -433,13 +434,13 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: BorderSide(color: AppColors.border),
                     ),
-                    child: Text('Отмена', style: TextStyle(color: AppColors.textSecondary)),
+                    child: Text(context.tr('goals.cancel'), style: TextStyle(color: AppColors.textSecondary)),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: AppButton(
-                    title: 'Сохранить',
+                    title: context.tr('goals.save'),
                     onPressed: _canSave ? _save : null,
                   ),
                 ),
@@ -497,7 +498,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             Text(
               selected != null
                   ? '${selected.day.toString().padLeft(2, '0')}.${selected.month.toString().padLeft(2, '0')}.${selected.year}'
-                  : 'Выберите дату',
+                  : context.tr('goals.choose_date'),
               style: TextStyle(color: selected != null ? AppColors.textFor(context) : AppColors.textSecondary),
             ),
             Icon(Icons.calendar_today, size: 18, color: AppColors.textSecondary),

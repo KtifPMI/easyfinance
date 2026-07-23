@@ -54,11 +54,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Регистрация'), centerTitle: true),

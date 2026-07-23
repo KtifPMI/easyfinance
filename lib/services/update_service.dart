@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
@@ -84,7 +85,7 @@ class UpdateService {
           final progress = (downloaded / contentLength * 100).round();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Загрузка... $progress%'),
+              content: Text(context.tr('update.downloading', namedArgs: {'progress': '$progress'})),
               duration: const Duration(milliseconds: 500),
             ),
           );
@@ -97,7 +98,7 @@ class UpdateService {
 
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('APK загружен, открываю установщик...')),
+        SnackBar(content: Text(context.tr('update.apk_ready'))),
       );
     }
 
@@ -111,12 +112,12 @@ class UpdateService {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Доступно обновление'),
+        title: Text(context.tr('update.available')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Новая версия: ${update.version}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(context.tr('update.new_version', namedArgs: {'version': update.version}), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             if (update.changelog != null) ...[
               const SizedBox(height: 8),
               Text(update.changelog!, style: const TextStyle(fontSize: 13), maxLines: 5, overflow: TextOverflow.ellipsis),
@@ -124,13 +125,13 @@ class UpdateService {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Позже')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('update.later'))),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
               _downloadWithProgress(context, update.downloadUrl);
             },
-            child: const Text('Обновить'),
+            child: Text(context.tr('update.update_now')),
           ),
         ],
       ),
@@ -148,7 +149,7 @@ class UpdateService {
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ошибка загрузки обновления'), backgroundColor: Colors.red),
+          SnackBar(content: Text(context.tr('update.error')), backgroundColor: Colors.red),
         );
       }
     } finally {

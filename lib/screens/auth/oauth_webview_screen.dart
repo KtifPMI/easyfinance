@@ -120,8 +120,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
       );
       await store.fetchAllData();
-      await _showPdaDialog(store, user);
-      NotificationService().rescheduleAll(); // fire-and-forget
+      NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
@@ -155,8 +154,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
       );
       await store.fetchAllData();
-      await _showPdaDialog(store, user);
-      NotificationService().rescheduleAll(); // fire-and-forget
+      NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
@@ -164,88 +162,6 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       if (mounted) Navigator.pop(context, false);
     } catch (_) {
       if (mounted) Navigator.pop(context, false);
-    }
-  }
-
-  Future<void> _showPdaDialog(FinanceStore store, User? user) async {
-    final userLogin = user?.email.isNotEmpty == true ? user!.email
-        : user?.login.isNotEmpty == true ? user!.login : null;
-    if (userLogin == null || userLogin.isEmpty) return;
-
-    final ctrl = TextEditingController();
-    final useLogin = user?.login.isNotEmpty == true && user?.email.isNotEmpty == true;
-    final submitted = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Синхронизация целей'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Введите пароль от EasyFinance, чтобы синхронизировать цели и бюджеты с сервером.'),
-            const SizedBox(height: 16),
-            Text('Логин: $userLogin', style: const TextStyle(fontWeight: FontWeight.w600)),
-            if (useLogin)
-              Text('Email: ${user!.email}', style: TextStyle(fontSize: 12, color: Colors.grey)),
-            const SizedBox(height: 12),
-            TextField(
-              controller: ctrl,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Пароль', border: const OutlineInputBorder()),
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Пропустить'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Войти'),
-          ),
-        ],
-      ),
-    );
-
-    if (submitted != true || ctrl.text.isEmpty) return;
-
-    final password = ctrl.text;
-    final attempts = [userLogin];
-    if (useLogin) attempts.add(user!.login);
-
-    String? lastErrorMsg;
-    for (final attempt in attempts) {
-      try {
-        await store.authService.pdaClient.authenticate(attempt, password);
-        final pdaToken = store.authService.pdaClient.authToken;
-        if (pdaToken != null) {
-          await store.authService.savePdaToken(pdaToken);
-          await store.fetchAllData();
-        }
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Синхронизация включена'), backgroundColor: Colors.green),
-          );
-        }
-        return;
-      } on ApiException catch (e) {
-        lastErrorMsg = e.message;
-        if (e.code == 'PDA_TARIFF') break;
-      } catch (_) {
-        lastErrorMsg = null;
-      }
-    }
-
-    if (mounted) {
-      final msg = lastErrorMsg != null
-          ? 'Ошибка: $lastErrorMsg'
-          : 'Ошибка: неверный логин или пароль. Цели будут сохранены локально.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
     }
   }
 

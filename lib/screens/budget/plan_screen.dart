@@ -120,6 +120,7 @@ class PlanScreen extends StatelessWidget {
                                         onTap: () {
                                           showDialog(
                                             context: context,
+                                            barrierDismissible: false,
                                             builder: (ctx) => AlertDialog(
                                               title: Text(context.tr('budget.confirm_delete')),
                                               content: Text(b.name ?? cat?.name ?? ''),
@@ -290,6 +291,7 @@ class PlanScreen extends StatelessWidget {
   void _confirmDelete(BuildContext context, Goal goal, FinanceStore store) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('goals.delete_title')),
         content: Text(context.tr('goals.delete_confirm', namedArgs: {'title': goal.title})),
@@ -341,7 +343,7 @@ class PlanScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Редактировать бюджет'),
+        title: Text(context.tr('budget.edit')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -350,12 +352,12 @@ class PlanScreen extends StatelessWidget {
             TextField(
               controller: limitCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Лимит'),
+              decoration: InputDecoration(labelText: context.tr('budget.limit_label')),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
           TextButton(
             onPressed: () async {
               final newLimit = double.tryParse(limitCtrl.text.replaceAll(',', '.')) ?? 0;
@@ -368,7 +370,7 @@ class PlanScreen extends StatelessWidget {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Сохранить'),
+            child: Text(context.tr('budget.save')),
           ),
         ],
       ),
@@ -381,17 +383,17 @@ class PlanScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Редактировать цель'),
+        title: Text(context.tr('goals.edit_goal')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: 'Название')),
+            TextField(controller: titleCtrl, decoration: InputDecoration(labelText: context.tr('goals.goal_title'))),
             const SizedBox(height: 12),
-            TextField(controller: totalCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Сумма')),
+            TextField(controller: totalCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: context.tr('goals.goal_amount'))),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Отмена')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
           TextButton(
             onPressed: () async {
               final newTotal = double.tryParse(totalCtrl.text.replaceAll(',', '.')) ?? 0;
@@ -405,7 +407,7 @@ class PlanScreen extends StatelessWidget {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Сохранить'),
+            child: Text(context.tr('goals.save')),
           ),
         ],
       ),

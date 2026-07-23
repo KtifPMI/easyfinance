@@ -100,6 +100,7 @@ class _PinScreenState extends State<PinScreen> {
   void _onForgotPin() async {
     final confirmed = await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('auth.forgot_pin')),
         content: Text(context.tr('auth.forgot_pin_confirm')),

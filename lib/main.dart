@@ -94,6 +94,11 @@ class EasyFinanceApp extends StatelessWidget {
       initialRoute: AppRouter.login,
       routes: AppRouter.routes,
       onGenerateRoute: AppRouter.onGenerateRoute,
+      onUnknownRoute: (settings) => MaterialPageRoute(
+        builder: (_) => const Scaffold(
+          body: Center(child: Text('Page not found')),
+        ),
+      ),
     );
   }
 }

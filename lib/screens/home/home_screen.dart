@@ -117,7 +117,7 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 2),
-                        _typeBadge(a.type),
+                        _typeBadge(context, a.type),
                       ],
                     ),
                   ),
@@ -131,8 +131,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _typeBadge(String type) {
-    final labels = {'account': 'Счёт', 'card': 'Карта', 'credit': 'Кредит', 'savings': 'Накопления', 'electronic': 'Электронный'};
+  Widget _typeBadge(BuildContext context, String type) {
+    final labels = {'account': context.tr('account.account_type'), 'card': context.tr('account.card_type'), 'credit': context.tr('account.credit_type'), 'savings': context.tr('account.savings_type'), 'electronic': context.tr('account.electronic_type')};
     final label = labels[type] ?? type;
     return Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondary));
   }
@@ -146,7 +146,7 @@ class HomeScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Курсы валют', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('home.currency_rates'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -220,7 +220,7 @@ class HomeScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Валюта отображения'),
+        title: Text(context.tr('home.display_currency'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: codes.map((code) => RadioListTile<String>(
@@ -253,7 +253,7 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setInnerState) => AlertDialog(
-          title: Text('Выберите валюты', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          title: Text(context.tr('home.select_currencies'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           content: SizedBox(
             width: double.maxFinite,
             child: Column(
@@ -267,7 +267,7 @@ class HomeScreen extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(code, style: TextStyle(fontSize: 15)),
                       const SizedBox(width: 8),
-                      Text(_currencyName(code), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      Text(_currencyName(context, code), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                   onChanged: (v) {
@@ -288,7 +288,7 @@ class HomeScreen extends StatelessWidget {
           actions: [
               TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Отмена'),
+              child: Text(context.tr('home.cancel')),
             ),
             TextButton(
               onPressed: () {
@@ -296,7 +296,7 @@ class HomeScreen extends StatelessWidget {
                 store.setWatchedCurrencies(finalList);
                 Navigator.pop(ctx);
               },
-              child: Text('Сохранить', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+              child: Text(context.tr('home.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -304,9 +304,10 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  String _currencyName(String code) {
-    const names = {'USD': 'US Dollar', 'EUR': 'Euro', 'GBP': 'Pound', 'CHF': 'Franc', 'CNY': 'Yuan', 'JPY': 'Yen', 'BYN': 'Belarus Ruble', 'UAH': 'Hryvnia', 'KZT': 'Tenge', 'PLN': 'Zloty', 'CZK': 'Koruna', 'SEK': 'Krona', 'NOK': 'Krone'};
-    return names[code] ?? code;
+  String _currencyName(BuildContext context, String code) {
+    const keys = {'USD': 'currency.usd_name', 'EUR': 'currency.eur_name', 'GBP': 'currency.gbp_name', 'CHF': 'currency.chf_name', 'CNY': 'currency.cny_name', 'JPY': 'currency.jpy_name', 'BYN': 'currency.byn_name', 'UAH': 'currency.uah_name', 'KZT': 'currency.kzt_name', 'PLN': 'currency.pln_name', 'CZK': 'currency.czk_name', 'SEK': 'currency.sek_name', 'NOK': 'currency.nok_name'};
+    final key = keys[code];
+    return key != null ? context.tr(key) : code;
   }
 
   Widget _buildRecommendationsSection(BuildContext context, FinanceStore store) {
@@ -323,7 +324,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
                 const SizedBox(width: 10),
-                Expanded(child: Text(r.title, style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
+                Expanded(child: Text(context.tr(r.titleKey, namedArgs: r.titleArgs), style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
               ],
             ),
           ),

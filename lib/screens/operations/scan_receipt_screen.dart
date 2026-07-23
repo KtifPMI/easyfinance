@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -65,7 +66,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       if (!mounted) return;
       final text = result.text;
       if (text.isEmpty) {
-        setState(() { _error = 'Не удалось распознать текст. Попробуйте другое фото.'; _scanning = false; });
+        setState(() { _error = context.tr('scan.error_recognize'); _scanning = false; });
         return;
       }
       _parseReceiptText(text, store);
@@ -76,7 +77,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = 'Ошибка распознавания: $e'; _scanning = false; });
+      setState(() { _error = context.tr('scan.error_format', namedArgs: {'error': '$e'}); _scanning = false; });
     }
   }
 
@@ -277,7 +278,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       date: dateStr,
       accountId: _selectedAccountId ?? store.accounts.first.id,
       categoryId: catId,
-      comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : 'Чек: $_parsedStore',
+      comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : context.tr('scan.receipt_comment', namedArgs: {'store': _parsedStore}),
     );
 
     await store.addOperation(op);
@@ -289,7 +290,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Расход добавлен: $amount ₽'), backgroundColor: AppColors.success),
+      SnackBar(content: Text(context.tr('scan.expense_added', namedArgs: {'amount': amount.toStringAsFixed(0)})), backgroundColor: AppColors.success),
     );
     Navigator.pop(context);
   }
@@ -299,7 +300,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return ScreenScaffold(
-          title: 'Сканировать чек',
+          title: context.tr('scan.title'),
           child: _buildBody(store),
         );
       },
@@ -322,7 +323,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         if (_scanning) ...[
           const Center(child: CircularProgressIndicator()),
           const SizedBox(height: 12),
-          Text('Распознавание...', style: TextStyle(color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.recognizing'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
         ],
         if (_error != null) ...[
           Container(
@@ -338,7 +339,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.camera_alt, size: 20),
-                label: const Text('Камера'),
+                label: Text(context.tr('scan.camera')),
                 onPressed: () => _pickImage(ImageSource.camera, store),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -352,7 +353,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             Expanded(
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.photo_library, size: 20),
-                label: const Text('Галерея'),
+                label: Text(context.tr('scan.gallery')),
                 onPressed: () => _pickImage(ImageSource.gallery, store),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -394,7 +395,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             ),
             const SizedBox(height: 16),
           ],
-          Text('Счёт', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _selectedAccountId,
@@ -407,7 +408,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             onChanged: (v) => setState(() => _selectedAccountId = v),
           ),
           const SizedBox(height: 16),
-          Text('Категория', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _selectedCategoryId,
@@ -420,7 +421,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             onChanged: (v) => setState(() => _selectedCategoryId = v),
           ),
           const SizedBox(height: 16),
-          Text('Сумма расхода', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.amount'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           TextField(
             controller: _amountCtrl,
@@ -433,7 +434,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textFor(context)),
           ),
           const SizedBox(height: 16),
-          Text('Дата', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.date'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           TextField(
             controller: _dateCtrl,
@@ -445,7 +446,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
           ),
           const SizedBox(height: 16),
-          Text('Комментарий', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.comment'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           TextField(
             controller: _commentCtrl,
@@ -467,7 +468,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Добавить расход', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              child: Text(context.tr('scan.add_expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 8),
@@ -475,7 +476,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             width: double.infinity,
             child: TextButton(
               onPressed: () => setState(() => _showConfirm = false),
-              child: Text('Назад', style: TextStyle(color: AppColors.textSecondaryFor(context))),
+              child: Text(context.tr('scan.back'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
             ),
           ),
         ],

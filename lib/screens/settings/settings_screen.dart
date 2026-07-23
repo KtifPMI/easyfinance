@@ -54,7 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           _profileSection(context),
           const SizedBox(height: 8),
-          Text('Приложение', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('settings.app_section'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           _langItem(context),
           _darkModeItem(context),
@@ -70,7 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Проверить обновления', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                    Text(context.tr('settings.check_updates'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
                     Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                   ],
                 ),
@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Icon(Icons.logout, color: AppColors.expense, size: 20),
                     const SizedBox(width: 12),
-                    Text('Выйти', style: TextStyle(fontSize: 15, color: AppColors.expense)),
+                    Text(context.tr('settings.logout'), style: TextStyle(fontSize: 15, color: AppColors.expense)),
                   ],
                 ),
               ),
@@ -174,7 +174,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Валюты', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              Text(context.tr('settings.currencies'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -252,7 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         Text(context.tr('profile.title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 8),
-        _infoItem('Имя', name),
+        _infoItem(context.tr('profile.name'), name),
         _infoItem('Email', email),
         _infoItem(context.tr('profile.tariff'), plan),
         _infoItem(context.tr('profile.reg_date'), regDate),
@@ -283,13 +283,13 @@ class _CurrencyManageScreenState extends State<_CurrencyManageScreen> {
     final store = context.watch<FinanceStore>();
     final allCodes = allCurrencyCodes.where((c) => c != 'RUB').toList();
     return ScreenScaffold(
-      title: 'Валюты',
+      title: context.tr('settings.currencies'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text('Выберите валюты для отображения курсов на главном экране', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+            child: Text(context.tr('settings.select_currencies_hint'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           ),
           ...allCodes.map((code) => CheckboxListTile(
             value: _selected.contains(code),
@@ -302,7 +302,7 @@ class _CurrencyManageScreenState extends State<_CurrencyManageScreen> {
             ),
             subtitle: Text(CurrencyRateService.convert(1, 'RUB', code, store.rates) > 0
                 ? '1 RUB = ${CurrencyRateService.convert(1, 'RUB', code, store.rates).toStringAsFixed(4)} ${currencySymbol(code)}'
-                : 'Нет данных',
+                : context.tr('settings.no_data'),
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
             onChanged: (v) {
               setState(() {
@@ -332,7 +332,7 @@ class _CurrencyManageScreenState extends State<_CurrencyManageScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Сохранить', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                child: Text(context.tr('budget.save'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
           ),

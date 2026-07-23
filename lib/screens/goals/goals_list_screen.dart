@@ -115,6 +115,7 @@ class GoalsListScreen extends StatelessWidget {
   void _confirmDelete(BuildContext context, Goal goal, FinanceStore store) {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('goals.delete_title')),
         content: Text(context.tr('goals.delete_confirm', namedArgs: {'title': goal.title})),
