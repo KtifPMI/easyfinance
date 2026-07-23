@@ -292,32 +292,35 @@ class _CurrencyManageScreenState extends State<_CurrencyManageScreen> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(context.tr('settings.select_currencies_hint'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           ),
-          ...allCodes.map((code) => CheckboxListTile(
-            value: _selected.contains(code),
-            title: Row(
-              children: [
-                Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
-                const SizedBox(width: 8),
-                Text(code, style: TextStyle(fontSize: 15)),
-              ],
+          Expanded(
+            child: ListView(
+              children: allCodes.map((code) => CheckboxListTile(
+                value: _selected.contains(code),
+                title: Row(
+                  children: [
+                    Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Text(code, style: TextStyle(fontSize: 15)),
+                  ],
+                ),
+                subtitle: Text(CurrencyRateService.convert(1, 'RUB', code, store.rates) > 0
+                    ? '1 RUB = ${CurrencyRateService.convert(1, 'RUB', code, store.rates).toStringAsFixed(4)} ${currencySymbol(code)}'
+                    : context.tr('settings.no_data'),
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                onChanged: (v) {
+                  setState(() {
+                    if (v == true) {
+                      _selected.add(code);
+                    } else {
+                      _selected.remove(code);
+                    }
+                  });
+                },
+                activeColor: AppColors.primary,
+                controlAffinity: ListTileControlAffinity.trailing,
+              )).toList(),
             ),
-            subtitle: Text(CurrencyRateService.convert(1, 'RUB', code, store.rates) > 0
-                ? '1 RUB = ${CurrencyRateService.convert(1, 'RUB', code, store.rates).toStringAsFixed(4)} ${currencySymbol(code)}'
-                : context.tr('settings.no_data'),
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-            onChanged: (v) {
-              setState(() {
-                if (v == true) {
-                  _selected.add(code);
-                } else {
-                  _selected.remove(code);
-                }
-              });
-            },
-            activeColor: AppColors.primary,
-            controlAffinity: ListTileControlAffinity.trailing,
-          )),
-          const Spacer(),
+          ),
           Padding(
             padding: const EdgeInsets.only(bottom: 16),
             child: SizedBox(

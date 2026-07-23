@@ -270,33 +270,35 @@ class HomeScreen extends StatelessWidget {
           title: Text(context.tr('home.select_currencies'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           content: SizedBox(
             width: double.maxFinite,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ...allCodes.map((code) => CheckboxListTile(
-                  value: selected.contains(code),
-                  title: Row(
-                    children: [
-                      Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
-                      Text(code, style: TextStyle(fontSize: 15)),
-                      const SizedBox(width: 8),
-                      Text(_currencyName(context, code), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                    ],
-                  ),
-                  onChanged: (v) {
-                    setInnerState(() {
-                      if (v == true) {
-                        selected.add(code);
-                      } else {
-                        selected.remove(code);
-                      }
-                    });
-                  },
-                  activeColor: AppColors.primary,
-                  controlAffinity: ListTileControlAffinity.trailing,
-                )),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...allCodes.map((code) => CheckboxListTile(
+                    value: selected.contains(code),
+                    title: Row(
+                      children: [
+                        Text(currencySymbol(code), style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(code, style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 8),
+                        Text(_currencyName(context, code), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      ],
+                    ),
+                    onChanged: (v) {
+                      setInnerState(() {
+                        if (v == true) {
+                          selected.add(code);
+                        } else {
+                          selected.remove(code);
+                        }
+                      });
+                    },
+                    activeColor: AppColors.primary,
+                    controlAffinity: ListTileControlAffinity.trailing,
+                  )),
+                ],
+              ),
             ),
           ),
           actions: [
