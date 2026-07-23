@@ -199,9 +199,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (v) async {
                 final prefs = await SharedPreferences.getInstance();
                 if (!mounted) return;
-                final nav = Navigator.of(context);
                 if (v) {
-                  nav.push(MaterialPageRoute(builder: (_) => const PinScreen()));
+                  if (!mounted) return;
+                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PinScreen()));
                 } else {
                   await prefs.remove('easyfinance_pin');
                 }

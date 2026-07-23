@@ -13,7 +13,7 @@ class RecommendationPrefs {
   double emergencyMonths;
   double idleCashMin;
   int noBudgetMinSpend;
-  int budgetNearPct;
+  double budgetNearPct;
   double topCatMinPct;
 
   // --- New types ---
@@ -21,7 +21,7 @@ class RecommendationPrefs {
   double spikePct;
   int recurringMonths;
   double singleCatDominancePct;
-  int weekendRatioPct;
+  double weekendRatioPct;
   double largeCashMin;
 
   RecommendationPrefs({

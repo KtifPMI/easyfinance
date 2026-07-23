@@ -779,7 +779,7 @@ class FinanceStore extends ChangeNotifier {
     for (final g in _goals.where((g) => !g.isCompleted && g.targetAmount > 0 && g.deadline.isNotEmpty)) {
       final remaining = g.targetAmount - g.currentAmount;
       if (remaining <= 0) continue;
-      final deadline = DateTime.tryParse(g.deadline!);
+      final deadline = DateTime.tryParse(g.deadline);
       if (deadline == null) continue;
       final monthsLeft = (deadline.difference(now).inDays / 30).ceil();
       if (monthsLeft <= 0) {
