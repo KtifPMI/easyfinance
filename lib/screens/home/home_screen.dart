@@ -15,6 +15,9 @@ import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../../store/planned_payment_store.dart';
 import '../accounts/add_account_screen.dart';
+import '../accounts/accounts_screen.dart';
+import '../budget/plan_screen.dart';
+import '../recommendations/recommendations_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -61,28 +64,37 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBalanceBanner(BuildContext context, FinanceStore store) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)]),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
-          const SizedBox(height: 4),
-          Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _chip('+${store.fmt(store.monthIncome)}', AppColors.success),
-              const SizedBox(width: 12),
-              _chip('-${store.fmt(store.monthExpense)}', AppColors.expense),
-            ],
-          ),
-        ],
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen())),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)]),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+                Icon(Icons.chevron_right, color: Colors.white54, size: 20),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _chip('+${store.fmt(store.monthIncome)}', AppColors.success),
+                const SizedBox(width: 12),
+                _chip('-${store.fmt(store.monthExpense)}', AppColors.expense),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -317,7 +329,16 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationsScreen())),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         ...store.recommendations.take(3).map((r) => Padding(
           padding: const EdgeInsets.only(bottom: 6),
@@ -341,7 +362,16 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlanScreen())),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
           final cat = store.getCategory(b.categoryId);
@@ -377,7 +407,16 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlanScreen())),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(context.tr('home.goals'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
           final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
@@ -412,7 +451,16 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/planned-payments'),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
         ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e, store)),
         _manageButton(context),
