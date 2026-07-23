@@ -8,6 +8,7 @@ import '../models/goal.dart';
 import '../models/operation.dart';
 import '../models/operation_template.dart';
 import '../models/recommendation.dart';
+import '../models/recommendation_prefs.dart';
 import '../models/tag.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
@@ -29,6 +30,7 @@ class FinanceStore extends ChangeNotifier {
   List<Budget> _budgets = [];
   List<Goal> _goals = [];
   List<Recommendation> _recommendations = [];
+  RecommendationPrefs _recPrefs = RecommendationPrefs();
   List<Tag> _tags = [];
   List<OperationTemplate> _templates = [];
   List<Map<String, dynamic>> _currencies = [];
@@ -47,6 +49,11 @@ class FinanceStore extends ChangeNotifier {
   FinanceStore({required this.authService, required this.apiClient}) {
     _cacheReady = _loadFromCache();
     _templatesReady = _loadTemplates();
+    _loadRecPrefs();
+  }
+
+  Future<void> _loadRecPrefs() async {
+    _recPrefs = await RecommendationPrefs.load();
   }
 
   Future<void> _loadFromCache() async {
@@ -153,6 +160,7 @@ class FinanceStore extends ChangeNotifier {
   List<Budget> get budgets => _budgets.where((b) => !b.isDeleted).toList();
   List<Goal> get goals => _goals;
   List<Recommendation> get recommendations => _recommendations;
+  RecommendationPrefs get recPrefs => _recPrefs;
   List<Tag> get tags => _tags;
   List<OperationTemplate> get templates => _templates;
   List<Map<String, dynamic>> get currencies => _currencies;
@@ -161,6 +169,13 @@ class FinanceStore extends ChangeNotifier {
   Map<String, double> get rates => _rates;
   DateTime? get ratesUpdatedAt => _ratesUpdatedAt;
   List<String> get watchedCurrencies => _watchedCurrencies;
+
+  Future<void> updateRecPrefs(RecommendationPrefs newPrefs) async {
+    _recPrefs = newPrefs;
+    await _recPrefs.save();
+    _generateRecommendations();
+    notifyListeners();
+  }
 
   Future<List<String>> _loadWatchedCurrencies() async {
     final saved = await CurrencyPrefsService.load();
@@ -384,14 +399,21 @@ class FinanceStore extends ChangeNotifier {
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
     final monthEnd = DateTime(now.year, now.month + 1, 0);
+    final prevMonthStart = DateTime(now.year, now.month - 1, 1);
+    final prevMonthEnd = DateTime(now.year, now.month, 0);
 
-    bool inRange(Operation o) {
+    bool inRange(Operation o, DateTime start, DateTime end) {
       final d = DateTime.tryParse(o.date);
-      return d != null && !d.isBefore(monthStart) && !d.isAfter(monthEnd);
+      return d != null && !d.isBefore(start) && !d.isAfter(end);
     }
 
-    final monthIncome = _operations.where((o) => o.type == 'income' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
-    final monthExpense = _operations.where((o) => o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
+    final curOps = _operations.where((o) => inRange(o, monthStart, monthEnd)).toList();
+    final prevOps = _operations.where((o) => inRange(o, prevMonthStart, prevMonthEnd)).toList();
+
+    final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
+    final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
+    final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
+    final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
 
     String fmt(double v) => v.toStringAsFixed(0);
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
@@ -408,7 +430,7 @@ class FinanceStore extends ChangeNotifier {
           titleArgs: {'name': name},
           descArgs: {'spent': fmt(b.spent), 'limit': fmt(b.limit), 'overspent': fmt(b.spent - b.limit), 'pct': pct(b.spent, b.limit)},
         ));
-      } else if (b.spent > b.limit * 0.8) {
+      } else if (b.spent > b.limit * _recPrefs.budgetNearPct / 100) {
         final remaining = b.limit - b.spent;
         _recommendations.add(Recommendation(
           id: 'b_near_${b.id}', type: 'optimization', severity: 'medium',
@@ -429,7 +451,7 @@ class FinanceStore extends ChangeNotifier {
       double foodTotal = 0;
       double diningTotal = 0;
       int diningCount = 0;
-      for (final o in _operations.where((o) => o.type == 'expense' && inRange(o) && foodCats.contains(o.categoryId))) {
+      for (final o in curOps.where((o) => o.type == 'expense' && foodCats.contains(o.categoryId))) {
         final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
         if (cat != null && (cat.name.contains('кафе') || cat.name.contains('ресторан') || cat.name.contains('cafe') || cat.name.contains('restaurant'))) {
           diningTotal += o.amount;
@@ -441,14 +463,14 @@ class FinanceStore extends ChangeNotifier {
       final allFood = foodTotal + diningTotal;
       if (allFood > 0) {
         final foodRatio = allFood / monthIncome * 100;
-        if (foodRatio > 50) {
+        if (foodRatio > _recPrefs.foodHighPct) {
           _recommendations.add(Recommendation(
             id: 'high_food', type: 'risk', severity: 'high',
             title: 'Высокие расходы на питание',
             description: 'На питание уходит ${foodRatio.round()}% дохода.',
             descArgs: {'pct': foodRatio.round().toString(), 'amount': fmt(allFood), 'income': fmt(monthIncome)},
           ));
-        } else if (foodRatio > 30) {
+        } else if (foodRatio > _recPrefs.foodMediumPct) {
           _recommendations.add(Recommendation(
             id: 'food_warning', type: 'optimization', severity: 'medium',
             title: 'Питание отнимает ${foodRatio.round()}% дохода',
@@ -458,7 +480,7 @@ class FinanceStore extends ChangeNotifier {
           ));
         }
       }
-      if (diningCount >= 5 && diningTotal > 0) {
+      if (diningCount >= _recPrefs.diningFrequency && diningTotal > 0) {
         _recommendations.add(Recommendation(
           id: 'dining_freq', type: 'optimization', severity: 'low',
           title: '$diningCount раз(а) в кафе за месяц',
@@ -471,7 +493,7 @@ class FinanceStore extends ChangeNotifier {
 
     // 3 — no budget for high-spend categories
     final topSpend = <String, double>{};
-    for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null)) {
+    for (final o in curOps.where((o) => o.type == 'expense' && o.categoryId != null)) {
       topSpend.update(o.categoryId!, (v) => v + o.amount, ifAbsent: () => o.amount);
     }
     final budgetedCats = _budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
@@ -479,7 +501,7 @@ class FinanceStore extends ChangeNotifier {
     for (final entry in sortedCats.take(3)) {
       if (!budgetedCats.contains(entry.key)) {
         final cat = _categories.where((c) => c.id == entry.key).firstOrNull;
-        if (cat != null && entry.value > 1000) {
+        if (cat != null && entry.value > _recPrefs.noBudgetMinSpend) {
           _recommendations.add(Recommendation(
             id: 'no_budget_${entry.key}', type: 'optimization', severity: 'medium',
             title: 'Нет бюджета для «${cat.name}»',
@@ -499,12 +521,12 @@ class FinanceStore extends ChangeNotifier {
       c.name.contains('rent') || c.name.contains('housing') || c.name.contains('utility') || c.name.contains('mortgage')
     ).map((c) => c.id).toSet();
     double housingTotal = 0;
-    for (final o in _operations.where((o) => o.type == 'expense' && inRange(o) && housingCats.contains(o.categoryId))) {
+    for (final o in curOps.where((o) => o.type == 'expense' && housingCats.contains(o.categoryId))) {
       housingTotal += o.amount;
     }
     if (monthIncome > 0 && housingTotal > 0) {
       final housingRatio = housingTotal / monthIncome * 100;
-      if (housingRatio > 30) {
+      if (housingRatio > _recPrefs.housingPct) {
         _recommendations.add(Recommendation(
           id: 'high_housing', type: 'risk', severity: 'high',
           title: 'Жильё — ${housingRatio.round()}% от дохода',
@@ -525,15 +547,15 @@ class FinanceStore extends ChangeNotifier {
           description: 'Доход ${fmt(monthIncome)} ₽, расходы ${fmt(monthExpense)} ₽.',
           descArgs: {'income': fmt(monthIncome), 'expense': fmt(monthExpense), 'deficit': fmt(monthExpense - monthIncome)},
         ));
-      } else if (savingsRate < 10) {
+      } else if (savingsRate < _recPrefs.savingsLowPct) {
         final saveAmt = monthIncome - monthExpense;
         _recommendations.add(Recommendation(
           id: 'low_savings', type: 'risk', severity: 'medium',
           title: 'Низкая норма сбережения',
           description: 'Откладывается ${fmt(saveAmt)} ₽ (${savingsRate.round()}%).',
-          descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome), 'target': fmt(monthIncome * 0.2)},
+          descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome), 'target': fmt(monthIncome * _recPrefs.savingsGoodPct / 100)},
         ));
-      } else if (savingsRate >= 20) {
+      } else if (savingsRate >= _recPrefs.savingsGoodPct) {
         final saveAmt = monthIncome - monthExpense;
         _recommendations.add(Recommendation(
           id: 'good_savings', type: 'tip', severity: 'low',
@@ -548,7 +570,7 @@ class FinanceStore extends ChangeNotifier {
     if (monthExpense > 0) {
       final topCatList = sortedCats.take(5).where((e) {
         final cat = _categories.where((c) => c.id == e.key).firstOrNull;
-        return cat != null && e.value > monthExpense * 0.15;
+        return cat != null && e.value > monthExpense * _recPrefs.topCatMinPct / 100;
       }).toList();
       if (topCatList.length >= 2) {
         final parts = topCatList.map((e) {
@@ -570,20 +592,20 @@ class FinanceStore extends ChangeNotifier {
       !g.isCompleted && (g.title.contains('подушк') || g.title.contains('безопасн') || g.title.contains('сбережен') ||
                          g.title.contains('emergency') || g.title.contains('safety') || g.title.contains('cushion'))
     ).isEmpty) {
-      final suggested = monthExpense > 0 ? (monthExpense * 3).toStringAsFixed(0) : '—';
+      final suggested = monthExpense > 0 ? (monthExpense * _recPrefs.emergencyMonths).toStringAsFixed(0) : '—';
       _recommendations.add(Recommendation(
         id: 'no_emergency', type: 'tip', severity: 'low',
         title: 'Создайте финансовую подушку',
-        description: 'Рекомендуется резерв 3–6 месячных расходов ($suggested ₽).',
+        description: 'Рекомендуется резерв ${_recPrefs.emergencyMonths.round()}–${(_recPrefs.emergencyMonths * 2).round()} месячных расходов ($suggested ₽).',
         actionType: 'create_goal',
         actionPayload: 'emergency',
-        descArgs: {'amount': suggested},
+        descArgs: {'amount': suggested, 'months': _recPrefs.emergencyMonths.round().toString()},
       ));
     }
 
     // 8 — idle cash
     for (final a in _accounts) {
-      if (a.icon == 'cash' && a.balance > 50000) {
+      if (a.icon == 'cash' && a.balance > _recPrefs.idleCashMin) {
         _recommendations.add(Recommendation(
           id: 'idle_cash_${a.id}', type: 'optimization', severity: 'low',
           title: '${fmt(a.balance)} ₽ наличными без движения',
@@ -608,7 +630,182 @@ class FinanceStore extends ChangeNotifier {
       }
     }
 
-    // fallback: if nothing generated, add a friendly tip
+    // 10 — expense trend (spending increased vs previous month)
+    if (prevExpense > 0 && monthExpense > 0) {
+      final expChange = (monthExpense - prevExpense) / prevExpense * 100;
+      if (expChange > _recPrefs.trendUpPct) {
+        _recommendations.add(Recommendation(
+          id: 'expense_trend_up', type: 'risk', severity: 'medium',
+          title: 'Расходы выросли на ${expChange.round()}%',
+          description: 'Было ${fmt(prevExpense)} ₽, стало ${fmt(monthExpense)} ₽.',
+          descArgs: {'pct': expChange.round().toString(), 'prev': fmt(prevExpense), 'curr': fmt(monthExpense)},
+        ));
+      }
+    }
+
+    // 11 — income trend (income dropped vs previous month)
+    if (prevIncome > 0 && monthIncome > 0) {
+      final incChange = (monthIncome - prevIncome) / prevIncome * 100;
+      if (incChange < -_recPrefs.trendUpPct) {
+        _recommendations.add(Recommendation(
+          id: 'income_trend_down', type: 'risk', severity: 'medium',
+          title: 'Доход упал на ${incChange.abs().round()}%',
+          description: 'Было ${fmt(prevIncome)} ₽, стало ${fmt(monthIncome)} ₽.',
+          descArgs: {'pct': incChange.abs().round().toString(), 'prev': fmt(prevIncome), 'curr': fmt(monthIncome)},
+        ));
+      }
+    }
+
+    // 12 — category spike (spending in a category jumped vs its 3-month average)
+    final catExpenses = <String, List<double>>{};
+    for (int m = 0; m < 4; m++) {
+      final ms = DateTime(now.year, now.month - m, 1);
+      final me = DateTime(now.year, now.month - m + 1, 0);
+      for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null && inRange(o, ms, me))) {
+        catExpenses.putIfAbsent(o.categoryId!, () => []);
+        if (m == 0) catExpenses[o.categoryId]!.add(o.amount);
+      }
+    }
+    for (final entry in catExpenses.entries) {
+      final curTotal = entry.value.fold(0.0, (s, v) => s + v);
+      final cat3m = _categories.where((c) => c.id == entry.key).firstOrNull;
+      if (cat3m == null || curTotal < 500) continue;
+      final prevTotals = <double>[];
+      for (int m = 1; m <= 3; m++) {
+        final ms = DateTime(now.year, now.month - m, 1);
+        final me = DateTime(now.year, now.month - m + 1, 0);
+        double sum = 0;
+        for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId == entry.key && inRange(o, ms, me))) {
+          sum += o.amount;
+        }
+        if (sum > 0) prevTotals.add(sum);
+      }
+      if (prevTotals.isNotEmpty) {
+        final avg3m = prevTotals.reduce((a, b) => a + b) / prevTotals.length;
+        if (avg3m > 0 && curTotal > avg3m * (1 + _recPrefs.spikePct / 100)) {
+          _recommendations.add(Recommendation(
+            id: 'category_spike_${entry.key}', type: 'risk', severity: 'medium',
+            title: 'Рост «${cat3m.name}» на ${((curTotal - avg3m) / avg3m * 100).round()}%',
+            description: 'Было ${fmt(avg3m)} ₽/мес, стало ${fmt(curTotal)} ₽.',
+            descArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString(), 'avg': fmt(avg3m), 'curr': fmt(curTotal)},
+          ));
+        }
+      }
+    }
+
+    // 13 — recurring expenses (potential subscriptions)
+    final catMonthTotals = <String, Map<int, double>>{};
+    for (int m = 0; m < _recPrefs.recurringMonths; m++) {
+      final ms = DateTime(now.year, now.month - m, 1);
+      final me = DateTime(now.year, now.month - m + 1, 0);
+      for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null && inRange(o, ms, me))) {
+        catMonthTotals.putIfAbsent(o.categoryId!, () => {});
+        catMonthTotals[o.categoryId!]![m] = (catMonthTotals[o.categoryId!]![m] ?? 0) + o.amount;
+      }
+    }
+    final subCats = <String>{};
+    for (final entry in catMonthTotals.entries) {
+      if (entry.value.length >= _recPrefs.recurringMonths) {
+        final amounts = entry.value.values.toList();
+        final avg = amounts.reduce((a, b) => a + b) / amounts.length;
+        if (avg > 200 && amounts.every((a) => (a - avg).abs() / avg < 0.15)) {
+          subCats.add(entry.key);
+        }
+      }
+    }
+    if (subCats.isNotEmpty) {
+      final catNames = subCats.map((id) {
+        final c = _categories.where((cat) => cat.id == id).firstOrNull;
+        return c?.name ?? id;
+      }).join(', ');
+      final totalSub = subCats.fold(0.0, (s, id) {
+        return s + (catMonthTotals[id]?[0] ?? 0);
+      });
+      _recommendations.add(Recommendation(
+        id: 'recurring_subscriptions', type: 'optimization', severity: 'low',
+        title: 'Возможные подписки: $catNames',
+        description: 'Ежемесячно ~${fmt(totalSub)} ₽. Проверьте, нужны ли они.',
+        descArgs: {'categories': catNames, 'amount': fmt(totalSub)},
+      ));
+    }
+
+    // 14 — single category dominance
+    if (monthExpense > 0 && sortedCats.isNotEmpty) {
+      final top = sortedCats.first;
+      final topPct = top.value / monthExpense * 100;
+      if (topPct > _recPrefs.singleCatDominancePct) {
+        final catName = _categories.where((c) => c.id == top.key).firstOrNull?.name ?? top.key;
+        _recommendations.add(Recommendation(
+          id: 'dominant_${top.key}', type: 'optimization', severity: 'medium',
+          title: '«$catName» — ${topPct.round()}% расходов',
+          description: 'Потрачено ${fmt(top.value)} ₽ из ${fmt(monthExpense)} ₽.',
+          descArgs: {'name': catName, 'pct': topPct.round().toString(), 'amount': fmt(top.value), 'total': fmt(monthExpense)},
+        ));
+      }
+    }
+
+    // 15 — weekend splurge
+    if (monthExpense > 0) {
+      double weekendExp = 0;
+      for (final o in curOps.where((o) => o.type == 'expense')) {
+        final d = DateTime.tryParse(o.date);
+        if (d != null && (d.weekday == 6 || d.weekday == 7)) weekendExp += o.amount;
+      }
+      final weekendPct = weekendExp / monthExpense * 100;
+      if (weekendPct > _recPrefs.weekendRatioPct) {
+        _recommendations.add(Recommendation(
+          id: 'weekend_splurge', type: 'optimization', severity: 'low',
+          title: '${weekendPct.round()}% расходов на выходных',
+          description: 'Потрачено ${fmt(weekendExp)} ₽ за субботу и воскресенье.',
+          descArgs: {'pct': weekendPct.round().toString(), 'amount': fmt(weekendExp)},
+        ));
+      }
+    }
+
+    // 16 — large cash withdrawal
+    for (final o in curOps.where((o) => o.type == 'expense' && o.amount > _recPrefs.largeCashMin)) {
+      final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
+      final name = cat?.name ?? 'Без категории';
+      _recommendations.add(Recommendation(
+        id: 'large_cash_${o.id}', type: 'risk', severity: 'medium',
+        title: 'Крупная трата: ${fmt(o.amount)} ₽',
+        description: '«$name» — ${o.date.substring(0, 10)}.',
+        descArgs: {'amount': fmt(o.amount), 'name': name, 'date': o.date.substring(0, 10)},
+      ));
+    }
+
+    // 17 — goal pacing (will goal be met on time?)
+    final savingsRate = monthIncome > 0 ? (monthIncome - monthExpense) / monthIncome : 0.0;
+    for (final g in _goals.where((g) => !g.isCompleted && g.targetAmount > 0 && g.deadline.isNotEmpty)) {
+      final remaining = g.targetAmount - g.currentAmount;
+      if (remaining <= 0) continue;
+      final deadline = DateTime.tryParse(g.deadline!);
+      if (deadline == null) continue;
+      final monthsLeft = (deadline.difference(now).inDays / 30).ceil();
+      if (monthsLeft <= 0) {
+        _recommendations.add(Recommendation(
+          id: 'goal_pacing_slow', type: 'risk', severity: 'high',
+          title: 'Цель «${g.title}» просрочена',
+          description: 'Осталось ${fmt(remaining)} ₽, дедлайн ${deadline.day}.${deadline.month}.${deadline.year}.',
+          titleArgs: {'title': g.title},
+          descArgs: {'remaining': fmt(remaining), 'deadline': '${deadline.day}.${deadline.month}.${deadline.year}'},
+        ));
+      } else if (monthIncome > 0) {
+        final monthlyNeeded = remaining / monthsLeft;
+        final monthlyCanSave = monthIncome * savingsRate;
+        if (monthlyCanSave > 0 && monthlyNeeded > monthlyCanSave * 1.5) {
+          _recommendations.add(Recommendation(
+            id: 'goal_pacing_slow', type: 'optimization', severity: 'medium',
+            title: 'Цель «${g.title}» отстаёт',
+            description: 'Нужно ${fmt(monthlyNeeded)} ₽/мес, откладываете ${fmt(monthlyCanSave)} ₽/мес.',
+            titleArgs: {'title': g.title},
+            descArgs: {'needed': fmt(monthlyNeeded), 'current': fmt(monthlyCanSave), 'deadline': '${deadline.day}.${deadline.month}.${deadline.year}'},
+          ));
+        }
+      }
+    }
+
+    // fallback
     if (_recommendations.isEmpty) {
       _recommendations.add(Recommendation(
         id: 'all_good', type: 'tip', severity: 'low',

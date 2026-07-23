@@ -281,6 +281,23 @@
   "recommend.goal_close.desc": "Накоплено {current} ₽ из {target} ₽ ({pct}%). Осталось {remaining} ₽.",
   "recommend.all_good.title": "Всё в порядке!",
   "recommend.all_good.desc": "Сейчас нет рекомендаций. Добавляйте операции и ставьте цели.",
+
+  "recommend.expense_trend.title": "Расходы выросли на {pct}%",
+  "recommend.expense_trend.desc": "Было {prev} ₽, стало {curr} ₽.",
+  "recommend.income_trend.title": "Доход упал на {pct}%",
+  "recommend.income_trend.desc": "Было {prev} ₽, стало {curr} ₽.",
+  "recommend.category_spike.title": "Рост «{name}» на {pct}%",
+  "recommend.category_spike.desc": "Было {avg} ₽/мес, стало {curr} ₽.",
+  "recommend.recurring_expense.title": "Возможные подписки: {categories}",
+  "recommend.recurring_expense.desc": "Ежемесячно ~{amount} ₽. Проверьте, нужны ли они.",
+  "recommend.weekend_splurge.title": "{pct}% расходов на выходных",
+  "recommend.weekend_splurge.desc": "Потрачено {amount} ₽ за субботу и воскресенье.",
+  "recommend.single_category.title": "«{name}» — {pct}% расходов",
+  "recommend.single_category.desc": "Потрачено {amount} ₽ из {total} ₽.",
+  "recommend.large_cash.title": "Крупная трата: {amount} ₽",
+  "recommend.large_cash.desc": "«{name}» — {date}.",
+  "recommend.goal_pacing.title": "Цель «{title}» отстаёт",
+  "recommend.goal_pacing.desc": "Нужно {needed} ₽/мес, откладываете {current} ₽/мес.",
   "recommend.action.create_budget": "Создать бюджет",
   "recommend.action.create_goal": "Создать цель",
 
@@ -433,5 +450,36 @@
   "currency.pln_name": "Злотый",
   "currency.czk_name": "Чешская крона",
   "currency.sek_name": "Шведская крона",
-  "currency.nok_name": "Норвежская крона"
+  "currency.nok_name": "Норвежская крона",
+
+  "settings.recommendations": "Настройки рекомендаций",
+
+  "rec_settings.food": "Питание",
+  "rec_settings.food_high": "Высокий порог (риск)",
+  "rec_settings.food_medium": "Средний порог (внимание)",
+  "rec_settings.dining_freq": "Частота кафе",
+  "rec_settings.times": "раз",
+
+  "rec_settings.budgets": "Бюджеты",
+  "rec_settings.budget_near": "Порог «близко к лимиту»",
+  "rec_settings.no_budget_min": "Мин. расход без бюджета",
+
+  "rec_settings.savings": "Сбережения",
+  "rec_settings.savings_low": "Низкая норма сбережения",
+  "rec_settings.savings_good": "Хорошая норма сбережения",
+  "rec_settings.housing": "Доля жилья от дохода",
+  "rec_settings.emergency": "Месяцев резерва",
+  "rec_settings.months": "мес.",
+
+  "rec_settings.cash": "Наличные",
+  "rec_settings.idle_cash": "Бездействующие наличные",
+  "rec_settings.large_cash": "Крупная трата",
+
+  "rec_settings.trends": "Тренды и анализ",
+  "rec_settings.trend_up": "Порог роста расходов",
+  "rec_settings.spike": "Порог пика категории",
+  "rec_settings.recurring": "Месяцев для подписок",
+  "rec_settings.single_cat": "Доля одной категории",
+  "rec_settings.weekend": "Доля расходов на выходных",
+  "rec_settings.top_cat": "Доля топ-категории"
 }

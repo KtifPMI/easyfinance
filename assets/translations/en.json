@@ -281,6 +281,23 @@
   "recommend.goal_close.desc": "Saved {current} ₽ of {target} ₽ ({pct}%). {remaining} ₽ left.",
   "recommend.all_good.title": "All good!",
   "recommend.all_good.desc": "No recommendations yet. Add operations and set goals.",
+
+  "recommend.expense_trend.title": "Expenses up {pct}%",
+  "recommend.expense_trend.desc": "Was {prev} ₽, now {curr} ₽.",
+  "recommend.income_trend.title": "Income down {pct}%",
+  "recommend.income_trend.desc": "Was {prev} ₽, now {curr} ₽.",
+  "recommend.category_spike.title": "{name} up {pct}%",
+  "recommend.category_spike.desc": "Was {avg} ₽/mo, now {curr} ₽.",
+  "recommend.recurring_expense.title": "Possible subscriptions: {categories}",
+  "recommend.recurring_expense.desc": "~{amount} ₽/month. Check if needed.",
+  "recommend.weekend_splurge.title": "{pct}% of spending on weekends",
+  "recommend.weekend_splurge.desc": "Spent {amount} ₽ on Sat & Sun.",
+  "recommend.single_category.title": "{name} — {pct}% of expenses",
+  "recommend.single_category.desc": "Spent {amount} ₽ of {total} ₽.",
+  "recommend.large_cash.title": "Large expense: {amount} ₽",
+  "recommend.large_cash.desc": "{name} — {date}.",
+  "recommend.goal_pacing.title": "Goal \"{title}\" falling behind",
+  "recommend.goal_pacing.desc": "Need {needed} ₽/mo, saving {current} ₽/mo.",
   "recommend.action.create_budget": "Create Budget",
   "recommend.action.create_goal": "Create Goal",
 
@@ -335,5 +352,36 @@
   "templates.save": "Save",
   "templates.delete": "Delete",
   "templates.cancel": "Cancel",
-  "templates.confirm_delete": "Delete template?"
+  "templates.confirm_delete": "Delete template?",
+
+  "settings.recommendations": "Recommendation Settings",
+
+  "rec_settings.food": "Food",
+  "rec_settings.food_high": "High threshold (risk)",
+  "rec_settings.food_medium": "Medium threshold (warning)",
+  "rec_settings.dining_freq": "Dining frequency",
+  "rec_settings.times": "times",
+
+  "rec_settings.budgets": "Budgets",
+  "rec_settings.budget_near": "Near-limit threshold",
+  "rec_settings.no_budget_min": "Min spend without budget",
+
+  "rec_settings.savings": "Savings",
+  "rec_settings.savings_low": "Low savings rate",
+  "rec_settings.savings_good": "Good savings rate",
+  "rec_settings.housing": "Housing share of income",
+  "rec_settings.emergency": "Months of reserves",
+  "rec_settings.months": "mo.",
+
+  "rec_settings.cash": "Cash",
+  "rec_settings.idle_cash": "Idle cash minimum",
+  "rec_settings.large_cash": "Large expense",
+
+  "rec_settings.trends": "Trends & Analysis",
+  "rec_settings.trend_up": "Expense growth threshold",
+  "rec_settings.spike": "Category spike threshold",
+  "rec_settings.recurring": "Months for subscriptions",
+  "rec_settings.single_cat": "Single category share",
+  "rec_settings.weekend": "Weekend spending share",
+  "rec_settings.top_cat": "Top category share"
 }
