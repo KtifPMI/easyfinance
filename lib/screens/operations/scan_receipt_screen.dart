@@ -136,36 +136,53 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         .replaceAll('T', 'Т').replaceAll('t', 'т')
         .replaceAll('U', 'И').replaceAll('u', 'и')
         .replaceAll('X', 'Х').replaceAll('x', 'х')
-        .replaceAll('Y', 'У').replaceAll('y', 'у')
-        .replaceAll('3', 'з').replaceAll('0', 'о')
-        .replaceAll('6', 'б');
+        .replaceAll('Y', 'У').replaceAll('y', 'у');
   }
 
   String _findStoreName(List<String> lines) {
-    final skipWords = ['эклз', 'инн', 'ккт', 'рн ккт', 'фд', 'фп', 'зн ккт', 'зн кт',
-      'кассовый', 'чека', 'чеком', 'ип', 'ооо', 'сайт', 'тел', 'адрес',
-      'огрн', 'эл', 'система', 'меркурий', 'штрих', 'атол', 'эвотор',
-      'рисунок', 'untitled', 'figma', 'telegram', 'explorer',
-      'каталог', 'catalog', 'easyfinance', 'яндекс', 'картинк'];
+    final skipExact = ['эклз', 'ккт', 'рн ккт', 'фд', 'фп', 'зн ккт', 'зн кт',
+      'система', 'меркурий', 'штрих', 'атол', 'эвотор',
+      'каталог', 'catalog', 'easyfinance', 'untitled', 'figma', 'telegram', 'explorer'];
+
+    final headerWords = ['кассовый', 'чека', 'чеком', 'сайт', 'тел', 'адрес',
+      'огрн', 'эл', 'рисунок', 'яндекс', 'картинк'];
 
     final storeClues = ['ресторан', 'магазин', 'кафе', 'бар', 'столовая',
-      'кальянная', 'кофейн', 'пиццер'];
+      'кальянная', 'кофейн', 'пиццер', 'аптек', 'спорт', 'fix', 'мега',
+      'лента', 'ашан', 'пятерочк', 'магнит', 'вкусвилл', 'перекрёсток',
+      'окей', 'светофор', 'дикси', 'match', 'вб', 'мвидео', 'dns',
+      'самокат', 'яндекс'];
 
     for (final line in lines) {
       final lower = line.toLowerCase();
       final norm = _normalize(line);
-      if (lower.length < 5) continue;
-      if (skipWords.any((w) => lower.contains(w) || norm.contains(w))) continue;
-      if (storeClues.any((c) => norm.contains(c))) return line;
+      if (line.length < 3) continue;
+      if (skipExact.any((w) => lower == w || norm == w)) continue;
+      if (headerWords.any((w) => lower.contains(w))) continue;
+      if (storeClues.any((c) => norm.contains(c) || lower.contains(c))) return _cleanStoreName(line);
     }
     for (final line in lines) {
       final lower = line.toLowerCase();
       final norm = _normalize(line);
-      if (lower.length < 5) continue;
-      if (skipWords.any((w) => lower.contains(w) || norm.contains(w))) continue;
-      if (RegExp(r'[а-яё]{4,}').hasMatch(norm)) return line;
+      if (line.length < 3) continue;
+      if (skipExact.any((w) => lower == w || norm == w)) continue;
+      if (headerWords.any((w) => lower.contains(w))) continue;
+      if (RegExp(r'[а-яё]{3,}').hasMatch(norm)) return _cleanStoreName(line);
     }
-    return lines.isNotEmpty ? lines.first : '';
+    for (final line in lines) {
+      final lower = line.toLowerCase();
+      if (line.length < 5) continue;
+      if (headerWords.any((w) => lower.contains(w))) continue;
+      if (lower.contains('ип ') || lower.contains('ооо')) return _cleanStoreName(line);
+    }
+    return '';
+  }
+
+  String _cleanStoreName(String line) {
+    var s = line.replaceAll(RegExp(r'^[\d\s./*#:-]+'), '').trim();
+    s = s.replaceAll(RegExp(r'["«»""]'), '').trim();
+    if (s.length > 40) s = s.substring(0, 40);
+    return s;
   }
 
   String? _detectCategory(String normalizedText, List<dynamic> categories) {
@@ -211,40 +228,33 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     for (int i = lines.length - 1; i >= 0; i--) {
       final norm = _normalize(lines[i]);
       final raw = lines[i].toLowerCase();
-      if (['итог', 'сумма', 'к оплате', 'всего'].any((k) => norm.contains(k)) ||
+      if (['итог', 'итого', 'сумма', 'к оплате', 'всего'].any((k) => norm.contains(k)) ||
           raw.contains('mtor') || raw.contains('cymma') || raw.contains('k onlate')) {
-        var nums = _extractSignificantNumbers(lines[i]);
+        var nums = _extractNumbersAfterKeyword(lines[i]);
         if (nums.isEmpty && i + 1 < lines.length) nums = _extractSignificantNumbers(lines[i + 1]);
         if (nums.isNotEmpty) return nums.last.toStringAsFixed(0);
       }
     }
-    final eqValues = <double, int>{};
+    final allNums = <double>[];
     for (final line in lines) {
       if (line.contains('=')) {
         final nums = _extractSignificantNumbers(line);
         for (final n in nums) {
-          eqValues[n] = (eqValues[n] ?? 0) + 1;
+          allNums.add(n);
         }
       }
-    }
-    if (eqValues.isNotEmpty) {
-      double best = 0;
-      int bestCount = 0;
-      eqValues.forEach((val, count) {
-        if (count > bestCount || (count == bestCount && val > best)) {
-          best = val;
-          bestCount = count;
-        }
-      });
-      if (best > 0) return best.toStringAsFixed(0);
-    }
-    final allNums = <double>[];
-    for (final line in lines) {
-      allNums.addAll(_extractSignificantNumbers(line));
     }
     if (allNums.isNotEmpty) {
       allNums.sort();
       return allNums.last.toStringAsFixed(0);
+    }
+    final fallback = <double>[];
+    for (final line in lines) {
+      fallback.addAll(_extractSignificantNumbers(line));
+    }
+    if (fallback.isNotEmpty) {
+      fallback.sort();
+      return fallback.last.toStringAsFixed(0);
     }
     return '';
   }
@@ -258,6 +268,32 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       if (v != null && v > 10) result.add(v);
     }
     return result;
+  }
+
+  List<double> _extractNumbersAfterKeyword(String line) {
+    final norm = _normalize(line);
+    final keywords = ['итог', 'итого', 'сумма', 'к оплате', 'всего'];
+    int pos = -1;
+    for (final kw in keywords) {
+      final idx = norm.indexOf(kw);
+      if (idx >= 0) { pos = idx; break; }
+    }
+    if (pos < 0) {
+      final raw = line.toLowerCase();
+      for (final kw in ['mtor', 'cymma', 'k onlate']) {
+        final idx = raw.indexOf(kw);
+        if (idx >= 0) { pos = idx; break; }
+      }
+    }
+    if (pos < 0) return _extractSignificantNumbers(line);
+
+    final after = line.substring(pos);
+    final numPart = after.replaceAll(RegExp(r'^[^0-9]*'), '');
+    final cleaned = numPart.replaceAll(',', '.').replaceAll(RegExp(r'\s+'), '').replaceAll('О', '0').replaceAll('о', '0');
+    final v = double.tryParse(cleaned);
+    if (v != null && v > 0) return [v];
+
+    return _extractSignificantNumbers(numPart);
   }
 
   Future<void> _save(FinanceStore store) async {
