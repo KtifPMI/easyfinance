@@ -410,10 +410,13 @@ class FinanceStore extends ChangeNotifier {
     final curOps = _operations.where((o) => inRange(o, monthStart, monthEnd)).toList();
     final prevOps = _operations.where((o) => inRange(o, prevMonthStart, prevMonthEnd)).toList();
 
+    final investCats = _categories.where((c) => c.icon == 'invest').map((c) => c.id).toSet();
+    bool isInvest(Operation o) => o.categoryId != null && investCats.contains(o.categoryId);
+
     final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
-    final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
+    final monthExpense = curOps.where((o) => o.type == 'expense' && !isInvest(o)).fold(0.0, (s, o) => s + o.amount);
     final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
-    final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
+    final prevExpense = prevOps.where((o) => o.type == 'expense' && !isInvest(o)).fold(0.0, (s, o) => s + o.amount);
 
     String fmt(double v) => v.toStringAsFixed(0);
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
@@ -451,7 +454,7 @@ class FinanceStore extends ChangeNotifier {
       double foodTotal = 0;
       double diningTotal = 0;
       int diningCount = 0;
-      for (final o in curOps.where((o) => o.type == 'expense' && foodCats.contains(o.categoryId))) {
+      for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && foodCats.contains(o.categoryId))) {
         final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
         if (cat != null && (cat.name.contains('кафе') || cat.name.contains('ресторан') || cat.name.contains('cafe') || cat.name.contains('restaurant'))) {
           diningTotal += o.amount;
@@ -493,7 +496,7 @@ class FinanceStore extends ChangeNotifier {
 
     // 3 — no budget for high-spend categories
     final topSpend = <String, double>{};
-    for (final o in curOps.where((o) => o.type == 'expense' && o.categoryId != null)) {
+    for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && o.categoryId != null)) {
       topSpend.update(o.categoryId!, (v) => v + o.amount, ifAbsent: () => o.amount);
     }
     final budgetedCats = _budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
@@ -521,7 +524,7 @@ class FinanceStore extends ChangeNotifier {
       c.name.contains('rent') || c.name.contains('housing') || c.name.contains('utility') || c.name.contains('mortgage')
     ).map((c) => c.id).toSet();
     double housingTotal = 0;
-    for (final o in curOps.where((o) => o.type == 'expense' && housingCats.contains(o.categoryId))) {
+    for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && housingCats.contains(o.categoryId))) {
       housingTotal += o.amount;
     }
     if (monthIncome > 0 && housingTotal > 0) {
@@ -638,6 +641,7 @@ class FinanceStore extends ChangeNotifier {
           id: 'expense_trend_up', type: 'risk', severity: 'medium',
           title: 'Расходы выросли на ${expChange.round()}%',
           description: 'Было ${fmt(prevExpense)} ₽, стало ${fmt(monthExpense)} ₽.',
+          titleArgs: {'pct': expChange.round().toString()},
           descArgs: {'pct': expChange.round().toString(), 'prev': fmt(prevExpense), 'curr': fmt(monthExpense)},
         ));
       }
@@ -651,6 +655,7 @@ class FinanceStore extends ChangeNotifier {
           id: 'income_trend_down', type: 'risk', severity: 'medium',
           title: 'Доход упал на ${incChange.abs().round()}%',
           description: 'Было ${fmt(prevIncome)} ₽, стало ${fmt(monthIncome)} ₽.',
+          titleArgs: {'pct': incChange.abs().round().toString()},
           descArgs: {'pct': incChange.abs().round().toString(), 'prev': fmt(prevIncome), 'curr': fmt(monthIncome)},
         ));
       }
@@ -687,6 +692,7 @@ class FinanceStore extends ChangeNotifier {
             id: 'category_spike_${entry.key}', type: 'risk', severity: 'medium',
             title: 'Рост «${cat3m.name}» на ${((curTotal - avg3m) / avg3m * 100).round()}%',
             description: 'Было ${fmt(avg3m)} ₽/мес, стало ${fmt(curTotal)} ₽.',
+            titleArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString()},
             descArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString(), 'avg': fmt(avg3m), 'curr': fmt(curTotal)},
           ));
         }
@@ -725,6 +731,7 @@ class FinanceStore extends ChangeNotifier {
         id: 'recurring_subscriptions', type: 'optimization', severity: 'low',
         title: 'Возможные подписки: $catNames',
         description: 'Ежемесячно ~${fmt(totalSub)} ₽. Проверьте, нужны ли они.',
+        titleArgs: {'categories': catNames},
         descArgs: {'categories': catNames, 'amount': fmt(totalSub)},
       ));
     }
@@ -739,6 +746,7 @@ class FinanceStore extends ChangeNotifier {
           id: 'dominant_${top.key}', type: 'optimization', severity: 'medium',
           title: '«$catName» — ${topPct.round()}% расходов',
           description: 'Потрачено ${fmt(top.value)} ₽ из ${fmt(monthExpense)} ₽.',
+          titleArgs: {'name': catName, 'pct': topPct.round().toString()},
           descArgs: {'name': catName, 'pct': topPct.round().toString(), 'amount': fmt(top.value), 'total': fmt(monthExpense)},
         ));
       }
@@ -747,7 +755,7 @@ class FinanceStore extends ChangeNotifier {
     // 15 — weekend splurge
     if (monthExpense > 0) {
       double weekendExp = 0;
-      for (final o in curOps.where((o) => o.type == 'expense')) {
+      for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o))) {
         final d = DateTime.tryParse(o.date);
         if (d != null && (d.weekday == 6 || d.weekday == 7)) weekendExp += o.amount;
       }
@@ -757,19 +765,21 @@ class FinanceStore extends ChangeNotifier {
           id: 'weekend_splurge', type: 'optimization', severity: 'low',
           title: '${weekendPct.round()}% расходов на выходных',
           description: 'Потрачено ${fmt(weekendExp)} ₽ за субботу и воскресенье.',
+          titleArgs: {'pct': weekendPct.round().toString()},
           descArgs: {'pct': weekendPct.round().toString(), 'amount': fmt(weekendExp)},
         ));
       }
     }
 
     // 16 — large cash withdrawal
-    for (final o in curOps.where((o) => o.type == 'expense' && o.amount > _recPrefs.largeCashMin)) {
+    for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && o.amount > _recPrefs.largeCashMin)) {
       final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
       final name = cat?.name ?? 'Без категории';
       _recommendations.add(Recommendation(
         id: 'large_cash_${o.id}', type: 'risk', severity: 'medium',
         title: 'Крупная трата: ${fmt(o.amount)} ₽',
         description: '«$name» — ${o.date.substring(0, 10)}.',
+        titleArgs: {'amount': fmt(o.amount)},
         descArgs: {'amount': fmt(o.amount), 'name': name, 'date': o.date.substring(0, 10)},
       ));
     }

@@ -30,6 +30,7 @@ class Recommendation {
     if (id.startsWith('no_budget_')) return 'no_budget';
     if (id.startsWith('idle_cash_')) return 'idle_cash';
     if (id.startsWith('goal_close_')) return 'goal_close';
+    if (id == 'dining_freq') return 'dining_frequent';
     if (id.startsWith('expense_trend_')) return 'expense_trend';
     if (id.startsWith('income_trend_')) return 'income_trend';
     if (id.startsWith('category_spike_')) return 'category_spike';

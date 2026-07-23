@@ -7,6 +7,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../budget/add_budget_screen.dart';
 import '../goals/add_goal_screen.dart';
+import '../settings/recommendations_settings_screen.dart';
 
 class RecommendationsScreen extends StatelessWidget {
   const RecommendationsScreen({super.key});
@@ -17,6 +18,12 @@ class RecommendationsScreen extends StatelessWidget {
       builder: (context, store, _) {
         return ScreenScaffold(
           title: context.tr('recommendations.title'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.tune, color: AppColors.textFor(context)),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationsSettingsScreen())),
+            ),
+          ],
           child: Column(
             children: store.recommendations.map((r) {
               Color color;

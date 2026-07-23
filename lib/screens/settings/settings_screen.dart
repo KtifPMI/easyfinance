@@ -15,7 +15,6 @@ import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../auth/pin_screen.dart';
-import 'recommendations_settings_screen.dart';
 
 
 class SettingsScreen extends StatefulWidget {
@@ -61,7 +60,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _darkModeItem(context),
           _currenciesItem(context),
           _pinItem(context),
-          _recommendationsItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
@@ -210,27 +208,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               activeThumbColor: AppColors.primary,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _recommendationsItem(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: InkWell(
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationsSettingsScreen()));
-          },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(context.tr('settings.recommendations'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
-              Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
-            ],
-          ),
         ),
       ),
     );

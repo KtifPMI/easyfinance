@@ -105,7 +105,7 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
                 value: value.clamp(min, max),
                 min: min,
                 max: max,
-                divisions: divisions ?? ((max - min) / (max > 100 ? 1000 : 1)).round(),
+                divisions: divisions ?? (max - min).round().clamp(1, 100),
                 onChanged: onChanged,
               ),
             ),
