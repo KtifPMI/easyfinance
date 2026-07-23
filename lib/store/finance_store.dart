@@ -471,7 +471,7 @@ class FinanceStore extends ChangeNotifier {
             id: 'high_food', type: 'risk', severity: 'high',
             title: 'Высокие расходы на питание',
             description: 'На питание уходит ${foodRatio.round()}% дохода.',
-            descArgs: {'pct': foodRatio.round().toString(), 'amount': fmt(allFood), 'income': fmt(monthIncome)},
+            descArgs: {'pct': foodRatio.round().toString(), 'amount': fmt(allFood), 'income': fmt(monthIncome), 'limit': _recPrefs.foodHighPct.round().toString()},
           ));
         } else if (foodRatio > _recPrefs.foodMediumPct) {
           _recommendations.add(Recommendation(
@@ -479,7 +479,7 @@ class FinanceStore extends ChangeNotifier {
             title: 'Питание отнимает ${foodRatio.round()}% дохода',
             description: 'Потрачено ${fmt(allFood)} ₽ из ${fmt(monthIncome)} ₽.',
             titleArgs: {'pct': foodRatio.round().toString()},
-            descArgs: {'amount': fmt(allFood), 'income': fmt(monthIncome)},
+            descArgs: {'amount': fmt(allFood), 'income': fmt(monthIncome), 'limit': _recPrefs.foodMediumPct.round().toString()},
           ));
         }
       }
@@ -530,13 +530,13 @@ class FinanceStore extends ChangeNotifier {
     if (monthIncome > 0 && housingTotal > 0) {
       final housingRatio = housingTotal / monthIncome * 100;
       if (housingRatio > _recPrefs.housingPct) {
-        _recommendations.add(Recommendation(
-          id: 'high_housing', type: 'risk', severity: 'high',
-          title: 'Жильё — ${housingRatio.round()}% от дохода',
-          description: 'На жильё уходит ${fmt(housingTotal)} ₽ из ${fmt(monthIncome)} ₽.',
-          titleArgs: {'pct': housingRatio.round().toString()},
-          descArgs: {'amount': fmt(housingTotal), 'income': fmt(monthIncome), 'pct': housingRatio.round().toString()},
-        ));
+          _recommendations.add(Recommendation(
+            id: 'high_housing', type: 'risk', severity: 'high',
+            title: 'Жильё — ${housingRatio.round()}% от дохода',
+            description: 'На жильё уходит ${fmt(housingTotal)} ₽ из ${fmt(monthIncome)} ₽.',
+            titleArgs: {'pct': housingRatio.round().toString()},
+            descArgs: {'amount': fmt(housingTotal), 'income': fmt(monthIncome), 'pct': housingRatio.round().toString(), 'limit': _recPrefs.housingPct.round().toString()},
+          ));
       }
     }
 
@@ -556,7 +556,7 @@ class FinanceStore extends ChangeNotifier {
           id: 'low_savings', type: 'risk', severity: 'medium',
           title: 'Низкая норма сбережения',
           description: 'Откладывается ${fmt(saveAmt)} ₽ (${savingsRate.round()}%).',
-          descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome), 'target': fmt(monthIncome * _recPrefs.savingsGoodPct / 100)},
+          descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome), 'good_pct': _recPrefs.savingsGoodPct.round().toString(), 'target': fmt(monthIncome * _recPrefs.savingsGoodPct / 100)},
         ));
       } else if (savingsRate >= _recPrefs.savingsGoodPct) {
         final saveAmt = monthIncome - monthExpense;
