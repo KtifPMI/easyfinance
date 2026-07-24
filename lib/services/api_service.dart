@@ -22,7 +22,7 @@ class ApiService {
 
   Future<List<Account>> getAccounts() async {
     final json = await _client.get('accounts.get', params: {
-      'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,icon,include_in_total,created_at,updated_at,user_id',
+      'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,created_at,updated_at,user_id',
     });
     return _parseList(json, 'accounts', Account.fromJson);
   }
