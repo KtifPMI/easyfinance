@@ -45,11 +45,18 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('budget.get', 'budget.get'),
     _MethodItem('budget.post', 'budget.post'),
     _MethodItem('budget.set', 'budget.set'),
+    _MethodItem('budget.categoriesget', 'budget.categoriesget'),
+    _MethodItem('budget.categoriespost', 'budget.categoriespost'),
+    _MethodItem('budget.categoriesset', 'budget.categoriesset'),
     _MethodItem('users.get', 'users.get'),
     _MethodItem('users.post — with goals', 'users.post'),
     _MethodItem('goals.get', 'goals.get'),
     _MethodItem('goals.post', 'goals.post'),
     _MethodItem('goals.set', 'goals.set'),
+    _MethodItem('targets.get', 'targets.get'),
+    _MethodItem('targets.post', 'targets.post'),
+    _MethodItem('targets.set', 'targets.set'),
+    _MethodItem('tags.get', 'tags.get'),
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
   ];
 
@@ -186,6 +193,57 @@ class _DebugScreenState extends State<DebugScreen> {
     }
   }
 }''',
+    'budget.categoriespost': '''{
+  "request": {
+    "request_data": {
+      "budgets": [
+        {
+          "category_id": "CATEGORY_ID",
+          "planned": "30000",
+          "period": "monthly"
+        }
+      ]
+    }
+  }
+}''',
+    'budget.categoriesset': '''{
+  "request": {
+    "request_data": {
+      "budgets": [
+        {
+          "id": "BUDGET_ID",
+          "planned": "35000"
+        }
+      ]
+    }
+  }
+}''',
+    'targets.post': '''{
+  "request": {
+    "request_data": {
+      "targets": [
+        {
+          "title": "New Target",
+          "amount": 100000,
+          "amount_done": 0,
+          "end": "2026-12-31"
+        }
+      ]
+    }
+  }
+}''',
+    'targets.set': '''{
+  "request": {
+    "request_data": {
+      "targets": [
+        {
+          "id": "TARGET_ID",
+          "amount_done": 50000
+        }
+      ]
+    }
+  }
+}''',
   };
 
   String _templateKey(_MethodItem m) {
@@ -195,7 +253,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Map<String, String> _builtinParams(String method) {
     if (method == 'accounts.get') {
-      return {'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,created_at,updated_at,user_id'};
+      return {'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,icon,include_in_total,created_at,updated_at,user_id', 'limit': '500'};
     }
     return {};
   }
@@ -495,7 +553,7 @@ class _DebugScreenState extends State<DebugScreen> {
               ),
             ),
           )),
-          if (_selectedMethod == 'accounts.get')
+          if (_selectedMethod != null && _selectedMethod!.endsWith('.get') && !_selectedMethod!.startsWith('POST '))
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: TextField(
