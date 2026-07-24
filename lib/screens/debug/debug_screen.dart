@@ -253,7 +253,7 @@ class _DebugScreenState extends State<DebugScreen> {
 
   Map<String, String> _builtinParams(String method) {
     if (method == 'accounts.get') {
-      return {};
+      return {'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,icon,include_in_total,created_at,updated_at,user_id'};
     }
     return {};
   }
