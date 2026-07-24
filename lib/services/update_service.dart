@@ -74,22 +74,10 @@ class UpdateService {
     try {
       final request = http.Request('GET', Uri.parse(url));
       final response = await client.send(request).timeout(const Duration(minutes: 5));
-      final contentLength = response.contentLength ?? 0;
 
       final sink = file.openWrite();
-      int downloaded = 0;
       await for (final chunk in response.stream) {
         sink.add(chunk);
-        downloaded += chunk.length;
-        if (contentLength > 0 && context.mounted) {
-          final progress = (downloaded / contentLength * 100).round();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.tr('update.downloading', namedArgs: {'progress': '$progress'})),
-              duration: const Duration(milliseconds: 500),
-            ),
-          );
-        }
       }
       await sink.close();
     } finally {
