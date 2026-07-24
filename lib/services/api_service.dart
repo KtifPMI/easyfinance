@@ -21,15 +21,12 @@ class ApiService {
   ApiClient get client => _client;
 
   Future<List<Account>> getAccounts() async {
-    final json = await _client.get('accounts.get', params: {
-      'fields': 'id,name,type_id,currency_id,state,balance,init_balance,description,icon,include_in_total,created_at,updated_at,user_id',
-      'limit': '500',
-    });
+    final json = await _client.get('accounts.get');
     return _parseList(json, 'accounts', Account.fromJson);
   }
 
   Future<List<Operation>> getOperations({String? from, String? to}) async {
-    final params = <String, String>{'limit': '1000'};
+    final params = <String, String>{};
     if (from != null) params['from'] = from;
     if (to != null) params['to'] = to;
     final json = await _client.get('operations.get', params: params);
