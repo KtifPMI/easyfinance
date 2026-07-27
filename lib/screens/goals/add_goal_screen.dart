@@ -54,7 +54,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   };
 
   Map<String, String> _debtCategories(BuildContext context) => {
-    'debt_mortgage': context.tr('goal_cat.debt_mortgage'),
     'debt_loan': context.tr('goal_cat.debt_loan'),
     'debt_card': context.tr('goal_cat.debt_card'),
     'debt_other': context.tr('goal_cat.debt_other'),
@@ -62,7 +61,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
   Map<String, String> _currentCategories(BuildContext context) {
     if (_type == 'save') return _saveCategories(context);
-    if (_type == 'pay' || _type == 'mortgage') return _debtCategories(context);
+    if (_type == 'pay') return _debtCategories(context);
     return {};
   }
 
@@ -237,32 +236,16 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           children: [
             // Photo
             Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 120, height: 120,
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(Icons.monetization_on, size: 48, color: AppColors.primary),
-                  ),
-                  Positioned(
-                    bottom: 0, right: 0,
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
-                        child: Text(context.tr('goals.change_photo'), style: TextStyle(fontSize: 11, color: Colors.white)),
-                      ),
-                    ),
-                  ),
-                ],
+              child: Container(
+                width: 120, height: 120,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(Icons.monetization_on, size: 48, color: AppColors.primary),
               ),
             ),
             const SizedBox(height: 8),
-            Center(child: Text(context.tr('goals.opens_in_new_window'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary))),
             const SizedBox(height: 24),
 
             // Блок 1
@@ -276,7 +259,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               items: [
                 DropdownMenuItem(value: 'pay', child: Text(context.tr('goals.type_pay'))),
                 DropdownMenuItem(value: 'save', child: Text(context.tr('goals.type_save'))),
-                DropdownMenuItem(value: 'mortgage', child: Text(context.tr('goals.type_mortgage'))),
               ],
               onChanged: _onTypeChanged,
             ),
