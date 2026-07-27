@@ -11,6 +11,7 @@ class OperationListItem extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final VoidCallback onTap;
+  final bool isPending;
 
   const OperationListItem({
     super.key,
@@ -23,6 +24,7 @@ class OperationListItem extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.onTap,
+    this.isPending = false,
   });
 
   String get _amountPrefix {
@@ -74,6 +76,10 @@ class OperationListItem extends StatelessWidget {
               ),
             ),
             Text('$_amountPrefix$amt $sym', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _amountColor(context))),
+            if (isPending) ...[
+              const SizedBox(width: 4),
+              Icon(Icons.sync, size: 14, color: AppColors.textSecondary),
+            ],
           ],
         ),
       ),

@@ -16,6 +16,7 @@ class Operation {
   final String? comment;
   final String? tags;
   final bool isDeleted;
+  final bool isPending;
 
   Operation({
     required this.id,
@@ -29,16 +30,17 @@ class Operation {
     this.comment,
     this.tags,
     this.isDeleted = false,
+    this.isPending = false,
   });
 
-  Operation copyWith({String? id, bool? isDeleted, String? tags}) =>
-      Operation(id: id ?? this.id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, tags: tags ?? this.tags, isDeleted: isDeleted ?? this.isDeleted);
+  Operation copyWith({String? id, bool? isDeleted, String? tags, bool? isPending}) =>
+      Operation(id: id ?? this.id, type: type, amount: amount, currency: currency, date: date, accountId: accountId, toAccountId: toAccountId, categoryId: categoryId, comment: comment, tags: tags ?? this.tags, isDeleted: isDeleted ?? this.isDeleted, isPending: isPending ?? this.isPending);
 
   Map<String, dynamic> toJson() => {
     'id': id, 'type': type, 'amount': amount, 'currency': currency,
     'date': date, 'account_id': accountId,
     'to_account_id': toAccountId, 'category_id': categoryId,
-    'comment': comment, 'tags': tags, 'is_deleted': isDeleted,
+    'comment': comment, 'tags': tags, 'is_deleted': isDeleted, 'is_pending': isPending,
   };
 
   factory Operation.fromLocalJson(Map<String, dynamic> json) => Operation(
@@ -53,6 +55,7 @@ class Operation {
     comment: json['comment']?.toString(),
     tags: json['tags']?.toString(),
     isDeleted: json['is_deleted'] == true,
+    isPending: json['is_pending'] == true,
   );
 
   factory Operation.fromJson(Map<String, dynamic> json) {

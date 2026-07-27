@@ -263,6 +263,9 @@ class FinanceStore extends ChangeNotifier {
 
     final api = authService.apiService;
 
+    await syncPendingOperations();
+    final pendingOps = _operations.where((op) => op.isPending).toList();
+
     try {
       final user = await api.getUser();
       _currentUser = user;
@@ -290,6 +293,13 @@ class FinanceStore extends ChangeNotifier {
       _error = e.message;
     } catch (e) {
       _error ??= 'Ошибка загрузки операций: $e';
+    }
+
+    final serverIds = _operations.map((o) => o.id).toSet();
+    for (final p in pendingOps) {
+      if (!serverIds.contains(p.id)) {
+        _operations.insert(0, p);
+      }
     }
 
     try {
@@ -825,39 +835,43 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
+  Map<String, dynamic> _buildOperationPayload(Operation op, {String? existingId, String? createdAt, String? updatedAt}) {
+    final now = DateTime.now();
+    final operationDate = DateTime.tryParse(op.date) ?? now;
+    final dateStr = formatApiDateTime(operationDate);
+    final timeStr = '${operationDate.hour.toString().padLeft(2, '0')}:${operationDate.minute.toString().padLeft(2, '0')}:${operationDate.second.toString().padLeft(2, '0')}';
+    final created = createdAt ?? formatApiDateTime(now);
+    final updated = updatedAt ?? formatApiDateTime(now);
+    final amount = op.type == 'income' ? op.amount : -op.amount;
+    return {
+      if (existingId != null) 'id': existingId,
+      'type': _typeToApi(op.type),
+      'user_id': apiClient.userId ?? '',
+      'account_id': op.accountId,
+      if (op.categoryId != null) 'category_id': op.categoryId,
+      'currency_id': _currencyIdForAccount(op.accountId),
+      'amount': amount.toStringAsFixed(2),
+      'date': dateStr,
+      'time': timeStr,
+      if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
+      if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
+      if (op.comment != null) 'comment': op.comment,
+      if (op.tags != null) 'tags': op.tags,
+      'accepted': true,
+      if (existingId == null) 'client_id': now.microsecondsSinceEpoch,
+      'created_at': created,
+      'updated_at': updated,
+      'deleted_at': null,
+    };
+  }
+
   Future<void> addOperation(Operation op) async {
     _error = null;
     if (authService.isAuthenticated) {
       try {
         final now = DateTime.now();
-        final operationDate = DateTime.tryParse(op.date) ?? now;
-        final dateStr = formatApiDateTime(operationDate);
-        final timeStr = '${operationDate.hour.toString().padLeft(2, '0')}:${operationDate.minute.toString().padLeft(2, '0')}:${operationDate.second.toString().padLeft(2, '0')}';
-        final createdAt = formatApiDateTime(now);
-        final amount = op.type == 'income' ? op.amount : -op.amount;
-        final clientId = now.microsecondsSinceEpoch;
-
-        final response = await authService.apiService.addOperation({
-          'operations': [{
-            'type': _typeToApi(op.type),
-            'user_id': apiClient.userId ?? '',
-            'account_id': op.accountId,
-            if (op.categoryId != null) 'category_id': op.categoryId,
-            'currency_id': _currencyIdForAccount(op.accountId),
-            'amount': amount.toStringAsFixed(2),
-            'date': dateStr,
-            'time': timeStr,
-            if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
-            if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
-            if (op.comment != null) 'comment': op.comment,
-            if (op.tags != null) 'tags': op.tags,
-            'accepted': true,
-            'client_id': clientId,
-            'created_at': createdAt,
-            'updated_at': createdAt,
-            'deleted_at': null,
-          }]
-        });
+        final payload = _buildOperationPayload(op, createdAt: formatApiDateTime(now), updatedAt: formatApiDateTime(now));
+        final response = await authService.apiService.addOperation({'operations': [payload]});
         final serverOperations = response['operations'] as List<dynamic>?;
         final serverId = serverOperations?.isNotEmpty == true
             ? (serverOperations!.first as Map<String, dynamic>)['id']?.toString()
@@ -868,13 +882,13 @@ class FinanceStore extends ChangeNotifier {
         op = op.copyWith(id: serverId);
       } on ApiException catch (e) {
         _error = e.message;
-        notifyListeners();
-        return;
+        op = op.copyWith(isPending: true);
       } catch (e) {
         _error = 'Ошибка добавления: $e';
-        notifyListeners();
-        return;
+        op = op.copyWith(isPending: true);
       }
+    } else {
+      op = op.copyWith(isPending: true);
     }
     _operations.insert(0, op);
     _recalcAccountBalances();
@@ -892,9 +906,36 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
+  Future<void> syncPendingOperations() async {
+    if (!authService.isAuthenticated) return;
+    final pending = _operations.where((op) => op.isPending).toList();
+    if (pending.isEmpty) return;
+    for (final op in pending) {
+      try {
+        final now = DateTime.now();
+        final payload = _buildOperationPayload(op, createdAt: formatApiDateTime(now), updatedAt: formatApiDateTime(now));
+        final response = await authService.apiService.addOperation({'operations': [payload]});
+        final serverOperations = response['operations'] as List<dynamic>?;
+        final serverId = serverOperations?.isNotEmpty == true
+            ? (serverOperations!.first as Map<String, dynamic>)['id']?.toString()
+            : null;
+        if (serverId != null && serverId.isNotEmpty) {
+          final idx = _operations.indexWhere((o) => o.id == op.id);
+          if (idx >= 0) {
+            _operations[idx] = _operations[idx].copyWith(id: serverId, isPending: false);
+          }
+        }
+      } catch (e) {
+        debugPrint('Sync pending op ${op.id} failed: $e');
+      }
+    }
+    await _saveCache();
+    notifyListeners();
+  }
+
   Future<void> updateOperation(Operation op) async {
     _error = null;
-    if (authService.isAuthenticated) {
+    if (authService.isAuthenticated && !op.isPending) {
       try {
         final now = DateTime.now();
         final operationDate = DateTime.tryParse(op.date) ?? now;
@@ -943,6 +984,14 @@ class FinanceStore extends ChangeNotifier {
   Future<void> deleteOperation(String id) async {
     _error = null;
     final op = _operations.firstWhere((o) => o.id == id);
+    if (op.isPending) {
+      _operations.removeWhere((o) => o.id == id);
+      _recalcAccountBalances();
+      _generateRecommendations();
+      await _saveCache();
+      notifyListeners();
+      return;
+    }
     if (authService.isAuthenticated) {
       try {
         await authService.apiService.setOperation({

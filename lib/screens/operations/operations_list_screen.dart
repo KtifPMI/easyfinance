@@ -97,6 +97,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             icon: iconData,
                             iconColor: iconColor,
                             onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+                            isPending: op.isPending,
                           );
                         }).toList(),
                       ),
