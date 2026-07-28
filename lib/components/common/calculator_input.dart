@@ -61,7 +61,7 @@ class _CalculatorInputState extends State<CalculatorInput> {
     while (i < s.length) {
       if (s[i] == '+') { i++; result += _term(s, i); }
       else if (s[i] == '-') { i++; result -= _term(s, i); }
-      else break;
+      else { break; }
     }
     return result;
   }
@@ -71,7 +71,7 @@ class _CalculatorInputState extends State<CalculatorInput> {
     while (i < s.length) {
       if (s[i] == '*') { i++; result *= _factor(s, i); }
       else if (s[i] == '/') { i++; final d = _factor(s, i); if (d != 0) result /= d; }
-      else break;
+      else { break; }
     }
     return result;
   }
@@ -84,7 +84,7 @@ class _CalculatorInputState extends State<CalculatorInput> {
       return val;
     }
     final start = i;
-    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) i++;
+    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) { i++; }
     return double.tryParse(s.substring(start, i)) ?? 0;
   }
 

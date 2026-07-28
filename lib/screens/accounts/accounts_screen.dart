@@ -93,7 +93,8 @@ class AccountsScreen extends StatelessWidget {
                         ),
                       ),
                     );
-                  }).toList(),
+                    }),
+                  ],
                 ),
         );
       },

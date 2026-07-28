@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../models/operation.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
-import '../../utils/format.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   const AiAssistantScreen({super.key});
@@ -59,7 +58,6 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     final monthExpense = store.operations.where((o) => o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
 
     if (q.contains('баланс') || (q.contains('сколько') && q.contains('денег')) || q.contains('balance') || q.contains('money')) {
-      final total = store.accounts.fold(0.0, (s, a) => s + a.balance);
       return '${context.tr('ai.balance_title')}\n\n${store.accounts.map((a) => '• ${a.name}: ${store.fmt(a.balance, fromCurrency: a.currency)}').join('\n')}';
     }
 
@@ -67,7 +65,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       final catName = store.categories.where((c) => q.contains(c.name.toLowerCase())).firstOrNull;
       if (catName != null) {
         final total = store.operations.where((o) => o.categoryId == catName.id && o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
-        return '${context.tr('ai.category_total', namedArgs: {'category': catName.name, 'amount': store.fmt(total)})}';
+        return context.tr('ai.category_total', namedArgs: {'category': catName.name, 'amount': store.fmt(total)});
       }
       final totals = <String, double>{};
       for (final o in store.operations.where((o) => o.type == 'expense' && inRange(o))) {
@@ -79,11 +77,11 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     }
 
     if (q.contains('трат') || q.contains('расход') || q.contains('expense') || q.contains('spent')) {
-      return '${context.tr('ai.month_expense', namedArgs: {'amount': store.fmt(monthExpense)})}';
+      return context.tr('ai.month_expense', namedArgs: {'amount': store.fmt(monthExpense)});
     }
 
     if (q.contains('доход') || q.contains('заработ') || q.contains('income') || q.contains('earn')) {
-      return '${context.tr('ai.month_income', namedArgs: {'income': store.fmt(monthIncome), 'expense': store.fmt(monthExpense), 'balance': store.fmt(monthIncome - monthExpense)})}';
+      return context.tr('ai.month_income', namedArgs: {'income': store.fmt(monthIncome), 'expense': store.fmt(monthExpense), 'balance': store.fmt(monthIncome - monthExpense)});
     }
 
     if (q.contains('счёт') || q.contains('счет') || q.contains('account')) {

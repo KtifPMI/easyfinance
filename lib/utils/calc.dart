@@ -70,7 +70,6 @@ double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime n
   if (moneyBalance == 0) return 0;
 
   final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
-  final startOfCurrent = DateTime(now.year, now.month, 1);
   final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
   final threeMonthOps = operations.where((o) {
@@ -144,7 +143,7 @@ double _calcIncome(List<Operation> operations, DateTime now) {
 }
 
 double _calcFinState(double money, double budget, double debt, double income) {
-  double _weightedScore(double value, List<double> ranges) {
+  double weightedScore(double value, List<double> ranges) {
     for (int i = 0; i < ranges.length - 1; i++) {
       if (value <= ranges[i + 1]) {
         final idx = i + 1;
@@ -160,10 +159,10 @@ double _calcFinState(double money, double budget, double debt, double income) {
   final debtRanges = [0.0, 30.0, 60.0, 100.0];
   final incomeRanges = [0.0, 5.0, 10.0, 20.0];
 
-  final moneyWeighted = _weightedScore(money, moneyRanges) * 35;
-  final budgetWeighted = _weightedScore(budget, budgetRanges) * 20;
-  final debtWeighted = _weightedScore(debt, debtRanges) * 15;
-  final incomeWeighted = _weightedScore(income, incomeRanges) * 30;
+  final moneyWeighted = weightedScore(money, moneyRanges) * 35;
+  final budgetWeighted = weightedScore(budget, budgetRanges) * 20;
+  final debtWeighted = weightedScore(debt, debtRanges) * 15;
+  final incomeWeighted = weightedScore(income, incomeRanges) * 30;
 
   return ((moneyWeighted + budgetWeighted + debtWeighted + incomeWeighted) / 3).clamp(0, 300);
 }

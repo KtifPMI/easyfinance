@@ -107,6 +107,7 @@ class GoalsListScreen extends StatelessWidget {
                           ],
                         ),
                       ),
+                      ),
                     );
                   }).toList(),
                 ),
