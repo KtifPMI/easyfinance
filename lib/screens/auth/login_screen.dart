@@ -28,14 +28,15 @@ class _LoginScreenState extends State<LoginScreen> {
     final restored = await store.authService.tryRestoreSession();
     final prefs = await SharedPreferences.getInstance();
     final hasPin = prefs.getString('easyfinance_pin')?.isNotEmpty ?? false;
+    final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
+    final initialRoute = hasPin ? '/pin' : (startScreen == 'addOperation' ? '/add-operation' : '/main');
 
     if (restored && mounted) {
-      // Navigate immediately with cached data, refresh in background
-      Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
+      Navigator.pushReplacementNamed(context, initialRoute);
       await store.fetchAllData();
       NotificationService().rescheduleAll();
     } else if (mounted && !store.useMock) {
-      Navigator.pushReplacementNamed(context, hasPin ? '/pin' : '/main');
+      Navigator.pushReplacementNamed(context, initialRoute);
     }
   }
 

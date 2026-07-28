@@ -8,20 +8,33 @@ class FinHealthCard extends StatelessWidget {
 
   const FinHealthCard({super.key, required this.indicators});
 
-  Color _color(int value, int threshold) {
-    if (value >= threshold) return AppColors.success;
-    if (value >= threshold ~/ 2) return AppColors.warning;
+  Color _color(double value, List<double> ranges) {
+    if (value >= ranges[2]) return AppColors.success;
+    if (value >= ranges[1]) return AppColors.warning;
     return AppColors.expense;
   }
 
   @override
   Widget build(BuildContext context) {
+    final moneyRanges = [0.0, 2.0, 5.0];
+    final budgetRanges = [0.0, 3.0, 15.0];
+    final debtRanges = [0.0, 30.0, 60.0];
+    final incomeRanges = [0.0, 5.0, 10.0];
+
+    final finRanges = [0.0, 100.0, 200.0];
+
+    final moneyColor = _color(indicators.money, moneyRanges);
+    final budgetColor = _color(indicators.budget, budgetRanges);
+    final debtColor = _color(indicators.debt, debtRanges);
+    final incomeColor = _color(indicators.income, incomeRanges);
+    final finColor = _color(indicators.finState, finRanges);
+
     final items = [
-      (context.tr('health.status'), Icons.favorite, indicators.finState, 60),
-      (context.tr('health.liquidity'), Icons.water_drop, indicators.money, 50),
-      (context.tr('health.budget'), Icons.bar_chart, indicators.budget, 50),
-      (context.tr('health.debts'), Icons.account_balance, indicators.debt, 70),
-      (context.tr('health.savings'), Icons.savings, indicators.savings, 40),
+      ('health.status', Icons.favorite, indicators.finState, finColor, indicators.finStateTip),
+      ('health.liquidity', Icons.water_drop, indicators.money, moneyColor, indicators.moneyTip),
+      ('health.budget', Icons.bar_chart, indicators.budget, budgetColor, indicators.budgetTip),
+      ('health.debts', Icons.account_balance, indicators.debt, debtColor, indicators.debtTip),
+      ('health.savings', Icons.savings, indicators.income, incomeColor, indicators.incomeTip),
     ];
 
     return Container(
@@ -40,24 +53,38 @@ class FinHealthCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: items.map((item) {
-              final (label, icon, value, threshold) = item;
-              final c = _color(value, threshold);
-              return Column(
-                children: [
-                  Container(
-                    width: 52, height: 52,
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: c, width: 3)),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(icon, size: 14, color: c),
-                        Text('$value%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: c)),
+              final (labelKey, icon, value, c, tipKey) = item;
+              final displayValue = value.round();
+              return GestureDetector(
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(context.tr(labelKey), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      content: SingleChildScrollView(child: Text(context.tr(tipKey), style: TextStyle(fontSize: 14))),
+                      actions: [
+                        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(label, style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
-                ],
+                  );
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      width: 52, height: 52,
+                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: c, width: 3)),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(icon, size: 14, color: c),
+                          Text('$displayValue%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: c)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(context.tr(labelKey), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
+                  ],
+                ),
               );
             }).toList(),
           ),

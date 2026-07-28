@@ -29,6 +29,7 @@ class Account {
   final String type;
   final bool includeInTotal;
   final bool isArchived;
+  final bool isFavorite;
   final double initBalance;
   final String createdAt;
   final String updatedAt;
@@ -44,18 +45,20 @@ class Account {
     this.type = 'account',
     this.includeInTotal = true,
     this.isArchived = false,
+    this.isFavorite = false,
     this.initBalance = 0,
     this.createdAt = '',
     this.updatedAt = '',
   });
 
-  Account copyWith({String? id, double? balance, String? currencyId}) =>
-      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt);
+  Account copyWith({String? id, double? balance, String? currencyId, bool? isFavorite}) =>
+      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived, isFavorite: isFavorite ?? this.isFavorite, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt);
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'balance': balance, 'currency': currency,
     'currency_id': currencyId, 'icon': icon, 'color': color, 'type': type,
     'include_in_total': includeInTotal, 'is_archived': isArchived,
+    'is_favorite': isFavorite,
     'init_balance': initBalance, 'created_at': createdAt, 'updated_at': updatedAt,
   };
 
@@ -70,6 +73,7 @@ class Account {
     type: json['type']?.toString() ?? 'account',
     includeInTotal: json['include_in_total'] == true,
     isArchived: json['is_archived'] == true,
+    isFavorite: json['is_favorite'] == true,
     initBalance: (json['init_balance'] as num?)?.toDouble() ?? 0,
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',

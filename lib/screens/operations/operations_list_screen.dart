@@ -18,6 +18,8 @@ class OperationsListScreen extends StatefulWidget {
 
 class _OperationsListScreenState extends State<OperationsListScreen> {
   String _filter = 'all';
+  String _periodFilter = 'all';
+  String? _accountIdFilter;
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +28,23 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         var ops = store.operations.toList();
         if (_filter == 'income') ops = ops.where((o) => o.type == 'income').toList();
         if (_filter == 'expense') ops = ops.where((o) => o.type == 'expense').toList();
+        if (_accountIdFilter != null) ops = ops.where((o) => o.accountId == _accountIdFilter || o.toAccountId == _accountIdFilter).toList();
+
+        if (_periodFilter != 'all') {
+          final now = DateTime.now();
+          DateTime? from;
+          switch (_periodFilter) {
+            case 'day': from = DateTime(now.year, now.month, now.day); break;
+            case 'week': from = now.subtract(Duration(days: now.weekday - 1)); from = DateTime(from.year, from.month, from.day); break;
+            case 'month': from = DateTime(now.year, now.month, 1); break;
+          }
+          if (from != null) {
+            ops = ops.where((o) {
+              final d = DateTime.tryParse(o.date);
+              return d != null && d.isAfter(from!.subtract(const Duration(seconds: 1)));
+            }).toList();
+          }
+        }
 
         final grouped = groupByDay(ops);
 
@@ -40,6 +59,15 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ScreenHint(hintId: 'operations', text: 'Список всех операций — доходов, расходов и переводов. Используйте фильтр сверху, чтобы посмотреть только расходы или доходы.'),
+              Row(
+                children: [
+                  _quickAction(context, Icons.add_circle_outline, context.tr('quick_actions.income'), AppColors.success, () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'})),
+                  _quickAction(context, Icons.remove_circle_outline, context.tr('quick_actions.expense'), AppColors.expense, () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'})),
+                  _quickAction(context, Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'})),
+                  _quickAction(context, Icons.document_scanner, 'Чек', AppColors.accent, () => Navigator.pushNamed(context, '/scan-receipt')),
+                ],
+              ),
+              const SizedBox(height: 12),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -50,6 +78,50 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    AppChip(label: context.tr('filters.all_time'), active: _periodFilter == 'all', onPressed: () => setState(() => _periodFilter = 'all')),
+                    AppChip(label: context.tr('filters.day'), active: _periodFilter == 'day', onPressed: () => setState(() => _periodFilter = 'day')),
+                    AppChip(label: context.tr('filters.week'), active: _periodFilter == 'week', onPressed: () => setState(() => _periodFilter = 'week')),
+                    AppChip(label: context.tr('filters.month'), active: _periodFilter == 'month', onPressed: () => setState(() => _periodFilter = 'month')),
+                  ],
+                ),
+              ),
+              if (store.accounts.length > 1) ...[
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 36,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ChoiceChip(
+                          label: Text(context.tr('filters.all_accounts'), style: const TextStyle(fontSize: 12)),
+                          selected: _accountIdFilter == null,
+                          onSelected: (_) => setState(() => _accountIdFilter = null),
+                          selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                          side: BorderSide.none,
+                        ),
+                      ),
+                      ...store.accounts.map((a) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ChoiceChip(
+                          label: Text(a.name, style: const TextStyle(fontSize: 12)),
+                          selected: _accountIdFilter == a.id,
+                          onSelected: (_) => setState(() => _accountIdFilter = _accountIdFilter == a.id ? null : a.id),
+                          selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                          side: BorderSide.none,
+                        ),
+                      )),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               if (grouped.isEmpty)
                 Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
@@ -108,6 +180,26 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _quickAction(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
+              child: Icon(icon, size: 20, color: color),
+            ),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
     );
   }
 }

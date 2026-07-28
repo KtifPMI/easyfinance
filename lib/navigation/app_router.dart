@@ -54,10 +54,15 @@ class AppRouter {
     }
     if (settings.name == addPlannedPayment) {
       final arg = settings.arguments;
+      if (arg is FinancialEvent) {
+        return MaterialPageRoute(
+          builder: (_) => AddPlannedPaymentScreen(existing: arg),
+          settings: settings,
+        );
+      }
+      final presetDate = arg is Map ? arg['date'] as String? : null;
       return MaterialPageRoute(
-        builder: (_) => AddPlannedPaymentScreen(
-          existing: arg is FinancialEvent ? arg : null,
-        ),
+        builder: (_) => AddPlannedPaymentScreen(presetDate: presetDate),
         settings: settings,
       );
     }

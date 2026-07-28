@@ -156,6 +156,7 @@ class _PinScreenState extends State<PinScreen> {
             Text(_error, style: TextStyle(color: AppColors.expense, fontSize: 13)),
           ],
           const Spacer(),
+          const SizedBox(height: 24),
           _buildKeypad(),
           const SizedBox(height: 24),
         ],

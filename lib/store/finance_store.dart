@@ -56,6 +56,14 @@ class FinanceStore extends ChangeNotifier {
     _recPrefs = await RecommendationPrefs.load();
   }
 
+  Future<void> _applyFavoriteStates() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (int i = 0; i < _accounts.length; i++) {
+      final isFav = prefs.getBool('fav_${_accounts[i].id}') ?? false;
+      if (isFav) _accounts[i] = _accounts[i].copyWith(isFavorite: true);
+    }
+  }
+
   Future<void> _loadFromCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -67,6 +75,7 @@ class FinanceStore extends ChangeNotifier {
     if (accountsRaw != null) {
       final list = jsonDecode(accountsRaw) as List<dynamic>;
       _accounts = list.map((e) => Account.fromLocalJson(e as Map<String, dynamic>)).toList();
+      await _applyFavoriteStates();
       _useMock = false;
     }
     if (operationsRaw != null) {
@@ -281,6 +290,7 @@ class FinanceStore extends ChangeNotifier {
 
     try {
       _accounts = await api.getAccounts();
+      await _applyFavoriteStates();
     } on ApiException catch (e) {
       _error = e.message;
     } catch (e) {
@@ -867,6 +877,11 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addOperation(Operation op) async {
     _error = null;
+    if (_operations.length >= 1000) {
+      _error = 'Достигнут лимит в 1000 операций. Удалите старые операции для добавления новых.';
+      notifyListeners();
+      return;
+    }
     if (authService.isAuthenticated) {
       try {
         final now = DateTime.now();
@@ -1109,6 +1124,15 @@ class FinanceStore extends ChangeNotifier {
     _recalcAccountBalances();
     await _saveCache();
     notifyListeners();
+  }
+
+  void updateAccountFavorite(String accountId, bool isFavorite) {
+    final idx = _accounts.indexWhere((a) => a.id == accountId);
+    if (idx >= 0) {
+      _accounts[idx] = _accounts[idx].copyWith(isFavorite: isFavorite);
+      _saveCache();
+      notifyListeners();
+    }
   }
 
   Future<void> deleteAccount(String id) async {

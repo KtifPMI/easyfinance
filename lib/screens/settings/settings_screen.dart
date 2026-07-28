@@ -60,6 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _darkModeItem(context),
           _currenciesItem(context),
           _pinItem(context),
+          _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
@@ -208,6 +209,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
               activeThumbColor: AppColors.primary,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _startScreenItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: InkWell(
+          onTap: () async {
+            final prefs = await SharedPreferences.getInstance();
+            final current = prefs.getString('easyfinance_start_screen') ?? 'main';
+            if (!mounted) return;
+            final result = await showDialog<String>(
+              context: context,
+              builder: (ctx) => SimpleDialog(
+                title: Text(context.tr('settings.start_screen')),
+                children: [
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(ctx, 'main'),
+                    child: Row(children: [
+                      Icon(Icons.home, size: 20, color: current == 'main' ? AppColors.primary : AppColors.textSecondary),
+                      const SizedBox(width: 12),
+                      Text(context.tr('settings.start_home')),
+                    ]),
+                  ),
+                  SimpleDialogOption(
+                    onPressed: () => Navigator.pop(ctx, 'addOperation'),
+                    child: Row(children: [
+                      Icon(Icons.add_circle_outline, size: 20, color: current == 'addOperation' ? AppColors.primary : AppColors.textSecondary),
+                      const SizedBox(width: 12),
+                      Text(context.tr('settings.start_operation')),
+                    ]),
+                  ),
+                ],
+              ),
+            );
+            if (result != null) await prefs.setString('easyfinance_start_screen', result);
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(context.tr('settings.start_screen'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
+            ],
+          ),
         ),
       ),
     );

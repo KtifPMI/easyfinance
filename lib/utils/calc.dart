@@ -3,54 +3,199 @@ import '../models/budget.dart';
 import '../models/operation.dart';
 
 class FinHealthIndicators {
-  final int finState;
-  final int money;
-  final int budget;
-  final int debt;
-  final int savings;
+  final double finState;
+  final double money;
+  final double budget;
+  final double debt;
+  final double income;
+  final String moneyTip;
+  final String budgetTip;
+  final String debtTip;
+  final String incomeTip;
+  final String finStateTip;
 
-  FinHealthIndicators({required this.finState, required this.money, required this.budget, required this.debt, required this.savings});
+  FinHealthIndicators({
+    required this.finState,
+    required this.money,
+    required this.budget,
+    required this.debt,
+    required this.income,
+    this.moneyTip = '',
+    this.budgetTip = '',
+    this.debtTip = '',
+    this.incomeTip = '',
+    this.finStateTip = '',
+  });
 }
 
 FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operations, List<Budget> budgets) {
   final now = DateTime.now();
-  final start = DateTime(now.year, now.month, 1);
-  final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
-  final monthOps = operations.where((o) => !o.isDeleted && isInPeriod(o.date, start, end)).toList();
-  final monthIncome = sumByType(monthOps, 'income');
-  final monthExpense = sumByType(monthOps, 'expense');
-  final totalBalance = getTotalBalance(accounts);
+  final moneyVal = _calcMoney(accounts, operations, now);
+  final budgetVal = _calcBudget(budgets, now);
+  final debtVal = _calcDebt(accounts, operations, now);
+  final incomeVal = _calcIncome(operations, now);
+  final finStateVal = _calcFinState(moneyVal, budgetVal, debtVal, incomeVal);
 
-  final avgExpense = monthExpense > 0 ? monthExpense : 1.0;
-  final liquidityMonths = totalBalance / avgExpense;
-  final money = (liquidityMonths / 3 * 100).clamp(0, 100).round();
+  return FinHealthIndicators(
+    finState: finStateVal,
+    money: moneyVal,
+    budget: budgetVal,
+    debt: debtVal,
+    income: incomeVal,
+    moneyTip: _moneyTip(moneyVal),
+    budgetTip: _budgetTip(budgetVal),
+    debtTip: _debtTip(debtVal),
+    incomeTip: _incomeTip(incomeVal),
+    finStateTip: _finStateTip(finStateVal),
+  );
+}
 
-  double budgetScore = 100;
+bool _isMoneyAccountType(String type) {
+  return type == 'account' || type == 'card' || type == 'savings' || type == 'electronic';
+}
+
+bool _isCreditType(String type) => type == 'credit';
+
+double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime now) {
+  double moneyBalance = 0;
+  for (final a in accounts) {
+    if (a.includeInTotal && _isMoneyAccountType(a.type)) {
+      moneyBalance += a.balance;
+    }
+    if (a.includeInTotal && _isCreditType(a.type) && a.balance > 0) {
+      moneyBalance += a.balance;
+    }
+  }
+  if (moneyBalance == 0) return 0;
+
+  final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
+  final startOfCurrent = DateTime(now.year, now.month, 1);
+  final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+  final threeMonthOps = operations.where((o) {
+    if (o.isDeleted) return false;
+    final d = DateTime.tryParse(o.date);
+    return d != null && !d.isBefore(threeMonthsAgo) && !d.isAfter(endOfCurrent);
+  }).toList();
+
+  final expenses = threeMonthOps.where((o) => o.type == 'expense' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
+  final creditPayments = _calcCreditPayments(threeMonthOps, accounts, threeMonthsAgo, endOfCurrent);
+  final avgMonthlyExpense = (expenses + creditPayments) / 3;
+
+  if (avgMonthlyExpense == 0) return 6;
+  return ((moneyBalance / avgMonthlyExpense) / 6 * 100).clamp(0, 6 * 100 / 6);
+}
+
+double _calcCreditPayments(List<Operation> ops, accounts, DateTime start, DateTime end) {
+  final creditAccountIds = accounts.where((a) => _isCreditType(a.type)).map((a) => a.id).toSet();
+  return ops.where((o) =>
+    o.type == 'transfer' &&
+    o.toAccountId != null &&
+    creditAccountIds.contains(o.toAccountId) &&
+    !o.isDeleted
+  ).fold<double>(0, (s, o) => s + o.amount);
+}
+
+double _calcBudget(List<Budget> budgets, DateTime now) {
   final totalPlanned = budgets.fold<double>(0, (s, b) => s + b.limit);
   final totalSpent = budgets.fold<double>(0, (s, b) => s + b.spent);
-  if (totalPlanned > 0) {
-    final ratio = totalSpent / totalPlanned;
-    budgetScore = ((2 - ratio) * 50).clamp(0, 100).round().toDouble();
+  if (totalSpent == 0) return 100;
+  if (totalPlanned == 0) return 0;
+  return ((1 - totalSpent / totalPlanned) * 100).clamp(0, 100);
+}
+
+double _calcDebt(List<Account> accounts, List<Operation> operations, DateTime now) {
+  final startOfMonth = DateTime(now.year, now.month, 1);
+  final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+  final monthOps = operations.where((o) {
+    if (o.isDeleted) return false;
+    final d = DateTime.tryParse(o.date);
+    return d != null && !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
+  }).toList();
+
+  final creditPayments = _calcCreditPayments(monthOps, accounts, startOfMonth, endOfMonth);
+  if (creditPayments == 0) return 100;
+
+  final income = monthOps.where((o) => o.type == 'income' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
+  if (income == 0) return 0;
+
+  return ((1 - creditPayments / income) * 100).clamp(0, 100);
+}
+
+double _calcIncome(List<Operation> operations, DateTime now) {
+  final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
+  final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+  final threeMonthOps = operations.where((o) {
+    if (o.isDeleted) return false;
+    final d = DateTime.tryParse(o.date);
+    return d != null && !d.isBefore(threeMonthsAgo) && !d.isAfter(endOfCurrent);
+  }).toList();
+
+  final income3m = threeMonthOps.where((o) => o.type == 'income' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
+  if (income3m == 0) return 0;
+
+  final expenses3m = threeMonthOps.where((o) => o.type == 'expense' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
+  if (expenses3m == 0) return 20;
+
+  return (((income3m / expenses3m) - 1) * 500).clamp(0, 20);
+}
+
+double _calcFinState(double money, double budget, double debt, double income) {
+  double _weightedScore(double value, List<double> ranges) {
+    for (int i = 0; i < ranges.length - 1; i++) {
+      if (value <= ranges[i + 1]) {
+        final idx = i + 1;
+        final normalized = (value - ranges[i]) / (ranges[i + 1] - ranges[i]);
+        return (idx + normalized);
+      }
+    }
+    return ranges.length.toDouble();
   }
 
-  double debtScore = 100;
-  final creditBalance = accounts
-      .where((a) => a.type == 'credit')
-      .fold<double>(0, (s, a) => s + a.balance.abs());
-  if (creditBalance > 0) {
-    debtScore = ((1 - creditBalance / (monthIncome > 0 ? monthIncome : creditBalance)) * 100).clamp(0, 100).round().toDouble();
-  }
+  final moneyRanges = [0.0, 2.0, 5.0, 6.0];
+  final budgetRanges = [0.0, 3.0, 15.0, 100.0];
+  final debtRanges = [0.0, 30.0, 60.0, 100.0];
+  final incomeRanges = [0.0, 5.0, 10.0, 20.0];
 
-  double savings = 0;
-  if (monthIncome > 0) {
-    final savingsRate = (monthIncome - monthExpense) / monthIncome;
-    savings = (savingsRate / 0.2 * 100).clamp(0, 100);
-  }
+  final moneyWeighted = _weightedScore(money, moneyRanges) * 35;
+  final budgetWeighted = _weightedScore(budget, budgetRanges) * 20;
+  final debtWeighted = _weightedScore(debt, debtRanges) * 15;
+  final incomeWeighted = _weightedScore(income, incomeRanges) * 30;
 
-  final finState = ((money + budgetScore + debtScore + savings) / 4).round();
+  return ((moneyWeighted + budgetWeighted + debtWeighted + incomeWeighted) / 3).clamp(0, 300);
+}
 
-  return FinHealthIndicators(finState: finState, money: money, budget: budgetScore.round(), debt: debtScore.round(), savings: savings.round());
+String _moneyTip(double value) {
+  if (value <= 2) return 'health.money.tip1';
+  if (value <= 5) return 'health.money.tip2';
+  return 'health.money.tip3';
+}
+
+String _budgetTip(double value) {
+  if (value <= 3) return 'health.budget.tip1';
+  if (value <= 15) return 'health.budget.tip2';
+  return 'health.budget.tip3';
+}
+
+String _debtTip(double value) {
+  if (value <= 30) return 'health.debt.tip1';
+  if (value <= 60) return 'health.debt.tip2';
+  return 'health.debt.tip3';
+}
+
+String _incomeTip(double value) {
+  if (value <= 5) return 'health.income.tip1';
+  if (value <= 10) return 'health.income.tip2';
+  return 'health.income.tip3';
+}
+
+String _finStateTip(double value) {
+  if (value <= 100) return 'health.status.tip1';
+  if (value <= 200) return 'health.status.tip2';
+  return 'health.status.tip3';
 }
 
 bool isInPeriod(String dateIso, DateTime start, DateTime end) {

@@ -11,7 +11,8 @@ import '../../theme/theme.dart';
 
 class AddPlannedPaymentScreen extends StatefulWidget {
   final FinancialEvent? existing;
-  const AddPlannedPaymentScreen({super.key, this.existing});
+  final String? presetDate;
+  const AddPlannedPaymentScreen({super.key, this.existing, this.presetDate});
 
   @override
   State<AddPlannedPaymentScreen> createState() => _AddPlannedPaymentScreenState();
@@ -31,7 +32,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     final e = widget.existing;
     _nameController = TextEditingController(text: e?.title ?? '');
     _amountController = TextEditingController(text: e != null && e.amount > 0 ? e.amount.toString() : '');
-    _dayController = TextEditingController(text: e?.dayOfMonth?.toString() ?? '');
+    _dayController = TextEditingController(text: e?.dayOfMonth?.toString() ?? (widget.presetDate != null ? widget.presetDate!.split('-').last : ''));
     _commentController = TextEditingController(text: e?.comment ?? '');
     _type = e?.type ?? 'expense';
     _isRecurring = e?.isRecurring ?? true;

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
+import '../../components/common/calculator_input.dart';
+import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
 import 'package:provider/provider.dart';
@@ -175,47 +177,78 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              AppInput(label: context.tr('operations.amount'), controller: _amountCtrl, keyboardType: TextInputType.number),
+              CalculatorInput(controller: _amountCtrl, label: context.tr('operations.amount')),
               const SizedBox(height: 16),
-              Text(context.tr('operations.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                initialValue: _accountId,
-                decoration: InputDecoration(
-                  filled: true, fillColor: AppColors.cardFor(context),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                ),
-                items: store.accounts.map((a) => DropdownMenuItem<String>(value: a.id, child: Text(a.name))).toList(),
-                onChanged: (v) => setState(() => _accountId = v),
+              _buildPicker(
+                label: context.tr('operations.account'),
+                value: store.accounts.where((a) => a.id == _accountId).map((a) => a.name).firstOrNull,
+                onTap: () async {
+                  final result = await GroupedPickerSheet.show<String>(
+                    context: context,
+                    title: context.tr('operations.account'),
+                    items: store.accounts.map((a) => a.id).toList(),
+                    labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
+                    groupBuilder: (id) {
+                      final a = store.accounts.firstWhere((a) => a.id == id);
+                      return a.currency;
+                    },
+                    subtitleBuilder: (id) {
+                      final a = store.accounts.firstWhere((a) => a.id == id);
+                      return '${a.balance.toStringAsFixed(2)} ${a.currency}';
+                    },
+                    iconBuilder: (id) => _accountIcon(store.accounts.firstWhere((a) => a.id == id).icon),
+                    colorBuilder: (id) => _hexToColor(store.accounts.firstWhere((a) => a.id == id).color),
+                    selectedId: _accountId,
+                  );
+                  if (result != null) setState(() => _accountId = result);
+                },
               ),
               const SizedBox(height: 16),
               if (_type != 'transfer') ...[
-                Text(context.tr('operations.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _categoryId,
-                  decoration: InputDecoration(
-                    filled: true, fillColor: AppColors.cardFor(context),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
-                  items: store.categories.where((c) => c.type == _type).map((c) => DropdownMenuItem<String>(value: c.id, child: Text(c.name))).toList(),
-                  onChanged: (v) => setState(() => _categoryId = v),
+                _buildPicker(
+                  label: context.tr('operations.category'),
+                  value: store.categories.where((c) => c.id == _categoryId).map((c) => c.name).firstOrNull,
+                  onTap: () async {
+                    final result = await GroupedPickerSheet.show<String>(
+                      context: context,
+                      title: context.tr('operations.category'),
+                      items: store.categories.where((c) => c.type == _type).map((c) => c.id).toList(),
+                      labelBuilder: (id) => store.categories.firstWhere((c) => c.id == id).name,
+                      groupBuilder: (id) {
+                        final c = store.categories.firstWhere((c) => c.id == id);
+                        if (c.parentId == null || c.parentId!.isEmpty) return '';
+                        final parent = store.categories.where((p) => p.id == c.parentId);
+                        return parent.isNotEmpty ? parent.first.name : '';
+                      },
+                      iconBuilder: (id) => _categoryIcon(store.categories.firstWhere((c) => c.id == id).icon),
+                      colorBuilder: (id) => _hexToColor(store.categories.firstWhere((c) => c.id == id).color),
+                      selectedId: _categoryId,
+                    );
+                    if (result != null) setState(() => _categoryId = result);
+                  },
                 ),
               ],
               if (_type == 'transfer') ...[
-                Text(context.tr('operations.to_account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _toAccountId,
-                  decoration: InputDecoration(
-                    filled: true, fillColor: AppColors.cardFor(context),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
-                  items: store.accounts.where((a) => a.id != _accountId).map((a) => DropdownMenuItem<String>(value: a.id, child: Text(a.name))).toList(),
-                  onChanged: (v) => setState(() => _toAccountId = v),
+                _buildPicker(
+                  label: context.tr('operations.to_account'),
+                  value: store.accounts.where((a) => a.id == _toAccountId).map((a) => a.name).firstOrNull,
+                  onTap: () async {
+                    final result = await GroupedPickerSheet.show<String>(
+                      context: context,
+                      title: context.tr('operations.to_account'),
+                      items: store.accounts.where((a) => a.id != _accountId).map((a) => a.id).toList(),
+                      labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
+                      groupBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).currency,
+                      subtitleBuilder: (id) {
+                        final a = store.accounts.firstWhere((a) => a.id == id);
+                        return '${a.balance.toStringAsFixed(2)} ${a.currency}';
+                      },
+                      iconBuilder: (id) => _accountIcon(store.accounts.firstWhere((a) => a.id == id).icon),
+                      colorBuilder: (id) => _hexToColor(store.accounts.firstWhere((a) => a.id == id).color),
+                      selectedId: _toAccountId,
+                    );
+                    if (result != null) setState(() => _toAccountId = result);
+                  },
                 ),
               ],
               const SizedBox(height: 16),
@@ -250,6 +283,73 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildPicker({required String label, required String? value, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.cardFor(context),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderFor(context)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value ?? '',
+                    style: TextStyle(fontSize: 15, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
+                  ),
+                ),
+                Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondaryFor(context)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _accountIcon(String icon) {
+    const map = {
+      'cash': Icons.money, 'credit_card': Icons.credit_card,
+      'savings': Icons.savings, 'account_balance': Icons.account_balance,
+      'wallet': Icons.account_balance_wallet, 'payments': Icons.payments,
+      'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard,
+    };
+    return map[icon] ?? Icons.account_balance_wallet;
+  }
+
+  IconData _categoryIcon(String icon) {
+    const map = {
+      'food': Icons.restaurant, 'transport': Icons.directions_car,
+      'housing': Icons.home, 'shopping': Icons.shopping_bag,
+      'health': Icons.local_hospital, 'entertainment': Icons.sports_esports,
+      'education': Icons.school, 'travel': Icons.flight,
+      'salary': Icons.work, 'freelance': Icons.laptop, 'business': Icons.business,
+      'gift': Icons.card_giftcard, 'car': Icons.directions_car,
+      'sports': Icons.fitness_center, 'dining': Icons.restaurant,
+      'utilities': Icons.bolt, 'internet': Icons.wifi,
+      'clothing': Icons.checkroom, 'children': Icons.child_care,
+      'pets': Icons.pets, 'taxes': Icons.receipt_long,
+      'insurance': Icons.shield, 'invest': Icons.trending_up,
+      'rent': Icons.home_work, 'other_income': Icons.add_circle,
+      'other_expense': Icons.remove_circle, 'help': Icons.help_outline,
+    };
+    return map[icon] ?? Icons.category;
+  }
+
+  Color _hexToColor(String hex) {
+    final cleaned = hex.replaceAll('#', '');
+    return Color(int.parse('FF$cleaned', radix: 16));
   }
 
   void _showTemplatePicker(BuildContext context, FinanceStore store) {

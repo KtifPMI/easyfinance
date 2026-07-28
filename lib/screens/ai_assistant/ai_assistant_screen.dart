@@ -38,85 +38,90 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     });
   }
 
+  void _quickCommand(String command) {
+    _ctrl.text = command;
+    _send();
+  }
+
   String _analyze(String query, FinanceStore store) {
     final q = query.toLowerCase();
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
     final monthEnd = DateTime(now.year, now.month + 1, 0);
 
-    bool inRange(Operation o) {
+    bool inRange(Operation o, [DateTime? start, DateTime? end]) {
       final d = DateTime.tryParse(o.date);
-      return d != null && !d.isBefore(monthStart) && !d.isAfter(monthEnd);
+      if (d == null) return false;
+      return !d.isBefore(start ?? monthStart) && !d.isAfter(end ?? monthEnd);
     }
 
     final monthIncome = store.operations.where((o) => o.type == 'income' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
     final monthExpense = store.operations.where((o) => o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
 
-    if (q.contains('баланс') || q.contains('баланс') || (q.contains('сколько') && q.contains('денег')) || q.contains('balance') || q.contains('money')) {
+    if (q.contains('баланс') || (q.contains('сколько') && q.contains('денег')) || q.contains('balance') || q.contains('money')) {
       final total = store.accounts.fold(0.0, (s, a) => s + a.balance);
-      return 'Общий баланс по всем счетам: ${formatMoney(total)}\n\n${store.accounts.map((a) => '• ${a.name}: ${formatMoney(a.balance)}').join('\n')}';
+      return '${context.tr('ai.balance_title')}\n\n${store.accounts.map((a) => '• ${a.name}: ${store.fmt(a.balance, fromCurrency: a.currency)}').join('\n')}';
     }
 
     if ((q.contains('трат') || q.contains('расход') || q.contains('spent') || q.contains('expense')) && q.contains('категори')) {
       final catName = store.categories.where((c) => q.contains(c.name.toLowerCase())).firstOrNull;
       if (catName != null) {
-        final total = store.operations.where((o) => o.categoryId == catName.id && o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
-        return 'Всего потрачено по категории «${catName.name}»: ${formatMoney(total)}.';
+        final total = store.operations.where((o) => o.categoryId == catName.id && o.type == 'expense' && inRange(o)).fold(0.0, (s, o) => s + o.amount);
+        return '${context.tr('ai.category_total', namedArgs: {'category': catName.name, 'amount': store.fmt(total)})}';
       }
       final totals = <String, double>{};
-      for (final o in store.operations.where((o) => o.type == 'expense')) {
+      for (final o in store.operations.where((o) => o.type == 'expense' && inRange(o))) {
         final cat = store.categories.where((c) => c.id == o.categoryId).firstOrNull;
         if (cat != null) totals.update(cat.name, (v) => v + o.amount, ifAbsent: () => o.amount);
       }
       final sorted = totals.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-      return 'Расходы по категориям:\n${sorted.map((e) => '• ${e.key}: ${formatMoney(e.value)}').join('\n')}';
+      return '${context.tr('ai.expense_categories')}\n${sorted.map((e) => '• ${e.key}: ${store.fmt(e.value)}').join('\n')}';
     }
 
-    if ((q.contains('доход') || q.contains('заработ') || q.contains('income') || q.contains('earn')) && (q.contains('сколько') || q.contains('how much'))) {
-      return 'Доход за этот месяц: ${formatMoney(monthIncome)}.\nРасход за этот месяц: ${formatMoney(monthExpense)}.\nОстаток: ${formatMoney(monthIncome - monthExpense)}.';
+    if (q.contains('трат') || q.contains('расход') || q.contains('expense') || q.contains('spent')) {
+      return '${context.tr('ai.month_expense', namedArgs: {'amount': store.fmt(monthExpense)})}';
+    }
+
+    if (q.contains('доход') || q.contains('заработ') || q.contains('income') || q.contains('earn')) {
+      return '${context.tr('ai.month_income', namedArgs: {'income': store.fmt(monthIncome), 'expense': store.fmt(monthExpense), 'balance': store.fmt(monthIncome - monthExpense)})}';
     }
 
     if (q.contains('счёт') || q.contains('счет') || q.contains('account')) {
       final total = store.accounts.fold(0.0, (s, a) => s + a.balance);
-      return 'У вас ${store.accounts.length} счет(ов) на общую сумму ${formatMoney(total)}.\n\n${store.accounts.map((a) => '• ${a.name}: ${formatMoney(a.balance)}').join('\n')}';
+      return '${context.tr('ai.accounts_count', namedArgs: {'count': store.accounts.length.toString(), 'total': store.fmt(total)})}\n\n${store.accounts.map((a) => '• ${a.name}: ${store.fmt(a.balance, fromCurrency: a.currency)}').join('\n')}';
     }
 
     if (q.contains('цел') || q.contains('goal')) {
-      if (store.goals.isEmpty) return 'У вас пока нет целей. Создайте первую в разделе «План».';
+      if (store.goals.isEmpty) return context.tr('ai.no_goals');
       return store.goals.map((g) {
         final pct = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100).round() : 0;
-        return '• ${g.title}: ${formatMoney(g.currentAmount)} из ${formatMoney(g.targetAmount)} ($pct%)${g.isCompleted ? ' ✅' : ''}';
+        return '• ${g.title}: ${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)} ($pct%)${g.isCompleted ? ' ✅' : ''}';
       }).join('\n');
     }
 
     if (q.contains('бюджет') || q.contains('budget')) {
       final budgets = store.budgets;
-      if (budgets.isEmpty) return 'У вас нет бюджетов. Создайте первый в разделе «План».';
+      if (budgets.isEmpty) return context.tr('ai.no_budgets');
       return budgets.map((b) {
         final cat = store.categories.where((c) => c.id == b.categoryId).firstOrNull;
         final name = b.name ?? cat?.name ?? '';
         final pct = b.limit > 0 ? (b.spent / b.limit * 100).round() : 0;
-        return '• $name: ${formatMoney(b.spent)} из ${formatMoney(b.limit)} ($pct%)';
+        return '• $name: ${store.fmt(b.spent)} / ${store.fmt(b.limit)} ($pct%)';
       }).join('\n');
     }
 
     if (q.contains('совет') || q.contains('рекомендац') || q.contains('tip') || q.contains('recommend') || q.contains('улучш') || q.contains('improve')) {
       final recs = store.recommendations;
-      return recs.map((r) => '• ${r.title} — ${r.description}').join('\n\n');
+      if (recs.isEmpty) return context.tr('ai.no_recommendations');
+      return recs.map((r) => '• ${context.tr(r.titleKey, namedArgs: r.titleArgs)}\n  ${context.tr(r.descKey, namedArgs: r.descArgs)}').join('\n\n');
     }
 
     if (q.contains('привет') || q.contains('hello') || q.contains('здравствуй') || q.contains('hi')) {
       final total = store.accounts.fold(0.0, (s, a) => s + a.balance);
-      return 'Привет! 👋 Я ваш финансовый ассистент.\n\nОбщий баланс: ${formatMoney(total)}\nДоход за месяц: ${formatMoney(monthIncome)}\nРасход за месяц: ${formatMoney(monthExpense)}\n\nСпросите меня о расходах, доходах, счетах, целях, бюджетах или советах.';
+      return '${context.tr('ai.greeting')}\n\n${context.tr('ai.summary', namedArgs: {'balance': store.fmt(total), 'income': store.fmt(monthIncome), 'expense': store.fmt(monthExpense)})}';
     }
 
-    return 'Я понимаю вопросы о:\n\n'
-      '💰 «Какой баланс?» / «Мои счета»\n'
-      '📊 «Расходы по категориям» / «Сколько я потратил на еду?»\n'
-      '📈 «Доход за месяц»\n'
-      '🎯 «Мои цели»\n'
-      '📋 «Бюджеты»\n'
-      '💡 «Советы» / «Что улучшить?»';
+    return context.tr('ai.help');
   }
 
   @override
@@ -136,6 +141,21 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                             Icon(Icons.smart_toy_outlined, size: 64, color: AppColors.textSecondaryFor(context)),
                             const SizedBox(height: 16),
                             Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 16, color: AppColors.textSecondaryFor(context))),
+                            const SizedBox(height: 24),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.center,
+                              children: [
+                                _chip(context.tr('ai.cmd_balance'), Icons.account_balance_wallet),
+                                _chip(context.tr('ai.cmd_income'), Icons.trending_up),
+                                _chip(context.tr('ai.cmd_expenses'), Icons.trending_down),
+                                _chip(context.tr('ai.cmd_categories'), Icons.category),
+                                _chip(context.tr('ai.cmd_goals'), Icons.flag),
+                                _chip(context.tr('ai.cmd_budgets'), Icons.bar_chart),
+                                _chip(context.tr('ai.cmd_tips'), Icons.lightbulb_outline),
+                              ],
+                            ),
                           ],
                         ),
                       )
@@ -170,23 +190,41 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 decoration: BoxDecoration(color: AppColors.backgroundFor(context), boxShadow: [BoxShadow(color: Theme.of(context).brightness == Brightness.dark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, -2))]),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _ctrl,
-                        decoration: InputDecoration(
-                          hintText: context.tr('ai_assistant.placeholder'),
-                          filled: true, fillColor: AppColors.cardFor(context),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _actionChip(context.tr('ai.cmd_balance'), () => _quickCommand(context.tr('ai.cmd_balance'))),
+                          _actionChip(context.tr('ai.cmd_income'), () => _quickCommand(context.tr('ai.cmd_income'))),
+                          _actionChip(context.tr('ai.cmd_expenses'), () => _quickCommand(context.tr('ai.cmd_expenses'))),
+                          _actionChip(context.tr('ai.cmd_tips'), () => _quickCommand(context.tr('ai.cmd_tips'))),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: Icon(Icons.send, color: AppColors.primary),
-                      onPressed: _send,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _ctrl,
+                            onSubmitted: (_) => _send(),
+                            decoration: InputDecoration(
+                              hintText: context.tr('ai_assistant.placeholder'),
+                              filled: true, fillColor: AppColors.cardFor(context),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(Icons.send, color: AppColors.primary),
+                          onPressed: _send,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -195,6 +233,45 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _chip(String label, IconData icon) {
+    return GestureDetector(
+      onTap: () => _quickCommand(label),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.primary),
+            const SizedBox(width: 4),
+            Text(label, style: TextStyle(fontSize: 12, color: AppColors.primary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionChip(String label, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primaryLight,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(label, style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+        ),
+      ),
     );
   }
 }

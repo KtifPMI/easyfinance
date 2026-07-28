@@ -32,7 +32,10 @@ class GoalsListScreen extends StatelessWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: AppCard(
-                        child: Column(
+                        child: InkWell(
+                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddGoalScreen(goalId: g.id))),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(

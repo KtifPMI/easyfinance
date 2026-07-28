@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../components/common/simple_pie_chart.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
@@ -117,8 +118,38 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(child: Text(context.tr('home.no_expenses'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
                 )
-              else
+              else ...[
+                Center(
+                  child: SimplePieChart(
+                    slices: catTotals.take(6).map((e) => (
+                      label: e.category.name,
+                      value: e.total,
+                      color: _parseColor(e.category.color),
+                    )).toList(),
+                    size: 200,
+                    holeRadius: 0.55,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 6,
+                  alignment: WrapAlignment.center,
+                  children: catTotals.take(6).map((e) {
+                    final color = _parseColor(e.category.color);
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                        const SizedBox(width: 4),
+                        Text(e.category.name, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      ],
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
                 ..._buildCategoryRows(catTotals, monthExpense),
+              ],
             ],
           ),
         );

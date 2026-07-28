@@ -6,7 +6,6 @@ import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/home/fin_health_card.dart';
-import '../../components/home/quick_actions.dart';
 import '../../store/finance_store.dart';
 import '../../models/financial_event.dart';
 import '../../theme/theme.dart';
@@ -38,14 +37,9 @@ class HomeScreen extends StatelessWidget {
               ScreenHint(hintId: 'home', text: 'Здесь вы видите общий баланс, бюджет на месяц и ближайшие платежи. Добавляйте доходы и расходы через кнопки быстрых действий.'),
               _buildBalanceBanner(context, store),
               const SizedBox(height: 16),
-              QuickActions(
-                onAddIncome: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'}),
-                onAddExpense: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'}),
-                onAddTransfer: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'}),
-                onScan: () => Navigator.pushNamed(context, '/scan-receipt'),
-              ),
-              const SizedBox(height: 16),
               if (accountType == 'entrepreneur') ...[
+                _buildProfitLossSection(context, store),
+                const SizedBox(height: 16),
                 _buildAccountsSection(context, store),
                 const SizedBox(height: 16),
               ],
@@ -95,6 +89,43 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfitLossSection(BuildContext context, FinanceStore store) {
+    final now = DateTime.now();
+    final monthOps = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, now)).toList();
+    final income = monthOps.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
+    final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
+    final profit = income - expense;
+    return AppCard(
+      child: Column(
+        children: [
+          Text(context.tr('home.profit_loss'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: Column(children: [
+                Text(context.tr('home.revenue'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                const SizedBox(height: 4),
+                Text(store.fmt(income), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.success)),
+              ])),
+              Container(width: 1, height: 32, color: AppColors.border),
+              Expanded(child: Column(children: [
+                Text(context.tr('home.costs'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                const SizedBox(height: 4),
+                Text(store.fmt(expense), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.expense)),
+              ])),
+              Container(width: 1, height: 32, color: AppColors.border),
+              Expanded(child: Column(children: [
+                Text(context.tr('home.net_profit'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                const SizedBox(height: 4),
+                Text(store.fmt(profit), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: profit >= 0 ? AppColors.success : AppColors.expense)),
+              ])),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -346,10 +377,20 @@ class HomeScreen extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 6),
           child: AppCard(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
                 const SizedBox(width: 10),
-                Expanded(child: Text(context.tr(r.titleKey, namedArgs: r.titleArgs), style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.tr(r.titleKey, namedArgs: r.titleArgs), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                      const SizedBox(height: 2),
+                      Text(context.tr(r.descKey, namedArgs: r.descArgs), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -360,7 +401,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBudgetsSection(BuildContext context, FinanceStore store) {
-    if (store.budgets.isEmpty) return const SizedBox.shrink();
+    final now = DateTime.now();
+    final monthOps = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, now)).toList();
+    final income = monthOps.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
+    final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
+    final savings = income - expense;
+    final pendingCount = store.operations.where((op) => op.isPending).length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -375,31 +421,44 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        ...store.budgets.where((b) => !b.isDeleted).take(3).map((b) {
-          final cat = store.getCategory(b.categoryId);
-          final percent = b.limit > 0 ? (b.spent / b.limit * 100) : 0.0;
-          final color = cat?.color != null ? _parseColor(cat!.color) : AppColors.primary;
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: AppCard(
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                      Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ProgressBar(percent: percent, color: color),
-                  Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                ],
-              ),
+        if (pendingCount > 0)
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
             ),
-          );
-        }),
+            child: Row(
+              children: [
+                Icon(Icons.sync, size: 16, color: AppColors.warning),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Оффлайн: $pendingCount операций ожидает синхронизации', style: TextStyle(fontSize: 12, color: AppColors.warning))),
+              ],
+            ),
+          ),
+        AppCard(
+          child: Row(
+            children: [
+              Expanded(child: _budgetStat(context, store, context.tr('home.income'), income, AppColors.income)),
+              Container(width: 1, height: 32, color: AppColors.border),
+              Expanded(child: _budgetStat(context, store, context.tr('home.expense'), expense, AppColors.expense)),
+              Container(width: 1, height: 32, color: AppColors.border),
+              Expanded(child: _budgetStat(context, store, context.tr('home.savings'), savings, savings >= 0 ? AppColors.success : AppColors.expense)),
+            ],
+          ),
+        ),
         const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _budgetStat(BuildContext context, FinanceStore store, String label, double value, Color color) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 4),
+        Text(store.fmt(value), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color)),
       ],
     );
   }

@@ -8,7 +8,8 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
 class AddGoalScreen extends StatefulWidget {
-  const AddGoalScreen({super.key});
+  final String? goalId;
+  const AddGoalScreen({super.key, this.goalId});
   @override
   State<AddGoalScreen> createState() => _AddGoalScreenState();
 }
@@ -63,6 +64,32 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     if (_type == 'save') return _saveCategories(context);
     if (_type == 'pay') return _debtCategories(context);
     return {};
+  }
+
+  bool get _isEditing => widget.goalId != null;
+  bool _loaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loaded) {
+      _loaded = true;
+      if (_isEditing) {
+        final store = context.read<FinanceStore>();
+        final g = store.goals.where((g) => g.id == widget.goalId).firstOrNull;
+        if (g != null) {
+          _titleCtrl.text = g.title;
+          _totalCtrl.text = g.targetAmount > 0 ? g.targetAmount.toStringAsFixed(0) : '';
+          _type = g.accountId != null ? 'save' : 'pay';
+          _currencyId = g.currencyId;
+          if (g.deadline.isNotEmpty) {
+            _targetDate = DateTime.tryParse(g.deadline);
+          }
+          _isCompleted = g.isCompleted;
+          if (g.accountId != null) _selectedAccountIds = [g.accountId!];
+        }
+      }
+    }
   }
 
   @override
@@ -197,16 +224,20 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     final endStr = _targetDate != null
         ? '${_targetDate!.year}-${_targetDate!.month.toString().padLeft(2, '0')}-${_targetDate!.day.toString().padLeft(2, '0')}'
         : '';
-    await store.addGoal(Goal(
-      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-      title: _titleCtrl.text.trim(),
-      targetAmount: total,
-      currentAmount: 0,
-      deadline: endStr,
-      isCompleted: _isCompleted,
-      accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
-      currencyId: _currencyId,
-    ));
+    if (_isEditing) {
+      await store.updateGoal(widget.goalId!, title: _titleCtrl.text.trim(), targetAmount: total);
+    } else {
+      await store.addGoal(Goal(
+        id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+        title: _titleCtrl.text.trim(),
+        targetAmount: total,
+        currentAmount: 0,
+        deadline: endStr,
+        isCompleted: _isCompleted,
+        accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
+        currencyId: _currencyId,
+      ));
+    }
     if (!mounted) return;
     if (store.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));

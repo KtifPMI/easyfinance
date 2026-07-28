@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
@@ -14,17 +15,34 @@ class AccountsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
+        final accounts = store.accounts.toList()..sort((a, b) {
+          if (a.isFavorite && !b.isFavorite) return -1;
+          if (!a.isFavorite && b.isFavorite) return 1;
+          return 0;
+        });
+
         return ScreenScaffold(
           title: context.tr('accounts.title'),
           floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
             child: const Icon(Icons.add),
           ),
-          child: store.accounts.isEmpty
+          child: accounts.isEmpty
               ? Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(
-                  children: store.accounts.map((a) {
-                    final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
+                  children: [
+                    AppCard(
+                      child: Column(
+                        children: [
+                          Text(context.tr('accounts.my_capital'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                          const SizedBox(height: 4),
+                          Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...accounts.map((a) {
+                    final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.account_balance_wallet, 'payments': Icons.payments};
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: AppCard(
@@ -42,13 +60,33 @@ class AccountsScreen extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                    if (a.isArchived) Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                                    Row(
+                                      children: [
+                                        Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                        if (a.isArchived) ...[
+                                          const SizedBox(width: 6),
+                                          Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                                        ],
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
                               Text(store.fmt(a.balance, fromCurrency: a.currency), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () async {
+                                  final sp = await SharedPreferences.getInstance();
+                                  await sp.setBool('fav_${a.id}', !a.isFavorite);
+                                  store.updateAccountFavorite(a.id, !a.isFavorite);
+                                },
+                                child: Icon(
+                                  a.isFavorite ? Icons.star : Icons.star_border,
+                                  color: a.isFavorite ? Colors.amber : AppColors.textSecondaryFor(context),
+                                  size: 22,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
                               Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                             ],
                           ),
