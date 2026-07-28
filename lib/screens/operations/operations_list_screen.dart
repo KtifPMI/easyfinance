@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_chip.dart';
+import '../../components/common/expandable_fab.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/operations/operation_list_item.dart';
@@ -21,13 +22,44 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   String _periodFilter = 'all';
   String? _accountIdFilter;
 
+  String? _advTypeFilter;
+  DateTime? _advDateFrom;
+  DateTime? _advDateTo;
+  String _advAmountFrom = '';
+  String _advAmountTo = '';
+  String _advComment = '';
+  String? _advTagId;
+
+  bool get _hasAdvFilter =>
+      _advTypeFilter != null ||
+      _advDateFrom != null ||
+      _advDateTo != null ||
+      _advAmountFrom.isNotEmpty ||
+      _advAmountTo.isNotEmpty ||
+      _advComment.isNotEmpty ||
+      _advTagId != null;
+
+  void _resetAdvFilter() {
+    setState(() {
+      _advTypeFilter = null;
+      _advDateFrom = null;
+      _advDateTo = null;
+      _advAmountFrom = '';
+      _advAmountTo = '';
+      _advComment = '';
+      _advTagId = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         var ops = store.operations.toList();
+
         if (_filter == 'income') ops = ops.where((o) => o.type == 'income').toList();
         if (_filter == 'expense') ops = ops.where((o) => o.type == 'expense').toList();
+        if (_filter == 'transfer') ops = ops.where((o) => o.type == 'transfer').toList();
         if (_accountIdFilter != null) ops = ops.where((o) => o.accountId == _accountIdFilter || o.toAccountId == _accountIdFilter).toList();
 
         if (_periodFilter != 'all') {
@@ -46,28 +78,59 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           }
         }
 
+        if (_advTypeFilter != null) {
+          ops = ops.where((o) => o.type == _advTypeFilter).toList();
+        }
+        if (_advDateFrom != null) {
+          ops = ops.where((o) {
+            final d = DateTime.tryParse(o.date);
+            return d != null && !d.isBefore(_advDateFrom!);
+          }).toList();
+        }
+        if (_advDateTo != null) {
+          final to = DateTime(_advDateTo!.year, _advDateTo!.month, _advDateTo!.day, 23, 59, 59);
+          ops = ops.where((o) {
+            final d = DateTime.tryParse(o.date);
+            return d != null && !d.isAfter(to);
+          }).toList();
+        }
+        if (_advAmountFrom.isNotEmpty) {
+          final min = double.tryParse(_advAmountFrom.replaceAll(',', '.')) ?? 0;
+          ops = ops.where((o) => o.amount >= min).toList();
+        }
+        if (_advAmountTo.isNotEmpty) {
+          final max = double.tryParse(_advAmountTo.replaceAll(',', '.')) ?? double.infinity;
+          ops = ops.where((o) => o.amount <= max).toList();
+        }
+        if (_advComment.isNotEmpty) {
+          final q = _advComment.toLowerCase();
+          ops = ops.where((o) => (o.comment ?? '').toLowerCase().contains(q)).toList();
+        }
+        if (_advTagId != null) {
+          ops = ops.where((o) => store.getTagsForOperation(o).any((t) => t.id == _advTagId)).toList();
+        }
+
         final grouped = groupByDay(ops);
 
-        return ScreenScaffold(
-          title: context.tr('operations.title'),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => Navigator.pushNamed(context, '/add-operation'),
-            child: const Icon(Icons.add),
-          ),
-          onRefresh: () => store.fetchAllData(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ScreenHint(hintId: 'operations', text: 'Список всех операций — доходов, расходов и переводов. Используйте фильтр сверху, чтобы посмотреть только расходы или доходы.'),
-              Row(
+        return Stack(
+          children: [
+            ScreenScaffold(
+              title: context.tr('operations.title'),
+              actions: [
+                IconButton(
+                  icon: _hasAdvFilter
+                      ? Icon(Icons.filter_list, color: AppColors.primary, size: 22)
+                      : Icon(Icons.filter_list, color: AppColors.textSecondaryFor(context), size: 22),
+                  onPressed: () => _showAdvFilterSheet(context, store),
+                  tooltip: context.tr('filters.advanced_filter'),
+                ),
+              ],
+              onRefresh: () => store.fetchAllData(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _quickAction(context, Icons.add_circle_outline, context.tr('quick_actions.income'), AppColors.success, () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'})),
-                  _quickAction(context, Icons.remove_circle_outline, context.tr('quick_actions.expense'), AppColors.expense, () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'})),
-                  _quickAction(context, Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'})),
-                  _quickAction(context, Icons.document_scanner, 'Чек', AppColors.accent, () => Navigator.pushNamed(context, '/scan-receipt')),
-                ],
-              ),
-              const SizedBox(height: 12),
+                  ScreenHint(hintId: 'operations', text: 'Список всех операций — доходов, расходов и переводов. Используйте фильтр сверху, чтобы посмотреть только расходы или доходы.'),
+                  const SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -75,6 +138,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                     AppChip(label: context.tr('operations.all'), active: _filter == 'all', onPressed: () => setState(() => _filter = 'all')),
                     AppChip(label: context.tr('operations.income'), active: _filter == 'income', onPressed: () => setState(() => _filter = 'income')),
                     AppChip(label: context.tr('operations.expense'), active: _filter == 'expense', onPressed: () => setState(() => _filter = 'expense')),
+                    AppChip(label: context.tr('filters.transfer'), active: _filter == 'transfer', onPressed: () => setState(() => _filter = 'transfer')),
                   ],
                 ),
               ),
@@ -178,25 +242,201 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 )),
             ],
           ),
+        ),
+        ExpandableFab(
+          actions: [
+            FabAction(icon: Icons.remove_circle_outline, label: context.tr('quick_actions.expense'), color: AppColors.expense, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'})),
+            FabAction(icon: Icons.add_circle_outline, label: context.tr('quick_actions.income'), color: AppColors.success, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'})),
+            FabAction(icon: Icons.swap_horiz, label: context.tr('quick_actions.transfer'), color: AppColors.transfer, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'})),
+            FabAction(icon: Icons.document_scanner, label: 'Чек', color: AppColors.accent, onTap: () => Navigator.pushNamed(context, '/scan-receipt')),
+          ],
+        ),
+      ];
+      );
+      },
+    );
+  }
+
+  void _showAdvFilterSheet(BuildContext context, FinanceStore store) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.85,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              expand: false,
+              builder: (ctx, scrollCtrl) {
+                final tags = <String, String>{}; // id -> name
+                for (final op in store.operations) {
+                  for (final t in store.getTagsForOperation(op)) {
+                    tags[t.id] = t.name;
+                  }
+                }
+                final tagEntries = tags.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: ListView(
+                    controller: scrollCtrl,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(context.tr('filters.advanced_filter'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                          TextButton(
+                            onPressed: () {
+                              setSheetState(() {});
+                              setState(() => _resetAdvFilter());
+                            },
+                            child: Text(context.tr('filters.reset'), style: TextStyle(color: AppColors.danger, fontSize: 14)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      Text(context.tr('filters.type'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          ChoiceChip(label: Text(context.tr('filters.all_types')), selected: _advTypeFilter == null, onSelected: (_) => setSheetState(() => _advTypeFilter = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                          ChoiceChip(label: Text(context.tr('filters.income')), selected: _advTypeFilter == 'income', onSelected: (_) => setSheetState(() => _advTypeFilter = _advTypeFilter == 'income' ? null : 'income'), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                          ChoiceChip(label: Text(context.tr('filters.expense')), selected: _advTypeFilter == 'expense', onSelected: (_) => setSheetState(() => _advTypeFilter = _advTypeFilter == 'expense' ? null : 'expense'), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                          ChoiceChip(label: Text(context.tr('filters.transfer')), selected: _advTypeFilter == 'transfer', onSelected: (_) => setSheetState(() => _advTypeFilter = _advTypeFilter == 'transfer' ? null : 'transfer'), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      Text(context.tr('filters.period'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _dateTile(context, context.tr('filters.from_date'), _advDateFrom, (d) => setSheetState(() => _advDateFrom = d)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _dateTile(context, context.tr('filters.to_date'), _advDateTo, (d) => setSheetState(() => _advDateTo = d)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      Text(context.tr('filters.amount'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(labelText: context.tr('filters.from_amount'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true),
+                              keyboardType: TextInputType.number,
+                              onChanged: (v) => _advAmountFrom = v,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(labelText: context.tr('filters.to_amount'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true),
+                              keyboardType: TextInputType.number,
+                              onChanged: (v) => _advAmountTo = v,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      Text(context.tr('filters.comment'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      const SizedBox(height: 8),
+                      TextField(
+                        decoration: InputDecoration(hintText: context.tr('filters.comment_hint'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true, prefixIcon: const Icon(Icons.search, size: 20)),
+                        onChanged: (v) => _advComment = v,
+                      ),
+
+                      if (tagEntries.isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Text(context.tr('filters.tag'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ChoiceChip(label: Text(context.tr('filters.all_tags')), selected: _advTagId == null, onSelected: (_) => setSheetState(() => _advTagId = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                            ...tagEntries.map((e) => ChoiceChip(
+                              label: Text(e.value),
+                              selected: _advTagId == e.key,
+                              onSelected: (_) => setSheetState(() => _advTagId = _advTagId == e.key ? null : e.key),
+                              selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                            )),
+                          ],
+                        ),
+                      ],
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          onPressed: () {
+                            setState(() {});
+                            Navigator.pop(ctx);
+                          },
+                          child: Text(context.tr('filters.apply'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         );
       },
     );
   }
 
-  Widget _quickAction(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+  Widget _dateTile(BuildContext context, String label, DateTime? value, ValueChanged<DateTime?> onChanged) {
+    return InkWell(
+      onTap: () async {
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: value ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (picked != null) {
+          onChanged(value != null && picked == value ? null : picked);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
           children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
-              child: Icon(icon, size: 20, color: color),
+            Icon(Icons.calendar_today, size: 16, color: value != null ? AppColors.primary : AppColors.textSecondaryFor(context)),
+            const SizedBox(width: 8),
+            Expanded(
+              child:               Text(
+                value != null ? formatDate(value.toIso8601String().substring(0, 10)) : label,
+                style: TextStyle(fontSize: 13, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
+              ),
             ),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+            if (value != null)
+              GestureDetector(
+                onTap: () => onChanged(null),
+                child: Icon(Icons.close, size: 14, color: AppColors.textSecondaryFor(context)),
+              ),
           ],
         ),
       ),

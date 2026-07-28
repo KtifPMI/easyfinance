@@ -407,6 +407,13 @@ class HomeScreen extends StatelessWidget {
     final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
     final savings = income - expense;
     final pendingCount = store.operations.where((op) => op.isPending).length;
+
+    final sb = store.serverBudget;
+    final serverPlanned = sb?.planned ?? 0;
+    final totalPlanned = serverPlanned > 0 ? serverPlanned : store.budgets.fold(0.0, (sum, b) => sum + b.limit);
+    final totalSpent = sb?.spent ?? 0;
+    final budgetPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -438,13 +445,45 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         AppCard(
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _budgetStat(context, store, context.tr('home.income'), income, AppColors.income)),
-              Container(width: 1, height: 32, color: AppColors.border),
-              Expanded(child: _budgetStat(context, store, context.tr('home.expense'), expense, AppColors.expense)),
-              Container(width: 1, height: 32, color: AppColors.border),
-              Expanded(child: _budgetStat(context, store, context.tr('home.savings'), savings, savings >= 0 ? AppColors.success : AppColors.expense)),
+              Row(
+                children: [
+                  Expanded(child: _statBlock(context, context.tr('home.income'), store.fmt(income), AppColors.income)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _statBlock(context, context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: _statBlock(context, context.tr('home.savings'), store.fmt(savings), savings >= 0 ? AppColors.success : AppColors.expense)),
+                ],
+              ),
+              if (sb != null || totalPlanned > 0) ...[
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(context.tr('budget.planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    Text(store.fmt(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    Text(store.fmt(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                      color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ProgressBar(percent: budgetPercent, color: budgetPercent > 100 ? AppColors.expense : AppColors.primary),
+                const SizedBox(height: 4),
+                Text('${budgetPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+              ],
             ],
           ),
         ),
@@ -453,12 +492,13 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _budgetStat(BuildContext context, FinanceStore store, String label, double value, Color color) {
+  Widget _statBlock(BuildContext context, String label, String formattedAmount, Color color) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 4),
-        Text(store.fmt(value), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: color)),
+        Text(formattedAmount, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
       ],
     );
   }
