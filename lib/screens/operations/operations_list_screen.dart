@@ -28,7 +28,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   String _advAmountFrom = '';
   String _advAmountTo = '';
   String _advComment = '';
-  String? _advTagId;
+  String? _advTagName;
 
   bool get _hasAdvFilter =>
       _advTypeFilter != null ||
@@ -37,7 +37,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       _advAmountFrom.isNotEmpty ||
       _advAmountTo.isNotEmpty ||
       _advComment.isNotEmpty ||
-      _advTagId != null;
+      _advTagName != null;
 
   void _resetAdvFilter() {
     setState(() {
@@ -47,7 +47,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       _advAmountFrom = '';
       _advAmountTo = '';
       _advComment = '';
-      _advTagId = null;
+      _advTagName = null;
     });
   }
 
@@ -106,8 +106,8 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           final q = _advComment.toLowerCase();
           ops = ops.where((o) => (o.comment ?? '').toLowerCase().contains(q)).toList();
         }
-        if (_advTagId != null) {
-          ops = ops.where((o) => store.getTagsForOperation(o).any((t) => t.id == _advTagId)).toList();
+        if (_advTagName != null) {
+          ops = ops.where((o) => store.getTagsForOperation(o).contains(_advTagName)).toList();
         }
 
         final grouped = groupByDay(ops);
@@ -251,10 +251,10 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
             FabAction(icon: Icons.document_scanner, label: 'Чек', color: AppColors.accent, onTap: () => Navigator.pushNamed(context, '/scan-receipt')),
           ],
         ),
-      ];
-      );
-      },
+      ],
     );
+  },
+);
   }
 
   void _showAdvFilterSheet(BuildContext context, FinanceStore store) {
@@ -271,13 +271,13 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               maxChildSize: 0.95,
               expand: false,
               builder: (ctx, scrollCtrl) {
-                final tags = <String, String>{}; // id -> name
+                final tagSet = <String>{};
                 for (final op in store.operations) {
                   for (final t in store.getTagsForOperation(op)) {
-                    tags[t.id] = t.name;
+                    tagSet.add(t);
                   }
                 }
-                final tagEntries = tags.entries.toList()..sort((a, b) => a.value.compareTo(b.value));
+                final tags = tagSet.toList()..sort();
 
                 return Padding(
                   padding: const EdgeInsets.all(20),
@@ -357,7 +357,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         onChanged: (v) => _advComment = v,
                       ),
 
-                      if (tagEntries.isNotEmpty) ...[
+                      if (tags.isNotEmpty) ...[
                         const SizedBox(height: 20),
                         Text(context.tr('filters.tag'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 8),
@@ -365,11 +365,11 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            ChoiceChip(label: Text(context.tr('filters.all_tags')), selected: _advTagId == null, onSelected: (_) => setSheetState(() => _advTagId = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
-                            ...tagEntries.map((e) => ChoiceChip(
-                              label: Text(e.value),
-                              selected: _advTagId == e.key,
-                              onSelected: (_) => setSheetState(() => _advTagId = _advTagId == e.key ? null : e.key),
+                            ChoiceChip(label: Text(context.tr('filters.all_tags')), selected: _advTagName == null, onSelected: (_) => setSheetState(() => _advTagName = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                            ...tags.map((t) => ChoiceChip(
+                              label: Text(t),
+                              selected: _advTagName == t,
+                              onSelected: (_) => setSheetState(() => _advTagName = _advTagName == t ? null : t),
                               selectedColor: AppColors.primary.withValues(alpha: 0.15),
                             )),
                           ],
