@@ -292,10 +292,25 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   static const _chartPalette = [
-    Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00),
-    Color(0xFF00ACC1), Color(0xFF8E24AA), Color(0xFFF4511E), Color(0xFF3949AB),
-    Color(0xFFD81B60), Color(0xFF7CB342), Color(0xFF6D4C41), Color(0xFFC0CA33),
-    Color(0xFFFF7043), Color(0xFF26A69A), Color(0xFFEC407A), Color(0xFF5C6BC0),
-    Color(0xFFAB47BC), Color(0xFF78909C), Color(0xFF42A5F5), Color(0xFFEF5350),
+    Color(0xFFE53935), // red
+    Color(0xFF1E88E5), // blue
+    Color(0xFF43A047), // green
+    Color(0xFFFB8C00), // orange
+    Color(0xFF8E24AA), // purple
+    Color(0xFF00ACC1), // cyan
+    Color(0xFFF4511E), // deep orange
+    Color(0xFF3949AB), // indigo
+    Color(0xFFD81B60), // pink
+    Color(0xFF7CB342), // light green
+    Color(0xFF6D4C41), // brown
+    Color(0xFFC0CA33), // lime
+    Color(0xFFFF7043), // coral
+    Color(0xFF26A69A), // teal
+    Color(0xFF5C6BC0), // blue-grey
+    Color(0xFFAB47BC), // violet
+    Color(0xFF9CCC65), // yellow-green
+    Color(0xFF42A5F5), // sky blue
+    Color(0xFFEF5350), // crimson
+    Color(0xFFFFCA28), // amber
   ];
 }

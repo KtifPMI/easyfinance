@@ -59,7 +59,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 8),
           _langItem(context),
           _darkModeItem(context),
-          _currenciesItem(context),
           _pinItem(context),
           _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
