@@ -538,6 +538,7 @@
   "recommend.goal_pacing.desc": "{needed} ₽/ay lazım, {current} ₽/ay biriktiriliyor.",
 
   "common.search": "Ara",
+  "common.close": "Kapat",
   "filters.all_time": "Tüm zamanlar",
   "filters.day": "Gün",
   "filters.week": "Hafta",

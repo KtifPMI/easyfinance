@@ -142,6 +142,20 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
         return ScreenScaffold(
           title: _isEditing ? context.tr('operations.edit') : context.tr('operations.add'),
+          actions: [
+            if (!_isEditing)
+              IconButton(
+                icon: const Icon(Icons.close, size: 22),
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  } else {
+                    Navigator.of(context).pushReplacementNamed('/main');
+                  }
+                },
+                tooltip: context.tr('common.close'),
+              ),
+          ],
            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

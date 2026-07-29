@@ -538,6 +538,7 @@
   "recommend.goal_pacing.desc": "Braucht {needed} ₽/Mon, spart {current} ₽/Mon.",
 
   "common.search": "Suchen",
+  "common.close": "Schließen",
   "filters.all_time": "Gesamte Zeitraum",
   "filters.day": "Tag",
   "filters.week": "Woche",

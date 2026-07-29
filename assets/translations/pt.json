@@ -538,6 +538,7 @@
   "recommend.goal_pacing.desc": "Precisa {needed} ₽/mês, poupa {current} ₽/mês.",
 
   "common.search": "Pesquisar",
+  "common.close": "Fechar",
   "filters.all_time": "Todo o período",
   "filters.day": "Dia",
   "filters.week": "Semana",
