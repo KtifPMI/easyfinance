@@ -37,11 +37,11 @@ class AccountsScreen extends StatelessWidget {
                         children: [
                           Text(context.tr('accounts.my_capital'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                           const SizedBox(height: 4),
-                          Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-                          if (accounts.where((a) => !a.isArchived).length > 1) ...[
-                            const SizedBox(height: 4),
-                            Text(_buildCurrencyBreakdown(store), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                          ],
+                           Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                           if (accounts.where((a) => !a.isArchived).length > 1) ...[
+                             const SizedBox(height: 8),
+                             _buildCurrencyRow(store),
+                           ],
                         ],
                       ),
                     ),
@@ -106,14 +106,32 @@ class AccountsScreen extends StatelessWidget {
     );
   }
 
-  String _buildCurrencyBreakdown(FinanceStore store) {
+  Widget _buildCurrencyRow(FinanceStore store) {
     final byCurrency = <String, double>{};
     for (final a in store.accounts.where((a) => !a.isArchived)) {
       byCurrency.update(a.currency, (v) => v + a.balance, ifAbsent: () => a.balance);
     }
     final entries = byCurrency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    return entries.map((e) => '${currencySymbol(e.key)}${store.fmt(e.value, fromCurrency: e.key)}').join('  ·  ');
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      alignment: WrapAlignment.center,
+      children: entries.map((e) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.cardFor(context).withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderFor(context)),
+          ),
+          child: Text(
+            '${currencySymbol(e.key)} ${store.fmt(e.value, fromCurrency: e.key)}',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textFor(context)),
+          ),
+        );
+      }).toList(),
+    );
   }
 
   Color _parseColor(String hex) {
