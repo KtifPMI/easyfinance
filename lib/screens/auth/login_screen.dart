@@ -35,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacementNamed(context, initialRoute);
       await store.fetchAllData();
       NotificationService().rescheduleAll();
+      NotificationService().trackAppOpen();
     } else if (mounted && !store.useMock) {
       Navigator.pushReplacementNamed(context, initialRoute);
     }
@@ -44,11 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final result = await Navigator.pushNamed(context, '/oauth');
     if (result == true && mounted) {
       Navigator.pushReplacementNamed(context, '/main');
+      NotificationService().trackAppOpen();
     }
   }
 
   void _skipLogin() {
     Navigator.pushReplacementNamed(context, '/main');
+    NotificationService().trackAppOpen();
   }
 
   @override

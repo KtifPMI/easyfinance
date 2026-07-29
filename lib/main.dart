@@ -50,6 +50,7 @@ void main() async {
     await notif.init();
     await notif.rescheduleAll();
     await notif.registerDailyTask();
+    await notif.trackAppOpen();
   } catch (e, stack) {
     debugPrint('Notification init error: $e\n$stack');
   }

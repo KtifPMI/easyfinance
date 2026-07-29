@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../services/notification_service.dart';
 import '../../theme/theme.dart';
 
 class PinScreen extends StatefulWidget {
@@ -43,6 +44,7 @@ class _PinScreenState extends State<PinScreen> {
       if (mounted) {
         final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
         Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
+        NotificationService().trackAppOpen();
       }
     } else {
       setState(() {
@@ -59,6 +61,7 @@ class _PinScreenState extends State<PinScreen> {
     if (mounted) {
       final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
       Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
+      NotificationService().trackAppOpen();
     }
   }
 
