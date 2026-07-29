@@ -127,7 +127,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       );
       return;
     }
-    Navigator.pop(context);
+    if (Navigator.of(context).canPop()) {
+      Navigator.pop(context);
+    } else {
+      Navigator.pushReplacementNamed(context, '/main');
+    }
   }
 
   @override
