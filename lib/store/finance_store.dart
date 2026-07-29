@@ -39,6 +39,7 @@ class FinanceStore extends ChangeNotifier {
   Map<String, double> _rates = {'RUB': 1.0};
   DateTime? _ratesUpdatedAt;
   List<String> _watchedCurrencies = [];
+  final Map<String, Map<String, double>> _histRates = {};
   String _displayCurrency = 'RUB';
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
@@ -99,8 +100,9 @@ class FinanceStore extends ChangeNotifier {
     await _loadDisplayCurrency();
     _watchedCurrencies = await _loadWatchedCurrencies();
     _generateRecommendations();
-      notifyListeners();
-    } catch (_) {
+    await _preloadHistoricalRates();
+    notifyListeners();
+  } catch (_) {
       // Ignore a corrupt cache and continue with server data.
     }
   }
@@ -220,8 +222,12 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
-  String fmt(double amount, {String fromCurrency = 'RUB'}) {
-    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, _rates);
+  String fmt(double amount, {String fromCurrency = 'RUB', String? date}) {
+    Map<String, double> rates = _rates;
+    if (date != null && _histRates.containsKey(date)) {
+      rates = _histRates[date]!;
+    }
+    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, rates);
     return formatMoney(converted, currency: _displayCurrency);
   }
 
@@ -412,6 +418,7 @@ class FinanceStore extends ChangeNotifier {
     _useMock = !authService.isAuthenticated;
     _isLoading = false;
     await _saveCache();
+    await _preloadHistoricalRates();
     notifyListeners();
   }
 

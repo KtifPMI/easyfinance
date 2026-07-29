@@ -157,7 +157,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             title: title,
                             subtitle: op.comment ?? acc?.name ?? '',
                             tags: store.getTagsForOperation(op),
-                            formattedAmount: store.fmt(op.amount, fromCurrency: acc?.currency ?? 'RUB'),
+                            formattedAmount: store.fmt(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
                             type: op.type,
                             icon: iconData,
                             iconColor: iconColor,
