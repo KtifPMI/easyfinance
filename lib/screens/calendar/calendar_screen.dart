@@ -87,10 +87,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return ScreenScaffold(
           title: context.tr('calendar.title'),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => Navigator.pushNamed(context, '/add-operation', arguments: _selectedDate != null
-                ? {'presetDate': _selectedDate!.toIso8601String().substring(0, 10)}
+            onPressed: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: _selectedDate != null
+                ? {'date': _selectedDate!.toIso8601String().substring(0, 10)}
                 : null),
-            child: const Icon(Icons.add),
+            child: const Icon(Icons.event),
           ),
           child: Column(
             children: [

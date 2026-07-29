@@ -21,7 +21,7 @@ class FinHealthCard extends StatelessWidget {
     final debtRanges = [0.0, 30.0, 60.0];
     final incomeRanges = [0.0, 5.0, 10.0];
 
-    final finRanges = [0.0, 100.0, 200.0];
+    final finRanges = [0.0, 33.0, 66.0];
 
     final moneyColor = _color(indicators.money, moneyRanges);
     final budgetColor = _color(indicators.budget, budgetRanges);

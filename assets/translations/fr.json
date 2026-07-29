@@ -543,6 +543,7 @@
   "filters.week": "Semaine",
   "filters.month": "Mois",
   "filters.all_accounts": "Tous les comptes",
+  "filters.account": "Compte",
   "filters.advanced_filter": "Filtre avancé",
   "filters.type": "Type d'opération",
   "filters.all_types": "Toutes les opérations",

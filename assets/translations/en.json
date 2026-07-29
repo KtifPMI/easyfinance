@@ -489,6 +489,7 @@
   "filters.week": "Week",
   "filters.month": "Month",
   "filters.all_accounts": "All accounts",
+  "filters.account": "Account",
   "filters.advanced_filter": "Advanced filter",
   "filters.type": "Operation type",
   "filters.all_types": "All operations",

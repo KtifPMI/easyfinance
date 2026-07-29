@@ -543,6 +543,7 @@
   "filters.week": "Hafta",
   "filters.month": "Ay",
   "filters.all_accounts": "Tüm hesaplar",
+  "filters.account": "Hesap",
   "filters.advanced_filter": "Gelişmiş filtre",
   "filters.type": "İşlem türü",
   "filters.all_types": "Tüm işlemler",

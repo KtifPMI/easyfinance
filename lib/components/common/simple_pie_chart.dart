@@ -6,8 +6,9 @@ class SimplePieChart extends StatelessWidget {
   final List<({String label, double value, Color color})> slices;
   final double size;
   final double holeRadius;
+  final bool showPercentages;
 
-  const SimplePieChart({super.key, required this.slices, this.size = 180, this.holeRadius = 0.55});
+  const SimplePieChart({super.key, required this.slices, this.size = 180, this.holeRadius = 0.55, this.showPercentages = false});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +19,7 @@ class SimplePieChart extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: _PiePainter(slices: slices, total: total, holeRadius: holeRadius),
+        painter: _PiePainter(slices: slices, total: total, holeRadius: holeRadius, showPercentages: showPercentages),
       ),
     );
   }
@@ -28,8 +29,9 @@ class _PiePainter extends CustomPainter {
   final List<({String label, double value, Color color})> slices;
   final double total;
   final double holeRadius;
+  final bool showPercentages;
 
-  _PiePainter({required this.slices, required this.total, required this.holeRadius});
+  _PiePainter({required this.slices, required this.total, required this.holeRadius, this.showPercentages = false});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -44,6 +46,22 @@ class _PiePainter extends CustomPainter {
         ..color = slice.color
         ..style = PaintingStyle.fill;
       canvas.drawArc(rect, startAngle, sweepAngle, true, paint);
+
+      if (showPercentages && sweepAngle > 0.25) {
+        final pct = (slice.value / total * 100).round();
+        if (pct >= 5) {
+          final midAngle = startAngle + sweepAngle / 2;
+          final labelRadius = radius * 0.7;
+          final x = center.dx + labelRadius * cos(midAngle);
+          final y = center.dy + labelRadius * sin(midAngle);
+          final tp = TextPainter(
+            text: TextSpan(text: '$pct%', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          tp.paint(canvas, Offset(x - tp.width / 2, y - tp.height / 2));
+        }
+      }
+
       startAngle += sweepAngle;
     }
 

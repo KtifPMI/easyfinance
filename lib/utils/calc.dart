@@ -148,10 +148,10 @@ double _calcFinState(double money, double budget, double debt, double income) {
       if (value <= ranges[i + 1]) {
         final idx = i + 1;
         final normalized = (value - ranges[i]) / (ranges[i + 1] - ranges[i]);
-        return (idx + normalized);
+        return (idx + normalized).clamp(1.0, 3.0);
       }
     }
-    return ranges.length.toDouble();
+    return 3.0;
   }
 
   final moneyRanges = [0.0, 2.0, 5.0, 6.0];
@@ -164,7 +164,7 @@ double _calcFinState(double money, double budget, double debt, double income) {
   final debtWeighted = weightedScore(debt, debtRanges) * 15;
   final incomeWeighted = weightedScore(income, incomeRanges) * 30;
 
-  return ((moneyWeighted + budgetWeighted + debtWeighted + incomeWeighted) / 3).clamp(0, 300);
+  return ((moneyWeighted + budgetWeighted + debtWeighted + incomeWeighted) / 100 * 100).clamp(0, 100);
 }
 
 String _moneyTip(double value) {

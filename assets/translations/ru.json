@@ -557,6 +557,7 @@
   "filters.week": "Неделя",
   "filters.month": "Месяц",
   "filters.all_accounts": "Все счета",
+  "filters.account": "Счёт",
   "filters.advanced_filter": "Расширенный фильтр",
   "filters.type": "Тип операции",
   "filters.all_types": "Все операции",

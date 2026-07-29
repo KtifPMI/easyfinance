@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/ai_assistant/ai_assistant_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/oauth_webview_screen.dart';
 import '../screens/auth/pin_screen.dart';
@@ -21,6 +22,7 @@ class AppRouter {
   static const String addOperation = '/add-operation';
   static const String operationDetail = '/operation-detail';
   static const String scanReceipt = '/scan-receipt';
+  static const String aiAssistant = '/ai-assistant';
   static const String debug = '/debug';
   static const String plannedPayments = '/planned-payments';
   static const String addPlannedPayment = '/add-planned-payment';
@@ -33,6 +35,7 @@ class AppRouter {
     main: (_) => const MainTabs(),
     addOperation: (_) => const AddOperationScreen(),
     scanReceipt: (_) => const ScanReceiptScreen(),
+    aiAssistant: (_) => const AiAssistantScreen(),
     operationDetail: (_) => const OperationDetailScreen(),
     debug: (_) => const DebugScreen(),
     plannedPayments: (_) => const PlannedPaymentsScreen(),

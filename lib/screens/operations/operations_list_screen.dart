@@ -18,10 +18,6 @@ class OperationsListScreen extends StatefulWidget {
 }
 
 class _OperationsListScreenState extends State<OperationsListScreen> {
-  String _filter = 'all';
-  String _periodFilter = 'all';
-  String? _accountIdFilter;
-
   String? _advTypeFilter;
   DateTime? _advDateFrom;
   DateTime? _advDateTo;
@@ -29,6 +25,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   String _advAmountTo = '';
   String _advComment = '';
   String? _advTagName;
+  String? _advAccountId;
 
   bool get _hasAdvFilter =>
       _advTypeFilter != null ||
@@ -37,7 +34,8 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       _advAmountFrom.isNotEmpty ||
       _advAmountTo.isNotEmpty ||
       _advComment.isNotEmpty ||
-      _advTagName != null;
+      _advTagName != null ||
+      _advAccountId != null;
 
   void _resetAdvFilter() {
     setState(() {
@@ -48,6 +46,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       _advAmountTo = '';
       _advComment = '';
       _advTagName = null;
+      _advAccountId = null;
     });
   }
 
@@ -57,25 +56,11 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       builder: (context, store, _) {
         var ops = store.operations.toList();
 
-        if (_filter == 'income') ops = ops.where((o) => o.type == 'income').toList();
-        if (_filter == 'expense') ops = ops.where((o) => o.type == 'expense').toList();
-        if (_filter == 'transfer') ops = ops.where((o) => o.type == 'transfer').toList();
-        if (_accountIdFilter != null) ops = ops.where((o) => o.accountId == _accountIdFilter || o.toAccountId == _accountIdFilter).toList();
-
-        if (_periodFilter != 'all') {
-          final now = DateTime.now();
-          DateTime? from;
-          switch (_periodFilter) {
-            case 'day': from = DateTime(now.year, now.month, now.day); break;
-            case 'week': from = now.subtract(Duration(days: now.weekday - 1)); from = DateTime(from.year, from.month, from.day); break;
-            case 'month': from = DateTime(now.year, now.month, 1); break;
-          }
-          if (from != null) {
-            ops = ops.where((o) {
-              final d = DateTime.tryParse(o.date);
-              return d != null && d.isAfter(from!.subtract(const Duration(seconds: 1)));
-            }).toList();
-          }
+        if (_advTypeFilter != null) {
+          ops = ops.where((o) => o.type == _advTypeFilter).toList();
+        }
+        if (_advAccountId != null) {
+          ops = ops.where((o) => o.accountId == _advAccountId || o.toAccountId == _advAccountId).toList();
         }
 
         if (_advTypeFilter != null) {
@@ -130,62 +115,6 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
-                  const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    AppChip(label: context.tr('operations.all'), active: _filter == 'all', onPressed: () => setState(() => _filter = 'all')),
-                    AppChip(label: context.tr('operations.income'), active: _filter == 'income', onPressed: () => setState(() => _filter = 'income')),
-                    AppChip(label: context.tr('operations.expense'), active: _filter == 'expense', onPressed: () => setState(() => _filter = 'expense')),
-                    AppChip(label: context.tr('filters.transfer'), active: _filter == 'transfer', onPressed: () => setState(() => _filter = 'transfer')),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    AppChip(label: context.tr('filters.all_time'), active: _periodFilter == 'all', onPressed: () => setState(() => _periodFilter = 'all')),
-                    AppChip(label: context.tr('filters.day'), active: _periodFilter == 'day', onPressed: () => setState(() => _periodFilter = 'day')),
-                    AppChip(label: context.tr('filters.week'), active: _periodFilter == 'week', onPressed: () => setState(() => _periodFilter = 'week')),
-                    AppChip(label: context.tr('filters.month'), active: _periodFilter == 'month', onPressed: () => setState(() => _periodFilter = 'month')),
-                  ],
-                ),
-              ),
-              if (store.accounts.length > 1) ...[
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 36,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ChoiceChip(
-                          label: Text(context.tr('filters.all_accounts'), style: const TextStyle(fontSize: 12)),
-                          selected: _accountIdFilter == null,
-                          onSelected: (_) => setState(() => _accountIdFilter = null),
-                          selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                          side: BorderSide.none,
-                        ),
-                      ),
-                      ...store.accounts.map((a) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ChoiceChip(
-                          label: Text(a.name, style: const TextStyle(fontSize: 12)),
-                          selected: _accountIdFilter == a.id,
-                          onSelected: (_) => setState(() => _accountIdFilter = _accountIdFilter == a.id ? null : a.id),
-                          selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                          side: BorderSide.none,
-                        ),
-                      )),
-                    ],
-                  ),
-                ),
-              ],
               const SizedBox(height: 16),
               if (grouped.isEmpty)
                 Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
@@ -311,6 +240,24 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         ],
                       ),
                       const SizedBox(height: 20),
+
+                      if (store.accounts.length > 1) ...[
+                        Text(context.tr('filters.account'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            ChoiceChip(label: Text(context.tr('filters.all_accounts')), selected: _advAccountId == null, onSelected: (_) => setSheetState(() => _advAccountId = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                            ...store.accounts.map((a) => ChoiceChip(
+                              label: Text(a.name),
+                              selected: _advAccountId == a.id,
+                              onSelected: (_) => setSheetState(() => _advAccountId = _advAccountId == a.id ? null : a.id),
+                              selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                            )),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                      ],
 
                       Text(context.tr('filters.period'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),

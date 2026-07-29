@@ -543,6 +543,7 @@
   "filters.week": "Woche",
   "filters.month": "Monat",
   "filters.all_accounts": "Alle Konten",
+  "filters.account": "Konto",
   "filters.advanced_filter": "Erweiterter Filter",
   "filters.type": "Vorgangstyp",
   "filters.all_types": "Alle Vorgänge",

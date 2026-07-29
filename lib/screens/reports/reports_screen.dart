@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../components/common/simple_bar_chart.dart';
 import '../../components/common/simple_pie_chart.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -18,6 +19,9 @@ class ReportsScreen extends StatefulWidget {
 
 class _ReportsScreenState extends State<ReportsScreen> {
   late DateTime _selectedMonth;
+  DateTime? _customFrom;
+  DateTime? _customTo;
+  String _chartType = 'pie';
 
   @override
   void initState() {
@@ -28,7 +32,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
   void _prevMonth() => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1, 1));
   void _nextMonth() => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1));
 
-  String _monthLabel() {
+  bool get _isCustomPeriod => _customFrom != null || _customTo != null;
+
+  bool _inPeriod(op, store) {
+    if (_isCustomPeriod) {
+      final d = DateTime.tryParse(op.date);
+      if (d == null) return false;
+      if (_customFrom != null && d.isBefore(_customFrom!)) return false;
+      if (_customTo != null) {
+        final to = DateTime(_customTo!.year, _customTo!.month, _customTo!.day, 23, 59, 59);
+        if (d.isAfter(to)) return false;
+      }
+      return true;
+    }
+    return store.isInMonth(op.date, _selectedMonth);
+  }
+
+  String _periodLabel() {
+    if (_isCustomPeriod) {
+      final from = _customFrom != null ? formatDate(_customFrom!.toIso8601String().substring(0, 10)) : '...';
+      final to = _customTo != null ? formatDate(_customTo!.toIso8601String().substring(0, 10)) : '...';
+      return '$from — $to';
+    }
     final months = ['month.long.1', 'month.long.2', 'month.long.3', 'month.long.4', 'month.long.5', 'month.long.6', 'month.long.7', 'month.long.8', 'month.long.9', 'month.long.10', 'month.long.11', 'month.long.12'];
     return '${context.tr(months[_selectedMonth.month - 1])} ${_selectedMonth.year}';
   }
@@ -37,8 +62,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final isCurrent = _selectedMonth.month == DateTime.now().month && _selectedMonth.year == DateTime.now().year;
-        final opsInMonth = store.operations.where((o) => store.isInMonth(o.date, _selectedMonth));
+        final opsInMonth = store.operations.where((o) => _inPeriod(o, store) && !o.isDeleted);
         final monthIncome = opsInMonth.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
         final monthExpense = opsInMonth.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
         final balance = store.totalBalance;
@@ -50,6 +74,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));
 
+        final top6 = catTotals.take(6).map((e) => (
+          label: e.category.name,
+          value: e.total,
+          color: _parseColor(e.category.color),
+        )).toList();
+
         return ScreenScaffold(
           title: context.tr('reports.title'),
           child: Column(
@@ -58,14 +88,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
               ScreenHint(hintId: 'reports', text: context.tr('hints.reports')),
               Row(
                 children: [
-                  IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),
-                  Text(_monthLabel(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                  if (!isCurrent) IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
-                  if (!isCurrent)
-                    TextButton(
-                      onPressed: () => setState(() => _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1)),
-                      child: Text(context.tr('reports.today')),
-                    ),
+                  if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+                  Expanded(child: Text(_periodLabel(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context)), textAlign: TextAlign.center)),
+                  if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+                  IconButton(
+                    icon: Icon(_isCustomPeriod ? Icons.clear : Icons.date_range, size: 20, color: _isCustomPeriod ? AppColors.danger : AppColors.textSecondaryFor(context)),
+                    onPressed: _isCustomPeriod ? () => setState(() { _customFrom = null; _customTo = null; }) : _pickPeriod,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -111,7 +142,29 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.pie_chart, color: _chartType == 'pie' ? AppColors.primary : AppColors.textSecondaryFor(context), size: 22),
+                        onPressed: () => setState(() => _chartType = 'pie'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: Icon(Icons.bar_chart, color: _chartType == 'bar' ? AppColors.primary : AppColors.textSecondaryFor(context), size: 22),
+                        onPressed: () => setState(() => _chartType = 'bar'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
               if (catTotals.isEmpty)
                 Padding(
@@ -120,15 +173,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 )
               else ...[
                 Center(
-                  child: SimplePieChart(
-                    slices: catTotals.take(6).map((e) => (
-                      label: e.category.name,
-                      value: e.total,
-                      color: _parseColor(e.category.color),
-                    )).toList(),
-                    size: 200,
-                    holeRadius: 0.55,
-                  ),
+                  child: _chartType == 'bar'
+                      ? SimpleBarChart(slices: top6, height: 180, showPercentages: true)
+                      : SimplePieChart(
+                          slices: top6,
+                          size: 200,
+                          holeRadius: 0.55,
+                          showPercentages: true,
+                        ),
                 ),
                 const SizedBox(height: 16),
                 Wrap(
@@ -137,12 +189,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   alignment: WrapAlignment.center,
                   children: catTotals.take(6).map((e) {
                     final color = _parseColor(e.category.color);
+                    final pct = monthExpense > 0 ? (e.total / monthExpense * 100).round() : 0;
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
                         const SizedBox(width: 4),
-                        Text(e.category.name, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                        Text('${e.category.name} $pct%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                       ],
                     );
                   }).toList(),
@@ -155,6 +208,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
         );
       },
     );
+  }
+
+  void _pickPeriod() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      initialDateRange: _customFrom != null && _customTo != null
+          ? DateTimeRange(start: _customFrom!, end: _customTo!)
+          : null,
+    );
+    if (picked != null) {
+      setState(() {
+        _customFrom = picked.start;
+        _customTo = picked.end;
+      });
+    }
   }
 
   List<Widget> _buildCategoryRows(List<({dynamic category, double total})> catTotals, double monthExpense) {

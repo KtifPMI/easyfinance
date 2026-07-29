@@ -13,8 +13,26 @@ import '../../utils/calc.dart';
 import '../goals/add_goal_screen.dart';
 import 'add_budget_screen.dart';
 
-class PlanScreen extends StatelessWidget {
-  const PlanScreen({super.key});
+class PlanScreen extends StatefulWidget {
+  final bool scrollToGoals;
+  const PlanScreen({super.key, this.scrollToGoals = false});
+
+  @override
+  State<PlanScreen> createState() => _PlanScreenState();
+}
+
+class _PlanScreenState extends State<PlanScreen> {
+  final _goalsKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.scrollToGoals) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Scrollable.ensureVisible(_goalsKey.currentContext!, alignment: 0.1, duration: const Duration(milliseconds: 300));
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +175,7 @@ class PlanScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('budget.goals'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(context.tr('budget.goals'), key: _goalsKey, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 ],
               ),
               const SizedBox(height: 12),
@@ -220,6 +238,7 @@ class PlanScreen extends StatelessWidget {
       },
     );
   }
+}
 
   IconData _goalIcon(String name) {
     const map = {'shield': Icons.shield, 'beach_access': Icons.beach_access, 'laptop': Icons.laptop, 'star': Icons.star};

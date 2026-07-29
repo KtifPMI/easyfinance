@@ -30,6 +30,13 @@ class HomeScreen extends StatelessWidget {
 
         return ScreenScaffold(
           title: 'EasyFinance',
+          actions: [
+            IconButton(
+              icon: Icon(Icons.smart_toy_outlined, color: AppColors.textSecondaryFor(context), size: 22),
+              onPressed: () => Navigator.pushNamed(context, '/ai-assistant'),
+              tooltip: 'AI Assistant',
+            ),
+          ],
           isLoading: store.isLoading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -509,7 +516,7 @@ class HomeScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlanScreen())),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlanScreen(scrollToGoals: true))),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
