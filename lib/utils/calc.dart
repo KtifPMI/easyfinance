@@ -1,6 +1,7 @@
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/operation.dart';
+import '../services/currency_rate_service.dart';
 
 class FinHealthIndicators {
   final double finState;
@@ -28,10 +29,10 @@ class FinHealthIndicators {
   });
 }
 
-FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operations, List<Budget> budgets) {
+FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operations, List<Budget> budgets, Map<String, double> rates) {
   final now = DateTime.now();
 
-  final moneyVal = _calcMoney(accounts, operations, now);
+  final moneyVal = _calcMoney(accounts, operations, now, rates);
   final budgetVal = _calcBudget(budgets, now);
   final debtVal = _calcDebt(accounts, operations, now);
   final incomeVal = _calcIncome(operations, now);
@@ -57,14 +58,16 @@ bool _isMoneyAccountType(String type) {
 
 bool _isCreditType(String type) => type == 'credit';
 
-double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime now) {
+double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime now, Map<String, double> rates) {
   double moneyBalance = 0;
   for (final a in accounts) {
-    if (a.includeInTotal && _isMoneyAccountType(a.type)) {
-      moneyBalance += a.balance;
+    if (!a.includeInTotal) continue;
+    final balanceRub = CurrencyRateService.convert(a.balance, a.currency, 'RUB', rates);
+    if (_isMoneyAccountType(a.type)) {
+      moneyBalance += balanceRub;
     }
-    if (a.includeInTotal && _isCreditType(a.type) && a.balance > 0) {
-      moneyBalance += a.balance;
+    if (_isCreditType(a.type) && a.balance > 0) {
+      moneyBalance += balanceRub;
     }
   }
   if (moneyBalance == 0) return 0;

@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<FinanceStore, PlannedPaymentStore>(
       builder: (context, store, plannedPayments, _) {
-        final indicators = calcFinHealth(store.accounts, store.operations, store.budgets);
+        final indicators = calcFinHealth(store.accounts, store.operations, store.budgets, store.rates);
         final accountType = store.currentUser?.accountType ?? 'individual';
 
         return ScreenScaffold(
