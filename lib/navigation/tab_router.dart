@@ -57,7 +57,7 @@ class _MainTabsState extends State<MainTabs> {
             onTap: (i) => setState(() => _index = i),
             selectedLabelStyle: const TextStyle(fontSize: 10),
             unselectedLabelStyle: const TextStyle(fontSize: 10),
-            backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor?.withOpacity(0.85) ?? Colors.white.withOpacity(0.85),
+            backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor?.withValues(alpha: 0.85) ?? Colors.white.withValues(alpha: 0.85),
             elevation: 0,
             items: List.generate(6, (i) => BottomNavigationBarItem(
               icon: Icon(_icons[i]),

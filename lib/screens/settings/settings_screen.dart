@@ -312,6 +312,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ],
     );
   }
+
+  Widget _exportItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: InkWell(
+          onTap: () async {
+            final now = DateTime.now();
+            final picked = await showDateRangePicker(
+              context: context,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              initialDateRange: DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
+            );
+            if (picked != null && context.mounted) {
+              final store = context.read<FinanceStore>();
+              try {
+                await CsvExportService.export(store, picked.start, picked.end);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export error: $e'), backgroundColor: Colors.red));
+                }
+              }
+            }
+          },
+          child: Row(
+            children: [
+              Icon(Icons.file_download_outlined, color: AppColors.primary, size: 20),
+              const SizedBox(width: 12),
+              Text(context.tr('settings.export_csv'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _CurrencyManageScreen extends StatefulWidget {
@@ -392,43 +429,6 @@ class _CurrencyManageScreenState extends State<_CurrencyManageScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _exportItem(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: InkWell(
-          onTap: () async {
-            final now = DateTime.now();
-            final picked = await showDateRangePicker(
-              context: context,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-              initialDateRange: DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
-            );
-            if (picked != null && context.mounted) {
-              final store = context.read<FinanceStore>();
-              try {
-                await CsvExportService.export(store, picked.start, picked.end);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export error: $e'), backgroundColor: Colors.red));
-                }
-              }
-            }
-          },
-          child: Row(
-            children: [
-              Icon(Icons.file_download_outlined, color: AppColors.primary, size: 20),
-              const SizedBox(width: 12),
-              Text(context.tr('settings.export_csv'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
-            ],
-          ),
-        ),
       ),
     );
   }
