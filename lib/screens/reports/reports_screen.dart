@@ -264,9 +264,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
     Color(0xFFFB8C00), // оранжевый
     Color(0xFF8E24AA), // фиолетовый
     Color(0xFF00ACC1), // бирюзовый
-    Color(0xFFF4511E), // красно-оранжевый
-    Color(0xFF3949AB), // тёмно-синий
+    Color(0xFFF4511E), // коралловый
+    Color(0xFF3949AB), // индиго
     Color(0xFFD81B60), // розовый
     Color(0xFF7CB342), // салатовый
+    Color(0xFF6D4C41), // коричневый
+    Color(0xFFC0CA33), // лайм
+    Color(0xFFFF7043), // персиковый
+    Color(0xFF26A69A), // мятный
+    Color(0xFF5C6BC0), // лавандовый
+    Color(0xFFAB47BC), // сиреневый
+    Color(0xFFFFCA28), // янтарный
+    Color(0xFF795548), // шоколадный
+    Color(0xFF00897B), // изумрудный
+    Color(0xFFF06292), // малиновый
   ];
 }

@@ -179,14 +179,14 @@ class _PinScreenState extends State<PinScreen> {
       children: List.generate(4, (i) {
         final filled = i < _pin.length;
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12),
-          width: 18,
-          height: 18,
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: filled ? AppColors.primary : Colors.transparent,
             border: Border.all(
-              color: _error.isNotEmpty ? AppColors.expense : (filled ? AppColors.primary : AppColors.textSecondaryFor(context)),
+              color: _error.isNotEmpty ? AppColors.expense : (filled ? AppColors.primary : AppColors.textFor(context)),
               width: 2,
             ),
           ),
@@ -203,7 +203,9 @@ class _PinScreenState extends State<PinScreen> {
         ['7', '8', '9'],
         ['', '0', '⌫'],
       ].map((row) {
-        return Row(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: row.map((d) {
             if (d.isEmpty) return const SizedBox(width: 72, height: 72);
@@ -229,6 +231,7 @@ class _PinScreenState extends State<PinScreen> {
               ),
             );
           }).toList(),
+        );
         );
       }).toList(),
     );
