@@ -8,6 +8,7 @@ import '../../components/operations/operation_list_item.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
+import '../../utils/translate_category.dart';
 
 class OperationsListScreen extends StatefulWidget {
   const OperationsListScreen({super.key});
@@ -150,7 +151,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           }
                           final title = op.type == 'transfer'
                               ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
-                              : cat?.name ?? context.tr('operations.no_category');
+                              : tCat(context, cat?.name ?? context.tr('operations.no_category'));
 
                           return OperationListItem(
                             title: title,

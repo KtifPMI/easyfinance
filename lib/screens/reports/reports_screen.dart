@@ -9,6 +9,7 @@ import '../../components/common/simple_pie_chart.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
+import '../../utils/translate_category.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -75,7 +76,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ..sort((a, b) => b.total.compareTo(a.total));
 
         final top6 = catTotals.take(6).map((e) => (
-          label: e.category.name,
+          label: tCat(context, e.category.name),
           value: e.total,
           color: _parseColor(e.category.color),
         )).toList();
@@ -195,7 +196,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       children: [
                         Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
                         const SizedBox(width: 4),
-                        Text('${e.category.name} $pct%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                        Text('${tCat(context, e.category.name)} $pct%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                       ],
                     );
                   }).toList(),
@@ -242,7 +243,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(e.category.name, style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                  Text(tCat(context, e.category.name), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
                   Text('${percent.round()}% · ${formatMoney(e.total)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                 ],
               ),

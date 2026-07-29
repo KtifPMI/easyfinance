@@ -10,6 +10,7 @@ import '../../models/goal.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
+import '../../utils/translate_category.dart';
 import '../goals/add_goal_screen.dart';
 import 'add_budget_screen.dart';
 
@@ -128,7 +129,7 @@ class _PlanScreenState extends State<PlanScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                   Text(b.name ?? cat?.name ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                   Text(b.name ?? tCat(context, cat?.name ?? ''), overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -141,7 +142,7 @@ class _PlanScreenState extends State<PlanScreen> {
                                             barrierDismissible: false,
                                             builder: (ctx) => AlertDialog(
                                               title: Text(context.tr('budget.confirm_delete')),
-                                              content: Text(b.name ?? cat?.name ?? ''),
+                                              content: Text(b.name ?? tCat(context, cat?.name ?? '')),
                                               actions: [
                                                 TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
                                                 TextButton(
