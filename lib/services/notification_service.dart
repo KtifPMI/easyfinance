@@ -148,11 +148,17 @@ class NotificationService {
   }
 
   Future<void> registerDailyTask() async {
+    final now = DateTime.now();
+    var next10 = DateTime(now.year, now.month, now.day, 10, 0);
+    if (now.isAfter(next10)) {
+      next10 = next10.add(const Duration(days: 1));
+    }
     await Workmanager().registerPeriodicTask(
       'dailyCheck',
       'dailyCheck',
       frequency: const Duration(hours: 24),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.update,
+      initialDelay: next10.difference(now),
+      existingWorkPolicy: ExistingWorkPolicy.update,
       constraints: Constraints(networkType: NetworkType.notRequired),
     );
   }
