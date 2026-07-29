@@ -78,11 +78,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
         final chartSlices = <({String label, double value, Color color})>[];
         for (int i = 0; i < catTotals.length && i < 6; i++) {
-          chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: _catColor(catTotals[i].category.id)));
+          chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: _chartPalette[i % _chartPalette.length]));
         }
         if (otherTotal > 0) {
-          chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: Colors.grey));
+          chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: const Color(0xFF9E9E9E)));
         }
+
+        final chartTotal = chartSlices.fold<double>(0, (s, e) => s + e.value);
 
         return ScreenScaffold(
           title: context.tr('reports.title'),
@@ -187,23 +189,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                 ),
                 const SizedBox(height: 16),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 6,
-                  alignment: WrapAlignment.center,
-                  children: chartSlices.map((s) {
-                    final pct = monthExpense > 0 ? (s.value / monthExpense * 100).round() : 0;
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(width: 8, height: 8, decoration: BoxDecoration(color: s.color, shape: BoxShape.circle)),
-                        const SizedBox(width: 4),
-                        Text('${s.label} $pct%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                      ],
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
                 ..._buildCategoryRows(catTotals, monthExpense, store),
               ],
             ],
@@ -236,7 +221,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return [
       ...top.map((e) {
         final percent = monthExpense > 0 ? e.total / monthExpense * 100 : 0.0;
-        final color = _catColor(e.category.id);
+        final color = _chartPalette[top.indexOf(e) % _chartPalette.length];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Column(
@@ -270,25 +255,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ),
     ];
-  }
-
-  static const Map<String, Color> _categoryColors = {
-    '551145658': Color(0xFFE53935), '551145659': Color(0xFF1E88E5),
-    '551145661': Color(0xFF43A047), '551145663': Color(0xFFFB8C00),
-    '551145664': Color(0xFF00ACC1), '551145665': Color(0xFFF4511E),
-    '551145666': Color(0xFF8E24AA), '551145667': Color(0xFF3949AB),
-    '551145668': Color(0xFFD81B60), '551145669': Color(0xFF7CB342),
-    '551145670': Color(0xFFC0CA33), '551145671': Color(0xFF6D4C41),
-    '551145673': Color(0xFF78909C), '551145674': Color(0xFF5C6BC0),
-    '551145675': Color(0xFFFF7043), '551145676': Color(0xFF26A69A),
-    '551145677': Color(0xFFEC407A), '551145683': Color(0xFFAB47BC),
-    '551145685': Color(0xFFEF5350), '551145686': Color(0xFF42A5F5),
-  };
-
-  Color _catColor(String id) {
-    if (_categoryColors.containsKey(id)) return _categoryColors[id]!;
-    final idx = id.hashCode.abs() % _chartPalette.length;
-    return _chartPalette[idx];
   }
 
   static const _chartPalette = [
