@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../models/budget.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/translate_category.dart';

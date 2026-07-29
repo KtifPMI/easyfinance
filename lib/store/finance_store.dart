@@ -268,6 +268,19 @@ class FinanceStore extends ChangeNotifier {
     return !d.isBefore(start) && !d.isAfter(end);
   }
 
+  Future<void> _preloadHistoricalRates() async {
+    final dates = _operations.map((o) => o.date.substring(0, 10)).toSet();
+    for (final dateStr in dates) {
+      if (_histRates.containsKey(dateStr)) continue;
+      final date = DateTime.tryParse(dateStr);
+      if (date == null) continue;
+      final rates = await RateHistoryStorage.getRates(date);
+      if (rates != null) {
+        _histRates[dateStr] = rates;
+      }
+    }
+  }
+
   Future<void> fetchAllData() async {
     if (!authService.isAuthenticated) return;
     await Future.wait([_cacheReady, _templatesReady]);
