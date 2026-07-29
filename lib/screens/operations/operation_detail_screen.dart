@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
+import '../../utils/translate_category.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 
@@ -37,7 +38,7 @@ class OperationDetailScreen extends StatelessWidget {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         title: Text(context.tr('operations.refund_confirm')),
-                        content: Text('${formatMoney(op.amount)} — ${cat?.name ?? ''}'),
+                        content: Text('${formatMoney(op.amount)} — ${tCat(context, cat?.name ?? '')}'),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('operations.cancel'))),
                           TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(context.tr('operations.refund'))),
@@ -83,7 +84,7 @@ class OperationDetailScreen extends StatelessWidget {
                 Text(formatMoney(op.amount), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700,
                   color: op.type == 'income' ? AppColors.success : AppColors.expense)),
                 const SizedBox(height: 8),
-                Text(cat?.name ?? '', style: TextStyle(fontSize: 18, color: AppColors.textFor(context))),
+                Text(tCat(context, cat?.name ?? ''), style: TextStyle(fontSize: 18, color: AppColors.textFor(context))),
                 const SizedBox(height: 16),
                 if (op.comment != null) Text(op.comment!, style: TextStyle(color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 8),

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
 import '../../theme/theme.dart';
+import '../../utils/translate_category.dart';
 import '../../components/common/screen_scaffold.dart';
 
 class ScanReceiptScreen extends StatefulWidget {
@@ -477,7 +478,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-            items: store.categories.where((c) => c.type == 'expense').map((c) => DropdownMenuItem<String>(value: c.id, child: Text(c.name))).toList(),
+            items: store.categories.where((c) => c.type == 'expense').map((c) => DropdownMenuItem<String>(value: c.id, child: Text(tCat(context, c.name)))).toList(),
             onChanged: (v) => setState(() => _selectedCategoryId = v),
           ),
           const SizedBox(height: 16),

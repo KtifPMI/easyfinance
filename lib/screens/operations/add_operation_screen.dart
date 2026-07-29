@@ -5,6 +5,7 @@ import '../../components/common/app_input.dart';
 import '../../components/common/calculator_input.dart';
 import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../utils/translate_category.dart';
 import '../../theme/theme.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
@@ -225,13 +226,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               if (_type != 'transfer') ...[
                 _buildPicker(
                   label: context.tr('operations.category'),
-                  value: store.categories.where((c) => c.id == _categoryId).map((c) => c.name).firstOrNull,
+                  value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
                   onTap: () async {
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
                       title: context.tr('operations.category'),
                       items: store.categories.where((c) => c.type == _type).map((c) => c.id).toList(),
-                      labelBuilder: (id) => store.categories.firstWhere((c) => c.id == id).name,
+                      labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
                       groupBuilder: (id) {
                         final c = store.categories.firstWhere((c) => c.id == id);
                         if (c.parentId == null || c.parentId!.isEmpty) return '';

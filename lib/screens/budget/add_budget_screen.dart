@@ -4,9 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
-import '../../models/budget.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/translate_category.dart';
 
 class AddBudgetScreen extends StatefulWidget {
   final String? categoryId;
@@ -65,7 +65,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                items: expenseCats.map((c) => DropdownMenuItem<String>(value: c.id, child: Text(c.name))).toList(),
+                items: expenseCats.map((c) => DropdownMenuItem<String>(value: c.id, child: Text(tCat(context, c.name)))).toList(),
                 onChanged: (v) => setState(() => _categoryId = v),
               ),
               const SizedBox(height: 16),

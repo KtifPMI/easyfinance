@@ -8,6 +8,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../models/operation_template.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/translate_category.dart';
 
 class TemplatesScreen extends StatelessWidget {
   const TemplatesScreen({super.key});
@@ -179,7 +180,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                     ),
-                    items: store.categories.where((c) => c.type == _type).map((c) => DropdownMenuItem<String>(value: c.id, child: Text(c.name))).toList(),
+                    items: store.categories.where((c) => c.type == _type).map((c) => DropdownMenuItem<String>(value: c.id, child: Text(tCat(context, c.name)))).toList(),
                     onChanged: (v) => setState(() => _categoryId = v),
                   ),
                 ],
