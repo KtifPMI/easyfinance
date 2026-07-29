@@ -40,7 +40,7 @@ class AccountsScreen extends StatelessWidget {
                            Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                            if (accounts.where((a) => !a.isArchived).length > 1) ...[
                              const SizedBox(height: 8),
-                             _buildCurrencyRow(store),
+                             _buildCurrencyRow(context, store),
                            ],
                         ],
                       ),
@@ -106,7 +106,7 @@ class AccountsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrencyRow(FinanceStore store) {
+  Widget _buildCurrencyRow(BuildContext context, FinanceStore store) {
     final byCurrency = <String, double>{};
     for (final a in store.accounts.where((a) => !a.isArchived)) {
       byCurrency.update(a.currency, (v) => v + a.balance, ifAbsent: () => a.balance);
