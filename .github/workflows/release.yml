@@ -42,7 +42,7 @@ jobs:
         run: flutter pub get
 
       - name: Build APK (release)
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
