@@ -179,12 +179,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 )
               else ...[
                 Center(
-                  child: _chartType == 'bar'
-                      ? SimpleBarChart(slices: chartSlices, height: 180, showPercentages: true)
+                    child: _chartType == 'bar'
+                      ? SimpleBarChart(slices: chartSlices, height: 200, showPercentages: true)
                       : SimplePieChart(
                           slices: chartSlices,
-                          size: 200,
-                          holeRadius: 0.55,
+                          size: 220,
+                          holeRadius: 0.5,
                           showPercentages: true,
                         ),
                 ),
@@ -258,25 +258,15 @@ class _ReportsScreenState extends State<ReportsScreen> {
   }
 
   static const _chartPalette = [
-    Color(0xFFE53935), // red
-    Color(0xFF1E88E5), // blue
-    Color(0xFF43A047), // green
-    Color(0xFFFB8C00), // orange
-    Color(0xFF8E24AA), // purple
-    Color(0xFF00ACC1), // cyan
-    Color(0xFFF4511E), // deep orange
-    Color(0xFF3949AB), // indigo
-    Color(0xFFD81B60), // pink
-    Color(0xFF7CB342), // light green
-    Color(0xFF6D4C41), // brown
-    Color(0xFFC0CA33), // lime
-    Color(0xFFFF7043), // coral
-    Color(0xFF26A69A), // teal
-    Color(0xFF5C6BC0), // blue-grey
-    Color(0xFFAB47BC), // violet
-    Color(0xFF9CCC65), // yellow-green
-    Color(0xFF42A5F5), // sky blue
-    Color(0xFFEF5350), // crimson
-    Color(0xFFFFCA28), // amber
+    Color(0xFFE53935), // красный
+    Color(0xFF1E88E5), // синий
+    Color(0xFF43A047), // зелёный
+    Color(0xFFFB8C00), // оранжевый
+    Color(0xFF8E24AA), // фиолетовый
+    Color(0xFF00ACC1), // бирюзовый
+    Color(0xFFF4511E), // красно-оранжевый
+    Color(0xFF3949AB), // тёмно-синий
+    Color(0xFFD81B60), // розовый
+    Color(0xFF7CB342), // салатовый
   ];
 }
