@@ -5,9 +5,8 @@ class OperationListItem extends StatelessWidget {
   final String title;
   final String? subtitle;
   final List<String> tags;
-  final double amount;
+  final String formattedAmount;
   final String type;
-  final String? currency;
   final IconData icon;
   final Color iconColor;
   final VoidCallback onTap;
@@ -18,9 +17,8 @@ class OperationListItem extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.tags = const [],
-    required this.amount,
+    required this.formattedAmount,
     required this.type,
-    this.currency = 'RUB',
     required this.icon,
     required this.iconColor,
     required this.onTap,
@@ -41,10 +39,6 @@ class OperationListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final symbols = {'RUB': '₽', 'USD': '\$', 'EUR': '€'};
-    final sym = symbols[currency] ?? currency ?? '₽';
-    final amt = amount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
-
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -75,7 +69,7 @@ class OperationListItem extends StatelessWidget {
                 ],
               ),
             ),
-            Text('$_amountPrefix$amt $sym', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _amountColor(context))),
+            Text('$_amountPrefix$formattedAmount', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _amountColor(context))),
             if (isPending) ...[
               const SizedBox(width: 4),
               Icon(Icons.sync, size: 14, color: AppColors.textSecondary),
