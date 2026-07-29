@@ -561,5 +561,15 @@
   "filters.all_tags": "Tutti i tag",
   "filters.apply": "Applica",
   "filters.reset": "Reimposta",
-  "calendar.plan": "Pianifica"
+  "calendar.plan": "Pianifica",
+  "calendar.scheduled_payments": "Pagamenti Pianificati",
+  "calendar.operations": "Operazioni",
+  "home.offline_pending": "Offline: {count} operazioni in attesa",
+  "quick_actions.receipt": "Ricevuta",
+  "hints.home": "Saldo totale, budget mensile e pagamenti in arrivo. Aggiungi entrate e uscite con i pulsanti rapidi.",
+  "hints.operations": "Tutte le transazioni — entrate, uscite e trasferimenti. Usa i filtri.",
+  "hints.plan": "Budget e obiettivi. Imposta limiti per categoria per controllare le spese.",
+  "hints.calendar": "Tocca un giorno per vedere transazioni e pagamenti programmati.",
+  "hints.reports": "Analisi mensile: entrate, uscite, struttura per categorie.",
+  "hints.more": "Impostazioni, categorie, tag, sincronizzazione e profilo."
 }

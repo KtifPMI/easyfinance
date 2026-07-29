@@ -94,7 +94,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           child: Column(
             children: [
-              ScreenHint(hintId: 'calendar', text: 'Нажмите на день, чтобы увидеть все операции и запланированные платежи за эту дату. Можно листать месяцы стрелками.'),
+              ScreenHint(hintId: 'calendar', text: context.tr('hints.calendar')),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -157,7 +157,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 if (selectedPlanned.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Text('Запланированные платежи', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+                    child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
                   ),
                   ...selectedPlanned.map((e) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -196,7 +196,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   if (selectedPlanned.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: Text('Операции', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+                      child: Text(context.tr('calendar.operations'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
                     ),
                   ...selectedOps.map((op) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),

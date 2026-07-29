@@ -20,7 +20,7 @@ class QuickActions extends StatelessWidget {
         const SizedBox(width: 6),
         _action(context, Icons.swap_horiz, context.tr('quick_actions.transfer'), AppColors.transfer, onAddTransfer),
         const SizedBox(width: 6),
-        _action(context, Icons.document_scanner, 'Чек', AppColors.accent, onScan),
+        _action(context, Icons.document_scanner, context.tr('quick_actions.receipt'), AppColors.accent, onScan),
       ],
     );
   }

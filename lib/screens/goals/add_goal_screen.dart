@@ -109,56 +109,43 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   double _safeEval(String expr) {
     final cleaned = expr.replaceAll(' ', '');
     if (cleaned.isEmpty) return 0;
-    return _parseSum(cleaned, 0);
-  }
+    int _i = 0;
 
-  double _parseSum(String s, int i) {
-    double result = _parseProduct(s, i);
-    while (i < s.length) {
-      final c = s[i];
-      if (c == '+') {
-        i++;
-        result += _parseProduct(s, i);
-      } else if (c == '-') {
-        i++;
-        result -= _parseProduct(s, i);
-      } else {
-        break;
+    double _parseExpr() {
+      double result = _parseTerm();
+      while (_i < cleaned.length) {
+        final c = cleaned[_i];
+        if (c == '+') { _i++; result += _parseTerm(); }
+        else if (c == '-') { _i++; result -= _parseTerm(); }
+        else { break; }
       }
+      return result;
     }
-    return result;
-  }
 
-  double _parseProduct(String s, int i) {
-    double result = _parseAtom(s, i);
-    while (i < s.length) {
-      final c = s[i];
-      if (c == '*') {
-        i++;
-        result *= _parseAtom(s, i);
-      } else if (c == '/') {
-        i++;
-        final d = _parseAtom(s, i);
-        if (d != 0) result /= d;
-      } else {
-        break;
+    double _parseTerm() {
+      double result = _parseFactor();
+      while (_i < cleaned.length) {
+        final c = cleaned[_i];
+        if (c == '*') { _i++; result *= _parseFactor(); }
+        else if (c == '/') { _i++; final d = _parseFactor(); if (d != 0) result /= d; }
+        else { break; }
       }
+      return result;
     }
-    return result;
-  }
 
-  double _parseAtom(String s, int i) {
-    if (s[i] == '(') {
-      i++;
-      final val = _parseSum(s, i);
-      if (i < s.length && s[i] == ')') i++;
-      return val;
+    double _parseFactor() {
+      if (cleaned[_i] == '(') {
+        _i++;
+        final val = _parseExpr();
+        if (_i < cleaned.length && cleaned[_i] == ')') _i++;
+        return val;
+      }
+      final start = _i;
+      while (_i < cleaned.length && (int.tryParse(cleaned[_i]) != null || cleaned[_i] == '.')) _i++;
+      return double.tryParse(cleaned.substring(start, _i)) ?? 0;
     }
-    final start = i;
-    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) {
-      i++;
-    }
-    return double.tryParse(s.substring(start, i)) ?? 0;
+
+    return _parseExpr();
   }
 
   void _onTypeChanged(String? v) {

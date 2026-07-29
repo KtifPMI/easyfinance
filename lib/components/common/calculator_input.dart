@@ -48,44 +48,46 @@ class _CalculatorInputState extends State<CalculatorInput> {
     if (expr.isEmpty) return '';
     try {
       final cleaned = expr.replaceAll('×', '*').replaceAll('÷', '/');
-      final result = _calc(cleaned, 0);
+      int _i = 0;
+
+      double _parseExpr() {
+        double result = _parseTerm();
+        while (_i < cleaned.length) {
+          if (cleaned[_i] == '+') { _i++; result += _parseTerm(); }
+          else if (cleaned[_i] == '-') { _i++; result -= _parseTerm(); }
+          else { break; }
+        }
+        return result;
+      }
+
+      double _parseTerm() {
+        double result = _parseFactor();
+        while (_i < cleaned.length) {
+          if (cleaned[_i] == '*') { _i++; result *= _parseFactor(); }
+          else if (cleaned[_i] == '/') { _i++; final d = _parseFactor(); if (d != 0) result /= d; }
+          else { break; }
+        }
+        return result;
+      }
+
+      double _parseFactor() {
+        if (_i < cleaned.length && cleaned[_i] == '(') {
+          _i++;
+          final val = _parseExpr();
+          if (_i < cleaned.length && cleaned[_i] == ')') _i++;
+          return val;
+        }
+        final start = _i;
+        while (_i < cleaned.length && (int.tryParse(cleaned[_i]) != null || cleaned[_i] == '.')) _i++;
+        return double.tryParse(cleaned.substring(start, _i)) ?? 0;
+      }
+
+      final result = _parseExpr();
       if (result == result.toInt().toDouble()) return result.toInt().toString();
       return result.toStringAsFixed(2);
     } catch (_) {
       return '';
     }
-  }
-
-  double _calc(String s, int i) {
-    double result = _term(s, i);
-    while (i < s.length) {
-      if (s[i] == '+') { i++; result += _term(s, i); }
-      else if (s[i] == '-') { i++; result -= _term(s, i); }
-      else { break; }
-    }
-    return result;
-  }
-
-  double _term(String s, int i) {
-    double result = _factor(s, i);
-    while (i < s.length) {
-      if (s[i] == '*') { i++; result *= _factor(s, i); }
-      else if (s[i] == '/') { i++; final d = _factor(s, i); if (d != 0) result /= d; }
-      else { break; }
-    }
-    return result;
-  }
-
-  double _factor(String s, int i) {
-    if (i < s.length && s[i] == '(') {
-      i++;
-      final val = _calc(s, i);
-      if (i < s.length && s[i] == ')') i++;
-      return val;
-    }
-    final start = i;
-    while (i < s.length && (int.tryParse(s[i]) != null || s[i] == '.')) { i++; }
-    return double.tryParse(s.substring(start, i)) ?? 0;
   }
 
   @override

@@ -561,5 +561,15 @@
   "filters.all_tags": "Toutes les étiquettes",
   "filters.apply": "Appliquer",
   "filters.reset": "Réinitialiser",
-  "calendar.plan": "Planifier"
+  "calendar.plan": "Planifier",
+  "calendar.scheduled_payments": "Paiements Programmés",
+  "calendar.operations": "Opérations",
+  "home.offline_pending": "Hors ligne : {count} opérations en attente",
+  "quick_actions.receipt": "Reçu",
+  "hints.home": "Solde total, budget mensuel et paiements à venir. Ajoutez revenus et dépenses via les actions rapides.",
+  "hints.operations": "Toutes les transactions — revenus, dépenses et transferts. Utilisez les filtres.",
+  "hints.plan": "Budgets et objectifs. Fixez des limites par catégorie pour contrôler les dépenses.",
+  "hints.calendar": "Appuyez sur un jour pour voir les transactions et paiements planifiés.",
+  "hints.reports": "Analyse mensuelle : revenus, dépenses, répartition par catégories.",
+  "hints.more": "Paramètres, catégories, étiquettes, synchronisation et profil."
 }

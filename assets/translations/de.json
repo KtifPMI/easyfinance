@@ -561,5 +561,15 @@
   "filters.all_tags": "Alle Tags",
   "filters.apply": "Anwenden",
   "filters.reset": "Zurücksetzen",
-  "calendar.plan": "Planen"
+  "calendar.plan": "Planen",
+  "calendar.scheduled_payments": "Geplante Zahlungen",
+  "calendar.operations": "Operationen",
+  "home.offline_pending": "Offline: {count} Vorgänge warten auf Synchronisierung",
+  "quick_actions.receipt": "Beleg",
+  "hints.home": "Gesamtsaldo, Monatsbudget und anstehende Zahlungen. Einnahmen und Ausgaben über Schnellaktionen hinzufügen.",
+  "hints.operations": "Alle Transaktionen — Einnahmen, Ausgaben und Überweisungen. Nutzen Sie den Filter.",
+  "hints.plan": "Budgets und Ziele. Legen Sie Kategorielimits fest, um Überausgaben zu kontrollieren.",
+  "hints.calendar": "Tippen Sie auf einen Tag, um Transaktionen und geplante Zahlungen anzuzeigen.",
+  "hints.reports": "Monatsanalyse: Einnahmen, Ausgaben, Ausgabenstruktur nach Kategorien.",
+  "hints.more": "Einstellungen, Kategorien, Tags, Synchronisierung und Profil."
 }

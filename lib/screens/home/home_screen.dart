@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ScreenHint(hintId: 'home', text: 'Здесь вы видите общий баланс, бюджет на месяц и ближайшие платежи. Добавляйте доходы и расходы через кнопки быстрых действий.'),
+              ScreenHint(hintId: 'home', text: context.tr('hints.home')),
               _buildBalanceBanner(context, store),
               const SizedBox(height: 16),
               if (accountType == 'entrepreneur') ...[
@@ -440,7 +440,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Icon(Icons.sync, size: 16, color: AppColors.warning),
                 const SizedBox(width: 8),
-                Expanded(child: Text('Оффлайн: $pendingCount операций ожидает синхронизации', style: TextStyle(fontSize: 12, color: AppColors.warning))),
+                Expanded(child: Text(context.tr('home.offline_pending', namedArgs: {'count': pendingCount.toString()}), style: TextStyle(fontSize: 12, color: AppColors.warning))),
               ],
             ),
           ),

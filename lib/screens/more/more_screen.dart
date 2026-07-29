@@ -31,7 +31,7 @@ class MoreScreen extends StatelessWidget {
       title: context.tr('more.title'),
       child: Column(
         children: [
-          ScreenHint(hintId: 'more', text: 'Настройки, категории, теги, синхронизация и профиль.'),
+          ScreenHint(hintId: 'more', text: context.tr('hints.more')),
           ...items.map((item) {
           final (icon, title, screen) = item;
           return Padding(

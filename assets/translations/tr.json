@@ -561,5 +561,15 @@
   "filters.all_tags": "Tüm etiketler",
   "filters.apply": "Uygula",
   "filters.reset": "Sıfırla",
-  "calendar.plan": "Planla"
+  "calendar.plan": "Planla",
+  "calendar.scheduled_payments": "Planlanmış Ödemeler",
+  "calendar.operations": "İşlemler",
+  "home.offline_pending": "Çevrimdışı: {count} işlem senkronizasyon bekliyor",
+  "quick_actions.receipt": "Fiş",
+  "hints.home": "Toplam bakiye, aylık bütçe ve yaklaşan ödemeler. Hızlı butonlarla gelir ve gider ekleyin.",
+  "hints.operations": "Tüm işlemler — gelirler, giderler ve transferler. Filtreleri kullanın.",
+  "hints.plan": "Bütçeler ve hedefler. Harcamaları kontrol etmek için kategori limitleri belirleyin.",
+  "hints.calendar": "Bir güne dokunarak işlemleri ve planlanmış ödemeleri görün.",
+  "hints.reports": "Aylık analiz: gelirler, giderler, kategorilere göre harcama dağılımı.",
+  "hints.more": "Ayarlar, kategoriler, etiketler, senkronizasyon ve profil."
 }

@@ -55,7 +55,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ScreenHint(hintId: 'reports', text: 'Аналитика за месяц: доходы, расходы, структура трат по категориям и динамика остатка на счетах.'),
+              ScreenHint(hintId: 'reports', text: context.tr('hints.reports')),
               Row(
                 children: [
                   IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),

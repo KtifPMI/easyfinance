@@ -568,5 +568,15 @@
   "filters.all_tags": "Todas las etiquetas",
   "filters.apply": "Aplicar",
   "filters.reset": "Restablecer",
-  "calendar.plan": "Planificar"
+  "calendar.plan": "Planificar",
+  "calendar.scheduled_payments": "Pagos Programados",
+  "calendar.operations": "Operaciones",
+  "home.offline_pending": "Sin conexión: {count} operaciones pendientes",
+  "quick_actions.receipt": "Recibo",
+  "hints.home": "Saldo total, presupuesto mensual y próximos pagos. Añada ingresos y gastos con los botones rápidos.",
+  "hints.operations": "Todas las transacciones — ingresos, gastos y transferencias. Use los filtros.",
+  "hints.plan": "Presupuestos y metas. Establezca límites por categoría para controlar gastos.",
+  "hints.calendar": "Toque un día para ver transacciones y pagos programados. Deslice para cambiar de mes.",
+  "hints.reports": "Análisis mensual: ingresos, gastos, estructura por categorías.",
+  "hints.more": "Configuración, categorías, etiquetas, sincronización y perfil."
 }

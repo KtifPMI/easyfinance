@@ -129,7 +129,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ScreenHint(hintId: 'operations', text: 'Список всех операций — доходов, расходов и переводов. Используйте фильтр сверху, чтобы посмотреть только расходы или доходы.'),
+                  ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
                   const SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -248,7 +248,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
             FabAction(icon: Icons.remove_circle_outline, label: context.tr('quick_actions.expense'), color: AppColors.expense, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'})),
             FabAction(icon: Icons.add_circle_outline, label: context.tr('quick_actions.income'), color: AppColors.success, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'})),
             FabAction(icon: Icons.swap_horiz, label: context.tr('quick_actions.transfer'), color: AppColors.transfer, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'})),
-            FabAction(icon: Icons.document_scanner, label: 'Чек', color: AppColors.accent, onTap: () => Navigator.pushNamed(context, '/scan-receipt')),
+            FabAction(icon: Icons.document_scanner, label: context.tr('quick_actions.receipt'), color: AppColors.accent, onTap: () => Navigator.pushNamed(context, '/scan-receipt')),
           ],
         ),
       ],

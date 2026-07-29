@@ -507,5 +507,15 @@
   "filters.all_tags": "All tags",
   "filters.apply": "Apply",
   "filters.reset": "Reset",
-  "calendar.plan": "Schedule"
+  "calendar.plan": "Schedule",
+  "calendar.scheduled_payments": "Scheduled Payments",
+  "calendar.operations": "Operations",
+  "home.offline_pending": "Offline: {count} operations pending sync",
+  "quick_actions.receipt": "Receipt",
+  "hints.home": "Total balance, monthly budget, and upcoming payments overview. Add income and expenses via quick action buttons.",
+  "hints.operations": "All transactions — income, expenses, and transfers. Use the filter to view by type.",
+  "hints.plan": "Budgets and goals. Set category limits (e.g., \"Groceries\" — 30 000 ₽) to track overspending. Goals help save for large purchases.",
+  "hints.calendar": "Tap a day to view all transactions and scheduled payments for that date. Swipe or arrows to change months.",
+  "hints.reports": "Monthly analytics: income, expenses, spending breakdown by category, and account balance trends.",
+  "hints.more": "Settings, categories, tags, sync, and profile."
 }

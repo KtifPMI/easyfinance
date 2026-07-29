@@ -40,7 +40,10 @@ class _PinScreenState extends State<PinScreen> {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getString('easyfinance_pin') ?? '';
     if (_pin == stored) {
-      if (mounted) Navigator.pushReplacementNamed(context, '/main');
+      if (mounted) {
+        final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
+        Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
+      }
     } else {
       setState(() {
         _error = context.tr('auth.wrong_pin');
@@ -53,7 +56,10 @@ class _PinScreenState extends State<PinScreen> {
   Future<void> _setNewPin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('easyfinance_pin', _pin);
-    if (mounted) Navigator.pushReplacementNamed(context, '/main');
+    if (mounted) {
+      final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
+      Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
+    }
   }
 
   void _onDigit(String d) {

@@ -38,7 +38,7 @@ class PlanScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ScreenHint(hintId: 'plan', text: 'Бюджеты и цели. Установите лимит по категории (например, «Продукты» — 30 000 ₽), чтобы следить за перерасходом. Цели помогут копить на крупные покупки.'),
+              ScreenHint(hintId: 'plan', text: context.tr('hints.plan')),
 
               if (sb != null || monthIncome > 0 || monthExpense > 0) ...[
                 AppCard(

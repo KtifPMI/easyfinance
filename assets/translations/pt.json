@@ -561,5 +561,15 @@
   "filters.all_tags": "Todas as etiquetas",
   "filters.apply": "Aplicar",
   "filters.reset": "Redefinir",
-  "calendar.plan": "Agendar"
+  "calendar.plan": "Agendar",
+  "calendar.scheduled_payments": "Pagamentos Agendados",
+  "calendar.operations": "Operações",
+  "home.offline_pending": "Offline: {count} operações pendentes",
+  "quick_actions.receipt": "Recibo",
+  "hints.home": "Saldo total, orçamento mensal e próximos pagamentos. Adicione receitas e despesas pelos botões rápidos.",
+  "hints.operations": "Todas as transações — receitas, despesas e transferências. Use os filtros.",
+  "hints.plan": "Orçamentos e metas. Defina limites por categoria para controlar gastos.",
+  "hints.calendar": "Toque num dia para ver transações e pagamentos agendados.",
+  "hints.reports": "Análise mensal: receitas, despesas, estrutura por categorias.",
+  "hints.more": "Configurações, categorias, tags, sincronização e perfil."
 }
