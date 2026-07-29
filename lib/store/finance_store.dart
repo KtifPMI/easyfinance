@@ -17,6 +17,7 @@ import '../services/api_service.dart';
 import '../services/mock_data.dart' show mockCategories;
 import '../services/currency_rate_service.dart';
 import '../services/currency_prefs_service.dart';
+import '../services/rate_history_storage.dart';
 import '../utils/format.dart';
 import '../utils/currency_utils.dart';
 
@@ -909,6 +910,10 @@ class FinanceStore extends ChangeNotifier {
     _recalcAccountBalances();
     _generateRecommendations();
     await _saveCache();
+    if (_rates.isNotEmpty) {
+      final opDate = DateTime.tryParse(op.date) ?? DateTime.now();
+      await RateHistoryStorage.saveRates(opDate, _rates);
+    }
     notifyListeners();
   }
 

@@ -148,16 +148,6 @@ class _PinScreenState extends State<PinScreen> {
           Icon(Icons.lock_outline, size: 64, color: AppColors.primary),
           const SizedBox(height: 16),
           Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-          if (_hasExistingPin && _step == 0) ...[
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: _onForgotPin,
-              child: Text(
-                context.tr('auth.forgot_pin'),
-                style: TextStyle(color: AppColors.primary, fontSize: 13),
-              ),
-            ),
-          ],
           const SizedBox(height: 32),
           _buildDots(),
           if (_error.isNotEmpty) ...[
@@ -165,9 +155,19 @@ class _PinScreenState extends State<PinScreen> {
             Text(_error, style: TextStyle(color: AppColors.expense, fontSize: 13)),
           ],
           const Spacer(),
-          const SizedBox(height: 24),
           _buildKeypad(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          if (_hasExistingPin && _step == 0)
+            GestureDetector(
+              onTap: _onForgotPin,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  context.tr('auth.forgot_pin'),
+                  style: TextStyle(color: AppColors.primary, fontSize: 13),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -179,13 +179,16 @@ class _PinScreenState extends State<PinScreen> {
       children: List.generate(4, (i) {
         final filled = i < _pin.length;
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 10),
-          width: 16,
-          height: 16,
+          margin: const EdgeInsets.symmetric(horizontal: 12),
+          width: 18,
+          height: 18,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: filled ? AppColors.primary : AppColors.cardFor(context),
-            border: Border.all(color: _error.isNotEmpty ? AppColors.expense : AppColors.textSecondaryFor(context)),
+            color: filled ? AppColors.primary : Colors.transparent,
+            border: Border.all(
+              color: _error.isNotEmpty ? AppColors.expense : (filled ? AppColors.primary : AppColors.textSecondaryFor(context)),
+              width: 2,
+            ),
           ),
         );
       }),
