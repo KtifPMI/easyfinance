@@ -206,8 +206,8 @@ class _PinScreenState extends State<PinScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
           child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: row.map((d) {
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: row.map((d) {
             if (d.isEmpty) return const SizedBox(width: 72, height: 72);
             return GestureDetector(
               onTap: () {
@@ -231,7 +231,7 @@ class _PinScreenState extends State<PinScreen> {
               ),
             );
           }).toList(),
-        );
+          ),
         );
       }).toList(),
     );

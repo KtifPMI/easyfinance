@@ -84,8 +84,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
           chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: const Color(0xFF9E9E9E)));
         }
 
-        final chartTotal = chartSlices.fold<double>(0, (s, e) => s + e.value);
-
         return ScreenScaffold(
           title: context.tr('reports.title'),
           child: Column(
