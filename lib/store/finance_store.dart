@@ -1050,11 +1050,11 @@ class FinanceStore extends ChangeNotifier {
     await addOperation(refundOp);
   }
 
-  Future<void> addAccount(Account account) async {
+   Future<void> addAccount(Account account) async {
     _error = null;
     if (authService.isAuthenticated) {
       try {
-        final now = _fmtSimpleDt();
+        final now = formatApiDateTime();
         final newAccount = account.copyWith();
         final resp = await authService.apiService.addAccount({
           'accounts': [{
@@ -1097,7 +1097,7 @@ class FinanceStore extends ChangeNotifier {
     _error = null;
     if (authService.isAuthenticated) {
       try {
-        final now = _fmtSimpleDt();
+        final now = formatApiDateTime();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': account.id,
@@ -1145,7 +1145,7 @@ class FinanceStore extends ChangeNotifier {
           notifyListeners();
           return;
         }
-        final now = _fmtSimpleDt();
+        final now = formatApiDateTime();
         await authService.apiService.setAccount({
           'accounts': [{
             'id': id,
@@ -1451,11 +1451,6 @@ class FinanceStore extends ChangeNotifier {
     } catch (_) {
       _budgets = [];
     }
-  }
-
-  String _fmtSimpleDt() {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
   }
 
   String _currencyIdForAccount(String accountId) {
