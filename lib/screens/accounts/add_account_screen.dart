@@ -102,7 +102,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       await store.addAccount(account, state: _state.toString());
     }
     if (store.error == null) {
-      await store.updateAccountFavorite(account.id, _isFavorite);
+      store.updateAccountFavorite(account.id, _isFavorite);
     }
     if (!mounted) return;
     if (store.error != null) {
@@ -165,7 +165,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<int>(
-            value: _state,
+            initialValue: _state,
             decoration: InputDecoration(
               labelText: context.tr('accounts.state'),
               filled: true, fillColor: AppColors.cardFor(context),
@@ -184,7 +184,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             value: _isFavorite,
             onChanged: (v) => setState(() => _isFavorite = v),
             contentPadding: EdgeInsets.zero,
-            activeColor: AppColors.primary,
+            activeTrackColor: AppColors.primary,
           ),
           const SizedBox(height: 8),
           AppButton(title: context.tr('accounts.save'), onPressed: _save),
