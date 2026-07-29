@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'rate_history_storage.dart';
 
 class CurrencyRateService {
   static const _cbrUrl = 'https://www.cbr.ru/scripts/XML_daily.asp';
@@ -23,7 +24,10 @@ class CurrencyRateService {
       if (response.statusCode != 200) return await _loadCache() ?? {};
 
       final rates = _parseXml(response.body);
-      if (rates.isNotEmpty) await _saveCache(rates);
+      if (rates.isNotEmpty) {
+        await _saveCache(rates);
+        await RateHistoryStorage.saveRates(DateTime.now(), rates);
+      }
       return rates;
     } catch (_) {
       final cached = await _loadCache();
@@ -57,6 +61,13 @@ class CurrencyRateService {
     if (to == 'RUB') return rub;
     final toRate = rates[to] ?? 0.0;
     return toRate > 0 ? rub / toRate : 0.0;
+  }
+
+  static Future<double> convertHistorical(
+      double amount, String from, String to, Map<String, double> currentRates, DateTime date) async {
+    if (from == to) return amount;
+    final rates = await RateHistoryStorage.getClosestRates(date, currentRates);
+    return convert(amount, from, to, rates);
   }
 
   static Future<Map<String, double>?> _loadCached() async {

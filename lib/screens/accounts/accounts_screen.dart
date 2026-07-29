@@ -6,6 +6,7 @@ import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/currency_utils.dart';
 import 'add_account_screen.dart';
 
 class AccountsScreen extends StatelessWidget {
@@ -37,6 +38,10 @@ class AccountsScreen extends StatelessWidget {
                           Text(context.tr('accounts.my_capital'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                           const SizedBox(height: 4),
                           Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                          if (accounts.where((a) => !a.isArchived).length > 1) ...[
+                            const SizedBox(height: 4),
+                            Text(_buildCurrencyBreakdown(store), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                          ],
                         ],
                       ),
                     ),
@@ -99,6 +104,16 @@ class AccountsScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _buildCurrencyBreakdown(FinanceStore store) {
+    final byCurrency = <String, double>{};
+    for (final a in store.accounts.where((a) => !a.isArchived)) {
+      byCurrency.update(a.currency, (v) => v + a.balance, ifAbsent: () => a.balance);
+    }
+    final entries = byCurrency.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return entries.map((e) => '${currencySymbol(e.key)}${store.fmt(e.value, fromCurrency: e.key)}').join('  ·  ');
   }
 
   Color _parseColor(String hex) {
