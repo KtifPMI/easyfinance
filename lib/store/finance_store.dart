@@ -1062,7 +1062,7 @@ class FinanceStore extends ChangeNotifier {
     await addOperation(refundOp);
   }
 
-   Future<void> addAccount(Account account) async {
+   Future<void> addAccount(Account account, {String state = '0'}) async {
     _error = null;
     if (authService.isAuthenticated) {
       try {
@@ -1073,7 +1073,7 @@ class FinanceStore extends ChangeNotifier {
             'name': account.name,
             'init_balance': (account.initBalance > 0 ? account.initBalance : account.balance).toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'state': '0',
+            'state': state,
             if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
             'include_in_total': account.includeInTotal ? '1' : '0',
@@ -1105,7 +1105,7 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateAccount(Account account) async {
+  Future<void> updateAccount(Account account, {String state = '0'}) async {
     _error = null;
     if (authService.isAuthenticated) {
       try {
@@ -1116,7 +1116,7 @@ class FinanceStore extends ChangeNotifier {
             'name': account.name,
             'init_balance': account.initBalance.toStringAsFixed(2),
             'type_id': _accountTypeToApi(account.type),
-            'state': '0',
+            'state': state,
             if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
             'include_in_total': account.includeInTotal ? '1' : '0',

@@ -21,6 +21,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _balanceCtrl = TextEditingController();
   String _type = 'account';
   String _currencyId = '1';
+  int _state = 0;
+  bool _isFavorite = false;
 
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
@@ -37,6 +39,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         _balanceCtrl.text = acc.balance.toStringAsFixed(0);
         _type = acc.type;
         _currencyId = acc.currencyId ?? '1';
+        _isFavorite = acc.isFavorite;
+        _state = acc.isArchived ? 2 : 0;
       }
     }
   }
@@ -88,12 +92,17 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       initBalance: initBalance,
       createdAt: createdAt.isNotEmpty ? createdAt : now,
       updatedAt: now,
+      isArchived: _state == 2,
+      isFavorite: _isFavorite,
     );
 
     if (_isEditing) {
-      await store.updateAccount(account);
+      await store.updateAccount(account, state: _state.toString());
     } else {
-      await store.addAccount(account);
+      await store.addAccount(account, state: _state.toString());
+    }
+    if (store.error == null) {
+      await store.updateAccountFavorite(account.id, _isFavorite);
     }
     if (!mounted) return;
     if (store.error != null) {
@@ -154,7 +163,30 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             items: currencyItems,
             onChanged: (v) => setState(() => _currencyId = v!),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<int>(
+            value: _state,
+            decoration: InputDecoration(
+              labelText: context.tr('accounts.state'),
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            items: [
+              DropdownMenuItem(value: 0, child: Text(context.tr('accounts.state.active'))),
+              DropdownMenuItem(value: 1, child: Text(context.tr('accounts.state.hidden'))),
+            ],
+            onChanged: (v) => setState(() => _state = v!),
+          ),
+          const SizedBox(height: 16),
+          SwitchListTile(
+            title: Text(context.tr('accounts.favorite')),
+            value: _isFavorite,
+            onChanged: (v) => setState(() => _isFavorite = v),
+            contentPadding: EdgeInsets.zero,
+            activeColor: AppColors.primary,
+          ),
+          const SizedBox(height: 8),
           AppButton(title: context.tr('accounts.save'), onPressed: _save),
           if (_isEditing) ...[
             const SizedBox(height: 8),
