@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:workmanager/workmanager.dart';
 
 const String _channelId = 'easyfinance_reminders';
@@ -158,7 +157,7 @@ class NotificationService {
       'dailyCheck',
       frequency: const Duration(hours: 24),
       initialDelay: next10.difference(now),
-      existingWorkPolicy: ExistingWorkPolicy.update,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
       constraints: Constraints(networkType: NetworkType.notRequired),
     );
   }
