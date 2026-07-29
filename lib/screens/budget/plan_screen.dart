@@ -238,7 +238,6 @@ class _PlanScreenState extends State<PlanScreen> {
       },
     );
   }
-}
 
   IconData _goalIcon(String name) {
     const map = {'shield': Icons.shield, 'beach_access': Icons.beach_access, 'laptop': Icons.laptop, 'star': Icons.star};

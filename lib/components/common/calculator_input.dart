@@ -13,6 +13,7 @@ class CalculatorInput extends StatefulWidget {
 class _CalculatorInputState extends State<CalculatorInput> {
   String _expression = '';
   String _result = '';
+  int _parsePos = 0;
 
   @override
   void initState() {
@@ -48,46 +49,45 @@ class _CalculatorInputState extends State<CalculatorInput> {
     if (expr.isEmpty) return '';
     try {
       final cleaned = expr.replaceAll('×', '*').replaceAll('÷', '/');
-      int _i = 0;
-
-      double _parseExpr() {
-        double result = _parseTerm();
-        while (_i < cleaned.length) {
-          if (cleaned[_i] == '+') { _i++; result += _parseTerm(); }
-          else if (cleaned[_i] == '-') { _i++; result -= _parseTerm(); }
-          else { break; }
-        }
-        return result;
-      }
-
-      double _parseTerm() {
-        double result = _parseFactor();
-        while (_i < cleaned.length) {
-          if (cleaned[_i] == '*') { _i++; result *= _parseFactor(); }
-          else if (cleaned[_i] == '/') { _i++; final d = _parseFactor(); if (d != 0) result /= d; }
-          else { break; }
-        }
-        return result;
-      }
-
-      double _parseFactor() {
-        if (_i < cleaned.length && cleaned[_i] == '(') {
-          _i++;
-          final val = _parseExpr();
-          if (_i < cleaned.length && cleaned[_i] == ')') _i++;
-          return val;
-        }
-        final start = _i;
-        while (_i < cleaned.length && (int.tryParse(cleaned[_i]) != null || cleaned[_i] == '.')) _i++;
-        return double.tryParse(cleaned.substring(start, _i)) ?? 0;
-      }
-
-      final result = _parseExpr();
+      _parsePos = 0;
+      final result = _parseExpr(cleaned);
       if (result == result.toInt().toDouble()) return result.toInt().toString();
       return result.toStringAsFixed(2);
     } catch (_) {
       return '';
     }
+  }
+
+  double _parseExpr(String s) {
+    double result = _parseTerm(s);
+    while (_parsePos < s.length) {
+      if (s[_parsePos] == '+') { _parsePos++; result += _parseTerm(s); }
+      else if (s[_parsePos] == '-') { _parsePos++; result -= _parseTerm(s); }
+      else { break; }
+    }
+    return result;
+  }
+
+  double _parseTerm(String s) {
+    double result = _parseFactor(s);
+    while (_parsePos < s.length) {
+      if (s[_parsePos] == '*') { _parsePos++; result *= _parseFactor(s); }
+      else if (s[_parsePos] == '/') { _parsePos++; final d = _parseFactor(s); if (d != 0) result /= d; }
+      else { break; }
+    }
+    return result;
+  }
+
+  double _parseFactor(String s) {
+    if (_parsePos < s.length && s[_parsePos] == '(') {
+      _parsePos++;
+      final val = _parseExpr(s);
+      if (_parsePos < s.length && s[_parsePos] == ')') _parsePos++;
+      return val;
+    }
+    final start = _parsePos;
+    while (_parsePos < s.length && (int.tryParse(s[_parsePos]) != null || s[_parsePos] == '.')) { _parsePos++; }
+    return double.tryParse(s.substring(start, _parsePos)) ?? 0;
   }
 
   @override

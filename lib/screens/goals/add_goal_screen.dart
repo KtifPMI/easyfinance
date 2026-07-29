@@ -109,44 +109,45 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   double _safeEval(String expr) {
     final cleaned = expr.replaceAll(' ', '');
     if (cleaned.isEmpty) return 0;
-    int _i = 0;
-
-    double _parseExpr() {
-      double result = _parseTerm();
-      while (_i < cleaned.length) {
-        final c = cleaned[_i];
-        if (c == '+') { _i++; result += _parseTerm(); }
-        else if (c == '-') { _i++; result -= _parseTerm(); }
-        else { break; }
-      }
-      return result;
-    }
-
-    double _parseTerm() {
-      double result = _parseFactor();
-      while (_i < cleaned.length) {
-        final c = cleaned[_i];
-        if (c == '*') { _i++; result *= _parseFactor(); }
-        else if (c == '/') { _i++; final d = _parseFactor(); if (d != 0) result /= d; }
-        else { break; }
-      }
-      return result;
-    }
-
-    double _parseFactor() {
-      if (cleaned[_i] == '(') {
-        _i++;
-        final val = _parseExpr();
-        if (_i < cleaned.length && cleaned[_i] == ')') _i++;
-        return val;
-      }
-      final start = _i;
-      while (_i < cleaned.length && (int.tryParse(cleaned[_i]) != null || cleaned[_i] == '.')) _i++;
-      return double.tryParse(cleaned.substring(start, _i)) ?? 0;
-    }
-
-    return _parseExpr();
+    _evalPos = 0;
+    return _parseGoalExpr(cleaned);
   }
+
+  double _parseGoalTerm(String s) {
+    double result = _parseGoalFactor(s);
+    while (_evalPos < s.length) {
+      final c = s[_evalPos];
+      if (c == '*') { _evalPos++; result *= _parseGoalFactor(s); }
+      else if (c == '/') { _evalPos++; final d = _parseGoalFactor(s); if (d != 0) result /= d; }
+      else { break; }
+    }
+    return result;
+  }
+
+  double _parseGoalFactor(String s) {
+    if (s[_evalPos] == '(') {
+      _evalPos++;
+      final val = _parseGoalExpr(s);
+      if (_evalPos < s.length && s[_evalPos] == ')') _evalPos++;
+      return val;
+    }
+    final start = _evalPos;
+    while (_evalPos < s.length && (int.tryParse(s[_evalPos]) != null || s[_evalPos] == '.')) { _evalPos++; }
+    return double.tryParse(s.substring(start, _evalPos)) ?? 0;
+  }
+
+  double _parseGoalExpr(String s) {
+    double result = _parseGoalTerm(s);
+    while (_evalPos < s.length) {
+      final c = s[_evalPos];
+      if (c == '+') { _evalPos++; result += _parseGoalTerm(s); }
+      else if (c == '-') { _evalPos++; result -= _parseGoalTerm(s); }
+      else { break; }
+    }
+    return result;
+  }
+
+  int _evalPos = 0;
 
   void _onTypeChanged(String? v) {
     setState(() {
