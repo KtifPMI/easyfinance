@@ -128,7 +128,7 @@ class _PlanScreenState extends State<PlanScreen> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(b.name ?? cat?.name ?? '', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                   Text(b.name ?? cat?.name ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -197,7 +197,7 @@ class _PlanScreenState extends State<PlanScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(g.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                   Text(g.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                                   if (g.isCompleted)
                                     Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                                   else
@@ -365,7 +365,7 @@ class _PlanScreenState extends State<PlanScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(b.name ?? store.getCategory(b.categoryId)?.name ?? ''),
+            Text(b.name ?? store.getCategory(b.categoryId)?.name ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             TextField(
               controller: limitCtrl,

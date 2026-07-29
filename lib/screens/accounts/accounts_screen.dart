@@ -67,7 +67,7 @@ class AccountsScreen extends StatelessWidget {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(a.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                        Text(a.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                                         if (a.isArchived) ...[
                                           const SizedBox(width: 6),
                                           Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
