@@ -235,6 +235,7 @@
   "settings.start_screen": "Başlangıç ekranı",
   "settings.start_home": "Ana ekran",
   "settings.start_operation": "Yeni işlem",
+  "settings.export_csv": "CSV dışa aktar",
 
   "profile.title": "Profil",
   "profile.demo_user": "Demo Kullanıcı",

@@ -6,6 +6,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../services/currency_rate_service.dart';
+import '../../services/csv_export_service.dart';
 import '../../services/update_service.dart';
 import '../../store/finance_store.dart';
 import '../../store/locale_store.dart';
@@ -62,6 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _pinItem(context),
           _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
+          _exportItem(context),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: AppCard(
@@ -390,6 +392,43 @@ class _CurrencyManageScreenState extends State<_CurrencyManageScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _exportItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: InkWell(
+          onTap: () async {
+            final now = DateTime.now();
+            final picked = await showDateRangePicker(
+              context: context,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              initialDateRange: DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
+            );
+            if (picked != null && context.mounted) {
+              final store = context.read<FinanceStore>();
+              try {
+                await CsvExportService.export(store, picked.start, picked.end);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export error: $e'), backgroundColor: Colors.red));
+                }
+              }
+            }
+          },
+          child: Row(
+            children: [
+              Icon(Icons.file_download_outlined, color: AppColors.primary, size: 20),
+              const SizedBox(width: 12),
+              Text(context.tr('settings.export_csv'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            ],
+          ),
+        ),
       ),
     );
   }

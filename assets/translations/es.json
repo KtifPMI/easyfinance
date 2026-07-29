@@ -235,6 +235,7 @@
   "settings.start_screen": "Pantalla de inicio",
   "settings.start_home": "Pantalla principal",
   "settings.start_operation": "Nueva operación",
+  "settings.export_csv": "Exportar CSV",
 
   "profile.title": "Perfil",
   "profile.demo_user": "Usuario Demo",

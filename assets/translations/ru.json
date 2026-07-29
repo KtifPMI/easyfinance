@@ -434,6 +434,7 @@
 
   "settings.app_section": "Приложение",
   "settings.check_updates": "Проверить обновления",
+  "settings.export_csv": "Экспорт в CSV",
   "settings.logout": "Выйти",
   "settings.currencies": "Валюты",
   "settings.select_currencies_hint": "Выберите валюты для отображения курсов на главном экране",

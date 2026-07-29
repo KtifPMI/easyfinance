@@ -287,6 +287,7 @@
   "settings.start_screen": "Start screen",
   "settings.start_home": "Home screen",
   "settings.start_operation": "New operation",
+  "settings.export_csv": "Export CSV",
 
   "profile.title": "Profile",
   "profile.demo_user": "Demo User",

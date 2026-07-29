@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../services/update_service.dart';
@@ -48,16 +49,23 @@ class _MainTabsState extends State<MainTabs> {
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: _screens),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
-        selectedLabelStyle: const TextStyle(fontSize: 10),
-        unselectedLabelStyle: const TextStyle(fontSize: 10),
-        items: List.generate(6, (i) => BottomNavigationBarItem(
-          icon: Icon(_icons[i]),
-          activeIcon: Icon(_activeIcons[i]),
-          label: labels[i],
-        )),
+      bottomNavigationBar: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: BottomNavigationBar(
+            currentIndex: _index,
+            onTap: (i) => setState(() => _index = i),
+            selectedLabelStyle: const TextStyle(fontSize: 10),
+            unselectedLabelStyle: const TextStyle(fontSize: 10),
+            backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor?.withOpacity(0.85) ?? Colors.white.withOpacity(0.85),
+            elevation: 0,
+            items: List.generate(6, (i) => BottomNavigationBarItem(
+              icon: Icon(_icons[i]),
+              activeIcon: Icon(_activeIcons[i]),
+              label: labels[i],
+            )),
+          ),
+        ),
       ),
     );
   }

@@ -43,30 +43,32 @@ class AppRouter {
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    Widget? page;
     if (settings.name == addOperation) {
       final args = settings.arguments as Map<String, dynamic>?;
-      return MaterialPageRoute(
-        builder: (_) => AddOperationScreen(
-          type: args?['type'] as String?,
-          operationId: args?['operationId'] as String?,
-          presetDate: args?['presetDate'] as String?,
-          templateId: args?['templateId'] as String?,
-        ),
-        settings: settings,
+      page = AddOperationScreen(
+        type: args?['type'] as String?,
+        operationId: args?['operationId'] as String?,
+        presetDate: args?['presetDate'] as String?,
+        templateId: args?['templateId'] as String?,
       );
-    }
-    if (settings.name == addPlannedPayment) {
+    } else if (settings.name == addPlannedPayment) {
       final arg = settings.arguments;
       if (arg is FinancialEvent) {
-        return MaterialPageRoute(
-          builder: (_) => AddPlannedPaymentScreen(existing: arg),
-          settings: settings,
-        );
+        page = AddPlannedPaymentScreen(existing: arg);
+      } else {
+        final presetDate = arg is Map ? arg['date'] as String? : null;
+        page = AddPlannedPaymentScreen(presetDate: presetDate);
       }
-      final presetDate = arg is Map ? arg['date'] as String? : null;
-      return MaterialPageRoute(
-        builder: (_) => AddPlannedPaymentScreen(presetDate: presetDate),
+    }
+    if (page != null) {
+      return PageRouteBuilder(
         settings: settings,
+        pageBuilder: (_, __, ___) => page!,
+        transitionsBuilder: (_, anim, __, child) => SlideTransition(
+          position: Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
+          child: FadeTransition(opacity: anim, child: child),
+        ),
       );
     }
     return null;

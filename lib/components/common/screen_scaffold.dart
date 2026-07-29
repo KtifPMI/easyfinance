@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'skeleton_loader.dart';
 
 class ScreenScaffold extends StatelessWidget {
   final String title;
@@ -26,9 +27,35 @@ class ScreenScaffold extends StatelessWidget {
       body: Stack(
         children: [
           if (isLoading)
-            const Center(child: CircularProgressIndicator())
+            _buildSkeleton(context)
           else
             _buildBody(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkeleton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          const SkeletonLoader(height: 24, width: 200),
+          const SizedBox(height: 24),
+          const SkeletonLoader(height: 80),
+          const SizedBox(height: 16),
+          const SkeletonLoader(height: 80),
+          const SizedBox(height: 16),
+          const SkeletonLoader(height: 60, width: 150),
+          const SizedBox(height: 16),
+          Row(children: const [Expanded(child: SkeletonLoader(height: 80)), SizedBox(width: 12), Expanded(child: SkeletonLoader(height: 80))]),
+          const SizedBox(height: 16),
+          const SkeletonLoader(height: 12, width: 100),
+          const SizedBox(height: 12),
+          const SkeletonLoader(height: 60),
+          const SizedBox(height: 8),
+          const SkeletonLoader(height: 60),
         ],
       ),
     );
