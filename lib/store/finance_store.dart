@@ -880,6 +880,7 @@ class FinanceStore extends ChangeNotifier {
       'user_id': apiClient.userId ?? '',
       'account_id': op.accountId,
       if (op.categoryId != null) 'category_id': op.categoryId,
+      if (op.categoryId == null && op.type == 'transfer') 'category_id': _transferCategoryId(),
       'currency_id': _currencyIdForAccount(op.accountId),
       'amount': amount.toStringAsFixed(2),
       'date': dateStr,
@@ -942,8 +943,14 @@ class FinanceStore extends ChangeNotifier {
       case 'expense': return '0';
       case 'income': return '1';
       case 'transfer': return '2';
+
       default: return '0';
     }
+  }
+
+  String? _transferCategoryId() {
+    return _categories.cast<cat.Category?>().firstWhere((c) => c!.type == '0' && (c.name == 'Перевод' || c.name.contains('еревод')), orElse: () => null)?.id;
+  }
   }
 
   Future<void> syncPendingOperations() async {
@@ -990,6 +997,7 @@ class FinanceStore extends ChangeNotifier {
             'type': _typeToApi(op.type),
             'account_id': op.accountId,
             if (op.categoryId != null) 'category_id': op.categoryId,
+            if (op.categoryId == null && op.type == 'transfer') 'category_id': _transferCategoryId(),
             'currency_id': _currencyIdForAccount(op.accountId),
             'amount': amount.toStringAsFixed(2),
             'date': dateStr,
