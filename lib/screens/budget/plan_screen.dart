@@ -43,11 +43,9 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final sb = store.serverBudget;
-        final serverPlanned = sb?.planned ?? 0;
-        final totalPlanned = serverPlanned > 0 ? serverPlanned : store.budgets.fold(0.0, (sum, b) => sum + b.limit);
-        final totalSpent = sb?.spent ?? 0;
-        final serverPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
+        final totalPlanned = store.budgets.fold(0.0, (sum, b) => sum + b.limit);
+        final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
+        final budgetPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
         final monthIncome = store.monthIncome;
         final monthExpense = store.monthExpense;
 
@@ -82,7 +80,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                 child: TabBarView(
                   controller: _tabCtrl,
                   children: [
-                    _buildBudgetsTab(context, store, sb, totalPlanned, totalSpent, serverPercent, monthIncome, monthExpense),
+                    _buildBudgetsTab(context, store, totalPlanned, totalSpent, budgetPercent, monthIncome, monthExpense),
                     _buildGoalsTab(context, store),
                   ],
                 ),
@@ -94,12 +92,12 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildBudgetsTab(BuildContext context, FinanceStore store, dynamic sb, double totalPlanned, double totalSpent, double serverPercent, double monthIncome, double monthExpense) {
+  Widget _buildBudgetsTab(BuildContext context, FinanceStore store, double totalPlanned, double totalSpent, double budgetPercent, double monthIncome, double monthExpense) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (sb != null || monthIncome > 0 || monthExpense > 0) ...[
+          if (totalPlanned > 0 || monthIncome > 0 || monthExpense > 0) ...[
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +117,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                       Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
                     ],
                   ),
-                  if (sb != null) ...[
+                  if (totalPlanned > 0) ...[
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -137,9 +135,9 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                       ],
                     ),
                     const SizedBox(height: 8),
-                    ProgressBar(percent: serverPercent, color: serverPercent > 100 ? AppColors.expense : AppColors.primary),
+                    ProgressBar(percent: budgetPercent, color: budgetPercent > 100 ? AppColors.expense : AppColors.primary),
                     const SizedBox(height: 4),
-                    Text('${serverPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                    Text('${budgetPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                   ],
                 ],
               ),
