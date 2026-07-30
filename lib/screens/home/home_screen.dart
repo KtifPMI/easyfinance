@@ -6,6 +6,7 @@ import '../../components/common/progress_bar.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/home/fin_health_card.dart';
+import '../../components/common/app_logo.dart';
 import '../../store/finance_store.dart';
 import '../../models/financial_event.dart';
 import '../../theme/theme.dart';
@@ -17,7 +18,6 @@ import '../accounts/add_account_screen.dart';
 import '../accounts/accounts_screen.dart';
 import '../budget/plan_screen.dart';
 import '../recommendations/recommendations_screen.dart';
-import '../../components/home/quick_actions.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -75,13 +75,6 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               FinHealthCard(indicators: indicators),
-              const SizedBox(height: 16),
-              QuickActions(
-                onAddIncome: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'}),
-                onAddExpense: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'}),
-                onAddTransfer: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'}),
-                onScan: () => Navigator.pushNamed(context, '/scan-receipt'),
-              ),
               const SizedBox(height: 16),
               _buildRatesSection(context, store),
               _buildRecommendationsSection(context, store),

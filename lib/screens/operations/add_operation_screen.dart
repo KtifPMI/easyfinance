@@ -136,7 +136,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           child: Text(current.toString().padLeft(2, '0'), textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         ),
         const SizedBox(height: 4),
-        GestureDetector(onTap: current > 0 ? onDown : null, child: Icon(Icons.keyboard_arrow_down, size: 28, color: current > 0 ? AppColors.textSecondaryFor(context) : AppColors.textDisabledFor(context))),
+        GestureDetector(onTap: current > 0 ? onDown : null, child: Icon(Icons.keyboard_arrow_down, size: 28, color: current > 0 ? AppColors.textSecondaryFor(context) : AppColors.textSecondary)),
       ],
     );
   }
