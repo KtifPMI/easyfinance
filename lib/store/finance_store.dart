@@ -1409,8 +1409,16 @@ class FinanceStore extends ChangeNotifier {
         } else if (op.type == 'income' && op.accountId == a.id) {
           balance += op.amount;
         } else if (op.type == 'transfer') {
-          if (op.accountId == a.id) balance -= op.amount;
-          if (op.toAccountId == a.id) balance += op.amount;
+          if (op.accountId == a.id) {
+            balance -= op.amount;
+          }
+          if (op.toAccountId == a.id) {
+            final src = getAccount(op.accountId);
+            final converted = src != null && src.currency != a.currency
+                ? CurrencyRateService.convert(op.amount, src.currency, a.currency, _rates)
+                : op.amount;
+            balance += converted;
+          }
         }
       }
       if ((balance - a.balance).abs() > 0.01) {
