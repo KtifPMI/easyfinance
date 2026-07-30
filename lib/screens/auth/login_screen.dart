@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
+import '../../components/common/app_logo.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -63,10 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             children: [
               const Spacer(),
-              Icon(Icons.account_balance, size: 64, color: AppColors.primary),
-              const SizedBox(height: 16),
-              Text('EasyFinance', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-              const SizedBox(height: 8),
+              const AppLogo.hero(),
+              const SizedBox(height: 20),
               Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
               const SizedBox(height: 40),
               Text(

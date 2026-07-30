@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../components/common/app_logo.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../services/notification_service.dart';
 import '../../theme/theme.dart';
@@ -144,9 +145,9 @@ class _PinScreenState extends State<PinScreen> {
       title: '',
       child: Column(
         children: [
-          const SizedBox(height: 40),
-          Icon(Icons.lock_outline, size: 64, color: AppColors.primary),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+          const AppLogo(height: 48),
+          const SizedBox(height: 20),
           Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
           const SizedBox(height: 32),
           _buildDots(),

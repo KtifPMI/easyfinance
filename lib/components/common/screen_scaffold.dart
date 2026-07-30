@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_logo.dart';
 import 'skeleton_loader.dart';
 
 class ScreenScaffold extends StatelessWidget {
@@ -8,6 +9,7 @@ class ScreenScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final bool isLoading;
   final Future<void> Function()? onRefresh;
+  final bool showLogo;
 
   const ScreenScaffold({
     super.key,
@@ -17,12 +19,34 @@ class ScreenScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.isLoading = false,
     this.onRefresh,
+    this.showLogo = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasTitle = title.trim().isNotEmpty;
     return Scaffold(
-      appBar: AppBar(title: Text(title), actions: actions),
+      appBar: AppBar(
+        title: hasTitle
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (showLogo) ...[
+                    const AppLogo(height: 26),
+                    const SizedBox(width: 10),
+                  ],
+                  Flexible(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              )
+            : (showLogo ? const AppLogo(height: 28) : null),
+        actions: actions,
+      ),
       floatingActionButton: floatingActionButton,
       body: Stack(
         children: [
@@ -36,26 +60,26 @@ class ScreenScaffold extends StatelessWidget {
   }
 
   Widget _buildSkeleton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+    return const Padding(
+      padding: EdgeInsets.all(16),
       child: Column(
         children: [
-          const SizedBox(height: 16),
-          const SkeletonLoader(height: 24, width: 200),
-          const SizedBox(height: 24),
-          const SkeletonLoader(height: 80),
-          const SizedBox(height: 16),
-          const SkeletonLoader(height: 80),
-          const SizedBox(height: 16),
-          const SkeletonLoader(height: 60, width: 150),
-          const SizedBox(height: 16),
-          Row(children: const [Expanded(child: SkeletonLoader(height: 80)), SizedBox(width: 12), Expanded(child: SkeletonLoader(height: 80))]),
-          const SizedBox(height: 16),
-          const SkeletonLoader(height: 12, width: 100),
-          const SizedBox(height: 12),
-          const SkeletonLoader(height: 60),
-          const SizedBox(height: 8),
-          const SkeletonLoader(height: 60),
+          SizedBox(height: 16),
+          SkeletonLoader(height: 24, width: 200),
+          SizedBox(height: 24),
+          SkeletonLoader(height: 80),
+          SizedBox(height: 16),
+          SkeletonLoader(height: 80),
+          SizedBox(height: 16),
+          SkeletonLoader(height: 60, width: 150),
+          SizedBox(height: 16),
+          Row(children: [Expanded(child: SkeletonLoader(height: 80)), SizedBox(width: 12), Expanded(child: SkeletonLoader(height: 80))]),
+          SizedBox(height: 16),
+          SkeletonLoader(height: 12, width: 100),
+          SizedBox(height: 12),
+          SkeletonLoader(height: 60),
+          SizedBox(height: 8),
+          SkeletonLoader(height: 60),
         ],
       ),
     );

@@ -16,8 +16,8 @@ class AppButton extends StatelessWidget {
     final isDanger = variant == 'danger';
     final isOutline = variant == 'outline';
     final bgColor = isDanger ? AppColors.danger : isPrimary ? AppColors.primary : isOutline ? Colors.transparent : Colors.transparent;
-    final textColor = isDanger ? Colors.white : isPrimary ? Colors.white : AppColors.primary;
-    final border = isOutline ? const BorderSide(color: AppColors.primary, width: 1.5) : null;
+    final textColor = isDanger ? Colors.white : isPrimary ? AppColors.onPrimary : AppColors.primaryDark;
+    final border = isOutline ? const BorderSide(color: AppColors.primaryDark, width: 1.5) : null;
 
     return SizedBox(
       width: double.infinity,
@@ -31,7 +31,9 @@ class AppButton extends StatelessWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           side: border,
         ),
-        child: loading ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+        child: loading
+            ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: isDanger ? Colors.white : AppColors.onPrimary))
+            : Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
       ),
     );
   }
