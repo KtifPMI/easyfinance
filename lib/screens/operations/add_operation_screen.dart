@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/calculator_input.dart';
+import '../../components/common/date_time_stepper.dart';
 import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../utils/translate_category.dart';
@@ -34,20 +35,68 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
-
-  String _dateStr() {
-    final now = DateTime.now();
-    if (widget.presetDate != null) {
-      final parts = widget.presetDate!.split('-').map(int.parse).toList();
-      return DateTime(parts[0], parts[1], parts[2], now.hour, now.minute, now.second, now.millisecond, now.microsecond).toIso8601String();
-    }
-    return now.toIso8601String();
-  }
+  late DateTime _selectedDT;
 
   @override
   void initState() {
     super.initState();
     if (widget.type != null) _type = widget.type!;
+    _selectedDT = _parseInitialDate();
+  }
+
+  DateTime _parseInitialDate() {
+    if (widget.presetDate != null) {
+      final parts = widget.presetDate!.split('-').map(int.parse).toList();
+      if (parts.length == 3) {
+        final now = DateTime.now();
+        return DateTime(parts[0], parts[1], parts[2], now.hour, now.minute);
+      }
+    }
+    return DateTime.now();
+  }
+
+  String _dateStr() => _selectedDT.toIso8601String();
+
+  String _formatDisplayDate() {
+    final m = _selectedDT.month;
+    const keys = ['month.short.1', 'month.short.2', 'month.short.3', 'month.short.4', 'month.short.5', 'month.short.6', 'month.short.7', 'month.short.8', 'month.short.9', 'month.short.10', 'month.short.11', 'month.short.12'];
+    return '${_selectedDT.day} ${context.tr(keys[m - 1])}. ${_selectedDT.year}, ${_selectedDT.hour.toString().padLeft(2, '0')}:${_selectedDT.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _showDateTimePicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DateTimeStepper(
+              initial: _selectedDT,
+              onChanged: (dt) => _selectedDT = dt,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  setState(() {});
+                  Navigator.pop(ctx);
+                },
+                child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
   }
 
   @override
@@ -274,6 +323,12 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               AppInput(label: context.tr('operations.comment'), controller: _commentCtrl),
               const SizedBox(height: 16),
               AppInput(label: context.tr('operations.tags'), controller: _tagsCtrl),
+              const SizedBox(height: 16),
+              _buildPicker(
+                label: context.tr('operations.date_time'),
+                value: _formatDisplayDate(),
+                onTap: () => _showDateTimePicker(),
+              ),
               const SizedBox(height: 24),
               AppButton(title: context.tr('operations.save'), onPressed: _save),
            ],
