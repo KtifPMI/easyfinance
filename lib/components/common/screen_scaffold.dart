@@ -27,9 +27,9 @@ class ScreenScaffold extends StatelessWidget {
     final hasTitle = title.trim().isNotEmpty;
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: hasTitle
             ? Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (showLogo) ...[
                     const AppLogo(height: 26),
@@ -44,7 +44,7 @@ class ScreenScaffold extends StatelessWidget {
                   ),
                 ],
               )
-            : (showLogo ? const AppLogo(height: 28) : null),
+            : (showLogo ? Row(children: const [AppLogo(height: 28)]) : null),
         actions: actions,
       ),
       floatingActionButton: floatingActionButton,
