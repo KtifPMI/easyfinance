@@ -287,6 +287,7 @@
   "ai.cmd_goals": "Metas",
   "ai.cmd_budgets": "Orçamentos",
   "ai.cmd_tips": "Dicas",
+  "ai.cmd_debts": "Dívidas", "ai.cmd_savings": "Poupança", "ai.total": "Total", "ai.no_income": "Sem rendimentos este mês.", "ai.no_category_data": "Sem dados.", "ai.savings_info": "Poupança mensal: {savings} ({rate}% de {income}).", "ai.savings_low": "Taxa de poupança baixa.", "ai.savings_ok": "Taxa de poupança moderada.", "ai.savings_great": "Excelente taxa de poupança.", "ai.budget_overview": "Orçamentos mensais:", "ai.goals_overview": "Metas ativas: {count}", "ai.goals_completed": "Metas alcançadas: {count}", "ai.recommendations_title": "Recomendações:", "ai.debt_info": "Pagamentos de crédito: {amount} (renda: {income}).", "ai.calendar_hint": "O calendário mostra todas as transações.", "ai.report_hint": "Os relatórios mostram análises por categoria.", "ai.settings_hint": "Configurações: idioma, tema, PIN.", "ai.scan_hint": "O scanner reconhece compras de fotos.", "ai.nav_accounts": "Contas", "ai.nav_operations": "Operações", "ai.nav_reports": "Relatórios", "ai.nav_budget": "Orçamento", "ai.nav_goals": "Metas", "ai.nav_recommendations": "Recomendações", "ai.nav_home": "Início", "ai.nav_calendar": "Calendário", "ai.nav_settings": "Configurações", "ai.nav_scan": "Digitalizar", "ai.nav_help": "Pergunte-me sobre suas finanças!",
 
   "bank.title": "EasyBank",
   "bank.connect_hint": "Conecte bancos para carregamento automático de transações",

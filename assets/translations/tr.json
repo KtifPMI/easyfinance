@@ -287,6 +287,7 @@
   "ai.cmd_goals": "Hedefler",
   "ai.cmd_budgets": "Bütçeler",
   "ai.cmd_tips": "İpuçları",
+  "ai.cmd_debts": "Borçlar", "ai.cmd_savings": "Tasarruf", "ai.total": "Toplam", "ai.no_income": "Bu ay gelir yok.", "ai.no_category_data": "Veri yok.", "ai.savings_info": "Aylık tasarruf: {savings} ({rate}% / {income}).", "ai.savings_low": "Düşük tasarruf oranı.", "ai.savings_ok": "Orta seviye tasarruf.", "ai.savings_great": "Mükemmel tasarruf oranı.", "ai.budget_overview": "Aylık bütçeler:", "ai.goals_overview": "Aktif hedefler: {count}", "ai.goals_completed": "Tamamlanan hedefler: {count}", "ai.recommendations_title": "Öneriler:", "ai.debt_info": "Kredi ödemeleri: {amount} (gelir: {income}).", "ai.calendar_hint": "Takvim tüm işlemleri gösterir.", "ai.report_hint": "Raporlar kategori bazlı analiz gösterir.", "ai.settings_hint": "Ayarlar: dil, tema, PIN.", "ai.scan_hint": "Fiş tarayıcı fotoğraflardan alışverişleri tanır.", "ai.nav_accounts": "Hesaplar", "ai.nav_operations": "İşlemler", "ai.nav_reports": "Raporlar", "ai.nav_budget": "Bütçe", "ai.nav_goals": "Hedefler", "ai.nav_recommendations": "Öneriler", "ai.nav_home": "Ana sayfa", "ai.nav_calendar": "Takvim", "ai.nav_settings": "Ayarlar", "ai.nav_scan": "Tara", "ai.nav_help": "Finanslarınız hakkında sorun!",
 
   "bank.title": "EasyBank",
   "bank.connect_hint": "Otomatik işlem yüklemesi için bankaları bağlayın",

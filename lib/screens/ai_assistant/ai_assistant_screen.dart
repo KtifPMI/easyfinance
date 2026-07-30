@@ -216,21 +216,6 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                             Icon(Icons.smart_toy_outlined, size: 64, color: AppColors.textSecondaryFor(context)),
                             const SizedBox(height: 16),
                             Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 16, color: AppColors.textSecondaryFor(context))),
-                            const SizedBox(height: 24),
-                            Wrap(
-                              spacing: 8, runSpacing: 8, alignment: WrapAlignment.center,
-                              children: [
-                                _chip(context.tr('ai.cmd_balance'), Icons.account_balance_wallet),
-                                _chip(context.tr('ai.cmd_income'), Icons.trending_up),
-                                _chip(context.tr('ai.cmd_expenses'), Icons.trending_down),
-                                _chip(context.tr('ai.cmd_categories'), Icons.category),
-                                _chip(context.tr('ai.cmd_goals'), Icons.flag),
-                                _chip(context.tr('ai.cmd_budgets'), Icons.bar_chart),
-                                _chip(context.tr('ai.cmd_tips'), Icons.lightbulb_outline),
-                                _chip(context.tr('ai.cmd_debts'), Icons.money_off),
-                                _chip(context.tr('ai.cmd_savings'), Icons.savings),
-                              ],
-                            ),
                           ],
                         ),
                       )
@@ -297,12 +282,17 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                   children: [
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      child: Row(children: [
-                        _actionChip(context.tr('ai.cmd_balance'), () => _quickCommand(context.tr('ai.cmd_balance'))),
-                        _actionChip(context.tr('ai.cmd_income'), () => _quickCommand(context.tr('ai.cmd_income'))),
-                        _actionChip(context.tr('ai.cmd_expenses'), () => _quickCommand(context.tr('ai.cmd_expenses'))),
-                        _actionChip(context.tr('ai.cmd_tips'), () => _quickCommand(context.tr('ai.cmd_tips'))),
-                      ]),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(children: [
+                          _actionChip(context.tr('ai.cmd_balance'), () => _quickCommand(context.tr('ai.cmd_balance'))),
+                          _actionChip(context.tr('ai.cmd_expenses'), () => _quickCommand(context.tr('ai.cmd_expenses'))),
+                          _actionChip(context.tr('ai.cmd_categories'), () => _quickCommand(context.tr('ai.cmd_categories'))),
+                          _actionChip(context.tr('ai.cmd_budgets'), () => _quickCommand(context.tr('ai.cmd_budgets'))),
+                          _actionChip(context.tr('ai.cmd_goals'), () => _quickCommand(context.tr('ai.cmd_goals'))),
+                          _actionChip(context.tr('ai.cmd_tips'), () => _quickCommand(context.tr('ai.cmd_tips'))),
+                        ]),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Row(children: [

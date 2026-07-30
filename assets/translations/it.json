@@ -287,6 +287,7 @@
   "ai.cmd_goals": "Obiettivi",
   "ai.cmd_budgets": "Budget",
   "ai.cmd_tips": "Consigli",
+  "ai.cmd_debts": "Debiti", "ai.cmd_savings": "Risparmi", "ai.total": "Totale", "ai.no_income": "Nessun reddito questo mese.", "ai.no_category_data": "Nessun dato.", "ai.savings_info": "Risparmi mensili: {savings} ({rate}% di {income}).", "ai.savings_low": "Tasso di risparmio basso.", "ai.savings_ok": "Tasso di risparmio moderato.", "ai.savings_great": "Ottimo tasso di risparmio.", "ai.budget_overview": "Budget mensili:", "ai.goals_overview": "Obiettivi attivi: {count}", "ai.goals_completed": "Obiettivi raggiunti: {count}", "ai.recommendations_title": "Raccomandazioni:", "ai.debt_info": "Pagamenti di credito: {amount} (reddito: {income}).", "ai.calendar_hint": "Il calendario mostra tutte le transazioni.", "ai.report_hint": "I report mostrano analisi per categoria.", "ai.settings_hint": "Impostazioni: lingua, tema, PIN.", "ai.scan_hint": "Lo scanner riconosce gli acquisti dalle foto.", "ai.nav_accounts": "Conti", "ai.nav_operations": "Operazioni", "ai.nav_reports": "Report", "ai.nav_budget": "Budget", "ai.nav_goals": "Obiettivi", "ai.nav_recommendations": "Raccomandazioni", "ai.nav_home": "Home", "ai.nav_calendar": "Calendario", "ai.nav_settings": "Impostazioni", "ai.nav_scan": "Scansiona", "ai.nav_help": "Chiedimi delle tue finanze!",
 
   "bank.title": "EasyBank",
   "bank.connect_hint": "Collega le banche per il caricamento automatico delle transazioni",

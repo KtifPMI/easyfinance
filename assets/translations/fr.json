@@ -287,6 +287,7 @@
   "ai.cmd_goals": "Objectifs",
   "ai.cmd_budgets": "Budgets",
   "ai.cmd_tips": "Conseils",
+  "ai.cmd_debts": "Dettes", "ai.cmd_savings": "Épargne", "ai.total": "Total", "ai.no_income": "Pas encore de revenus ce mois.", "ai.no_category_data": "Pas encore de données.", "ai.savings_info": "Épargne mensuelle: {savings} ({rate}% de {income}).", "ai.savings_low": "Faible taux d'épargne.", "ai.savings_ok": "Taux d'épargne modéré.", "ai.savings_great": "Excellent taux d'épargne.", "ai.budget_overview": "Budgets mensuels:", "ai.goals_overview": "Objectifs actifs: {count}", "ai.goals_completed": "Objectifs atteints: {count}", "ai.recommendations_title": "Recommandations:", "ai.debt_info": "Paiements de crédit ce mois: {amount} (revenus: {income}).", "ai.calendar_hint": "Le calendrier affiche toutes les transactions.", "ai.report_hint": "Les rapports montrent l'analyse des revenus et dépenses.", "ai.settings_hint": "Paramètres: langue, thème, PIN.", "ai.scan_hint": "Le scanner de reçus reconnaît les achats depuis les photos.", "ai.nav_accounts": "Comptes", "ai.nav_operations": "Opérations", "ai.nav_reports": "Rapports", "ai.nav_budget": "Budget", "ai.nav_goals": "Objectifs", "ai.nav_recommendations": "Recommandations", "ai.nav_home": "Accueil", "ai.nav_calendar": "Calendrier", "ai.nav_settings": "Paramètres", "ai.nav_scan": "Scanner", "ai.nav_help": "Posez-moi des questions sur vos finances!",
 
   "bank.title": "EasyBank",
   "bank.connect_hint": "Connectez des banques pour le chargement automatique des transactions",
