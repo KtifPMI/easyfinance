@@ -43,17 +43,27 @@ class HomeScreen extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/ai-assistant'),
                   child: Container(
-                    height: 40,
+                    height: 42,
                     decoration: BoxDecoration(
                       color: AppColors.cardFor(context),
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.borderFor(context)),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    padding: const EdgeInsets.only(left: 14, right: 4),
                     child: Row(
                       children: [
-                        Icon(Icons.smart_toy_outlined, size: 18, color: AppColors.textSecondaryFor(context)),
-                        const SizedBox(width: 8),
-                        Text(context.tr('ai_assistant.placeholder'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                        Expanded(
+                          child: Text(context.tr('ai_assistant.placeholder'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                        ),
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child:                           const Icon(Icons.send, size: 16, color: Colors.white),
+                        ),
                       ],
                     ),
                   ),
@@ -111,16 +121,16 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Row(
               children: [
                 _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
                 const SizedBox(width: 16),
                 _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
-                const SizedBox(width: 16),
-                _statLine(context.tr('home.savings'), store.fmt(savings), savings >= 0 ? AppColors.success : AppColors.expense),
               ],
             ),
+            const SizedBox(height: 8),
+            _statLine(context.tr('home.savings'), store.fmt(savings), Colors.white),
           ],
         ),
       ),

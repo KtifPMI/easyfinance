@@ -7,6 +7,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/currency_utils.dart';
+import '../../utils/format.dart';
 import 'add_account_screen.dart';
 
 class AccountsScreen extends StatelessWidget {
@@ -121,7 +122,7 @@ class AccountsScreen extends StatelessWidget {
             border: Border.all(color: AppColors.borderFor(context)),
           ),
           child: Text(
-            '${currencySymbol(e.key)} ${store.fmt(e.value, fromCurrency: e.key)}',
+            '${currencySymbol(e.key)} ${formatMoney(e.value, currency: e.key)}',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textFor(context)),
           ),
         );
