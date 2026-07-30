@@ -286,10 +286,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(children: [
                           _actionChip(context.tr('ai.cmd_balance'), () => _quickCommand(context.tr('ai.cmd_balance'))),
+                          _actionChip(context.tr('ai.cmd_income'), () => _quickCommand(context.tr('ai.cmd_income'))),
                           _actionChip(context.tr('ai.cmd_expenses'), () => _quickCommand(context.tr('ai.cmd_expenses'))),
                           _actionChip(context.tr('ai.cmd_categories'), () => _quickCommand(context.tr('ai.cmd_categories'))),
+                          _actionChip(context.tr('ai.cmd_savings'), () => _quickCommand(context.tr('ai.cmd_savings'))),
                           _actionChip(context.tr('ai.cmd_budgets'), () => _quickCommand(context.tr('ai.cmd_budgets'))),
                           _actionChip(context.tr('ai.cmd_goals'), () => _quickCommand(context.tr('ai.cmd_goals'))),
+                          _actionChip(context.tr('ai.cmd_debts'), () => _quickCommand(context.tr('ai.cmd_debts'))),
                           _actionChip(context.tr('ai.cmd_tips'), () => _quickCommand(context.tr('ai.cmd_tips'))),
                         ]),
                       ),
