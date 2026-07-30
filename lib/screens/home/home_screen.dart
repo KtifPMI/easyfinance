@@ -468,10 +468,8 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBudgetsSection(BuildContext context, FinanceStore store) {
     final pendingCount = store.operations.where((op) => op.isPending).length;
 
-    final sb = store.serverBudget;
-    final serverPlanned = sb?.planned ?? 0;
-    final totalPlanned = serverPlanned > 0 ? serverPlanned : store.budgets.fold(0.0, (sum, b) => sum + b.limit);
-    final totalSpent = sb?.spent ?? 0;
+    final totalPlanned = store.budgets.fold(0.0, (sum, b) => sum + b.limit);
+    final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
     final budgetPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
 
     return Column(
@@ -504,7 +502,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-        if (sb != null || totalPlanned > 0)
+        if (totalPlanned > 0)
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
