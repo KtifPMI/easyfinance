@@ -164,7 +164,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     if (_match(q, ['долг', 'кредит', 'задолжал', 'должен', 'рассрочк', 'ипотек', 'debt', 'credit', 'loan', 'mortgage', 'owe'])) {
       final debts = store.operations.where((o) => o.type == 'transfer' && inRange(o) && store.accounts.where((a) => a.id == o.toAccountId && a.type == 'credit').isNotEmpty).toList();
       final totalDebt = debts.fold(0.0, (s, o) => s + o.amount);
-      return _ChatMessage(role: 'assistant', text: '${context.tr('ai.debt_info', namedArgs: {'amount': store.fmt(totalDebt), 'income': store.fmt(mi)})}', navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
+      return _ChatMessage(role: 'assistant', text: context.tr('ai.debt_info', namedArgs: {'amount': store.fmt(totalDebt), 'income': store.fmt(mi)}), navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
     }
 
     // ---- CALENDAR / PLANNED ----
@@ -315,17 +315,6 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _chip(String label, IconData icon) {
-    return GestureDetector(
-      onTap: () => _quickCommand(label),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.primary.withValues(alpha: 0.3))),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 14, color: AppColors.primary), const SizedBox(width: 4), Text(label, style: TextStyle(fontSize: 12, color: AppColors.primary))]),
-      ),
     );
   }
 

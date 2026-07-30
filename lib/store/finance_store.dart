@@ -951,7 +951,6 @@ class FinanceStore extends ChangeNotifier {
   String? _transferCategoryId() {
     return _categories.cast<cat.Category?>().firstWhere((c) => c!.type == '0' && (c.name == 'Перевод' || c.name.contains('еревод')), orElse: () => null)?.id;
   }
-  }
 
   Future<void> syncPendingOperations() async {
     if (!authService.isAuthenticated) return;
