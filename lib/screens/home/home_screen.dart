@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
         final accountType = store.currentUser?.accountType ?? 'individual';
 
         return ScreenScaffold(
-          title: 'EasyFinance',
+          title: '',
           actions: [
             IconButton(
               icon: Icon(Icons.smart_toy_outlined, color: AppColors.textSecondaryFor(context), size: 22),
