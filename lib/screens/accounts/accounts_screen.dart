@@ -65,19 +65,14 @@ class AccountsScreen extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Text(a.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                        if (a.isArchived) ...[
-                                          const SizedBox(width: 6),
-                                          Text(context.tr('accounts.archived'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                                        ],
-                                      ],
-                                    ),
+                                    Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                    if (a.isArchived)
+                                      Text(context.tr('accounts.archived'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                                   ],
                                 ),
                               ),
-                              Text(store.fmt(a.balance, fromCurrency: a.currency), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                              const SizedBox(width: 8),
+                              Text(store.fmt(a.balance, fromCurrency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                               const SizedBox(width: 4),
                               GestureDetector(
                                 onTap: () async {

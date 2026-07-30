@@ -226,10 +226,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(tCat(context, e.category.name), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
-                  Text('${percent.round()}% · ${store.fmt(e.total)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                  Expanded(child: Text(tCat(context, e.category.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textFor(context)))),
+                  const SizedBox(width: 8),
+                  Text('${percent.round()}% · ${store.fmt(e.total)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                 ],
               ),
               const SizedBox(height: 4),
@@ -245,10 +245,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('reports.other'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-              Text('${monthExpense > 0 ? (otherTotal / monthExpense * 100).round() : 0}% · ${store.fmt(otherTotal)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+              Expanded(child: Text(context.tr('reports.other'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
+              const SizedBox(width: 8),
+              Text('${monthExpense > 0 ? (otherTotal / monthExpense * 100).round() : 0}% · ${store.fmt(otherTotal)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),

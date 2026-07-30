@@ -31,8 +31,8 @@ class TagsScreen extends StatelessWidget {
                             backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                             child: Icon(Icons.label, color: AppColors.primary, size: 20),
                           ),
-                          title: Text(t.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                          subtitle: Text('#${t.name}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                          title: Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                          subtitle: Text('#${t.name}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                         ),
                       ),
                     );

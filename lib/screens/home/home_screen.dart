@@ -165,13 +165,14 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(a.name, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 2),
                         _typeBadge(context, a.type),
                       ],
                     ),
                   ),
-                  Text(store.fmt(a.balance, fromCurrency: a.currency), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                  const SizedBox(width: 8),
+                  Text(store.fmt(a.balance, fromCurrency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                 ],
               ),
             ),
@@ -536,9 +537,10 @@ class HomeScreen extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(g.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       ),
-                      Text('${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      const SizedBox(width: 8),
+                      Text('${percent.round()}%', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -603,12 +605,13 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                Text(formatDate(e.date), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
               ],
             ),
           ),
-          Text(store.fmt(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
+          const SizedBox(width: 8),
+          Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
         ],
       ),
     ),

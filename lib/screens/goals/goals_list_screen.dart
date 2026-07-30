@@ -59,23 +59,26 @@ class GoalsListScreen extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Expanded(child: Text(g.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context)))),
-                                          if (g.isCompleted)
+                                          Expanded(child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context)))),
+                                          if (g.isCompleted) ...[
+                                            const SizedBox(width: 6),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                               decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
                                               child: Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600)),
                                             ),
+                                          ],
                                         ],
                                       ),
                                       const SizedBox(height: 4),
                                       if (g.isCompleted)
-                                        Text(context.tr('goals.achieved_title'), style: TextStyle(fontSize: 13, color: AppColors.success))
+                                        Text(context.tr('goals.achieved_title'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.success))
                                       else
-                                        Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                        Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                     ],
                                   ),
                                 ),
+                                const SizedBox(width: 8),
                                 if (!g.isCompleted)
                                   GestureDetector(
                                     onTap: () => _showDepositDialog(context, g, store),

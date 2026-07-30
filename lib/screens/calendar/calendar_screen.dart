@@ -179,13 +179,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                   Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                   Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                                    if (e.comment != null && e.comment!.isNotEmpty)
-                                     Text(e.comment!, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                                     Text(e.comment!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),
-                            Text(store.fmt(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.warning)),
+                            const SizedBox(width: 8),
+                            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.warning)),
                           ],
                         ),
                       ),
@@ -218,12 +219,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                   Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                   Text(store.getAccount(op.accountId)?.name ?? '', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                                   Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                   Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),
-                            Text(store.fmt(op.amount, fromCurrency: op.currency), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
+                            const SizedBox(width: 8),
+                            Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
                           ],
                         ),
                       ),

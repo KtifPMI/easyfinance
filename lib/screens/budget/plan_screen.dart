@@ -127,38 +127,35 @@ class _PlanScreenState extends State<PlanScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                   Text(b.name ?? tCat(context, cat?.name ?? ''), overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                                      const SizedBox(width: 8),
-                                      GestureDetector(
-                                        onTap: () {
-                                          showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (ctx) => AlertDialog(
-                                              title: Text(context.tr('budget.confirm_delete')),
-                                              content: Text(b.name ?? tCat(context, cat?.name ?? '')),
-                                              actions: [
-                                                TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    store.deleteBudget(b.id);
-                                                    Navigator.pop(ctx);
-                                                  },
-                                                  child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
-                                                ),
-                                              ],
+                                  Expanded(
+                                    child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (ctx) => AlertDialog(
+                                          title: Text(context.tr('budget.confirm_delete')),
+                                          content: Text(b.name ?? tCat(context, cat?.name ?? '')),
+                                          actions: [
+                                            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+                                            TextButton(
+                                              onPressed: () {
+                                                store.deleteBudget(b.id);
+                                                Navigator.pop(ctx);
+                                              },
+                                              child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
                                             ),
-                                          );
-                                        },
-                                        child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
                                   ),
                                 ],
                               ),
@@ -198,14 +195,15 @@ class _PlanScreenState extends State<PlanScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                   Text(g.title, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                  Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                                   if (g.isCompleted)
                                     Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
                                   else
-                                    Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                    Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 8),
                             if (!g.isCompleted)
                               GestureDetector(
                                 onTap: () => _showDepositDialog(context, g, store),

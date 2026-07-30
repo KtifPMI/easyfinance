@@ -41,13 +41,14 @@ class TemplatesScreen extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    title: Text(t.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    subtitle: Text(typeLabel, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    title: Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    subtitle: Text(typeLabel, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (t.amount > 0)
                           Text('${t.type == 'income' ? '+' : '-'}${t.amount.toStringAsFixed(0)} ₽',
+                              maxLines: 1, softWrap: false,
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
                                   color: t.type == 'income' ? AppColors.income : AppColors.expense)),
                         const SizedBox(width: 4),

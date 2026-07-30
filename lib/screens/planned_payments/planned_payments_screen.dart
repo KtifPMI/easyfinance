@@ -74,16 +74,17 @@ class PlannedPaymentsScreen extends StatelessWidget {
             child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20,
                 color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondaryFor(context)),
           ),
-          title: Text(e.title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+          title: Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
               color: e.enabled ? AppColors.textFor(context) : AppColors.textSecondaryFor(context))),
           subtitle: Text(
             e.isRecurring ? '${context.tr('planned_payments.day')} ${e.dayOfMonth}' : formatDate(e.date),
+            maxLines: 1, overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context)),
           ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(formatMoney(e.amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
+              Text(formatMoney(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700,
                   color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondaryFor(context))),
               const SizedBox(width: 4),
               Switch(
