@@ -109,6 +109,7 @@
   "operations.comment": "Yorum",
   "operations.date_time": "Tarih ve saat",
   "operations.save": "Kaydet",
+  "operations.select_time": "Saat seçin",
   "operations.tags": "Etiketler",
   "operations.not_found": "İşlem bulunamadı",
   "operations.title_detail": "İşlem",

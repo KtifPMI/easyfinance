@@ -258,12 +258,17 @@ class FinanceStore extends ChangeNotifier {
     return CurrencyRateService.convert(o.amount, from, 'RUB', rates);
   }
 
+  bool _isInvestOp(Operation o) {
+    if (o.categoryId == null) return false;
+    return _categories.any((c) => c.id == o.categoryId && c.icon == 'invest');
+  }
+
   double get monthIncome {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
     return _operations
-        .where((o) => o.type == 'income' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .where((o) => o.type == 'income' && !o.isDeleted && !_isInvestOp(o) && _inPeriod(o.date, start, end))
         .fold(0.0, (s, o) => s + _amountInRub(o));
   }
   double get monthExpense {
@@ -271,7 +276,7 @@ class FinanceStore extends ChangeNotifier {
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
     return _operations
-        .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .where((o) => o.type == 'expense' && !o.isDeleted && !_isInvestOp(o) && _inPeriod(o.date, start, end))
         .fold(0.0, (s, o) => s + _amountInRub(o));
   }
 

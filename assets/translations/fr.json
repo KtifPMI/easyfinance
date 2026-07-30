@@ -109,6 +109,7 @@
   "operations.comment": "Commentaire",
   "operations.date_time": "Date et heure",
   "operations.save": "Enregistrer",
+  "operations.select_time": "Sélectionner l'heure",
   "operations.tags": "Étiquettes",
   "operations.not_found": "Opération introuvable",
   "operations.title_detail": "Opération",

@@ -113,6 +113,7 @@
   "operations.comment": "Комментарий",
   "operations.date_time": "Дата и время",
   "operations.save": "Сохранить",
+  "operations.select_time": "Выберите время",
   "operations.tags": "Теги",
   "operations.not_found": "Операция не найдена",
   "operations.title_detail": "Операция",

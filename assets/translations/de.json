@@ -109,6 +109,7 @@
   "operations.comment": "Kommentar",
   "operations.date_time": "Datum & Zeit",
   "operations.save": "Speichern",
+  "operations.select_time": "Zeit auswählen",
   "operations.tags": "Tags",
   "operations.not_found": "Umsatz nicht gefunden",
   "operations.title_detail": "Umsatz",

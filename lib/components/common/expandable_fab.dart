@@ -93,7 +93,7 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
           child: Icon(
             _isOpen ? Icons.close : Icons.add,
             key: ValueKey(_isOpen),
-            color: Colors.white,
+            color: AppColors.onPrimary,
             size: 28,
           ),
         ),

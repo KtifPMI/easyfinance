@@ -73,7 +73,7 @@ class AccountsScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(store.fmt(a.balance, fromCurrency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                              Text(formatMoney(a.balance, currency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                               const SizedBox(width: 4),
                               GestureDetector(
                                 onTap: () async {

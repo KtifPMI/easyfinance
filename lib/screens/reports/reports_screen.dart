@@ -82,6 +82,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));
 
+        final catExpense = catTotals.fold<double>(0, (s, e) => s + e.total);
         final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
         final chartSlices = <({String label, double value, Color color})>[];
         for (int i = 0; i < catTotals.length && i < 6; i++) {
@@ -194,7 +195,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                 ),
                 const SizedBox(height: 16),
-                ..._buildCategoryRows(catTotals, monthExpense, store),
+                ..._buildCategoryRows(catTotals, catExpense, store),
               ],
             ],
           ),

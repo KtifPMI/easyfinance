@@ -109,6 +109,7 @@
   "operations.comment": "Commento",
   "operations.date_time": "Data e ora",
   "operations.save": "Salva",
+  "operations.select_time": "Seleziona ora",
   "operations.tags": "Tag",
   "operations.not_found": "Operazione non trovata",
   "operations.title_detail": "Operazione",
