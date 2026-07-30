@@ -45,11 +45,11 @@ class _DateTimeStepperState extends State<DateTimeStepper> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _stepper('${_day.toString().padLeft(2, '0')}', () { if (_day < _daysInMonth(_year, _month)) { _day++; _update(); } }, () { if (_day > 1) { _day--; _update(); } }),
+        _stepper(_day.toString().padLeft(2, '0'), () { if (_day < _daysInMonth(_year, _month)) { _day++; _update(); } }, () { if (_day > 1) { _day--; _update(); } }),
         _stepper(_monthLabel(_month).toUpperCase(), () { if (_month < 12) { _month++; _update(); } }, () { if (_month > 1) { _month--; _update(); } }),
         _stepper('$_year', () { _year++; _update(); }, () { _year--; _update(); }),
-        _stepper('${_hour.toString().padLeft(2, '0')}', () { if (_hour < 23) { _hour++; _update(); } }, () { if (_hour > 0) { _hour--; _update(); } }),
-        _stepper('${_minute.toString().padLeft(2, '0')}', () { if (_minute < 59) { _minute++; _update(); } }, () { if (_minute > 0) { _minute--; _update(); } }),
+        _stepper(_hour.toString().padLeft(2, '0'), () { if (_hour < 23) { _hour++; _update(); } }, () { if (_hour > 0) { _hour--; _update(); } }),
+        _stepper(_minute.toString().padLeft(2, '0'), () { if (_minute < 59) { _minute++; _update(); } }, () { if (_minute > 0) { _minute--; _update(); } }),
       ],
     );
   }

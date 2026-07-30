@@ -97,7 +97,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       ),
     );
   }
-  }
 
   @override
   void didChangeDependencies() {
