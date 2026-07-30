@@ -111,6 +111,7 @@
   "operations.category": "Категория",
   "operations.to_account": "На счёт",
   "operations.comment": "Комментарий",
+  "operations.date_time": "Дата и время",
   "operations.save": "Сохранить",
   "operations.tags": "Теги",
   "operations.not_found": "Операция не найдена",

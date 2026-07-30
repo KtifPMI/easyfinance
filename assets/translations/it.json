@@ -107,6 +107,7 @@
   "operations.category": "Categoria",
   "operations.to_account": "Conto Destinazione",
   "operations.comment": "Commento",
+  "operations.date_time": "Data e ora",
   "operations.save": "Salva",
   "operations.tags": "Tag",
   "operations.not_found": "Operazione non trovata",

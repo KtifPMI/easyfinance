@@ -111,6 +111,7 @@
   "operations.category": "Category",
   "operations.to_account": "To Account",
   "operations.comment": "Comment",
+  "operations.date_time": "Date & Time",
   "operations.save": "Save",
   "operations.tags": "Tags",
   "operations.not_found": "Operation not found",

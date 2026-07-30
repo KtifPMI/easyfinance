@@ -1097,7 +1097,7 @@ class FinanceStore extends ChangeNotifier {
             if (account.currencyId != null) 'currency_id': account.currencyId else 'currency_id': '1',
             'icon': _accountIconToApi(account.icon),
             'include_in_total': account.includeInTotal ? '1' : '0',
-            'created_at': account.createdAt.isNotEmpty ? account.createdAt : now,
+            'created_at': now,
             'updated_at': now,
           }]
         });
