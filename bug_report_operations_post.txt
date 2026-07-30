@@ -1,28 +1,28 @@
-БАГ-РЕПОРТ: operations.post возвращает HTTP 500 Internal Server Error
+﻿Р‘РђР“-Р Р•РџРћР Рў: operations.post РІРѕР·РІСЂР°С‰Р°РµС‚ HTTP 500 Internal Server Error
 ====================================================================
 
-Дата: 26–29 июня 2026
-Метод: POST https://api.easyfinance.ru/v2/?method=operations.post
-Автор приложения: EasyFinance Flutter (app_id: 7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60)
+Р”Р°С‚Р°: 26вЂ“29 РёСЋРЅСЏ 2026
+РњРµС‚РѕРґ: POST https://api.easyfinance.ru/v2/?method=operations.post
+РђРІС‚РѕСЂ РїСЂРёР»РѕР¶РµРЅРёСЏ: EasyFinance Flutter (app_id: [REDACTED])
 
 ---
 
-Суть
+РЎСѓС‚СЊ
 ----
-При отправке запроса к operations.post сервер возвращает HTTP 500.
-GET-методы (operations.get, accounts.get, categories.get, operationPatterns.get)
-работают штатно.
+РџСЂРё РѕС‚РїСЂР°РІРєРµ Р·Р°РїСЂРѕСЃР° Рє operations.post СЃРµСЂРІРµСЂ РІРѕР·РІСЂР°С‰Р°РµС‚ HTTP 500.
+GET-РјРµС‚РѕРґС‹ (operations.get, accounts.get, categories.get, operationPatterns.get)
+СЂР°Р±РѕС‚Р°СЋС‚ С€С‚Р°С‚РЅРѕ.
 
-Первоначально запросы содержали ошибки (отсутствовал user_id, amount был
-положительным для расходов, client_id был строкой вместо числа). После
-исправления по полной документации (стр. 50–58) проблема сохраняется —
-даже правильный запрос возвращает 500. Похоже на регрессию деплоя.
+РџРµСЂРІРѕРЅР°С‡Р°Р»СЊРЅРѕ Р·Р°РїСЂРѕСЃС‹ СЃРѕРґРµСЂР¶Р°Р»Рё РѕС€РёР±РєРё (РѕС‚СЃСѓС‚СЃС‚РІРѕРІР°Р» user_id, amount Р±С‹Р»
+РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рј РґР»СЏ СЂР°СЃС…РѕРґРѕРІ, client_id Р±С‹Р» СЃС‚СЂРѕРєРѕР№ РІРјРµСЃС‚Рѕ С‡РёСЃР»Р°). РџРѕСЃР»Рµ
+РёСЃРїСЂР°РІР»РµРЅРёСЏ РїРѕ РїРѕР»РЅРѕР№ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё (СЃС‚СЂ. 50вЂ“58) РїСЂРѕР±Р»РµРјР° СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ вЂ”
+РґР°Р¶Рµ РїСЂР°РІРёР»СЊРЅС‹Р№ Р·Р°РїСЂРѕСЃ РІРѕР·РІСЂР°С‰Р°РµС‚ 500. РџРѕС…РѕР¶Рµ РЅР° СЂРµРіСЂРµСЃСЃРёСЋ РґРµРїР»РѕСЏ.
 
 ---
 
-Корректный запрос (по документации)
+РљРѕСЂСЂРµРєС‚РЅС‹Р№ Р·Р°РїСЂРѕСЃ (РїРѕ РґРѕРєСѓРјРµРЅС‚Р°С†РёРё)
 ------------------------------------
-POST /v2/?method=operations.post&app_id=7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60&access_token=471c9f1d95e027286e1fbc8242637651&sig=...
+POST /v2/?method=operations.post&app_id=[REDACTED]&access_token=[REDACTED]&sig=...
 Host: api.easyfinance.ru
 Content-Type: application/json
 
@@ -51,7 +51,7 @@ Content-Type: application/json
   }
 }
 
-Ожидаемый ответ (200):
+РћР¶РёРґР°РµРјС‹Р№ РѕС‚РІРµС‚ (200):
 {
   "response": {
     "response_info": { "server_time": "..." },
@@ -62,7 +62,7 @@ Content-Type: application/json
   }
 }
 
-Фактический ответ (500):
+Р¤Р°РєС‚РёС‡РµСЃРєРёР№ РѕС‚РІРµС‚ (500):
 HTTP/1.1 500 Internal Server Error
 Content-Type: application/xml
 
@@ -73,21 +73,22 @@ Content-Type: application/xml
 
 ---
 
-curl для воспроизведения (правильный запрос):
+curl РґР»СЏ РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ (РїСЂР°РІРёР»СЊРЅС‹Р№ Р·Р°РїСЂРѕСЃ):
 -----------------------------------------------
-curl -X POST "https://api.easyfinance.ru/v2/?method=operations.post&app_id=7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60&access_token=471c9f1d95e027286e1fbc8242637651&sig=..." \
+curl -X POST "https://api.easyfinance.ru/v2/?method=operations.post&app_id=[REDACTED]&access_token=[REDACTED]&sig=..." \
   -H "Content-Type: application/json" \
   -d '{"request":{"request_data":{"operations":[{"user_id":"48162434","account_id":"501385015","category_id":"551145691","amount":"-123.00","date":"2026-06-26","time":"17:09:08","type":"0","accepted":true,"transfer_account_id":null,"transfer_amount":null,"created_at":"2026-06-26T17:09:08+03:00","updated_at":"2026-06-26T17:09:08+03:00","deleted_at":null,"client_id":12345}]}}}'
 
 ---
 
-Дополнительные проверки
+Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РїСЂРѕРІРµСЂРєРё
 -----------------------
-— GET-запросы (operations.get, accounts.get, categories.get) работают (200)
-— type=1 (income) тоже возвращает 500
-— Без категории — тоже 500
-— Разные account_id — тоже 500
-— Операции, созданные через веб-интерфейс easyfinance.ru, видны через operations.get
+вЂ” GET-Р·Р°РїСЂРѕСЃС‹ (operations.get, accounts.get, categories.get) СЂР°Р±РѕС‚Р°СЋС‚ (200)
+вЂ” type=1 (income) С‚РѕР¶Рµ РІРѕР·РІСЂР°С‰Р°РµС‚ 500
+вЂ” Р‘РµР· РєР°С‚РµРіРѕСЂРёРё вЂ” С‚РѕР¶Рµ 500
+вЂ” Р Р°Р·РЅС‹Рµ account_id вЂ” С‚РѕР¶Рµ 500
+вЂ” РћРїРµСЂР°С†РёРё, СЃРѕР·РґР°РЅРЅС‹Рµ С‡РµСЂРµР· РІРµР±-РёРЅС‚РµСЂС„РµР№СЃ easyfinance.ru, РІРёРґРЅС‹ С‡РµСЂРµР· operations.get
 
-Вывод: публичный v2 API не принимает POST-запросы на создание операций.
-Вероятная причина — регрессия после деплоя на бэкенде.
+Р’С‹РІРѕРґ: РїСѓР±Р»РёС‡РЅС‹Р№ v2 API РЅРµ РїСЂРёРЅРёРјР°РµС‚ POST-Р·Р°РїСЂРѕСЃС‹ РЅР° СЃРѕР·РґР°РЅРёРµ РѕРїРµСЂР°С†РёР№.
+Р’РµСЂРѕСЏС‚РЅР°СЏ РїСЂРёС‡РёРЅР° вЂ” СЂРµРіСЂРµСЃСЃРёСЏ РїРѕСЃР»Рµ РґРµРїР»РѕСЏ РЅР° Р±СЌРєРµРЅРґРµ.
+

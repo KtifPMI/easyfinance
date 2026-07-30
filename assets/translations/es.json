@@ -601,5 +601,10 @@
   "hints.plan": "Presupuestos y metas. Establezca límites por categoría para controlar gastos.",
   "hints.calendar": "Toque un día para ver transacciones y pagos programados. Deslice para cambiar de mes.",
   "hints.reports": "Análisis mensual: ingresos, gastos, estructura por categorías.",
-  "hints.more": "Configuración, categorías, etiquetas, sincronización y perfil."
+  "hints.more": "Configuración, categorías, etiquetas, sincronización y perfil.",
+  "auth.login_error": "Error de inicio de sesión. Inténtelo de nuevo.",
+  "profile.name": "Nombre",
+  "auth.register": "Registrarse",
+  "goals.no_deadline": "Sin plazo",
+  "more.debug": "Debug API"
 }

@@ -97,8 +97,11 @@ class FinanceStore extends ChangeNotifier {
     if (userRaw != null) {
       try { _currentUser = User.fromJson(jsonDecode(userRaw) as Map<String, dynamic>); } catch (_) {}
     }
+    await _loadBudgets();
+    await _loadGoals();
     await _loadDisplayCurrency();
     _watchedCurrencies = await _loadWatchedCurrencies();
+    _recalcBudgetSpent();
     _generateRecommendations();
     await _preloadHistoricalRates();
     notifyListeners();
@@ -132,6 +135,8 @@ class FinanceStore extends ChangeNotifier {
     if (_currentUser != null) {
       await prefs.setString('easyfinance_cached_user', jsonEncode(_currentUser!.toJson()));
     }
+    await _saveBudgets();
+    await _saveGoals();
   }
 
   void saveUser(User user) {
@@ -151,6 +156,10 @@ class FinanceStore extends ChangeNotifier {
     await prefs.remove('easyfinance_cached_tags');
     await prefs.remove('easyfinance_cached_user');
     await prefs.remove('display_currency');
+    final favKeys = prefs.getKeys().where((k) => k.startsWith('fav_')).toList();
+    for (final k in favKeys) {
+      await prefs.remove(k);
+    }
     await authService.logout();
     _currentUser = null;
     _accounts = [];
@@ -241,17 +250,29 @@ class FinanceStore extends ChangeNotifier {
   double get totalBalance => _accounts
       .where((a) => a.includeInTotal && !a.isArchived)
       .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(a.balance, a.currency, 'RUB', _rates));
+  double _amountInRub(Operation o) {
+    final acc = getAccount(o.accountId);
+    final from = acc?.currency ?? o.currency;
+    final dateKey = o.date.length >= 10 ? o.date.substring(0, 10) : null;
+    final rates = (dateKey != null && _histRates.containsKey(dateKey)) ? _histRates[dateKey]! : _rates;
+    return CurrencyRateService.convert(o.amount, from, 'RUB', rates);
+  }
+
   double get monthIncome {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    return _operations.where((o) => o.type == 'income' && !o.isDeleted && _inPeriod(o.date, start, end)).fold(0, (s, o) => s + o.amount);
+    return _operations
+        .where((o) => o.type == 'income' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .fold(0.0, (s, o) => s + _amountInRub(o));
   }
   double get monthExpense {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    return _operations.where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end)).fold(0, (s, o) => s + o.amount);
+    return _operations
+        .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .fold(0.0, (s, o) => s + _amountInRub(o));
   }
 
   bool isInCurrentMonth(String dateIso) => isInMonth(dateIso, DateTime.now());
@@ -874,6 +895,9 @@ class FinanceStore extends ChangeNotifier {
     final created = createdAt ?? formatApiDateTime(now);
     final updated = updatedAt ?? formatApiDateTime(now);
     final amount = op.type == 'income' ? op.amount : -op.amount;
+    final transferAmt = op.transferAmount ?? op.amount;
+    final stableClientId = op.clientId ?? op.id;
+    final clientIdNum = int.tryParse(stableClientId) ?? stableClientId.hashCode.abs();
     return {
       if (existingId != null) 'id': existingId,
       'type': _typeToApi(op.type),
@@ -886,11 +910,11 @@ class FinanceStore extends ChangeNotifier {
       'date': dateStr,
       'time': timeStr,
       if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
-      if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
+      if (op.toAccountId != null) 'transfer_amount': transferAmt.toStringAsFixed(2),
       if (op.comment != null) 'comment': op.comment,
       if (op.tags != null) 'tags': op.tags,
       'accepted': true,
-      if (existingId == null) 'client_id': now.microsecondsSinceEpoch,
+      if (existingId == null) 'client_id': clientIdNum,
       'created_at': created,
       'updated_at': updated,
       'deleted_at': null,
@@ -904,6 +928,8 @@ class FinanceStore extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    final clientId = op.clientId ?? op.id;
+    op = op.copyWith(clientId: clientId);
     if (authService.isAuthenticated) {
       try {
         final now = DateTime.now();
@@ -916,19 +942,26 @@ class FinanceStore extends ChangeNotifier {
         if (serverId == null || serverId.isEmpty) {
           throw ApiException('Сервер не вернул ID операции', 'MISSING_OPERATION_ID');
         }
-        op = op.copyWith(id: serverId);
+        op = op.copyWith(id: serverId, isPending: false, clientId: clientId);
       } on ApiException catch (e) {
-        _error = e.message;
-        op = op.copyWith(isPending: true);
-      } catch (e) {
-        _error = 'Ошибка добавления: $e';
-        op = op.copyWith(isPending: true);
+        final msg = e.message.toLowerCase();
+        final isNetwork = msg.contains('timeout') || msg.contains('socket') || msg.contains('network') || msg.contains('connection') || e.code == 'TIMEOUT' || e.code == 'NETWORK';
+        if (isNetwork) {
+          op = op.copyWith(isPending: true, clientId: clientId);
+        } else {
+          _error = e.message;
+          notifyListeners();
+          return;
+        }
+      } catch (_) {
+        op = op.copyWith(isPending: true, clientId: clientId);
       }
     } else {
-      op = op.copyWith(isPending: true);
+      op = op.copyWith(isPending: true, clientId: clientId);
     }
     _operations.insert(0, op);
     _recalcAccountBalances();
+    _recalcBudgetSpent();
     _generateRecommendations();
     await _saveCache();
     if (_rates.isNotEmpty) {
@@ -958,8 +991,9 @@ class FinanceStore extends ChangeNotifier {
     if (pending.isEmpty) return;
     for (final op in pending) {
       try {
+        final withClient = op.copyWith(clientId: op.clientId ?? op.id);
         final now = DateTime.now();
-        final payload = _buildOperationPayload(op, createdAt: formatApiDateTime(now), updatedAt: formatApiDateTime(now));
+        final payload = _buildOperationPayload(withClient, createdAt: formatApiDateTime(now), updatedAt: formatApiDateTime(now));
         final response = await authService.apiService.addOperation({'operations': [payload]});
         final serverOperations = response['operations'] as List<dynamic>?;
         final serverId = serverOperations?.isNotEmpty == true
@@ -968,13 +1002,15 @@ class FinanceStore extends ChangeNotifier {
         if (serverId != null && serverId.isNotEmpty) {
           final idx = _operations.indexWhere((o) => o.id == op.id);
           if (idx >= 0) {
-            _operations[idx] = _operations[idx].copyWith(id: serverId, isPending: false);
+            _operations[idx] = _operations[idx].copyWith(id: serverId, isPending: false, clientId: withClient.clientId);
           }
         }
       } catch (e) {
         debugPrint('Sync pending op ${op.id} failed: $e');
       }
     }
+    _recalcAccountBalances();
+    _recalcBudgetSpent();
     await _saveCache();
     notifyListeners();
   }
@@ -1002,7 +1038,7 @@ class FinanceStore extends ChangeNotifier {
             'date': dateStr,
             'time': timeStr,
             if (op.toAccountId != null) 'transfer_account_id': op.toAccountId,
-            if (op.toAccountId != null) 'transfer_amount': op.amount.toStringAsFixed(2),
+            if (op.toAccountId != null) 'transfer_amount': (op.transferAmount ?? op.amount).toStringAsFixed(2),
             if (op.comment != null) 'comment': op.comment,
             if (op.tags != null) 'tags': op.tags,
             'accepted': true,
@@ -1023,6 +1059,7 @@ class FinanceStore extends ChangeNotifier {
       _operations[idx] = op;
     }
     _recalcAccountBalances();
+    _recalcBudgetSpent();
     _generateRecommendations();
     await _saveCache();
     notifyListeners();
@@ -1030,10 +1067,13 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteOperation(String id) async {
     _error = null;
-    final op = _operations.firstWhere((o) => o.id == id);
+    final opIdx = _operations.indexWhere((o) => o.id == id);
+    if (opIdx < 0) return;
+    final op = _operations[opIdx];
     if (op.isPending) {
-      _operations.removeWhere((o) => o.id == id);
+      _operations.removeAt(opIdx);
       _recalcAccountBalances();
+      _recalcBudgetSpent();
       _generateRecommendations();
       await _saveCache();
       notifyListeners();
@@ -1057,10 +1097,10 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     if (!op.isDeleted) {
-      final idx = _operations.indexWhere((o) => o.id == id);
-      _operations[idx] = _operations[idx].copyWith(isDeleted: true);
+      _operations[opIdx] = _operations[opIdx].copyWith(isDeleted: true);
     }
     _recalcAccountBalances();
+    _recalcBudgetSpent();
     _generateRecommendations();
     await _saveCache();
     notifyListeners();
@@ -1400,10 +1440,30 @@ class FinanceStore extends ChangeNotifier {
     final now = DateTime.now();
     final ops = _operations.where((o) {
       if (o.categoryId != categoryId || o.type != 'expense' || o.isDeleted) return false;
-      final d = DateTime.tryParse(o.date.substring(0, 10));
+      final dateKey = o.date.length >= 10 ? o.date.substring(0, 10) : o.date;
+      final d = DateTime.tryParse(dateKey);
       return d != null && d.year == now.year && d.month == now.month;
     });
     return ops.fold(0.0, (sum, o) => sum + o.amount);
+  }
+
+  void _recalcBudgetSpent() {
+    for (var i = 0; i < _budgets.length; i++) {
+      final b = _budgets[i];
+      if (b.isDeleted) continue;
+      final spent = _calcSpentForMonth(b.categoryId);
+      if ((spent - b.spent).abs() > 0.01) {
+        _budgets[i] = b.copyWith(spent: spent);
+      }
+    }
+  }
+
+  Map<String, double> _ratesForOp(Operation op) {
+    final dateKey = op.date.length >= 10 ? op.date.substring(0, 10) : null;
+    if (dateKey != null && _histRates.containsKey(dateKey)) {
+      return _histRates[dateKey]!;
+    }
+    return _rates;
   }
 
   void _recalcAccountBalances() {
@@ -1420,11 +1480,15 @@ class FinanceStore extends ChangeNotifier {
             balance -= op.amount;
           }
           if (op.toAccountId == a.id) {
-            final src = getAccount(op.accountId);
-            final converted = src != null && src.currency != a.currency
-                ? CurrencyRateService.convert(op.amount, src.currency, a.currency, _rates)
-                : op.amount;
-            balance += converted;
+            if (op.transferAmount != null && op.transferAmount! > 0) {
+              balance += op.transferAmount!;
+            } else {
+              final src = getAccount(op.accountId);
+              final converted = src != null && src.currency != a.currency
+                  ? CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op))
+                  : op.amount;
+              balance += converted;
+            }
           }
         }
       }
@@ -1478,15 +1542,15 @@ class FinanceStore extends ChangeNotifier {
         _budgets = list.map((e) {
           final m = e as Map<String, dynamic>;
           return Budget(
-            id: m['id'] as String,
-            name: m['name'] as String?,
-            categoryId: m['categoryId'] as String? ?? '',
-            limit: (m['limit'] as num).toDouble(),
+            id: m['id']?.toString() ?? '',
+            name: m['name']?.toString(),
+            categoryId: m['categoryId']?.toString() ?? '',
+            limit: (m['limit'] as num?)?.toDouble() ?? 0,
             spent: (m['spent'] as num?)?.toDouble() ?? 0,
-            period: m['period'] as String? ?? 'monthly',
-            isDeleted: m['isDeleted'] as bool? ?? false,
+            period: m['period']?.toString() ?? 'monthly',
+            isDeleted: m['isDeleted'] == true,
           );
-        }).toList();
+        }).where((b) => b.id.isNotEmpty).toList();
       }
     } catch (_) {
       _budgets = [];
@@ -1655,27 +1719,52 @@ class FinanceStore extends ChangeNotifier {
     await updateGoal(goalId, currentAmount: newAmount, isCompleted: completed);
     if (_error != null) return;
 
-    final goalCategoryId = _categories
-        .where((c) =>
-            c.name == 'Инвестиционный расход' ||
-            c.name.contains('Инвестицион'))
-        .firstOrNull
-        ?.id;
-    final categoryId = goalCategoryId ??
-        _categories
-            .where((c) => c.name == 'Прочие расходы')
-            .firstOrNull
-            ?.id;
+    final now = formatApiDateTime();
+    final clientId = DateTime.now().microsecondsSinceEpoch.toString();
+    final goalAccountId = goal.accountId ?? goal.transferAccountId;
 
-    await addOperation(Operation(
-      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-      type: 'expense',
-      amount: amount,
-      date: DateTime.now().toIso8601String(),
-      accountId: accountId,
-      categoryId: categoryId,
-      comment: '🎯 ${goal.title}',
-    ));
+    if (goalAccountId != null && goalAccountId.isNotEmpty && goalAccountId != accountId) {
+      final src = getAccount(accountId);
+      final dst = getAccount(goalAccountId);
+      double? transferAmt;
+      if (src != null && dst != null && src.currency != dst.currency) {
+        transferAmt = CurrencyRateService.convert(amount, src.currency, dst.currency, _rates);
+      }
+      await addOperation(Operation(
+        id: clientId,
+        type: 'transfer',
+        amount: amount,
+        transferAmount: transferAmt,
+        date: now,
+        accountId: accountId,
+        toAccountId: goalAccountId,
+        comment: goal.title,
+        clientId: clientId,
+      ));
+    } else {
+      final goalCategoryId = _categories
+          .where((c) =>
+              c.name == 'Инвестиционный расход' ||
+              c.name.contains('Инвестицион') ||
+              c.name.toLowerCase().contains('invest'))
+          .firstOrNull
+          ?.id;
+      final categoryId = goalCategoryId ??
+          _categories
+              .where((c) => c.type == 'expense' || c.type == '0')
+              .firstOrNull
+              ?.id;
+      await addOperation(Operation(
+        id: clientId,
+        type: 'expense',
+        amount: amount,
+        date: now,
+        accountId: accountId,
+        categoryId: categoryId,
+        comment: goal.title,
+        clientId: clientId,
+      ));
+    }
     if (_error != null) {
       final operationError = _error;
       await updateGoal(goalId, currentAmount: previousAmount, isCompleted: previousCompleted);

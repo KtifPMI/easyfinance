@@ -10,6 +10,9 @@ import '../screens/operations/operation_detail_screen.dart';
 import '../screens/operations/scan_receipt_screen.dart';
 import '../screens/planned_payments/planned_payments_screen.dart';
 import '../screens/planned_payments/add_planned_payment_screen.dart';
+import '../screens/accounts/accounts_screen.dart';
+import '../screens/settings/settings_screen.dart';
+import '../screens/recommendations/recommendations_screen.dart';
 import '../models/financial_event.dart';
 import 'tab_router.dart';
 
@@ -26,6 +29,21 @@ class AppRouter {
   static const String debug = '/debug';
   static const String plannedPayments = '/planned-payments';
   static const String addPlannedPayment = '/add-planned-payment';
+  static const String accounts = '/accounts';
+  static const String operations = '/operations';
+  static const String reports = '/reports';
+  static const String plan = '/plan';
+  static const String calendar = '/calendar';
+  static const String settings = '/settings';
+  static const String recommendations = '/recommendations';
+
+  static const Map<String, int> tabIndexes = {
+    main: 0,
+    operations: 1,
+    plan: 2,
+    calendar: 3,
+    reports: 4,
+  };
 
   static Map<String, Widget Function(BuildContext)> get routes => {
     login: (_) => const LoginScreen(),
@@ -40,11 +58,15 @@ class AppRouter {
     debug: (_) => const DebugScreen(),
     plannedPayments: (_) => const PlannedPaymentsScreen(),
     addPlannedPayment: (_) => const AddPlannedPaymentScreen(),
+    accounts: (_) => const AccountsScreen(),
+    settings: (_) => const SettingsScreen(),
+    recommendations: (_) => const RecommendationsScreen(),
   };
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     Widget? page;
-    if (settings.name == addOperation) {
+    final name = settings.name;
+    if (name == addOperation) {
       final args = settings.arguments as Map<String, dynamic>?;
       page = AddOperationScreen(
         type: args?['type'] as String?,
@@ -52,7 +74,7 @@ class AppRouter {
         presetDate: args?['presetDate'] as String?,
         templateId: args?['templateId'] as String?,
       );
-    } else if (settings.name == addPlannedPayment) {
+    } else if (name == addPlannedPayment) {
       final arg = settings.arguments;
       if (arg is FinancialEvent) {
         page = AddPlannedPaymentScreen(existing: arg);
@@ -60,6 +82,13 @@ class AppRouter {
         final presetDate = arg is Map ? arg['date'] as String? : null;
         page = AddPlannedPaymentScreen(presetDate: presetDate);
       }
+    } else if (name != null && tabIndexes.containsKey(name)) {
+      int tab = tabIndexes[name]!;
+      final args = settings.arguments;
+      if (args is Map && args['tab'] is int) {
+        tab = args['tab'] as int;
+      }
+      page = MainTabs(initialIndex: tab);
     }
     if (page != null) {
       return PageRouteBuilder(

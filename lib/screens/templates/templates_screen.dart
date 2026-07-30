@@ -8,6 +8,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../models/operation_template.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
 
 class TemplatesScreen extends StatelessWidget {
@@ -47,7 +48,7 @@ class TemplatesScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (t.amount > 0)
-                          Text('${t.type == 'income' ? '+' : '-'}${t.amount.toStringAsFixed(0)} ₽',
+                          Text('${t.type == 'income' ? '+' : '-'}${store.fmt(t.amount)}',
                               maxLines: 1, softWrap: false,
                               style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
                                   color: t.type == 'income' ? AppColors.income : AppColors.expense)),
@@ -113,7 +114,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
-    final now = DateTime.now().toIso8601String();
+    final now = formatApiDateTime();
 
     await store.addTemplate(OperationTemplate(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
@@ -126,7 +127,12 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
       createdAt: now,
       updatedAt: now,
     ));
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    if (store.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
+      return;
+    }
+    Navigator.pop(context);
   }
 
   @override

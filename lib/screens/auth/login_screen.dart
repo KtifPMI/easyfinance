@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 12),
               AppButton(
-                title: 'Регистрация',
+                title: context.tr('auth.register'),
                 onPressed: () => Navigator.pushNamed(context, '/register'),
                 variant: 'outline',
               ),

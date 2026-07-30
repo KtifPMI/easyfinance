@@ -108,6 +108,7 @@ class Account {
     switch (id) {
       case 1: return 'account';
       case 2: case 16: return 'card';
+      case 7: case 9: return 'loan';
       case 8: return 'credit';
       case 5: return 'savings';
       case 15: return 'electronic';

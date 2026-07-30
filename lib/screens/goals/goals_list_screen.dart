@@ -102,7 +102,7 @@ class GoalsListScreen extends StatelessWidget {
                             if (g.isCompleted)
                               Text('100%', style: TextStyle(fontSize: 11, color: AppColors.success))
                             else
-                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : 'Без срока'}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : context.tr('goals.no_deadline')}', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                             if (!g.isCompleted && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
                               Text(context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),

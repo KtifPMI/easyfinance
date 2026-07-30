@@ -11,8 +11,8 @@
 
 | Параметр | Значение |
 |----------|----------|
-| `app_id` | `7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60` |
-| `secret_key` | `e3df02801d7e7073a0d042f6a040aa043b9fc003` |
+| `app_id` | *(set via `lib/config.dart` / CI secrets — do not commit)* |
+| `secret_key` | *(set via `lib/config.dart` / CI secrets — do not commit)* |
 
 ## Обязательные параметры каждого запроса
 

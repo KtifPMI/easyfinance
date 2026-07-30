@@ -6,6 +6,7 @@ import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/common/simple_bar_chart.dart';
 import '../../components/common/simple_pie_chart.dart';
+import '../../services/currency_rate_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
@@ -63,14 +64,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final opsInMonth = store.operations.where((o) => _inPeriod(o, store) && !o.isDeleted);
-        final monthIncome = opsInMonth.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
-        final monthExpense = opsInMonth.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
+        final opsInMonth = store.operations.where((o) => _inPeriod(o, store) && !o.isDeleted).toList();
+        double amtRub(o) {
+          final acc = store.getAccount(o.accountId);
+          final from = acc?.currency ?? o.currency;
+          return CurrencyRateService.convert(o.amount, from, 'RUB', store.rates);
+        }
+        final monthIncome = opsInMonth.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + amtRub(o));
+        final monthExpense = opsInMonth.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + amtRub(o));
         final balance = store.totalBalance;
 
         final catTotals = store.categories
             .where((c) => c.type == 'expense')
-            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + o.amount)))
+            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + amtRub(o))))
             .where((e) => e.total > 0)
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));

@@ -576,5 +576,10 @@
   "hints.plan": "Orçamentos e metas. Defina limites por categoria para controlar gastos.",
   "hints.calendar": "Toque num dia para ver transações e pagamentos agendados.",
   "hints.reports": "Análise mensal: receitas, despesas, estrutura por categorias.",
-  "hints.more": "Configurações, categorias, tags, sincronização e perfil."
+  "hints.more": "Configurações, categorias, tags, sincronização e perfil.",
+  "auth.login_error": "Falha no login. Tente novamente.",
+  "profile.name": "Nome",
+  "auth.register": "Registrar",
+  "goals.no_deadline": "Sem prazo",
+  "more.debug": "Debug API"
 }

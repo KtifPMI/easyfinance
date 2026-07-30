@@ -576,5 +576,10 @@
   "hints.plan": "Budget e obiettivi. Imposta limiti per categoria per controllare le spese.",
   "hints.calendar": "Tocca un giorno per vedere transazioni e pagamenti programmati.",
   "hints.reports": "Analisi mensile: entrate, uscite, struttura per categorie.",
-  "hints.more": "Impostazioni, categorie, tag, sincronizzazione e profilo."
+  "hints.more": "Impostazioni, categorie, tag, sincronizzazione e profilo.",
+  "auth.login_error": "Accesso non riuscito. Riprova.",
+  "profile.name": "Nome",
+  "auth.register": "Registrati",
+  "goals.no_deadline": "Senza scadenza",
+  "more.debug": "Debug API"
 }

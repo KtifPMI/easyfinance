@@ -32,11 +32,13 @@ class FinHealthIndicators {
 FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operations, List<Budget> budgets, Map<String, double> rates) {
   final now = DateTime.now();
 
-  final moneyVal = _calcMoney(accounts, operations, now, rates);
-  final budgetVal = _calcBudget(budgets, now);
-  final debtVal = _calcDebt(accounts, operations, now);
-  final incomeVal = _calcIncome(operations, now);
-  final finStateVal = _calcFinState(moneyVal, budgetVal, debtVal, incomeVal);
+  final moneyMonths = _calcMoneyMonths(accounts, operations, now, rates);
+  final moneyVal = (moneyMonths / 6.0 * 100).clamp(0.0, 100.0);
+  final budgetVal = _calcBudget(budgets);
+  final debtVal = _calcDebt(accounts, operations, now, rates);
+  final incomeRaw = _calcIncomeRaw(operations, accounts, now, rates);
+  final incomeVal = (incomeRaw / 20.0 * 100).clamp(0.0, 100.0);
+  final finStateVal = _calcFinState(moneyMonths, budgetVal, debtVal, incomeRaw);
 
   return FinHealthIndicators(
     finState: finStateVal,
@@ -44,10 +46,10 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
     budget: budgetVal,
     debt: debtVal,
     income: incomeVal,
-    moneyTip: _moneyTip(moneyVal),
+    moneyTip: _moneyTip(moneyMonths),
     budgetTip: _budgetTip(budgetVal),
     debtTip: _debtTip(debtVal),
-    incomeTip: _incomeTip(incomeVal),
+    incomeTip: _incomeTip(incomeRaw),
     finStateTip: _finStateTip(finStateVal),
   );
 }
@@ -56,12 +58,18 @@ bool _isMoneyAccountType(String type) {
   return type == 'account' || type == 'card' || type == 'savings' || type == 'electronic';
 }
 
-bool _isCreditType(String type) => type == 'credit';
+bool _isCreditType(String type) => type == 'credit' || type == 'loan';
 
-double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime now, Map<String, double> rates) {
+double _opToRub(Operation o, List<Account> accounts, Map<String, double> rates) {
+  final acc = accounts.where((a) => a.id == o.accountId).firstOrNull;
+  final cur = acc?.currency ?? o.currency;
+  return CurrencyRateService.convert(o.amount, cur, 'RUB', rates);
+}
+
+double _calcMoneyMonths(List<Account> accounts, List<Operation> operations, DateTime now, Map<String, double> rates) {
   double moneyBalance = 0;
   for (final a in accounts) {
-    if (!a.includeInTotal) continue;
+    if (!a.includeInTotal || a.isArchived) continue;
     final balanceRub = CurrencyRateService.convert(a.balance, a.currency, 'RUB', rates);
     if (_isMoneyAccountType(a.type)) {
       moneyBalance += balanceRub;
@@ -70,7 +78,7 @@ double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime n
       moneyBalance += balanceRub;
     }
   }
-  if (moneyBalance == 0) return 0;
+  if (moneyBalance <= 0) return 0;
 
   final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
   final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
@@ -81,33 +89,36 @@ double _calcMoney(List<Account> accounts, List<Operation> operations, DateTime n
     return d != null && !d.isBefore(threeMonthsAgo) && !d.isAfter(endOfCurrent);
   }).toList();
 
-  final expenses = threeMonthOps.where((o) => o.type == 'expense' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
-  final creditPayments = _calcCreditPayments(threeMonthOps, accounts, threeMonthsAgo, endOfCurrent);
+  final expenses = threeMonthOps
+      .where((o) => o.type == 'expense')
+      .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
+  final creditPayments = _calcCreditPayments(threeMonthOps, accounts, rates);
   final avgMonthlyExpense = (expenses + creditPayments) / 3;
 
-  if (avgMonthlyExpense == 0) return 6;
-  return ((moneyBalance / avgMonthlyExpense) / 6 * 100).clamp(0, 6 * 100 / 6);
+  if (avgMonthlyExpense <= 0) return 6;
+  return (moneyBalance / avgMonthlyExpense).clamp(0.0, 6.0);
 }
 
-double _calcCreditPayments(List<Operation> ops, accounts, DateTime start, DateTime end) {
+double _calcCreditPayments(List<Operation> ops, List<Account> accounts, Map<String, double> rates) {
   final creditAccountIds = accounts.where((a) => _isCreditType(a.type)).map((a) => a.id).toSet();
   return ops.where((o) =>
     o.type == 'transfer' &&
     o.toAccountId != null &&
     creditAccountIds.contains(o.toAccountId) &&
     !o.isDeleted
-  ).fold<double>(0, (s, o) => s + o.amount);
+  ).fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
 }
 
-double _calcBudget(List<Budget> budgets, DateTime now) {
-  final totalPlanned = budgets.fold<double>(0, (s, b) => s + b.limit);
-  final totalSpent = budgets.fold<double>(0, (s, b) => s + b.spent);
+double _calcBudget(List<Budget> budgets) {
+  final active = budgets.where((b) => !b.isDeleted).toList();
+  final totalPlanned = active.fold<double>(0, (s, b) => s + b.limit);
+  final totalSpent = active.fold<double>(0, (s, b) => s + b.spent);
   if (totalSpent == 0) return 100;
   if (totalPlanned == 0) return 0;
-  return ((1 - totalSpent / totalPlanned) * 100).clamp(0, 100);
+  return ((1 - totalSpent / totalPlanned) * 100).clamp(0.0, 100.0);
 }
 
-double _calcDebt(List<Account> accounts, List<Operation> operations, DateTime now) {
+double _calcDebt(List<Account> accounts, List<Operation> operations, DateTime now, Map<String, double> rates) {
   final startOfMonth = DateTime(now.year, now.month, 1);
   final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
@@ -117,16 +128,18 @@ double _calcDebt(List<Account> accounts, List<Operation> operations, DateTime no
     return d != null && !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
   }).toList();
 
-  final creditPayments = _calcCreditPayments(monthOps, accounts, startOfMonth, endOfMonth);
+  final creditPayments = _calcCreditPayments(monthOps, accounts, rates);
   if (creditPayments == 0) return 100;
 
-  final income = monthOps.where((o) => o.type == 'income' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
+  final income = monthOps
+      .where((o) => o.type == 'income')
+      .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
   if (income == 0) return 0;
 
-  return ((1 - creditPayments / income) * 100).clamp(0, 100);
+  return ((1 - creditPayments / income) * 100).clamp(0.0, 100.0);
 }
 
-double _calcIncome(List<Operation> operations, DateTime now) {
+double _calcIncomeRaw(List<Operation> operations, List<Account> accounts, DateTime now, Map<String, double> rates) {
   final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
   final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
@@ -136,43 +149,44 @@ double _calcIncome(List<Operation> operations, DateTime now) {
     return d != null && !d.isBefore(threeMonthsAgo) && !d.isAfter(endOfCurrent);
   }).toList();
 
-  final income3m = threeMonthOps.where((o) => o.type == 'income' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
+  final income3m = threeMonthOps
+      .where((o) => o.type == 'income')
+      .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
   if (income3m == 0) return 0;
 
-  final expenses3m = threeMonthOps.where((o) => o.type == 'expense' && !o.isDeleted).fold<double>(0, (s, o) => s + o.amount);
-  if (expenses3m == 0) return 20;
+  final expenses3m = threeMonthOps
+      .where((o) => o.type == 'expense')
+      .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
+  final creditPayments = _calcCreditPayments(threeMonthOps, accounts, rates);
+  final totalExp = expenses3m + creditPayments;
+  if (totalExp == 0) return 20;
 
-  return (((income3m / expenses3m) - 1) * 500).clamp(0, 20);
+  return (((income3m / totalExp) - 1) * 500).clamp(0.0, 20.0);
 }
 
-double _calcFinState(double money, double budget, double debt, double income) {
-  double weightedScore(double value, List<double> ranges) {
+double _calcFinState(double moneyMonths, double budget, double debt, double incomeRaw) {
+  double zoneScore(double value, List<double> ranges) {
     for (int i = 0; i < ranges.length - 1; i++) {
       if (value <= ranges[i + 1]) {
-        final idx = i + 1;
-        final normalized = (value - ranges[i]) / (ranges[i + 1] - ranges[i]);
-        return (idx + normalized).clamp(1.0, 3.0);
+        final span = ranges[i + 1] - ranges[i];
+        final normalized = span > 0 ? ((value - ranges[i]) / span).clamp(0.0, 1.0) : 0.0;
+        return (i + 1 + normalized).clamp(1.0, 3.0);
       }
     }
     return 3.0;
   }
 
-  final moneyRanges = [0.0, 2.0, 5.0, 6.0];
-  final budgetRanges = [0.0, 3.0, 15.0, 100.0];
-  final debtRanges = [0.0, 30.0, 60.0, 100.0];
-  final incomeRanges = [0.0, 5.0, 10.0, 20.0];
+  final moneyWeighted = zoneScore(moneyMonths, [0.0, 2.0, 5.0, 6.0]) * 35;
+  final budgetWeighted = zoneScore(budget, [0.0, 3.0, 15.0, 100.0]) * 20;
+  final debtWeighted = zoneScore(debt, [0.0, 30.0, 60.0, 100.0]) * 15;
+  final incomeWeighted = zoneScore(incomeRaw, [0.0, 5.0, 10.0, 20.0]) * 30;
 
-  final moneyWeighted = weightedScore(money, moneyRanges) * 35;
-  final budgetWeighted = weightedScore(budget, budgetRanges) * 20;
-  final debtWeighted = weightedScore(debt, debtRanges) * 15;
-  final incomeWeighted = weightedScore(income, incomeRanges) * 30;
-
-  return ((moneyWeighted + budgetWeighted + debtWeighted + incomeWeighted) / 100 * 100).clamp(0, 100);
+  return ((moneyWeighted + budgetWeighted + debtWeighted + incomeWeighted) / 3).clamp(0.0, 100.0);
 }
 
-String _moneyTip(double value) {
-  if (value <= 2) return 'health.money.tip1';
-  if (value <= 5) return 'health.money.tip2';
+String _moneyTip(double months) {
+  if (months <= 2) return 'health.money.tip1';
+  if (months <= 5) return 'health.money.tip2';
   return 'health.money.tip3';
 }
 
@@ -195,8 +209,8 @@ String _incomeTip(double value) {
 }
 
 String _finStateTip(double value) {
-  if (value <= 100) return 'health.status.tip1';
-  if (value <= 200) return 'health.status.tip2';
+  if (value <= 33) return 'health.status.tip1';
+  if (value <= 66) return 'health.status.tip2';
   return 'health.status.tip3';
 }
 
@@ -210,8 +224,10 @@ double sumByType(List<Operation> operations, String type) {
   return operations.where((o) => o.type == type && !o.isDeleted).fold<double>(0, (sum, o) => sum + o.amount);
 }
 
-double getTotalBalance(List<Account> accounts) {
-  return accounts.where((a) => a.includeInTotal).fold<double>(0, (sum, a) => sum + a.balance);
+double getTotalBalance(List<Account> accounts, Map<String, double> rates) {
+  return accounts
+      .where((a) => a.includeInTotal && !a.isArchived)
+      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(a.balance, a.currency, 'RUB', rates));
 }
 
 double getBudgetPercent(Budget budget) {

@@ -57,10 +57,12 @@ class CurrencyRateService {
   static double convert(
       double amount, String from, String to, Map<String, double> rates) {
     if (from == to) return amount;
-    final rub = amount * (from == 'RUB' ? 1.0 : (rates[from] ?? 0.0));
-    if (to == 'RUB') return rub;
-    final toRate = rates[to] ?? 0.0;
-    return toRate > 0 ? rub / toRate : 0.0;
+    final fromRate = from == 'RUB' ? 1.0 : rates[from];
+    final toRate = to == 'RUB' ? 1.0 : rates[to];
+    if (fromRate == null || fromRate <= 0 || toRate == null || toRate <= 0) {
+      return amount;
+    }
+    return amount * fromRate / toRate;
   }
 
   static Future<double> convertHistorical(

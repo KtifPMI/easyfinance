@@ -604,5 +604,10 @@
   "hints.plan": "Budgets und Ziele. Legen Sie Kategorielimits fest, um Überausgaben zu kontrollieren.",
   "hints.calendar": "Tippen Sie auf einen Tag, um Transaktionen und geplante Zahlungen anzuzeigen.",
   "hints.reports": "Monatsanalyse: Einnahmen, Ausgaben, Ausgabenstruktur nach Kategorien.",
-  "hints.more": "Einstellungen, Kategorien, Tags, Synchronisierung und Profil."
+  "hints.more": "Einstellungen, Kategorien, Tags, Synchronisierung und Profil.",
+  "auth.login_error": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "profile.name": "Name",
+  "auth.register": "Registrieren",
+  "goals.no_deadline": "Ohne Frist",
+  "more.debug": "Debug API"
 }

@@ -10,14 +10,15 @@ import '../screens/reports/reports_screen.dart';
 import '../screens/more/more_screen.dart';
 
 class MainTabs extends StatefulWidget {
-  const MainTabs({super.key});
+  final int initialIndex;
+  const MainTabs({super.key, this.initialIndex = 0});
 
   @override
   State<MainTabs> createState() => _MainTabsState();
 }
 
 class _MainTabsState extends State<MainTabs> {
-  int _index = 0;
+  late int _index;
 
   final _screens = const [
     HomeScreen(),
@@ -34,7 +35,16 @@ class _MainTabsState extends State<MainTabs> {
   @override
   void initState() {
     super.initState();
+    _index = widget.initialIndex.clamp(0, _screens.length - 1);
     WidgetsBinding.instance.addPostFrameCallback((_) => UpdateService.checkAndShow(context));
+  }
+
+  @override
+  void didUpdateWidget(covariant MainTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialIndex != widget.initialIndex) {
+      _index = widget.initialIndex.clamp(0, _screens.length - 1);
+    }
   }
 
   @override

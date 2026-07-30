@@ -5,8 +5,10 @@ import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/account.dart';
+import '../../services/currency_rate_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/format.dart';
 
 class AddAccountScreen extends StatefulWidget {
   final String? accountId;
@@ -73,14 +75,25 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             opsDelta += op.amount;
           } else if (op.type == 'transfer') {
             if (op.accountId == existing.id) opsDelta -= op.amount;
-            if (op.toAccountId == existing.id) opsDelta += op.amount;
+            if (op.toAccountId == existing.id) {
+              if (op.transferAmount != null && op.transferAmount! > 0) {
+                opsDelta += op.transferAmount!;
+              } else {
+                final src = store.getAccount(op.accountId);
+                if (src != null && src.currency != existing.currency) {
+                  opsDelta += CurrencyRateService.convert(op.amount, src.currency, existing.currency, store.rates);
+                } else {
+                  opsDelta += op.amount;
+                }
+              }
+            }
           }
         }
         initBalance = balance - opsDelta;
       }
     }
 
-    final now = DateTime.now().toIso8601String();
+    final now = formatApiDateTime();
     final account = Account(
       id: _isEditing ? widget.accountId! : DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       name: name,

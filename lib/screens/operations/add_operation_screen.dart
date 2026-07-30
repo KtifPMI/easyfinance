@@ -7,10 +7,12 @@ import '../../components/common/date_time_stepper.dart';
 import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../utils/translate_category.dart';
+import '../../utils/format.dart';
 import '../../theme/theme.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
+import '../../services/currency_rate_service.dart';
 
 class AddOperationScreen extends StatefulWidget {
   final String? type;
@@ -55,7 +57,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     return DateTime.now();
   }
 
-  String _dateStr() => _selectedDT.toIso8601String();
+  String _dateStr() => formatApiDateTime(_selectedDT);
 
   String _formatDisplayDate() {
     final m = _selectedDT.month;
@@ -151,16 +153,29 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     final catId = _type != 'transfer' ? (_categoryId ?? store.categories.where((c) => c.type == _type).firstOrNull?.id) : null;
     if (_type != 'transfer' && catId == null) return;
 
+    final accountId = _accountId ?? store.accounts.first.id;
+    final toAccountId = _type == 'transfer' ? _toAccountId : null;
+    double? transferAmount;
+    if (_type == 'transfer' && toAccountId != null) {
+      final src = store.getAccount(accountId);
+      final dst = store.getAccount(toAccountId);
+      if (src != null && dst != null && src.currency != dst.currency) {
+        transferAmount = CurrencyRateService.convert(amount, src.currency, dst.currency, store.rates);
+      }
+    }
+    final clientId = _isEditing ? null : DateTime.now().microsecondsSinceEpoch.toString();
     final op = Operation(
-      id: _isEditing ? widget.operationId! : DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+      id: _isEditing ? widget.operationId! : clientId!,
       type: _type,
       amount: amount,
+      transferAmount: transferAmount,
       date: _dateStr(),
-      accountId: _accountId ?? store.accounts.first.id,
-      toAccountId: _type == 'transfer' ? _toAccountId : null,
+      accountId: accountId,
+      toAccountId: toAccountId,
       categoryId: catId,
       comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
       tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
+      clientId: clientId,
     );
 
     if (_isEditing) {
@@ -442,7 +457,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 color: t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense,
               ),
               title: Text(t.name),
-              subtitle: t.amount > 0 ? Text('${t.type == 'income' ? '+' : '-'}${t.amount.toStringAsFixed(0)} ₽',
+              subtitle: t.amount > 0 ? Text('${t.type == 'income' ? '+' : '-'}${context.read<FinanceStore>().fmt(t.amount)}',
                   style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))) : null,
               onTap: () {
                 Navigator.pop(ctx);

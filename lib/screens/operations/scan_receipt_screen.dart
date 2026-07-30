@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
 import '../../theme/theme.dart';
+import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
 import '../../components/common/screen_scaffold.dart';
 
@@ -328,18 +329,24 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
     final catId = _selectedCategoryId ?? store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
     final now = DateTime.now();
-    final dateStr = _dateCtrl.text.isNotEmpty
-        ? '${_dateCtrl.text}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}'
-        : now.toIso8601String();
+    DateTime opDt = now;
+    if (_dateCtrl.text.isNotEmpty) {
+      final parsed = DateTime.tryParse(_dateCtrl.text);
+      if (parsed != null) {
+        opDt = DateTime(parsed.year, parsed.month, parsed.day, now.hour, now.minute, now.second);
+      }
+    }
+    final clientId = now.microsecondsSinceEpoch.toString();
 
     final op = Operation(
-      id: now.microsecondsSinceEpoch.toRadixString(36),
+      id: clientId,
       type: 'expense',
       amount: amount,
-      date: dateStr,
+      date: formatApiDateTime(opDt),
       accountId: _selectedAccountId ?? store.accounts.first.id,
       categoryId: catId,
       comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : context.tr('scan.receipt_comment', namedArgs: {'store': _parsedStore}),
+      clientId: clientId,
     );
 
     await store.addOperation(op);

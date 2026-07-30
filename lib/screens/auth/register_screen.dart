@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -56,7 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Регистрация'), centerTitle: true),
+      appBar: AppBar(title: Text(context.tr('auth.register')), centerTitle: true),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),

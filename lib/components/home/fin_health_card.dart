@@ -16,10 +16,10 @@ class FinHealthCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final moneyRanges = [0.0, 2.0, 5.0];
+    final moneyRanges = [0.0, 33.0, 83.0];
     final budgetRanges = [0.0, 3.0, 15.0];
     final debtRanges = [0.0, 30.0, 60.0];
-    final incomeRanges = [0.0, 5.0, 10.0];
+    final incomeRanges = [0.0, 25.0, 50.0];
 
     final finRanges = [0.0, 33.0, 66.0];
 

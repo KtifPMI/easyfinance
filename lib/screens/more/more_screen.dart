@@ -24,7 +24,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
       (Icons.description_outlined, context.tr('templates.title'), const TemplatesScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
-      (Icons.bug_report_outlined, 'Debug API', const DebugScreen()),
+      (Icons.bug_report_outlined, context.tr('more.debug'), const DebugScreen()),
     ];
 
     return ScreenScaffold(

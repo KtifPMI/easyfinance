@@ -52,6 +52,11 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
   }
 
   void _navigate(String route) {
+    const tabRoutes = {'/main', '/operations', '/plan', '/calendar', '/reports'};
+    if (tabRoutes.contains(route)) {
+      Navigator.of(context).pushNamedAndRemoveUntil(route, (r) => false);
+      return;
+    }
     Navigator.of(context).pushNamed(route);
   }
 

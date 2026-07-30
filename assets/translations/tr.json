@@ -576,5 +576,10 @@
   "hints.plan": "Bütçeler ve hedefler. Harcamaları kontrol etmek için kategori limitleri belirleyin.",
   "hints.calendar": "Bir güne dokunarak işlemleri ve planlanmış ödemeleri görün.",
   "hints.reports": "Aylık analiz: gelirler, giderler, kategorilere göre harcama dağılımı.",
-  "hints.more": "Ayarlar, kategoriler, etiketler, senkronizasyon ve profil."
+  "hints.more": "Ayarlar, kategoriler, etiketler, senkronizasyon ve profil.",
+  "auth.login_error": "Giriş başarısız. Tekrar deneyin.",
+  "profile.name": "Ad",
+  "auth.register": "Kayıt ol",
+  "goals.no_deadline": "Son tarih yok",
+  "more.debug": "Debug API"
 }

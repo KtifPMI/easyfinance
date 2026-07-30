@@ -576,5 +576,10 @@
   "hints.plan": "Budgets et objectifs. Fixez des limites par catégorie pour contrôler les dépenses.",
   "hints.calendar": "Appuyez sur un jour pour voir les transactions et paiements planifiés.",
   "hints.reports": "Analyse mensuelle : revenus, dépenses, répartition par catégories.",
-  "hints.more": "Paramètres, catégories, étiquettes, synchronisation et profil."
+  "hints.more": "Paramètres, catégories, étiquettes, synchronisation et profil.",
+  "auth.login_error": "Échec de la connexion. Réessayez.",
+  "profile.name": "Nom",
+  "auth.register": "S'inscrire",
+  "goals.no_deadline": "Sans échéance",
+  "more.debug": "Debug API"
 }
