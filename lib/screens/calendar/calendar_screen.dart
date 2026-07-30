@@ -122,30 +122,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
               const SizedBox(height: 16),
               if (_selectedDate != null) ...[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    GestureDetector(
-                      onTap: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: {'date': _selectedDate!.toIso8601String().substring(0, 10)}),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.event_repeat, size: 16, color: AppColors.warning),
-                            const SizedBox(width: 4),
-                            Text(context.tr('calendar.plan'), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.warning)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 8),
               ],
               if (selectedOps.isEmpty && selectedPlanned.isEmpty)

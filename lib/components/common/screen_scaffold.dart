@@ -10,6 +10,7 @@ class ScreenScaffold extends StatelessWidget {
   final bool isLoading;
   final Future<void> Function()? onRefresh;
   final bool showLogo;
+  final Widget? titleWidget;
 
   const ScreenScaffold({
     super.key,
@@ -20,6 +21,7 @@ class ScreenScaffold extends StatelessWidget {
     this.isLoading = false,
     this.onRefresh,
     this.showLogo = true,
+    this.titleWidget,
   });
 
   @override
@@ -27,36 +29,37 @@ class ScreenScaffold extends StatelessWidget {
     final hasTitle = title.trim().isNotEmpty;
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
-        title: hasTitle
-            ? Row(
-                children: [
-                  if (showLogo)
-                    const Padding(
-                      padding: EdgeInsets.only(right: 8),
-                      child: AppLogo(height: 28),
-                    ),
-                  Expanded(
-                    child: Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  if (showLogo)
-                    const SizedBox(width: 81),
-                ],
-              )
-            : (showLogo
-                ? const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 4),
-                      child: AppLogo(height: 28),
-                    ),
+        centerTitle: titleWidget == null,
+        title: titleWidget ??
+            (hasTitle
+                ? Row(
+                    children: [
+                      if (showLogo)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 8),
+                          child: AppLogo(height: 28),
+                        ),
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      if (showLogo)
+                        const SizedBox(width: 81),
+                    ],
                   )
-                : null),
+                : (showLogo
+                    ? const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 4),
+                          child: AppLogo(height: 28),
+                        ),
+                      )
+                    : null)),
         actions: actions,
       ),
       floatingActionButton: floatingActionButton,

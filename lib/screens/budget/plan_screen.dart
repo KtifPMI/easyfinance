@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/progress_bar.dart';
-import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/budget.dart';
 import '../../models/goal.dart';
@@ -22,17 +21,22 @@ class PlanScreen extends StatefulWidget {
   State<PlanScreen> createState() => _PlanScreenState();
 }
 
-class _PlanScreenState extends State<PlanScreen> {
-  final _goalsKey = GlobalKey();
+class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabCtrl;
 
   @override
   void initState() {
     super.initState();
+    _tabCtrl = TabController(length: 2, vsync: this);
     if (widget.scrollToGoals) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Scrollable.ensureVisible(_goalsKey.currentContext!, alignment: 0.1, duration: const Duration(milliseconds: 300));
-      });
+      _tabCtrl.animateTo(1);
     }
+  }
+
+  @override
+  void dispose() {
+    _tabCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -55,186 +59,215 @@ class _PlanScreenState extends State<PlanScreen> {
             child: const Icon(Icons.add),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ScreenHint(hintId: 'plan', text: context.tr('hints.plan')),
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.cardFor(context),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TabBar(
+                  controller: _tabCtrl,
+                  labelColor: AppColors.primary,
+                  unselectedLabelColor: AppColors.textSecondaryFor(context),
+                  indicatorColor: AppColors.primary,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: [
+                    Tab(text: context.tr('budget.budget')),
+                    Tab(text: context.tr('budget.goals')),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabCtrl,
+                  children: [
+                    _buildBudgetsTab(context, store, sb, totalPlanned, totalSpent, serverPercent, monthIncome, monthExpense),
+                    _buildGoalsTab(context, store),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-              if (sb != null || monthIncome > 0 || monthExpense > 0) ...[
-                AppCard(
+  Widget _buildBudgetsTab(BuildContext context, FinanceStore store, dynamic sb, double totalPlanned, double totalSpent, double serverPercent, double monthIncome, double monthExpense) {
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (sb != null || monthIncome > 0 || monthExpense > 0) ...[
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(child: _statBlock(context, context.tr('budget.income'), store.fmt(monthIncome), AppColors.income)),
+                      const SizedBox(width: 12),
+                      Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
+                    ],
+                  ),
+                  if (sb != null) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(context.tr('budget.planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                        Text(store.fmt(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                        Text(store.fmt(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ProgressBar(percent: serverPercent, color: serverPercent > 100 ? AppColors.expense : AppColors.primary),
+                    const SizedBox(height: 4),
+                    Text('${serverPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          ...store.budgets.map((b) {
+            final cat = store.getCategory(b.categoryId);
+            final percent = getBudgetPercent(b);
+            final color = _parseColor(cat?.color ?? '#6B7280');
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: GestureDetector(
+                onTap: () => _editBudgetDialog(context, b, store),
+                child: AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+                          Expanded(
+                            child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                          ),
                           const SizedBox(width: 8),
-                          Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (ctx) => AlertDialog(
+                                  title: Text(context.tr('budget.confirm_delete')),
+                                  content: Text(b.name ?? tCat(context, cat?.name ?? '')),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+                                    TextButton(
+                                      onPressed: () {
+                                        store.deleteBudget(b.id);
+                                        Navigator.pop(ctx);
+                                      },
+                                      child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
+                          ),
                         ],
                       ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(child: _statBlock(context, context.tr('budget.income'), store.fmt(monthIncome), AppColors.income)),
-                            const SizedBox(width: 12),
-                            Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
-                          ],
-                        ),
-                      if (sb != null) ...[
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(context.tr('budget.planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                            Text(store.fmt(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                            Text(store.fmt(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ProgressBar(percent: serverPercent, color: serverPercent > 100 ? AppColors.expense : AppColors.primary),
-                        const SizedBox(height: 4),
-                        Text('${serverPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                      ],
+                      const SizedBox(height: 8),
+                      ProgressBar(percent: percent, color: color),
+                      const SizedBox(height: 4),
+                      Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
+              ),
+            );
+          }),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(context.tr('budget.budget'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                ],
-              ),
-                  const SizedBox(height: 12),
-                  ...store.budgets.map((b) {
-                    final cat = store.getCategory(b.categoryId);
-                    final percent = getBudgetPercent(b);
-                    final color = _parseColor(cat?.color ?? '#6B7280');
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: GestureDetector(
-                        onTap: () => _editBudgetDialog(context, b, store),
-                        child: AppCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                                  const SizedBox(width: 8),
-                                  GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        barrierDismissible: false,
-                                        builder: (ctx) => AlertDialog(
-                                          title: Text(context.tr('budget.confirm_delete')),
-                                          content: Text(b.name ?? tCat(context, cat?.name ?? '')),
-                                          actions: [
-                                            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
-                                            TextButton(
-                                              onPressed: () {
-                                                store.deleteBudget(b.id);
-                                                Navigator.pop(ctx);
-                                              },
-                                              child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              ProgressBar(percent: percent, color: color),
-                              const SizedBox(height: 4),
-                              Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                            ],
+  Widget _buildGoalsTab(BuildContext context, FinanceStore store) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          ...store.goals.map((g) {
+            final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: GestureDetector(
+                onTap: () => _editGoalDialog(context, g, store),
+                child: AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(_goalIcon(g.icon), color: _parseColor(g.color), size: 24),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                if (g.isCompleted)
+                                  Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
+                                else
+                                  Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                              ],
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                          if (!g.isCompleted)
+                            GestureDetector(
+                              onTap: () => _showDepositDialog(context, g, store),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
+                                child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                          IconButton(
+                            icon: Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                            onPressed: () => _confirmDelete(context, g, store),
+                          ),
+                        ],
                       ),
-                    );
-                  }),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(context.tr('budget.goals'), key: _goalsKey, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                ],
+                      const SizedBox(height: 8),
+                      ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
+                      const SizedBox(height: 4),
+                      Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 12),
-                  ...store.goals.map((g) {
-                    final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: GestureDetector(
-                        onTap: () => _editGoalDialog(context, g, store),
-                        child: AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(_goalIcon(g.icon), color: _parseColor(g.color), size: 24),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                                  if (g.isCompleted)
-                                    Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
-                                  else
-                                    Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            if (!g.isCompleted)
-                              GestureDetector(
-                                onTap: () => _showDepositDialog(context, g, store),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-                                  child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
-                                ),
-                              ),
-                            IconButton(
-                              icon: Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                              onPressed: () => _confirmDelete(context, g, store),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
-                        const SizedBox(height: 4),
-                        Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                      ],
-                    ),
-                  ),
-                  ),
-                );
-                }),
-            ],
-          ),
-        );
-      },
+            );
+          }),
+          const SizedBox(height: 24),
+        ],
+      ),
     );
   }
 

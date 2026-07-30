@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/calculator_input.dart';
-import '../../components/common/date_time_stepper.dart';
 import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../utils/translate_category.dart';
@@ -65,38 +64,80 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     return '${_selectedDT.day} ${context.tr(keys[m - 1])}. ${_selectedDT.year}, ${_selectedDT.hour.toString().padLeft(2, '0')}:${_selectedDT.minute.toString().padLeft(2, '0')}';
   }
 
-  void _showDateTimePicker() {
-    showModalBottomSheet(
+  void _showDateTimePicker() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _selectedDT,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      locale: context.locale,
+    );
+    if (date == null || !mounted) return;
+
+    int hour = _selectedDT.hour;
+    int minute = _selectedDT.minute;
+
+    await showModalBottomSheet(
       context: context,
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DateTimeStepper(
-              initial: _selectedDT,
-              onChanged: (dt) => _selectedDT = dt,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  setState(() {});
-                  Navigator.pop(ctx);
-                },
-                child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(context.tr('operations.select_time'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _timeStepper(() => setSheetState(() { if (hour < 23) hour++; }), () => setSheetState(() { if (hour > 0) hour--; }), hour, 23),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(':', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textFor(context))),
+                  ),
+                  _timeStepper(() => setSheetState(() { if (minute < 59) minute++; }), () => setSheetState(() { if (minute > 0) minute--; }), minute, 59),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-          ],
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    setState(() => _selectedDT = DateTime(date.year, date.month, date.day, hour, minute));
+                    Navigator.pop(ctx);
+                  },
+                  child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _timeStepper(VoidCallback onUp, VoidCallback onDown, int current, int max) {
+    return Column(
+      children: [
+        GestureDetector(onTap: onUp, child: Icon(Icons.keyboard_arrow_up, size: 28, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 4),
+        Container(
+          width: 60,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Theme.of(context).dividerColor),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(current.toString().padLeft(2, '0'), textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        ),
+        const SizedBox(height: 4),
+        GestureDetector(onTap: current > 0 ? onDown : null, child: Icon(Icons.keyboard_arrow_down, size: 28, color: current > 0 ? AppColors.textSecondaryFor(context) : AppColors.textDisabledFor(context))),
+      ],
     );
   }
 
@@ -210,6 +251,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
         return ScreenScaffold(
           title: _isEditing ? context.tr('operations.edit') : context.tr('operations.add'),
+          showLogo: false,
           actions: [
             if (!_isEditing)
               IconButton(

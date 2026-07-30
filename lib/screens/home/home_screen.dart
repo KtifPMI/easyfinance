@@ -17,6 +17,7 @@ import '../accounts/add_account_screen.dart';
 import '../accounts/accounts_screen.dart';
 import '../budget/plan_screen.dart';
 import '../recommendations/recommendations_screen.dart';
+import '../../components/home/quick_actions.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,13 +31,36 @@ class HomeScreen extends StatelessWidget {
 
         return ScreenScaffold(
           title: '',
-          actions: [
-            IconButton(
-              icon: Icon(Icons.smart_toy_outlined, color: AppColors.textSecondaryFor(context), size: 22),
-              onPressed: () => Navigator.pushNamed(context, '/ai-assistant'),
-              tooltip: 'AI Assistant',
-            ),
-          ],
+          showLogo: false,
+          titleWidget: Row(
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(left: 4),
+                child: AppLogo(height: 28),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/ai-assistant'),
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.cardFor(context),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        Icon(Icons.smart_toy_outlined, size: 18, color: AppColors.textSecondaryFor(context)),
+                        const SizedBox(width: 8),
+                        Text(context.tr('ai_assistant.placeholder'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
           isLoading: store.isLoading,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,6 +76,13 @@ class HomeScreen extends StatelessWidget {
               ],
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
+              QuickActions(
+                onAddIncome: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'income'}),
+                onAddExpense: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'}),
+                onAddTransfer: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'transfer'}),
+                onScan: () => Navigator.pushNamed(context, '/scan-receipt'),
+              ),
+              const SizedBox(height: 16),
               _buildRatesSection(context, store),
               _buildRecommendationsSection(context, store),
               _buildBudgetsSection(context, store),
@@ -65,6 +96,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBalanceBanner(BuildContext context, FinanceStore store) {
+    final savings = store.monthIncome - store.monthExpense;
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen())),
       child: Container(
@@ -86,16 +118,31 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
-                _chip('+${store.fmt(store.monthIncome)}', AppColors.success),
-                const SizedBox(width: 12),
-                _chip('-${store.fmt(store.monthExpense)}', AppColors.expense),
+                _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
+                const SizedBox(width: 16),
+                _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
+                const SizedBox(width: 16),
+                _statLine(context.tr('home.savings'), store.fmt(savings), savings >= 0 ? AppColors.success : AppColors.expense),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _statLine(String label, String amount, Color color) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(color: Colors.white60, fontSize: 11)),
+          const SizedBox(height: 2),
+          Text(amount, style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }
@@ -409,11 +456,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBudgetsSection(BuildContext context, FinanceStore store) {
-    final now = DateTime.now();
-    final monthOps = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, now)).toList();
-    final income = monthOps.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
-    final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
-    final savings = income - expense;
     final pendingCount = store.operations.where((op) => op.isPending).length;
 
     final sb = store.serverBudget;
@@ -452,25 +494,11 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-        AppCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(child: _statBlock(context, context.tr('home.income'), store.fmt(income), AppColors.income)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _statBlock(context, context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(child: _statBlock(context, context.tr('home.savings'), store.fmt(savings), savings >= 0 ? AppColors.success : AppColors.expense)),
-                ],
-              ),
-              if (sb != null || totalPlanned > 0) ...[
-                const SizedBox(height: 16),
+        if (sb != null || totalPlanned > 0)
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -492,21 +520,9 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text('${budgetPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
               ],
-            ],
+            ),
           ),
-        ),
         const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _statBlock(BuildContext context, String label, String formattedAmount, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(height: 4),
-        Text(formattedAmount, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
       ],
     );
   }
@@ -531,8 +547,10 @@ class HomeScreen extends StatelessWidget {
           final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: AppCard(
-              child: Column(
+            child: GestureDetector(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlanScreen(scrollToGoals: true))),
+              child: AppCard(
+                child: Column(
                 children: [
                   Row(
                     children: [
@@ -549,6 +567,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           );
         }),
         const SizedBox(height: 16),
@@ -573,17 +592,8 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e, store)),
-        _manageButton(context),
         const SizedBox(height: 16),
       ],
-    );
-  }
-
-  Widget _chip(String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
-      child: Text(text, style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
     );
   }
 
@@ -614,14 +624,6 @@ class HomeScreen extends StatelessWidget {
           Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
         ],
       ),
-    ),
-  );
-
-  Widget _manageButton(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 4),
-    child: TextButton(
-      onPressed: () => Navigator.pushNamed(context, '/planned-payments'),
-      child: Text(context.tr('home.manage_planned'), style: TextStyle(fontSize: 13, color: AppColors.primary)),
     ),
   );
 
