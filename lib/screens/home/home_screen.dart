@@ -124,7 +124,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
+                _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.income),
                 const SizedBox(width: 16),
                 _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
               ],
