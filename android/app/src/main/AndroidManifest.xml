@@ -9,7 +9,7 @@
     <application
         android:label="EasyFinance"
         android:name="${applicationName}"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
 
         <activity
