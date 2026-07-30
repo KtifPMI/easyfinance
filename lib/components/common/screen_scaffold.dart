@@ -27,23 +27,36 @@ class ScreenScaffold extends StatelessWidget {
     final hasTitle = title.trim().isNotEmpty;
     return Scaffold(
       appBar: AppBar(
-        title: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (hasTitle)
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-              ),
-            if (showLogo)
-              const Positioned(
-                left: 4,
-                child: AppLogo(height: 28),
-              ),
-          ],
-        ),
+        centerTitle: true,
+        title: hasTitle
+            ? Row(
+                children: [
+                  if (showLogo)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child: AppLogo(height: 28),
+                    ),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  if (showLogo)
+                    const SizedBox(width: 81),
+                ],
+              )
+            : (showLogo
+                ? const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: AppLogo(height: 28),
+                    ),
+                  )
+                : null),
         actions: actions,
       ),
       floatingActionButton: floatingActionButton,
