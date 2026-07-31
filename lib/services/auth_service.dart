@@ -8,6 +8,7 @@ class AuthService {
   static const String _userIdKey = 'easyfinance_user_id';
   static const String _appIdKey = 'easyfinance_app_id';
   static const String _secretKeyKey = 'easyfinance_secret_key';
+  static const String _webSessionKey = 'easyfinance_web_session';
 
   AuthService(this._apiClient);
 
@@ -28,6 +29,10 @@ class AuthService {
 
     if (token != null && appId != null && secretKey != null) {
       _apiClient.setAuth(accessToken: token, userId: userId);
+      final webSession = prefs.getString(_webSessionKey);
+      if (webSession != null && webSession.isNotEmpty) {
+        _apiClient.setWebSession(webSession);
+      }
       _apiService = ApiService(_apiClient);
       return true;
     }
@@ -39,8 +44,12 @@ class AuthService {
     required String secretKey,
     required String accessToken,
     String? userId,
+    String? webSession,
   }) async {
     _apiClient.setAuth(accessToken: accessToken, userId: userId);
+    if (webSession != null && webSession.isNotEmpty) {
+      _apiClient.setWebSession(webSession);
+    }
     _apiService = ApiService(_apiClient);
 
     final prefs = await SharedPreferences.getInstance();
@@ -48,6 +57,9 @@ class AuthService {
     if (userId != null) await prefs.setString(_userIdKey, userId);
     await prefs.setString(_appIdKey, appId);
     await prefs.setString(_secretKeyKey, secretKey);
+    if (webSession != null && webSession.isNotEmpty) {
+      await prefs.setString(_webSessionKey, webSession);
+    }
   }
 
   Future<void> logout() async {
@@ -58,5 +70,6 @@ class AuthService {
     await prefs.remove(_userIdKey);
     await prefs.remove(_appIdKey);
     await prefs.remove(_secretKeyKey);
+    await prefs.remove(_webSessionKey);
   }
 }

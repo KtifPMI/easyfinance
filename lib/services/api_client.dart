@@ -28,6 +28,10 @@ class ApiClient {
 
   String? get webSessionId => _webSessionId;
 
+  void setWebSession(String? id) {
+    _webSessionId = id;
+  }
+
   void setAuth({required String accessToken, String? userId}) {
     _accessToken = accessToken;
     _userId = userId;

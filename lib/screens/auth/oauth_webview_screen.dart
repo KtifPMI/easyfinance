@@ -100,6 +100,18 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
     }
   }
 
+  /// Extracts the website session (PHPSESSID) from the webview cookie jar.
+  /// The site sets it on easyfinance.ru after the user signs in.
+  Future<String?> _captureWebSession() async {
+    try {
+      final cookies = await WebViewCookieManager().getCookies('https://easyfinance.ru');
+      for (final c in cookies) {
+        if (c.name == 'PHPSESSID' && c.value.isNotEmpty) return c.value;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   Future<void> _handleToken(String token) async {
     try {
       final store = context.read<FinanceStore>();
@@ -112,12 +124,15 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         store.saveUser(user);
       }
 
+      final webSession = await _captureWebSession();
+
       await plannedStore.clear();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
         accessToken: token,
         userId: user?.id,
+        webSession: webSession,
       );
       await store.fetchAllData();
       NotificationService().rescheduleAll();
@@ -152,12 +167,15 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         store.saveUser(user);
       }
 
+      final webSession = await _captureWebSession();
+
       await plannedStore.clear();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
         accessToken: token,
         userId: user?.id,
+        webSession: webSession,
       );
       await store.fetchAllData();
       NotificationService().rescheduleAll();
