@@ -56,24 +56,56 @@ class ScreenScaffold extends StatelessWidget {
   /// stays centered regardless of a back button, the logo, or actions.
   Widget _buildTitle(BuildContext context) {
     final canPop = Navigator.of(context).canPop();
-    final leading = (canPop && !forceLogo)
-        ? const BackButton()
-        : (showLogo ? const AppLogo(height: 28) : null);
-    final trailing = (actions == null || actions!.isEmpty)
-        ? null
-        : Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: actions!,
-          );
+
+    Widget left;
+    Widget right;
+
+    if (forceLogo && canPop) {
+      left = const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          BackButton(),
+          AppLogo(height: 28),
+        ],
+      );
+      right = const Visibility(
+        visible: false,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            BackButton(),
+            AppLogo(height: 28),
+          ],
+        ),
+      );
+    } else {
+      final leading = canPop
+          ? const BackButton()
+          : (showLogo ? const AppLogo(height: 28) : null);
+      final trailing = (actions == null || actions!.isEmpty)
+          ? null
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: actions!,
+            );
+      left = SizedBox(
+        width: kToolbarHeight,
+        child: Center(child: leading),
+      );
+      right = SizedBox(
+        width: kToolbarHeight,
+        child: Center(child: trailing),
+      );
+    }
 
     return SizedBox(
       width: double.infinity,
       child: Row(
         children: [
-          SizedBox(
-            width: kToolbarHeight,
-            child: Center(child: leading),
-          ),
+          left,
           Expanded(
             child: Center(
               child: Text(
@@ -83,10 +115,7 @@ class ScreenScaffold extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(
-            width: kToolbarHeight,
-            child: Center(child: trailing),
-          ),
+          right,
         ],
       ),
     );
