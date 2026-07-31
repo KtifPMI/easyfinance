@@ -330,7 +330,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(color: AppColors.primaryLight, borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(color: AppColors.primaryLightFor(context), borderRadius: BorderRadius.circular(16)),
           child: Text(label, style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
         ),
       ),

@@ -138,7 +138,7 @@
   "categories.cancel": "İptal",
   "categories.confirm_delete": "Kategori silinsin mi?",
 
-  "budget.title": "Bütçe ve Hedefler",
+  "budget.title": "Plan",
   "budget.budget": "Bütçe",
   "budget.goals": "Hedefler",
   "budget.new": "Yeni Bütçe",
@@ -499,7 +499,7 @@
   "currency.sek_name": "İsveç kronu",
   "currency.nok_name": "Norveç kronu",
 
-  "settings.recommendations": "Öneri Ayarları",
+  "settings.recommendations": "Ayarlar",
   "rec_settings.food": "Yiyecek",
   "rec_settings.food_high": "Yüksek eşik (risk)",
   "rec_settings.food_medium": "Orta eşik (uyarı)",

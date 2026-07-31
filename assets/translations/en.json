@@ -142,7 +142,7 @@
   "categories.cancel": "Cancel",
   "categories.confirm_delete": "Delete category?",
 
-  "budget.title": "Budget & Goals",
+  "budget.title": "Plan",
   "budget.budget": "Budget",
   "budget.goals": "Goals",
   "budget.new": "New Budget",
@@ -488,7 +488,7 @@
   "templates.cancel": "Cancel",
   "templates.confirm_delete": "Delete template?",
 
-  "settings.recommendations": "Recommendation Settings",
+  "settings.recommendations": "Settings",
 
   "rec_settings.food": "Food",
   "rec_settings.food_high": "High threshold (risk)",

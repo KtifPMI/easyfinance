@@ -138,7 +138,7 @@
   "categories.cancel": "Annuler",
   "categories.confirm_delete": "Supprimer la catégorie ?",
 
-  "budget.title": "Budget et Objectifs",
+  "budget.title": "Plan",
   "budget.budget": "Budget",
   "budget.goals": "Objectifs",
   "budget.new": "Nouveau Budget",
@@ -499,7 +499,7 @@
   "currency.sek_name": "Couronne suédoise",
   "currency.nok_name": "Couronne norvégienne",
 
-  "settings.recommendations": "Paramètres des Recommandations",
+  "settings.recommendations": "Paramètres",
   "rec_settings.food": "Alimentation",
   "rec_settings.food_high": "Seuil élevé (risque)",
   "rec_settings.food_medium": "Seuil moyen (avertissement)",

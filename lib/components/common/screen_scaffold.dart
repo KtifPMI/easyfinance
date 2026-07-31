@@ -32,24 +32,27 @@ class ScreenScaffold extends StatelessWidget {
         centerTitle: titleWidget == null,
         title: titleWidget ??
             (hasTitle
-                ? Row(
-                    children: [
-                      if (showLogo)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 8),
-                          child: AppLogo(height: 28),
+                ? SizedBox(
+                    width: double.infinity,
+                    child: Stack(
+                      children: [
+                        if (showLogo)
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.only(left: 4, right: 8),
+                              child: AppLogo(height: 28),
+                            ),
+                          ),
+                        Center(
+                          child: Text(
+                            title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      Expanded(
-                        child: Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      if (showLogo)
-                        const SizedBox(width: 81),
-                    ],
+                      ],
+                    ),
                   )
                 : (showLogo
                     ? const Align(

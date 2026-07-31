@@ -138,7 +138,7 @@
   "categories.cancel": "Cancelar",
   "categories.confirm_delete": "¿Eliminar categoría?",
 
-  "budget.title": "Presupuesto y Metas",
+  "budget.title": "Plan",
   "budget.budget": "Presupuesto",
   "budget.goals": "Metas",
   "budget.new": "Nuevo Presupuesto",
@@ -524,7 +524,7 @@
   "currency.sek_name": "Corona sueca",
   "currency.nok_name": "Corona noruega",
 
-  "settings.recommendations": "Ajustes de Recomendaciones",
+  "settings.recommendations": "Ajustes",
   "rec_settings.food": "Comida",
   "rec_settings.food_high": "Umbral alto (riesgo)",
   "rec_settings.food_medium": "Umbral medio (aviso)",

@@ -138,7 +138,7 @@
   "categories.cancel": "Abbrechen",
   "categories.confirm_delete": "Kategorie löschen?",
 
-  "budget.title": "Budget & Ziele",
+  "budget.title": "Plan",
   "budget.budget": "Budget",
   "budget.goals": "Ziele",
   "budget.new": "Neues Budget",
@@ -527,7 +527,7 @@
   "currency.sek_name": "Schwedische Krone",
   "currency.nok_name": "Norwegische Krone",
 
-  "settings.recommendations": "Empfehlungseinstellungen",
+  "settings.recommendations": "Einstellungen",
   "rec_settings.food": "Essen",
   "rec_settings.food_high": "Hoher Schwellenwert (Risiko)",
   "rec_settings.food_medium": "Mittlerer Schwellenwert (Warnung)",

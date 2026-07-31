@@ -138,7 +138,7 @@
   "categories.cancel": "Cancelar",
   "categories.confirm_delete": "Eliminar categoria?",
 
-  "budget.title": "Orçamento e Metas",
+  "budget.title": "Plano",
   "budget.budget": "Orçamento",
   "budget.goals": "Metas",
   "budget.new": "Novo Orçamento",
@@ -499,7 +499,7 @@
   "currency.sek_name": "Coroa sueca",
   "currency.nok_name": "Coroa norueguesa",
 
-  "settings.recommendations": "Configurações de Recomendações",
+  "settings.recommendations": "Configurações",
   "rec_settings.food": "Alimentação",
   "rec_settings.food_high": "Limite alto (risco)",
   "rec_settings.food_medium": "Limite médio (aviso)",
