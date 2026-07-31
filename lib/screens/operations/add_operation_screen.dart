@@ -6,6 +6,7 @@ import '../../components/common/calculator_input.dart';
 import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../utils/translate_category.dart';
+import '../../utils/category_icons.dart';
 import '../../utils/format.dart';
 import '../../theme/theme.dart';
 import 'package:provider/provider.dart';
@@ -324,7 +325,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                         final parent = store.categories.where((p) => p.id == c.parentId);
                         return parent.isNotEmpty ? parent.first.name : '';
                       },
-                      iconBuilder: (id) => _categoryIcon(store.categories.firstWhere((c) => c.id == id).icon),
+                      iconBuilder: (id) => categoryIconFor(store.categories.firstWhere((c) => c.id == id), allCategories: store.categories),
                       colorBuilder: (id) => _hexToColor(store.categories.firstWhere((c) => c.id == id).color),
                       selectedId: _categoryId,
                     );
@@ -436,25 +437,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard,
     };
     return map[icon] ?? Icons.account_balance_wallet;
-  }
-
-  IconData _categoryIcon(String icon) {
-    const map = {
-      'food': Icons.restaurant, 'transport': Icons.directions_car,
-      'housing': Icons.home, 'shopping': Icons.shopping_bag,
-      'health': Icons.local_hospital, 'entertainment': Icons.sports_esports,
-      'education': Icons.school, 'travel': Icons.flight,
-      'salary': Icons.work, 'freelance': Icons.laptop, 'business': Icons.business,
-      'gift': Icons.card_giftcard, 'car': Icons.directions_car,
-      'sports': Icons.fitness_center, 'dining': Icons.restaurant,
-      'utilities': Icons.bolt, 'internet': Icons.wifi,
-      'clothing': Icons.checkroom, 'children': Icons.child_care,
-      'pets': Icons.pets, 'taxes': Icons.receipt_long,
-      'insurance': Icons.shield, 'invest': Icons.trending_up,
-      'rent': Icons.home_work, 'other_income': Icons.add_circle,
-      'other_expense': Icons.remove_circle, 'help': Icons.help_outline,
-    };
-    return map[icon] ?? Icons.category;
   }
 
   Color _hexToColor(String hex) {
