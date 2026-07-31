@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   /// Brand green (logo gradient end)
-  static const primary = Color(0xFF82E687);
+  static const primary = Color(0xFF2E7D32);
   /// Darker green for text-on-light / pressed states
-  static const primaryDark = Color(0xFF3DB85A);
-  static const primaryLight = Color(0xFFE9FBEB);
+  static const primaryDark = Color(0xFF1B5E20);
+  static const primaryLight = Color(0xFFE8F5E9);
   /// Brand teal (logo gradient start)
   static const teal = Color(0xFF6CD1C5);
   static const accent = teal;
 
-  static const income = Color(0xFF3DB85A);
+  static const income = Color(0xFF2E7D32);
   static const expense = Color(0xFFD32F2F);
   static const transfer = teal;
   static const background = Color(0xFFF5F8F8);
@@ -20,7 +20,7 @@ class AppColors {
   static const border = Color(0xFFE5E7EB);
   static const warning = Color(0xFFF59E0B);
   static const danger = Color(0xFFDC2626);
-  static const success = Color(0xFF82E687);
+  static const success = Color(0xFF16A34A);
   static const white = Color(0xFFFFFFFF);
 
   static const darkBackground = Color(0xFF121212);
@@ -30,10 +30,10 @@ class AppColors {
   static const darkBorder = Color(0xFF333333);
   static const darkAppBar = Color(0xFF1E1E1E);
   static const darkBottomBar = Color(0xFF1E1E1E);
-  static const darkPrimaryLight = Color(0xFF1B3A24);
+  static const darkPrimaryLight = Color(0xFF1B3A1D);
 
   /// Text color that stays readable on [primary] fill
-  static const onPrimary = Color(0xFF0F2A14);
+  static const onPrimary = Color(0xFFFFFFFF);
 
   static Color backgroundFor(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? darkBackground : background;
