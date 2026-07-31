@@ -266,6 +266,8 @@
   "auth.error": "Erro: {message}",
   "auth.error_generic": "Erro de autorização: {details}",
   "auth.title_webview": "Autorização EasyFinance",
+  "auth.session_expired": "Sessão expirada",
+  "auth.sign_in_again": "Entrar novamente",
   "auth.setup_pin": "Configurar código PIN",
   "auth.enter_pin": "Introduzir código PIN",
   "auth.enter_new_pin": "Introduzir novo PIN",

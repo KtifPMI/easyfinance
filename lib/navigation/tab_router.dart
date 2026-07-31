@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:provider/provider.dart';
 import '../services/update_service.dart';
+import '../store/finance_store.dart';
+import '../theme/theme.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/operations/operations_list_screen.dart';
 import '../screens/budget/plan_screen.dart';
@@ -57,8 +60,14 @@ class _MainTabsState extends State<MainTabs> {
       context.tr('tab.reports'),
       context.tr('tab.more'),
     ];
+    final authExpired = context.watch<FinanceStore>().authExpired;
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
+      body: Column(
+        children: [
+          if (authExpired) _buildSessionExpiredBanner(context),
+          Expanded(child: IndexedStack(index: _index, children: _screens)),
+        ],
+      ),
       bottomNavigationBar: ClipRRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -74,6 +83,37 @@ class _MainTabsState extends State<MainTabs> {
               activeIcon: Icon(_activeIcons[i]),
               label: labels[i],
             )),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSessionExpiredBanner(BuildContext context) {
+    return Material(
+      color: AppColors.danger.withValues(alpha: 0.1),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Icon(Icons.lock_outline, size: 18, color: AppColors.danger),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  context.tr('auth.session_expired'),
+                  style: TextStyle(fontSize: 13, color: AppColors.danger),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/oauth'),
+                child: Text(
+                  context.tr('auth.sign_in_again'),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.danger),
+                ),
+              ),
+            ],
           ),
         ),
       ),

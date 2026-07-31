@@ -15,11 +15,26 @@ class ApiClient {
 
   final http.Client _httpClient;
 
+  /// Invoked when the server reports that the access token is invalid/expired.
+  /// Lets the UI show a "session expired" banner and offer to sign in again.
+  void Function()? onAuthExpired;
+
   ApiClient({
     required this.appId,
     required this.secretKey,
     http.Client? httpClient,
   }) : _httpClient = httpClient ?? http.Client();
+
+  bool _isAuthExpiredError(ApiException e) {
+    final code = e.code;
+    if (code == '68' || code == '5') return true;
+    final msg = e.message.toLowerCase();
+    return msg.contains('access token') || msg.contains('authorization failed');
+  }
+
+  void _notifyAuthExpired(ApiException e) {
+    if (_isAuthExpiredError(e)) onAuthExpired?.call();
+  }
 
   String? get accessToken => _accessToken;
   String? get userId => _userId;
@@ -279,7 +294,12 @@ class ApiClient {
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
     final response = await _httpClient.get(uri).timeout(_timeout);
-    return _handleResponse(response);
+    try {
+      return _handleResponse(response);
+    } on ApiException catch (e) {
+      _notifyAuthExpired(e);
+      rethrow;
+    }
   }
 
   /// Sends a support/feedback message through the website form endpoint.
@@ -374,7 +394,12 @@ class ApiClient {
           .post(uri, body: encodedBody, headers: {'Content-Type': 'application/json; charset=utf-8'})
           .timeout(_timeout);
     }
-    return _handleResponse(response);
+    try {
+      return _handleResponse(response);
+    } on ApiException catch (e) {
+      _notifyAuthExpired(e);
+      rethrow;
+    }
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {

@@ -44,14 +44,30 @@ class FinanceStore extends ChangeNotifier {
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
+  bool _authExpired = false;
   String? _error;
   Future<void> _cacheReady = Future.value();
   Future<void> _templatesReady = Future.value();
 
   FinanceStore({required this.authService, required this.apiClient}) {
+    apiClient.onAuthExpired = markAuthExpired;
     _cacheReady = _loadFromCache();
     _templatesReady = _loadTemplates();
     _loadRecPrefs();
+  }
+
+  bool get authExpired => _authExpired;
+
+  void markAuthExpired() {
+    if (_authExpired) return;
+    _authExpired = true;
+    notifyListeners();
+  }
+
+  void clearAuthExpired() {
+    if (!_authExpired) return;
+    _authExpired = false;
+    notifyListeners();
   }
 
   Future<void> _loadRecPrefs() async {

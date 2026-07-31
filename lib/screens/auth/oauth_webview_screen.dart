@@ -127,6 +127,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       final webSession = await _captureWebSession();
 
       await plannedStore.clear();
+      store.clearAuthExpired();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,
@@ -170,6 +171,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       final webSession = await _captureWebSession();
 
       await plannedStore.clear();
+      store.clearAuthExpired();
       await store.authService.saveCredentials(
         appId: store.apiClient.appId,
         secretKey: store.apiClient.secretKey,

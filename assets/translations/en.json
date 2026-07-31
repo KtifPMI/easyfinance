@@ -322,6 +322,8 @@
   "auth.error": "Error: {message}",
   "auth.error_generic": "Authorization error: {details}",
   "auth.title_webview": "EasyFinance Authorization",
+  "auth.session_expired": "Session expired",
+  "auth.sign_in_again": "Sign in again",
   "auth.setup_pin": "Set up PIN code",
   "auth.enter_pin": "Enter PIN code",
   "auth.enter_new_pin": "Enter new PIN",
