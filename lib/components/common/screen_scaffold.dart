@@ -3,6 +3,9 @@ import 'app_logo.dart';
 import 'skeleton_loader.dart';
 
 class ScreenScaffold extends StatelessWidget {
+  /// Width that fits the logo at its natural size (AppLogo height 28 -> ~73px).
+  static const double _logoSlotWidth = 80;
+
   final String title;
   final Widget child;
   final List<Widget>? actions;
@@ -91,12 +94,15 @@ class ScreenScaffold extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: actions!,
             );
+      final double slot = canPop
+          ? kToolbarHeight
+          : (showLogo ? _logoSlotWidth : kToolbarHeight);
       left = SizedBox(
-        width: kToolbarHeight,
+        width: slot,
         child: Center(child: leading),
       );
       right = SizedBox(
-        width: kToolbarHeight,
+        width: slot,
         child: Center(child: trailing),
       );
     }
