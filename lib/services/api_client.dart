@@ -283,12 +283,13 @@ class ApiClient {
   }
 
   /// Sends a support/feedback message through the website form endpoint.
-  Future<String> sendFeedback({required String title, required String message}) async {
+  Future<String> sendFeedback({required String title, required String message, required String email}) async {
     final uri = Uri.parse('https://easyfinance.ru/feedback/add_message/?responseMode=json');
     final body = <String, String>{
       'responseMode': 'json',
       'title': title,
       'msg': message,
+      'email': email,
       'cheight': '0',
       'cwidth': '0',
       'width': '0',

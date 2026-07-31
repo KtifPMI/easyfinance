@@ -36,7 +36,8 @@ class _SupportScreenState extends State<SupportScreen> {
     setState(() => _sending = true);
     try {
       final api = context.read<FinanceStore>().apiClient;
-      final result = await api.sendFeedback(title: title, message: msg);
+      final email = context.read<FinanceStore>().currentUser?.email ?? 'demo@easyfinance.ru';
+      final result = await api.sendFeedback(title: title, message: msg, email: email);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result)));
       Navigator.of(context).pop();
