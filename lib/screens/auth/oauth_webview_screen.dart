@@ -104,7 +104,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   /// The site sets it on easyfinance.ru after the user signs in.
   Future<String?> _captureWebSession() async {
     try {
-      final cookies = await WebViewCookieManager().getCookies('https://easyfinance.ru');
+      final cookies = await WebViewCookieManager().getCookies(url: 'https://easyfinance.ru', domain: 'easyfinance.ru');
       for (final c in cookies) {
         if (c.name == 'PHPSESSID' && c.value.isNotEmpty) return c.value;
       }
