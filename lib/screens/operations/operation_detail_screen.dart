@@ -28,6 +28,7 @@ class OperationDetailScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(context.tr('operations.title_detail')),
+            centerTitle: true,
             actions: [
               if (op.type == 'expense')
                 IconButton(

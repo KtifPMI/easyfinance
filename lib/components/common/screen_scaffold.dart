@@ -10,6 +10,7 @@ class ScreenScaffold extends StatelessWidget {
   final bool isLoading;
   final Future<void> Function()? onRefresh;
   final bool showLogo;
+  final bool forceLogo;
   final Widget? titleWidget;
 
   const ScreenScaffold({
@@ -21,6 +22,7 @@ class ScreenScaffold extends StatelessWidget {
     this.isLoading = false,
     this.onRefresh,
     this.showLogo = true,
+    this.forceLogo = false,
     this.titleWidget,
   });
 
@@ -29,41 +31,12 @@ class ScreenScaffold extends StatelessWidget {
     final hasTitle = title.trim().isNotEmpty;
     return Scaffold(
       appBar: AppBar(
-        centerTitle: titleWidget == null,
-        title: titleWidget ??
-            (hasTitle
-                ? SizedBox(
-                    width: double.infinity,
-                    child: Stack(
-                      children: [
-                        if (showLogo)
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: 4, right: 8),
-                              child: AppLogo(height: 28),
-                            ),
-                          ),
-                        Center(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : (showLogo
-                    ? const Align(
-                        alignment: Alignment.centerLeft,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 4),
-                          child: AppLogo(height: 28),
-                        ),
-                      )
-                    : null)),
-        actions: actions,
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 0,
+        title: titleWidget != null
+            ? titleWidget
+            : (hasTitle ? _buildTitle(context) : null),
       ),
       floatingActionButton: floatingActionButton,
       body: Stack(
@@ -72,6 +45,48 @@ class ScreenScaffold extends StatelessWidget {
             _buildSkeleton(context)
           else
             _buildBody(),
+        ],
+      ),
+    );
+  }
+
+  /// Header with a perfectly screen-centered title.
+  ///
+  /// The leading and trailing slots have equal fixed widths so the title text
+  /// stays centered regardless of a back button, the logo, or actions.
+  Widget _buildTitle(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
+    final leading = (canPop && !forceLogo)
+        ? const BackButton()
+        : (showLogo ? const AppLogo(height: 28) : null);
+    final trailing = (actions == null || actions!.isEmpty)
+        ? null
+        : Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: actions!,
+          );
+
+    return SizedBox(
+      width: double.infinity,
+      child: Row(
+        children: [
+          SizedBox(
+            width: kToolbarHeight,
+            child: Center(child: leading),
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: kToolbarHeight,
+            child: Center(child: trailing),
+          ),
         ],
       ),
     );

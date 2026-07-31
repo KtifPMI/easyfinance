@@ -51,6 +51,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
 
         return ScreenScaffold(
           title: context.tr('budget.title'),
+          forceLogo: true,
           onRefresh: () => store.fetchAllData(),
           floatingActionButton: FloatingActionButton(
             onPressed: () => _showAddChoice(context),

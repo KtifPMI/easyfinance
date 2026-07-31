@@ -90,18 +90,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _timeStepper(() => setSheetState(() { if (hour < 23) hour++; }), () => setSheetState(() { if (hour > 0) hour--; }), hour, 23),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(':', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textFor(context))),
-                  ),
-                  _timeStepper(() => setSheetState(() { if (minute < 59) minute++; }), () => setSheetState(() { if (minute > 0) minute--; }), minute, 59),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
                   _TimeWheel(value: hour, onChanged: (v) => setSheetState(() => hour = v), isHour: true),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -130,26 +118,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _timeStepper(VoidCallback onUp, VoidCallback onDown, int current, int max) {
-    return Column(
-      children: [
-        GestureDetector(onTap: onUp, child: Icon(Icons.keyboard_arrow_up, size: 28, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(height: 4),
-        Container(
-          width: 60,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).dividerColor),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(current.toString().padLeft(2, '0'), textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-        ),
-        const SizedBox(height: 4),
-        GestureDetector(onTap: current > 0 ? onDown : null, child: Icon(Icons.keyboard_arrow_down, size: 28, color: current > 0 ? AppColors.textSecondaryFor(context) : AppColors.textSecondary)),
-      ],
     );
   }
 

@@ -451,6 +451,7 @@ class _DebugScreenState extends State<DebugScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('API Debug'),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: Icon(_prettyPrint ? Icons.code_off : Icons.code),

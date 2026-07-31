@@ -209,7 +209,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         return Scaffold(
-          appBar: AppBar(title: Text(context.tr('ai_assistant.title'))),
+          appBar: AppBar(title: Text(context.tr('ai_assistant.title')), centerTitle: true),
           body: Column(
             children: [
               Expanded(
