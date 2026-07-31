@@ -294,6 +294,16 @@
   "settings.start_home": "Home screen",
   "settings.start_operation": "New operation",
   "settings.export_csv": "Export CSV",
+  "settings.support": "Contact support",
+
+  "support.title": "Support",
+  "support.topic": "Subject",
+  "support.topic_hint": "Briefly describe your issue",
+  "support.message": "Message",
+  "support.message_hint": "Describe your issue in detail",
+  "support.send": "Send",
+  "support.fill_all": "Fill in subject and message",
+  "support.error": "Failed to send. Try again later.",
 
   "profile.title": "Profile",
   "profile.demo_user": "Demo User",

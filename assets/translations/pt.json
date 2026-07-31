@@ -238,6 +238,16 @@
   "settings.start_home": "Tela principal",
   "settings.start_operation": "Nova operação",
   "settings.export_csv": "Exportar CSV",
+  "settings.support": "Contatar o suporte",
+
+  "support.title": "Suporte",
+  "support.topic": "Assunto",
+  "support.topic_hint": "Descreva brevemente sua dúvida",
+  "support.message": "Mensagem",
+  "support.message_hint": "Descreva seu problema em detalhes",
+  "support.send": "Enviar",
+  "support.fill_all": "Preencha assunto e mensagem",
+  "support.error": "Falha no envio. Tente novamente mais tarde.",
 
   "profile.title": "Perfil",
   "profile.demo_user": "Utilizador Demo",

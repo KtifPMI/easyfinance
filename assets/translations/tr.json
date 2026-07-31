@@ -238,6 +238,16 @@
   "settings.start_home": "Ana ekran",
   "settings.start_operation": "Yeni işlem",
   "settings.export_csv": "CSV dışa aktar",
+  "settings.support": "Destek ile iletişime geç",
+
+  "support.title": "Destek",
+  "support.topic": "Konu",
+  "support.topic_hint": "Sorunuzu kısaca açıklayın",
+  "support.message": "Mesaj",
+  "support.message_hint": "Sorununuzu ayrıntılı açıklayın",
+  "support.send": "Gönder",
+  "support.fill_all": "Konu ve mesajı doldurun",
+  "support.error": "Gönderilemedi. Daha sonra tekrar deneyin.",
 
   "profile.title": "Profil",
   "profile.demo_user": "Demo Kullanıcı",

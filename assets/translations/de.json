@@ -238,6 +238,16 @@
   "settings.start_home": "Hauptbildschirm",
   "settings.start_operation": "Neue Operation",
   "settings.export_csv": "CSV exportieren",
+  "settings.support": "Support kontaktieren",
+
+  "support.title": "Support",
+  "support.topic": "Betreff",
+  "support.topic_hint": "Beschreiben Sie Ihr Anliegen kurz",
+  "support.message": "Nachricht",
+  "support.message_hint": "Beschreiben Sie Ihr Anliegen ausführlich",
+  "support.send": "Senden",
+  "support.fill_all": "Bitte Betreff und Nachricht ausfüllen",
+  "support.error": "Senden fehlgeschlagen. Versuchen Sie es später erneut.",
 
   "profile.title": "Profil",
   "profile.demo_user": "Demo-Benutzer",

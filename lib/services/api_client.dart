@@ -278,6 +278,55 @@ class ApiClient {
     return _handleResponse(response);
   }
 
+  /// Sends a support/feedback message through the website form endpoint.
+  Future<String> sendFeedback({required String title, required String message}) async {
+    final uri = Uri.parse('https://easyfinance.ru/feedback/add_message/?responseMode=json');
+    final body = <String, String>{
+      'responseMode': 'json',
+      'title': title,
+      'msg': message,
+      'cheight': '0',
+      'cwidth': '0',
+      'width': '0',
+      'height': '0',
+      'colors': '32',
+      'plugins': '',
+    };
+    final headers = <String, String>{
+      'Accept': 'application/json, text/javascript, */*; q=0.01',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Origin': 'https://easyfinance.ru',
+      'Referer': 'https://easyfinance.ru/',
+      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
+    };
+    final response = await _httpClient.post(uri, body: body, headers: headers).timeout(_timeout);
+    if (response.statusCode != 200) {
+      throw ApiException('HTTP ${response.statusCode}: ${response.body}', response.statusCode.toString());
+    }
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(response.body);
+    } on FormatException {
+      throw ApiException('Unexpected response format', 'INVALID_FORMAT');
+    }
+    if (decoded is! Map<String, dynamic>) {
+      throw ApiException('Unexpected response format', 'INVALID_FORMAT');
+    }
+    if (decoded.containsKey('error')) {
+      throw ApiException(decoded['error'].toString(), 'FEEDBACK_ERROR');
+    }
+    final errors = decoded['errors'];
+    if (errors is List && errors.isNotEmpty) {
+      throw ApiException(errors.first.toString(), 'FEEDBACK_ERROR');
+    }
+    final result = decoded['result'];
+    if (result is Map<String, dynamic>) {
+      final text = result['text']?.toString();
+      if (text != null && text.isNotEmpty) return text;
+    }
+    return 'OK';
+  }
+
   Future<DebugResponse> getRaw(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
     final response = await _httpClient.get(uri).timeout(_timeout);

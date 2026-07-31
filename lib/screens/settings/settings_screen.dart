@@ -17,6 +17,7 @@ import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../auth/pin_screen.dart';
+import 'support_screen.dart';
 
 
 class SettingsScreen extends StatefulWidget {
@@ -65,6 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           _exportItem(context),
+          _supportItem(context),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: AppCard(
@@ -314,6 +316,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _infoItem(context.tr('profile.reg_date'), regDate),
         _infoItem(context.tr('profile.sync'), syncLabel),
       ],
+    );
+  }
+
+  Widget _supportItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: InkWell(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen())),
+          child: Row(
+            children: [
+              Icon(Icons.support_agent, color: AppColors.primary, size: 20),
+              const SizedBox(width: 12),
+              Text(context.tr('settings.support'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
