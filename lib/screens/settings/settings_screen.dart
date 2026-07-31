@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../../components/common/app_card.dart';
+import '../../components/common/app_logo.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../services/currency_rate_service.dart';
 import '../../services/csv_export_service.dart';
@@ -50,6 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return ScreenScaffold(
       title: context.tr('settings.title'),
+      showLogo: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,6 +103,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 32),
+          const Center(child: AppLogo(height: 32)),
+          const SizedBox(height: 16),
         ],
       ),
     );

@@ -25,6 +25,7 @@ class AccountsScreen extends StatelessWidget {
 
         return ScreenScaffold(
           title: context.tr('accounts.title'),
+          showLogo: false,
           floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
             child: const Icon(Icons.add),

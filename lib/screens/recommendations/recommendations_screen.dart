@@ -18,6 +18,7 @@ class RecommendationsScreen extends StatelessWidget {
       builder: (context, store, _) {
         return ScreenScaffold(
           title: context.tr('recommendations.title'),
+          showLogo: false,
           actions: [
             IconButton(
               icon: Icon(Icons.tune, color: AppColors.textFor(context)),

@@ -21,6 +21,7 @@ class PlannedPaymentsScreen extends StatelessWidget {
 
         return ScreenScaffold(
           title: context.tr('planned_payments.title'),
+          showLogo: false,
           floatingActionButton: FloatingActionButton(
             onPressed: () => _add(context),
             child: const Icon(Icons.add),

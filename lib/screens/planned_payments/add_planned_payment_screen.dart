@@ -52,6 +52,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     final isEdit = widget.existing != null;
     return ScreenScaffold(
       title: context.tr(isEdit ? 'planned_payments.edit' : 'planned_payments.add'),
+      showLogo: false,
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

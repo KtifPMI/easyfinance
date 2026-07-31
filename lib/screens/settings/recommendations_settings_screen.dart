@@ -36,6 +36,7 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     return ScreenScaffold(
       title: context.tr('settings.recommendations'),
+      showLogo: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

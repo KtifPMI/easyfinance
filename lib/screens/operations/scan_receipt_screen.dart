@@ -369,6 +369,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       builder: (context, store, _) {
         return ScreenScaffold(
           title: context.tr('scan.title'),
+          showLogo: false,
           child: _buildBody(store),
         );
       },

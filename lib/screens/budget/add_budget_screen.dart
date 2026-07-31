@@ -55,6 +55,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
         return ScreenScaffold(
           title: context.tr('budget.new'),
+          showLogo: false,
           child: Column(
             children: [
               Text(context.tr('budget.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),

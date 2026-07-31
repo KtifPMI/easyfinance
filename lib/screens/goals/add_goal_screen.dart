@@ -243,6 +243,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
     return ScreenScaffold(
       title: context.tr('goals.goal_type'),
+      showLogo: false,
       actions: [
         IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
       ],

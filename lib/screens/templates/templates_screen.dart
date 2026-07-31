@@ -20,6 +20,7 @@ class TemplatesScreen extends StatelessWidget {
 
     return ScreenScaffold(
       title: context.tr('templates.title'),
+      showLogo: false,
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTemplateScreen())),
         child: const Icon(Icons.add),
@@ -147,6 +148,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
 
         return ScreenScaffold(
           title: context.tr('templates.new'),
+          showLogo: false,
            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

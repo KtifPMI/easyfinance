@@ -98,6 +98,18 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   _timeStepper(() => setSheetState(() { if (minute < 59) minute++; }), () => setSheetState(() { if (minute > 0) minute--; }), minute, 59),
                 ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _TimeWheel(value: hour, onChanged: (v) => setSheetState(() => hour = v), isHour: true),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(':', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textFor(context))),
+                  ),
+                  _TimeWheel(value: minute, onChanged: (v) => setSheetState(() => minute = v), isHour: false),
+                ],
+              ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -516,6 +528,83 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             )),
             const SizedBox(height: 8),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TimeWheel extends StatefulWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+  final bool isHour;
+
+  const _TimeWheel({required this.value, required this.onChanged, required this.isHour});
+
+  @override
+  State<_TimeWheel> createState() => _TimeWheelState();
+}
+
+class _TimeWheelState extends State<_TimeWheel> {
+  late final FixedExtentScrollController _controller;
+  int _lastValue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastValue = widget.value;
+    _controller = FixedExtentScrollController(initialItem: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TimeWheel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != _lastValue && _controller.hasClients) {
+      _lastValue = widget.value;
+      _controller.animateToItem(
+        widget.value,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final count = widget.isHour ? 24 : 60;
+    return SizedBox(
+      width: 64,
+      height: 140,
+      child: ListWheelScrollView.useDelegate(
+        controller: _controller,
+        itemExtent: 36,
+        diameterRatio: 1.8,
+        physics: const FixedExtentScrollPhysics(),
+        onSelectedItemChanged: (index) {
+          _lastValue = index;
+          widget.onChanged(index);
+        },
+        childDelegate: ListWheelChildBuilderDelegate(
+          childCount: count,
+          builder: (context, index) {
+            final selected = index == widget.value;
+            return Center(
+              child: Text(
+                index.toString().padLeft(2, '0'),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                  color: selected ? AppColors.primary : AppColors.textSecondaryFor(context),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
