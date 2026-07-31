@@ -25,7 +25,7 @@
   "home.manage_planned": "Управлять",
 
   "planned_payments.title": "Планировщик",
-  "planned_payments.add": "Добавить платёж",
+  "planned_payments.add": "Платёж",
   "planned_payments.edit": "Редактировать",
   "planned_payments.name": "Название",
   "planned_payments.amount": "Сумма",
@@ -76,7 +76,7 @@
   "accounts.empty": "Нет счетов",
   "accounts.archived": "Архивный",
   "accounts.my_capital": "Мой капитал",
-  "accounts.edit": "Редактировать счёт",
+  "accounts.edit": "Счёт",
   "accounts.new": "Новый счёт",
   "accounts.name": "Название",
   "accounts.balance": "Баланс",
@@ -426,7 +426,7 @@
 
   "templates.title": "Шаблоны",
   "templates.empty": "Нет шаблонов",
-  "templates.new": "Новый шаблон",
+  "templates.new": "Шаблон",
   "templates.name": "Название шаблона",
   "templates.amount": "Сумма",
   "templates.comment": "Комментарий",
@@ -475,7 +475,7 @@
   "settings.select_currencies_hint": "Выберите валюты для отображения курсов на главном экране",
   "settings.no_data": "Нет данных",
 
-  "goals.goal_type": "Финансовая цель",
+  "goals.goal_type": "Цель",
   "goals.change_photo": "Изменить",
   "goals.opens_in_new_window": "Открывается в новом окне",
   "goals.main_params": "Основные параметры",
