@@ -147,10 +147,17 @@ class HomeScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
+              color: color,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(amount, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+            child: Text(
+              amount,
+              style: TextStyle(
+                color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
