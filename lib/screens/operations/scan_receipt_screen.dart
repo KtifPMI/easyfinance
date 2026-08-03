@@ -5,6 +5,8 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../../config.dart';
+import '../../services/cloud_ocr_service.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
 import '../../theme/theme.dart';
@@ -85,12 +87,28 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   Future<void> _scanReceipt(FinanceStore store) async {
     if (_image == null) return;
     try {
+      String? text;
       final processed = _preprocessImage(_image!);
-      final inputImage = InputImage.fromFile(processed);
-      final result = await _textRecognizer.processImage(inputImage);
+
+      // Try Yandex Vision cloud OCR first (much better for Cyrillic)
+      if (AppConfig.yandexVisionApiKey.isNotEmpty) {
+        try {
+          final cloudResult = await CloudOcrService.recognize(
+            processed,
+            apiKey: AppConfig.yandexVisionApiKey,
+            folderId: AppConfig.yandexFolderId,
+          );
+          text = cloudResult.text;
+        } on CloudOcrException {
+          // Cloud failed — fall through to ML Kit
+        }
+      }
+
+      // Fallback to on-device ML Kit
+      text ??= await _runMlKit(processed);
+
       if (!mounted) return;
-      final text = result.text;
-      if (text.isEmpty) {
+      if (text == null || text.isEmpty) {
         setState(() { _error = context.tr('scan.error_recognize'); _scanning = false; });
         return;
       }
@@ -104,6 +122,13 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       if (!mounted) return;
       setState(() { _error = context.tr('scan.error_format', namedArgs: {'error': '$e'}); _scanning = false; });
     }
+  }
+
+  Future<String?> _runMlKit(File image) async {
+    final inputImage = InputImage.fromFile(image);
+    final result = await _textRecognizer.processImage(inputImage);
+    final text = result.text;
+    return text.isNotEmpty ? text : null;
   }
 
   void _parseReceiptText(String text, FinanceStore store) {
