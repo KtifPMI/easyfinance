@@ -5,7 +5,6 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../../config.dart';
 import '../../services/cloud_ocr_service.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
@@ -91,18 +90,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       final processed = _preprocessImage(_image!);
 
       // Try Yandex Vision cloud OCR first (much better for Cyrillic)
-      if (AppConfig.yandexVisionApiKey.isNotEmpty) {
+      if (CloudOcrService.isConfigured) {
         try {
-          final cloudResult = await CloudOcrService.recognize(
-            processed,
-            apiKey: AppConfig.yandexVisionApiKey,
-            folderId: AppConfig.yandexFolderId,
-          );
+          final cloudResult = await CloudOcrService.recognize(processed);
           text = cloudResult.text;
-        } on CloudOcrException {
-          // Cloud failed — fall through to ML Kit
-        }
-      }
+        } on CloudOcrException {}
 
       // Fallback to on-device ML Kit
       text ??= await _runMlKit(processed);

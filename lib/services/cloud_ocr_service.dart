@@ -10,9 +10,20 @@ class CloudOcrResult {
 class CloudOcrService {
   static const _endpoint = 'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze';
 
+  static String apiKey = '';
+  static String folderId = '';
+
+  static bool get isConfigured => apiKey.isNotEmpty && folderId.isNotEmpty;
+
+  /// Updates credentials from runtime config (overrides defaults).
+  static void configure({String? apiKey, String? folderId}) {
+    if (apiKey != null) CloudOcrService.apiKey = apiKey;
+    if (folderId != null) CloudOcrService.folderId = folderId;
+  }
+
   /// Sends the image file to Yandex Vision OCR and returns the recognized text.
   /// Throws on network errors, auth errors, or empty result.
-  static Future<CloudOcrResult> recognize(File imageFile, {required String apiKey, required String folderId}) async {
+  static Future<CloudOcrResult> recognize(File imageFile) async {
     final bytes = await imageFile.readAsBytes();
     final base64Content = base64Encode(bytes);
 
