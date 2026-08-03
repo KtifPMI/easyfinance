@@ -80,6 +80,7 @@
   "accounts.new": "Nueva Cuenta",
   "accounts.name": "Nombre",
   "accounts.balance": "Saldo",
+  "accounts.debt_amount": "Deuda",
   "accounts.type": "Tipo de Cuenta",
   "accounts.type.cash": "Efectivo",
   "accounts.type.card": "Tarjeta",

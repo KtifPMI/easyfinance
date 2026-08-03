@@ -35,6 +35,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   int _paymentDay = 1;
 
   bool get _isCreditType => _type == 'credit' || _type == 'credit_card';
+  bool get _isDebtType => _type == 'credit' || _type == 'credit_card' || _type == 'loan_received';
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
 
@@ -79,7 +80,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     final store = context.read<FinanceStore>();
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
-    final balance = double.tryParse(_balanceCtrl.text.replaceAll(',', '.')) ?? 0;
+    var balance = double.tryParse(_balanceCtrl.text.replaceAll(',', '.')) ?? 0;
+    if (_isDebtType) balance = -balance.abs();
 
     String createdAt = '';
     double initBalance = balance;
@@ -167,9 +169,10 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     switch (type) {
       case 'card': return 'credit_card';
       case 'credit': case 'credit_card': return 'credit_card';
-      case 'savings': return 'savings';
-      case 'deposit': return 'savings';
+      case 'savings': case 'deposit': return 'savings';
       case 'electronic': return 'wallet';
+      case 'loan_given': return 'payments';
+      case 'loan_received': return 'credit_card';
       case 'broker': case 'stocks': case 'bonds':
       case 'other_securities': case 'pif': case 'ofbu':
       case 'fund': case 'pamm': return 'account_balance';
@@ -187,9 +190,10 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   String _colorForType(String type) {
     switch (type) {
       case 'card': case 'credit_card': return '#FFD700';
-      case 'credit': case 'loan': return '#EF4444';
+      case 'credit': case 'loan_received': return '#EF4444';
       case 'savings': case 'deposit': return '#FF9800';
       case 'electronic': return '#00BCD4';
+      case 'loan_given': return '#16A34A';
       case 'broker': case 'stocks': case 'bonds':
       case 'other_securities': case 'pif': case 'ofbu':
       case 'fund': case 'pamm': case 'oms': return '#7C3AED';
@@ -220,7 +224,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         children: [
           AppInput(label: context.tr('accounts.name'), controller: _nameCtrl),
           const SizedBox(height: 16),
-          AppInput(label: context.tr('accounts.balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
+          AppInput(label: _isDebtType ? context.tr('accounts.debt_amount') : context.tr('accounts.balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
           Text(context.tr('accounts.type'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
@@ -417,8 +421,8 @@ String _typeKeyFromId(int id) {
     case 3: return 'deposit';
     case 4: return 'electronic';
     case 5: return 'savings';
-    case 7: return 'loan';
-    case 9: return 'loan';
+    case 7: return 'loan_given';
+    case 9: return 'loan_received';
     case 10: return 'credit_card';
     case 11: return 'credit';
     case 13: return 'broker';

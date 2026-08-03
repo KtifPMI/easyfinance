@@ -80,6 +80,7 @@
   "accounts.new": "Nuovo Conto",
   "accounts.name": "Nome",
   "accounts.balance": "Saldo",
+  "accounts.debt_amount": "Importo dovuto",
   "accounts.type": "Tipo di Conto",
   "accounts.type.cash": "Contanti",
   "accounts.type.card": "Carta",

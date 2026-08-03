@@ -80,6 +80,7 @@
   "accounts.new": "Nova Conta",
   "accounts.name": "Nome",
   "accounts.balance": "Saldo",
+  "accounts.debt_amount": "Valor devido",
   "accounts.type": "Tipo de Conta",
   "accounts.type.cash": "Dinheiro",
   "accounts.type.card": "Cartão",

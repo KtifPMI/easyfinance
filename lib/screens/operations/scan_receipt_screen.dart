@@ -70,9 +70,15 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     if (original == null) return inputFile;
 
     final gray = img.grayscale(original);
-    final binary = img.adaptiveThreshold(gray, windowSize: 15, threshold: 10);
+    for (var y = 0; y < gray.height; y++) {
+      for (var x = 0; x < gray.width; x++) {
+        final p = gray.getPixel(x, y);
+        final lum = (p >> 16) & 0xFF;
+        gray.setPixel(x, y, lum > 100 ? 0xFFFFFFFF : 0xFF000000);
+      }
+    }
     final tempFile = File('${Directory.systemTemp.path}/receipt_preprocessed.jpg');
-    tempFile.writeAsBytesSync(img.encodeJpg(binary, quality: 95));
+    tempFile.writeAsBytesSync(img.encodeJpg(gray, quality: 95));
     return tempFile;
   }
 

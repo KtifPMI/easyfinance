@@ -80,6 +80,7 @@
   "accounts.new": "Neues Konto",
   "accounts.name": "Name",
   "accounts.balance": "Saldo",
+  "accounts.debt_amount": "Schuldbetrag",
   "accounts.type": "Kontotyp",
   "accounts.type.cash": "Bargeld",
   "accounts.type.card": "Karte",

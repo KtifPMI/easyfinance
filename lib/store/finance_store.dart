@@ -1385,7 +1385,8 @@ class FinanceStore extends ChangeNotifier {
       case 'deposit': return '3';
       case 'electronic': return '4';
       case 'savings': return '5';
-      case 'loan': return '9';
+      case 'loan_given': return '7';
+      case 'loan_received': return '9';
       case 'credit_card': return '10';
       case 'credit': return '11';
       case 'broker': return '13';

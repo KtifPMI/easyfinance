@@ -204,9 +204,9 @@ class Account {
       case 3: return 'deposit';
       case 4: return 'electronic';
       case 5: return 'savings';
-      case 7: return 'loan';
+      case 7: return 'loan_given';
       case 8: return 'credit'; // legacy
-      case 9: return 'loan';
+      case 9: return 'loan_received';
       case 10: return 'credit_card';
       case 11: return 'credit';
       case 13: return 'broker';
@@ -232,6 +232,39 @@ class Account {
       case 34: return 'air_transport';
       case 36: return 'bonus_card';
       default: return 'account';
+  static String groupForType(String type) {
+    switch (type) {
+      case 'account': case 'card': case 'deposit':
+      case 'electronic': case 'savings':
+        return 'money';
+      case 'loan_received': case 'credit_card': case 'credit':
+        return 'owed_by_me';
+      case 'loan_given':
+        return 'owed_to_me';
+      case 'broker': case 'oms': case 'stocks': case 'bonds':
+      case 'other_securities': case 'pif': case 'ofbu':
+      case 'fund': case 'insurance_savings': case 'savings_plan':
+      case 'npf': case 'pension': case 'pamm':
+        return 'investments';
+      case 'real_estate': case 'car': case 'water_transport':
+      case 'art': case 'business': case 'other_property':
+      case 'motorcycle': case 'air_transport':
+        return 'property';
+      case 'bonus_card':
+        return 'loyalty';
+      default:
+        return 'money';
     }
+  }
+
+  static const Map<String, int> groupOrder = {
+    'money': 0,
+    'owed_by_me': 1,
+    'owed_to_me': 2,
+    'investments': 3,
+    'property': 4,
+    'loyalty': 5,
+  };
+}
   }
 }

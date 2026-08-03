@@ -80,6 +80,7 @@
   "accounts.new": "Yeni Hesap",
   "accounts.name": "İsim",
   "accounts.balance": "Bakiye",
+  "accounts.debt_amount": "Borç tutarı",
   "accounts.type": "Hesap Türü",
   "accounts.type.cash": "Nakit",
   "accounts.type.card": "Kart",
