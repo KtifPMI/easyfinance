@@ -221,6 +221,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     return ScreenScaffold(
       title: _isEditing ? context.tr('accounts.edit') : context.tr('accounts.new'),
       child: ListView(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         children: [
           AppInput(label: context.tr('accounts.name'), controller: _nameCtrl),
           const SizedBox(height: 16),
