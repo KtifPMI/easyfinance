@@ -269,4 +269,3 @@ const Map<String, int> groupOrder = {
   'property': 4,
   'loyalty': 5,
 };
-}
