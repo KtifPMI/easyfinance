@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
@@ -47,7 +48,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   Future<void> _pickImage(ImageSource source, FinanceStore store) async {
-    final picked = await _picker.pickImage(source: source, maxWidth: 2048);
+    final picked = await _picker.pickImage(source: source);
     if (picked == null) return;
     if (!mounted) return;
     setState(() {
@@ -60,10 +61,26 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     await _scanReceipt(store);
   }
 
+  /// Converts a receipt photo to high-contrast black & white.
+  /// Thermal prints and faded receipts benefit heavily from binarization
+  /// before OCR — it turns barely-visible gray text into sharp black.
+  File _preprocessImage(File inputFile) {
+    final bytes = inputFile.readAsBytesSync();
+    final original = img.decodeImage(bytes);
+    if (original == null) return inputFile;
+
+    final gray = img.grayscale(original);
+    final binary = img.adaptiveThreshold(gray, windowSize: 15, threshold: 10);
+    final tempFile = File('${Directory.systemTemp.path}/receipt_preprocessed.jpg');
+    tempFile.writeAsBytesSync(img.encodeJpg(binary, quality: 95));
+    return tempFile;
+  }
+
   Future<void> _scanReceipt(FinanceStore store) async {
     if (_image == null) return;
     try {
-      final inputImage = InputImage.fromFile(_image!);
+      final processed = _preprocessImage(_image!);
+      final inputImage = InputImage.fromFile(processed);
       final result = await _textRecognizer.processImage(inputImage);
       if (!mounted) return;
       final text = result.text;
