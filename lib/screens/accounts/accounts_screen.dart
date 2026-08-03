@@ -21,15 +21,15 @@ class AccountsScreen extends StatelessWidget {
         accounts.sort((a, b) {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
-          final ga = Account.groupOrder[Account.groupForType(a.type)] ?? 99;
-          final gb = Account.groupOrder[Account.groupForType(b.type)] ?? 99;
+          final ga = groupOrder[groupForType(a.type)] ?? 99;
+          final gb = groupOrder[groupForType(b.type)] ?? 99;
           if (ga != gb) return ga.compareTo(gb);
           return a.name.compareTo(b.name);
         });
 
         final grouped = <String, List<Account>>{};
         for (final a in accounts) {
-          (grouped[Account.groupForType(a.type)] ??= []).add(a);
+          (grouped[groupForType(a.type)] ??= []).add(a);
         }
 
         return ScreenScaffold(

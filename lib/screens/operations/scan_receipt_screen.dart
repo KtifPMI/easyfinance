@@ -73,8 +73,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
     for (var y = 0; y < gray.height; y++) {
       for (var x = 0; x < gray.width; x++) {
         final p = gray.getPixel(x, y);
-        final lum = (p >> 16) & 0xFF;
-        gray.setPixel(x, y, lum > 100 ? 0xFFFFFFFF : 0xFF000000);
+        final lum = p.r.toInt();
+        gray.setPixel(x, y, lum > 100 ? img.ColorRgba8(255, 255, 255, 255) : img.ColorRgba8(0, 0, 0, 255));
       }
     }
     final tempFile = File('${Directory.systemTemp.path}/receipt_preprocessed.jpg');
