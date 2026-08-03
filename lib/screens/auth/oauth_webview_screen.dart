@@ -69,6 +69,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
 
   Future<void> _onPageFinished(String url) async {
     setState(() => _loading = false);
+    _injectViewportFix();
 
     final uri = Uri.parse(url);
     if (uri.path.endsWith('/v2/result')) {
@@ -89,6 +90,20 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         _handleCode(code);
       }
     }
+  }
+
+  void _injectViewportFix() {
+    _controller.runJavaScript('''
+      (function() {
+        var meta = document.querySelector('meta[name="viewport"]');
+        if (!meta) {
+          meta = document.createElement('meta');
+          meta.name = 'viewport';
+          document.head.appendChild(meta);
+        }
+        meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes';
+      })();
+    ''');
   }
 
   Future<User?> _fetchUser() async {

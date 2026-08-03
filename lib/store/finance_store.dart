@@ -437,6 +437,7 @@ class FinanceStore extends ChangeNotifier {
         spent: double.tryParse(b['spent']?.toString() ?? '0') ?? 0,
         period: b['period']?.toString() ?? 'monthly',
       )).toList();
+      _recalcBudgetSpent();
       await _saveBudgets();
     } catch (_) {
       await _loadBudgets();
