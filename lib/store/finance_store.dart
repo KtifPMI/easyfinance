@@ -1161,6 +1161,7 @@ class FinanceStore extends ChangeNotifier {
             'include_in_total': account.includeInTotal ? '1' : '0',
             'created_at': now,
             'updated_at': now,
+            ..._creditFields(account),
           }]
         });
         final accounts = resp['accounts'] as List<dynamic>?;
@@ -1203,6 +1204,7 @@ class FinanceStore extends ChangeNotifier {
             'icon': _accountIconToApi(account.icon),
             'include_in_total': account.includeInTotal ? '1' : '0',
             'updated_at': now,
+            ..._creditFields(account),
           }]
         }, accountId: account.id);
       } on ApiException catch (e) {
@@ -1378,10 +1380,36 @@ class FinanceStore extends ChangeNotifier {
 
   String _accountTypeToApi(String type) {
     switch (type) {
+      case 'account': return '1';
       case 'card': return '2';
-      case 'credit': return '8';
+      case 'deposit': return '3';
+      case 'electronic': return '4';
       case 'savings': return '5';
-      case 'electronic': return '15';
+      case 'loan': return '9';
+      case 'credit_card': return '10';
+      case 'credit': return '11';
+      case 'broker': return '13';
+      case 'oms': return '14';
+      case 'stocks': return '15';
+      case 'bonds': return '16';
+      case 'other_securities': return '17';
+      case 'pif': return '18';
+      case 'ofbu': return '19';
+      case 'fund': return '20';
+      case 'insurance_savings': return '21';
+      case 'savings_plan': return '22';
+      case 'npf': return '23';
+      case 'pension': return '24';
+      case 'pamm': return '25';
+      case 'real_estate': return '27';
+      case 'car': return '28';
+      case 'water_transport': return '29';
+      case 'art': return '30';
+      case 'business': return '31';
+      case 'other_property': return '32';
+      case 'motorcycle': return '33';
+      case 'air_transport': return '34';
+      case 'bonus_card': return '36';
       default: return '1';
     }
   }
@@ -1394,6 +1422,25 @@ class FinanceStore extends ChangeNotifier {
       'currency_ruble': 'accountimage7', 'card_giftcard': 'accountimage8',
     };
     return map[icon] ?? 'accountimage1';
+  }
+
+  /// Returns a map of credit-specific fields for the API request,
+  /// only when the account type is credit/credit_card.
+  Map<String, String> _creditFields(Account account) {
+    final fields = <String, String>{};
+    if (account.description != null && account.description!.isNotEmpty) {
+      fields['description'] = account.description!;
+    }
+    if (account.bankId != null) fields['bank_id'] = account.bankId!;
+    if (account.annualRate != null) fields['annual_rate'] = account.annualRate!.toStringAsFixed(2);
+    if (account.paymentType != null) fields['payment_type'] = account.paymentType!;
+    if (account.openDate != null) fields['open_date'] = account.openDate!;
+    if (account.closeDate != null) fields['close_date'] = account.closeDate!;
+    if (account.commissionOneTime != null) fields['commission_one_time'] = account.commissionOneTime!.toStringAsFixed(2);
+    if (account.commissionMonthly != null) fields['commission_monthly'] = account.commissionMonthly!.toStringAsFixed(2);
+    if (account.paymentDay != null) fields['payment_day'] = account.paymentDay!.toString();
+    if (account.creditLimit != null) fields['credit_limit'] = account.creditLimit!.toStringAsFixed(2);
+    return fields;
   }
 
   Future<void> addBudget(Budget b) async {
