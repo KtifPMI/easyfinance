@@ -593,6 +593,7 @@
   "update.downloading": "Загрузка... {progress}%",
   "update.apk_ready": "APK загружен, открываю установщик...",
   "update.error": "Ошибка загрузки обновления",
+  "update.whats_new": "Исправления ошибок и улучшения стабильности.",
 
   "account.account_type": "Счёт",
   "account.card_type": "Карта",

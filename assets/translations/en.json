@@ -677,5 +677,6 @@
   "home.currency_rates": "Exchange rates",
   "scan.add_expense": "Add expense",
   "more.debug": "Debug API",
-  "currency.cny_name": "Chinese Yuan"
+  "currency.cny_name": "Chinese Yuan",
+  "update.whats_new": "Bug fixes and stability improvements."
 }

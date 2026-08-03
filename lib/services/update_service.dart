@@ -106,10 +106,8 @@ class UpdateService {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(context.tr('update.new_version', namedArgs: {'version': update.version}), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-            if (update.changelog != null) ...[
-              const SizedBox(height: 8),
-              Text(update.changelog!, style: const TextStyle(fontSize: 13), maxLines: 5, overflow: TextOverflow.ellipsis),
-            ],
+            const SizedBox(height: 8),
+            Text(context.tr('update.whats_new'), style: const TextStyle(fontSize: 13)),
           ],
         ),
         actions: [

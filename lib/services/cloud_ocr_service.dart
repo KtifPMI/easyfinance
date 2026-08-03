@@ -36,7 +36,7 @@ class CloudOcrService {
             {
               'type': 'TEXT_DETECTION',
               'text_detection_config': {
-                'language_codes': ['ru', 'en'],
+                'language_codes': ['ru', 'en', 'de', 'fr', 'es', 'it', 'pt', 'tr'],
               },
             },
           ],
