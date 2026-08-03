@@ -94,7 +94,10 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         try {
           final cloudResult = await CloudOcrService.recognize(processed);
           text = cloudResult.text;
-        } on CloudOcrException {}
+        } on CloudOcrException {
+          // Cloud failed — fall through to ML Kit
+        }
+      }
 
       // Fallback to on-device ML Kit
       text ??= await _runMlKit(processed);
