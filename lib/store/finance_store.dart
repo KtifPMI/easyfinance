@@ -2000,7 +2000,46 @@ class FinanceStore extends ChangeNotifier {
 
   // --- Tags ---
 
+  Future<void> addTag(Tag tag) async {
+    if (authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        final resp = await authService.apiService.addTag({
+          'name': tag.name,
+          'created_at': now,
+          'updated_at': now,
+        });
+        final tags = resp['tags'] as List<dynamic>?;
+        if (tags != null && tags.isNotEmpty) {
+          final serverId = tags[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            _tags.add(Tag(id: serverId, name: tag.name));
+            await _saveCache();
+            notifyListeners();
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('addTag error: $e');
+      }
+    }
+    // Local fallback
+    _tags.add(tag);
+    await _saveCache();
+    notifyListeners();
+  }
+
   Future<void> deleteTag(String id) async {
+    final tag = _tags.where((t) => t.id == id).firstOrNull;
+    if (tag == null) return;
+    if (authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        await authService.apiService.setTag({'name': tag.name, 'deleted_at': now}, tagId: id);
+      } catch (e) {
+        debugPrint('deleteTag error: $e');
+      }
+    }
     _tags.removeWhere((t) => t.id == id);
     await _saveCache();
     notifyListeners();

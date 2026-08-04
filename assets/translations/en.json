@@ -154,6 +154,9 @@
   "operations.type_transfer": "Transfer",
   "operations.amount": "Amount",
   "operations.account": "Account",
+  "operations.account_to": "To account",
+  "operations.date": "Date",
+  "operations.rate": "Rate",
   "operations.category": "Category",
   "operations.to_account": "To Account",
   "operations.comment": "Comment",
@@ -537,6 +540,9 @@
   "tags.delete": "Delete",
   "tags.cancel": "Cancel",
   "tags.confirm_delete": "Delete tag?",
+  "tags.new": "New tag",
+  "tags.name_hint": "Enter tag name",
+  "tags.save": "Save",
 
   "more.tags": "Tags",
 

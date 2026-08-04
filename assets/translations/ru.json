@@ -154,6 +154,9 @@
   "operations.type_transfer": "Перевод",
   "operations.amount": "Сумма",
   "operations.account": "Счёт",
+  "operations.account_to": "На счёт",
+  "operations.date": "Дата",
+  "operations.rate": "Курс",
   "operations.category": "Категория",
   "operations.to_account": "На счёт",
   "operations.comment": "Комментарий",
@@ -475,6 +478,9 @@
   "tags.delete": "Удалить",
   "tags.cancel": "Отмена",
   "tags.confirm_delete": "Удалить тег?",
+  "tags.new": "Новый тег",
+  "tags.name_hint": "Введите название тега",
+  "tags.save": "Сохранить",
 
   "more.tags": "Теги",
 

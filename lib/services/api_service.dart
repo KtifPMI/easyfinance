@@ -57,6 +57,15 @@ class ApiService {
     return _parseList(json, 'tags', Tag.fromJson);
   }
 
+  Future<Map<String, dynamic>> addTag(Map<String, dynamic> body) async {
+    final json = await _client.post('tags.post', params: _writeParams(), body: {'request': {'request_data': body}});
+    return json;
+  }
+
+  Future<void> setTag(Map<String, dynamic> body, {required String tagId}) async {
+    await _client.post('tags.set', params: _writeParams({'tag_id': tagId}), body: {'request': {'request_data': body}});
+  }
+
   Future<List<OperationTemplate>> getTemplates() async {
     final json = await _client.get('operationPatterns.get');
     return _parseList(json, 'operationPatterns', OperationTemplate.fromJson);
