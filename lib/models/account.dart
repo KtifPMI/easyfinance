@@ -20,42 +20,14 @@ const Map<String, String> _iconColor = {
 
 /// Full list ordered like the website: names with group headers.
 const Map<int, String> accountTypeLabels = {
-  // Данные
   1: 'accounts.type.cash',
   2: 'accounts.type.card',
-  3: 'accounts.type.deposit',
-  4: 'accounts.type.electronic',
   5: 'accounts.type.bank_account',
-  // Долги
   7: 'accounts.type.loan_given',
+  8: 'accounts.type.credit',
   9: 'accounts.type.loan_received',
-  10: 'accounts.type.credit_card',
-  11: 'accounts.type.credit',
-  // Инвестиции
-  13: 'accounts.type.broker',
-  14: 'accounts.type.oms',
-  15: 'accounts.type.stocks',
-  16: 'accounts.type.bonds',
-  17: 'accounts.type.other_securities',
-  18: 'accounts.type.pif',
-  19: 'accounts.type.ofbu',
-  20: 'accounts.type.fund',
-  21: 'accounts.type.insurance_savings',
-  22: 'accounts.type.savings_plan',
-  23: 'accounts.type.npf',
-  24: 'accounts.type.pension',
-  25: 'accounts.type.pamm',
-  // Имущество
-  27: 'accounts.type.real_estate',
+  15: 'accounts.type.electronic',
   28: 'accounts.type.car',
-  29: 'accounts.type.water_transport',
-  30: 'accounts.type.art',
-  31: 'accounts.type.business',
-  32: 'accounts.type.other_property',
-  33: 'accounts.type.motorcycle',
-  34: 'accounts.type.air_transport',
-  // Карты лояльности
-  36: 'accounts.type.bonus_card',
 };
 
 class Account {
@@ -85,7 +57,7 @@ class Account {
   final String? description;
   final String? bankId;
 
-  bool get isCredit => type == 'credit' || type == 'credit_card';
+  bool get isCredit => type == 'credit';
 
   Account({
     required this.id,
@@ -201,36 +173,13 @@ class Account {
     switch (id) {
       case 1: return 'account';
       case 2: return 'card';
-      case 3: return 'deposit';
-      case 4: return 'electronic';
       case 5: return 'savings';
       case 7: return 'loan_given';
-      case 8: return 'credit'; // legacy
+      case 8: return 'credit';
       case 9: return 'loan_received';
-      case 10: return 'credit_card';
-      case 11: return 'credit';
-      case 13: return 'broker';
-      case 14: return 'oms';
-      case 15: return 'stocks';
-      case 16: return 'bonds';
-      case 17: return 'other_securities';
-      case 18: return 'pif';
-      case 19: return 'ofbu';
-      case 20: return 'fund';
-      case 21: return 'insurance_savings';
-      case 22: return 'savings_plan';
-      case 23: return 'npf';
-      case 24: return 'pension';
-      case 25: return 'pamm';
-      case 27: return 'real_estate';
+      case 15: return 'electronic';
+      case 16: return 'card';
       case 28: return 'car';
-      case 29: return 'water_transport';
-      case 30: return 'art';
-      case 31: return 'business';
-      case 32: return 'other_property';
-      case 33: return 'motorcycle';
-      case 34: return 'air_transport';
-      case 36: return 'bonus_card';
       default: return 'account';
     }
   }
@@ -238,24 +187,14 @@ class Account {
 
 String groupForType(String type) {
   switch (type) {
-    case 'account': case 'card': case 'deposit':
-    case 'electronic': case 'savings':
+    case 'account': case 'card': case 'electronic': case 'savings':
       return 'money';
-    case 'loan_received': case 'credit_card': case 'credit':
+    case 'loan_received': case 'credit':
       return 'owed_by_me';
     case 'loan_given':
       return 'owed_to_me';
-    case 'broker': case 'oms': case 'stocks': case 'bonds':
-    case 'other_securities': case 'pif': case 'ofbu':
-    case 'fund': case 'insurance_savings': case 'savings_plan':
-    case 'npf': case 'pension': case 'pamm':
-      return 'investments';
-    case 'real_estate': case 'car': case 'water_transport':
-    case 'art': case 'business': case 'other_property':
-    case 'motorcycle': case 'air_transport':
+    case 'car':
       return 'property';
-    case 'bonus_card':
-      return 'loyalty';
     default:
       return 'money';
   }

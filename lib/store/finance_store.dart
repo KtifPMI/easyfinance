@@ -1382,35 +1382,11 @@ class FinanceStore extends ChangeNotifier {
     switch (type) {
       case 'account': return '1';
       case 'card': return '2';
-      case 'deposit': return '3';
-      case 'electronic': return '4';
       case 'savings': return '5';
       case 'loan_given': return '7';
+      case 'credit': return '8';
       case 'loan_received': return '9';
-      case 'credit_card': return '10';
-      case 'credit': return '11';
-      case 'broker': return '13';
-      case 'oms': return '14';
-      case 'stocks': return '15';
-      case 'bonds': return '16';
-      case 'other_securities': return '17';
-      case 'pif': return '18';
-      case 'ofbu': return '19';
-      case 'fund': return '20';
-      case 'insurance_savings': return '21';
-      case 'savings_plan': return '22';
-      case 'npf': return '23';
-      case 'pension': return '24';
-      case 'pamm': return '25';
-      case 'real_estate': return '27';
-      case 'car': return '28';
-      case 'water_transport': return '29';
-      case 'art': return '30';
-      case 'business': return '31';
-      case 'other_property': return '32';
-      case 'motorcycle': return '33';
-      case 'air_transport': return '34';
-      case 'bonus_card': return '36';
+      case 'electronic': return '15';
       default: return '1';
     }
   }
