@@ -12,7 +12,9 @@ class FinancialEvent {
   final String? accountId;
   final String? categoryId;
   final String? tags;
-  final int repeatMode; // 0=none, 1=daily, 7=weekly, 30=monthly, 90=quarterly, 365=yearly
+  final int repeatMode;
+  final String? serverId;
+  final String? chain; // 0=none, 1=daily, 7=weekly, 30=monthly, 90=quarterly, 365=yearly
 
   FinancialEvent({
     required this.id,
@@ -29,6 +31,8 @@ class FinancialEvent {
     this.categoryId,
     this.tags,
     this.repeatMode = 0,
+    this.serverId,
+    this.chain,
   });
 
   bool get isRepeating => repeatMode > 0;
@@ -73,6 +77,8 @@ class FinancialEvent {
     if (categoryId != null) 'categoryId': categoryId,
     if (tags != null) 'tags': tags,
     'repeatMode': repeatMode,
+    if (serverId != null) 'serverId': serverId,
+    if (chain != null) 'chain': chain,
   };
 
   factory FinancialEvent.fromJson(Map<String, dynamic> json) => FinancialEvent(
@@ -90,5 +96,7 @@ class FinancialEvent {
     categoryId: json['categoryId'] as String?,
     tags: json['tags'] as String?,
     repeatMode: json['repeatMode'] as int? ?? 0,
+    serverId: json['serverId'] as String?,
+    chain: json['chain'] as String?,
   );
 }

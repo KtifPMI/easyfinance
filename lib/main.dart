@@ -40,7 +40,7 @@ void main() async {
   final authService = AuthService(apiClient);
   final localeStore = LocaleStore();
   await localeStore.load();
-  final plannedPaymentStore = PlannedPaymentStore();
+  final plannedPaymentStore = PlannedPaymentStore(apiClient: apiClient);
   await plannedPaymentStore.load();
   final themeStore = ThemeStore();
   await themeStore.load();

@@ -352,6 +352,68 @@ class ApiClient {
     return 'OK';
   }
 
+  // --- Calendar / Planned Payments (website endpoint, requires PHPSESSID) ---
+
+  /// Fetches planned/calendar events from the website.
+  Future<Map<String, dynamic>> getCalendarEvents() async {
+    final uri = Uri.parse('https://easyfinance.ru/calendar/events/?responseMode=json');
+    final hdrs = <String, String>{
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
+    };
+    final response = await _httpClient.get(uri, headers: hdrs).timeout(_timeout);
+    if (response.statusCode != 200) {
+      throw ApiException('Calendar HTTP ${response.statusCode}', 'CALENDAR_ERROR');
+    }
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    if (decoded['result'] is Map<String, dynamic>) return decoded['result'] as Map<String, dynamic>;
+    return decoded;
+  }
+
+  /// Creates or updates a planned calendar event via the website form endpoint.
+  /// [data] is the form-urlencoded body. Returns the server response.
+  Future<Map<String, dynamic>> postCalendarEvent(Map<String, String> data) async {
+    final uri = Uri.parse('https://easyfinance.ru/calendar/add/?responseMode=json');
+    final hdrs = <String, String>{
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Origin': 'https://easyfinance.ru',
+      'Referer': 'https://easyfinance.ru/calendar/',
+      'Content-Type': 'application/x-www-form-urlencoded',
+      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
+    };
+    final response = await _httpClient.post(uri, headers: hdrs, body: data).timeout(_timeout);
+    if (response.statusCode != 200) {
+      throw ApiException('Calendar HTTP ${response.statusCode}: ${response.body}', 'CALENDAR_POST_ERROR');
+    }
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    if (decoded['result'] is Map<String, dynamic>) return decoded['result'] as Map<String, dynamic>;
+    return decoded;
+  }
+
+  /// Deletes a calendar event by operation id.
+  Future<void> deleteCalendarEvent(String operationId, String chainId) async {
+    final uri = Uri.parse('https://easyfinance.ru/calendar/delete/?responseMode=json');
+    final hdrs = <String, String>{
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
+      'Origin': 'https://easyfinance.ru',
+      'Referer': 'https://easyfinance.ru/calendar/',
+      'Content-Type': 'application/x-www-form-urlencoded',
+      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
+    };
+    final body = <String, String>{
+      'responseMode': 'json',
+      'id': operationId,
+      'chain': chainId,
+    };
+    final response = await _httpClient.post(uri, headers: hdrs, body: body).timeout(_timeout);
+    if (response.statusCode != 200) {
+      throw ApiException('Calendar delete HTTP ${response.statusCode}: ${response.body}', 'CALENDAR_DELETE_ERROR');
+    }
+  }
+
   Future<DebugResponse> getRaw(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
     final response = await _httpClient.get(uri).timeout(_timeout);

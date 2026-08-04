@@ -151,6 +151,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         webSession: webSession,
       );
       await store.fetchAllData();
+      await plannedStore.syncFromServer();
       NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
@@ -195,6 +196,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         webSession: webSession,
       );
       await store.fetchAllData();
+      await plannedStore.syncFromServer();
       NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
