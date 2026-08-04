@@ -9,6 +9,10 @@ class FinancialEvent {
   final int? dayOfMonth;
   final String? specificDate;
   final bool enabled;
+  final String? accountId;
+  final String? categoryId;
+  final String? tags;
+  final int repeatMode; // 0=none, 1=daily, 7=weekly, 30=monthly, 90=quarterly, 365=yearly
 
   FinancialEvent({
     required this.id,
@@ -21,7 +25,13 @@ class FinancialEvent {
     this.dayOfMonth,
     this.specificDate,
     this.enabled = true,
+    this.accountId,
+    this.categoryId,
+    this.tags,
+    this.repeatMode = 0,
   });
+
+  bool get isRepeating => repeatMode > 0;
 
   DateTime nextOccurrence() {
     if (date.isNotEmpty) {
@@ -59,6 +69,10 @@ class FinancialEvent {
     'dayOfMonth': dayOfMonth,
     'specificDate': specificDate,
     'enabled': enabled,
+    if (accountId != null) 'accountId': accountId,
+    if (categoryId != null) 'categoryId': categoryId,
+    if (tags != null) 'tags': tags,
+    'repeatMode': repeatMode,
   };
 
   factory FinancialEvent.fromJson(Map<String, dynamic> json) => FinancialEvent(
@@ -72,5 +86,9 @@ class FinancialEvent {
     dayOfMonth: json['dayOfMonth'] as int?,
     specificDate: json['specificDate'] as String?,
     enabled: json['enabled'] as bool? ?? true,
+    accountId: json['accountId'] as String?,
+    categoryId: json['categoryId'] as String?,
+    tags: json['tags'] as String?,
+    repeatMode: json['repeatMode'] as int? ?? 0,
   );
 }
