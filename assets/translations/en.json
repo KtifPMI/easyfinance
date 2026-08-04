@@ -187,6 +187,11 @@
   "categories.delete": "Delete",
   "categories.cancel": "Cancel",
   "categories.confirm_delete": "Delete category?",
+  "categories.system": "System",
+  "categories.custom": "Custom",
+  "categories.parent": "Parent category",
+  "categories.no_parent": "No parent",
+  "categories.no_categories": "No categories. Add your first one.",
 
   "budget.title": "Plan",
   "budget.budget": "Budget",

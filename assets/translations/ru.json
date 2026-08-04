@@ -187,6 +187,12 @@
   "categories.delete": "Удалить",
   "categories.cancel": "Отмена",
   "categories.confirm_delete": "Удалить категорию?",
+  "categories.system": "Системная",
+  "categories.custom": "Моя",
+  "categories.parent": "Родительская категория",
+  "categories.no_parent": "Без родителя",
+  "categories.no_categories": "Нет категорий. Добавьте первую.",
+  "more.categories": "Справочник категорий",
 
   "budget.title": "План",
   "budget.budget": "Бюджет",
