@@ -21,7 +21,7 @@ class AddAccountScreen extends StatefulWidget {
 class _AddAccountScreenState extends State<AddAccountScreen> {
   final _nameCtrl = TextEditingController();
   final _balanceCtrl = TextEditingController();
-  String _type = 'account';
+  String _type = 'cash';
   String _currencyId = '1';
   int _state = 0;
   bool _isFavorite = false;
@@ -34,8 +34,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   String _paymentType = 'annuity';
   int _paymentDay = 1;
 
-  bool get _isCreditType => _type == 'credit';
-  bool get _isDebtType => _type == 'credit' || _type == 'loan_received';
+  bool get _isCreditType => _type == 'credit' || _type == 'credit_card';
+  bool get _isDebtType => _type == 'credit' || _type == 'credit_card' || _type == 'loan_received';
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
 
@@ -167,25 +167,40 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
 
   String _iconForType(String type) {
     switch (type) {
-      case 'card': return 'credit_card';
-      case 'credit': return 'credit_card';
-      case 'savings': return 'savings';
-      case 'electronic': return 'wallet';
+      case 'card': case 'credit_card': return 'credit_card';
+      case 'credit': case 'loan_received': return 'credit_card';
       case 'loan_given': return 'payments';
-      case 'loan_received': return 'credit_card';
-      case 'car': return 'account_balance';
+      case 'deposit': case 'savings_plan': case 'insurance_savings':
+      case 'npf': case 'pension': return 'savings';
+      case 'electronic': return 'wallet';
+      case 'bank_account': return 'account_balance';
+      case 'broker': case 'stocks': case 'bonds':
+      case 'other_securities': case 'pif': case 'ofbu':
+      case 'fund': case 'pamm': case 'oms': return 'account_balance';
+      case 'real_estate': case 'car': case 'motorcycle':
+      case 'water_transport': case 'air_transport':
+      case 'art': case 'business': case 'other_property': return 'account_balance';
+      case 'bonus_card': return 'card_giftcard';
       default: return 'cash';
     }
   }
 
   String _colorForType(String type) {
     switch (type) {
-      case 'card': return '#FFD700';
+      case 'card': case 'credit_card': return '#FFD700';
       case 'credit': case 'loan_received': return '#EF4444';
-      case 'savings': return '#FF9800';
-      case 'electronic': return '#00BCD4';
       case 'loan_given': return '#16A34A';
-      case 'car': return '#795548';
+      case 'deposit': case 'savings_plan':
+      case 'insurance_savings': case 'npf': case 'pension': return '#FF9800';
+      case 'electronic': return '#00BCD4';
+      case 'bank_account': return '#F59E0B';
+      case 'broker': case 'stocks': case 'bonds':
+      case 'other_securities': case 'pif': case 'ofbu':
+      case 'fund': case 'pamm': case 'oms': return '#7C3AED';
+      case 'real_estate': case 'car': case 'motorcycle':
+      case 'water_transport': case 'air_transport':
+      case 'art': case 'business': case 'other_property': return '#795548';
+      case 'bonus_card': return '#E91E63';
       default: return '#16A34A';
     }
   }
@@ -401,14 +416,37 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
 
 String _typeKeyFromId(int id) {
   switch (id) {
-    case 1: return 'account';
+    case 1: return 'cash';
     case 2: return 'card';
-    case 5: return 'savings';
-    case 7: return 'loan_given';
-    case 8: return 'credit';
-    case 9: return 'loan_received';
+    case 5: return 'deposit';
+    case 6: return 'loan_given';
+    case 7: return 'loan_received';
+    case 8: return 'credit_card';
+    case 9: return 'credit';
+    case 10: return 'oms';
+    case 11: return 'stocks';
+    case 12: return 'pif';
+    case 13: return 'ofbu';
+    case 14: return 'pension';
     case 15: return 'electronic';
-    case 28: return 'car';
-    default: return 'account';
+    case 16: return 'bank_account';
+    case 17: return 'real_estate';
+    case 18: return 'car';
+    case 19: return 'other_securities';
+    case 20: return 'fund';
+    case 21: return 'insurance_savings';
+    case 22: return 'savings_plan';
+    case 23: return 'npf';
+    case 24: return 'water_transport';
+    case 25: return 'art';
+    case 26: return 'business';
+    case 27: return 'other_property';
+    case 28: return 'air_transport';
+    case 29: return 'motorcycle';
+    case 30: return 'bonds';
+    case 31: return 'pamm';
+    case 32: return 'broker';
+    case 33: return 'bonus_card';
+    default: return 'cash';
   }
 }

@@ -22,12 +22,35 @@ const Map<String, String> _iconColor = {
 const Map<int, String> accountTypeLabels = {
   1: 'accounts.type.cash',
   2: 'accounts.type.card',
-  5: 'accounts.type.bank_account',
-  7: 'accounts.type.loan_given',
-  8: 'accounts.type.credit',
-  9: 'accounts.type.loan_received',
+  5: 'accounts.type.deposit',
   15: 'accounts.type.electronic',
-  28: 'accounts.type.car',
+  16: 'accounts.type.bank_account',
+  6: 'accounts.type.loan_given',
+  7: 'accounts.type.loan_received',
+  8: 'accounts.type.credit_card',
+  9: 'accounts.type.credit',
+  32: 'accounts.type.broker',
+  10: 'accounts.type.oms',
+  11: 'accounts.type.stocks',
+  30: 'accounts.type.bonds',
+  19: 'accounts.type.other_securities',
+  12: 'accounts.type.pif',
+  13: 'accounts.type.ofbu',
+  20: 'accounts.type.fund',
+  21: 'accounts.type.insurance_savings',
+  22: 'accounts.type.savings_plan',
+  23: 'accounts.type.npf',
+  14: 'accounts.type.pension',
+  31: 'accounts.type.pamm',
+  17: 'accounts.type.real_estate',
+  18: 'accounts.type.car',
+  24: 'accounts.type.water_transport',
+  25: 'accounts.type.art',
+  26: 'accounts.type.business',
+  27: 'accounts.type.other_property',
+  29: 'accounts.type.motorcycle',
+  28: 'accounts.type.air_transport',
+  33: 'accounts.type.bonus_card',
 };
 
 class Account {
@@ -57,7 +80,7 @@ class Account {
   final String? description;
   final String? bankId;
 
-  bool get isCredit => type == 'credit';
+  bool get isCredit => type == 'credit' || type == 'credit_card';
 
   Account({
     required this.id,
@@ -67,7 +90,7 @@ class Account {
     this.currencyId,
     this.icon = 'cash',
     this.color = '#16A34A',
-    this.type = 'account',
+    this.type = 'cash',
     this.includeInTotal = true,
     this.isArchived = false,
     this.isFavorite = false,
@@ -115,7 +138,7 @@ class Account {
     currencyId: json['currency_id']?.toString(),
     icon: json['icon']?.toString() ?? 'cash',
     color: json['color']?.toString() ?? '#16A34A',
-    type: json['type']?.toString() ?? 'account',
+    type: json['type']?.toString() ?? 'cash',
     includeInTotal: json['include_in_total'] == true,
     isArchived: json['is_archived'] == true,
     isFavorite: json['is_favorite'] == true,
@@ -168,33 +191,64 @@ class Account {
   }
 
   static String _parseAccountType(dynamic typeId) {
-    if (typeId == null) return 'account';
+    if (typeId == null) return 'cash';
     final id = int.tryParse(typeId.toString()) ?? 0;
     switch (id) {
-      case 1: return 'account';
+      case 1: return 'cash';
       case 2: return 'card';
-      case 5: return 'savings';
-      case 7: return 'loan_given';
-      case 8: return 'credit';
-      case 9: return 'loan_received';
+      case 5: return 'deposit';
+      case 6: return 'loan_given';
+      case 7: return 'loan_received';
+      case 8: return 'credit_card';
+      case 9: return 'credit';
+      case 10: return 'oms';
+      case 11: return 'stocks';
+      case 12: return 'pif';
+      case 13: return 'ofbu';
+      case 14: return 'pension';
       case 15: return 'electronic';
-      case 16: return 'card';
-      case 28: return 'car';
-      default: return 'account';
+      case 16: return 'bank_account';
+      case 17: return 'real_estate';
+      case 18: return 'car';
+      case 19: return 'other_securities';
+      case 20: return 'fund';
+      case 21: return 'insurance_savings';
+      case 22: return 'savings_plan';
+      case 23: return 'npf';
+      case 24: return 'water_transport';
+      case 25: return 'art';
+      case 26: return 'business';
+      case 27: return 'other_property';
+      case 28: return 'air_transport';
+      case 29: return 'motorcycle';
+      case 30: return 'bonds';
+      case 31: return 'pamm';
+      case 32: return 'broker';
+      case 33: return 'bonus_card';
+      default: return 'cash';
     }
   }
 }
 
 String groupForType(String type) {
   switch (type) {
-    case 'account': case 'card': case 'electronic': case 'savings':
+    case 'cash': case 'card': case 'deposit': case 'electronic': case 'bank_account':
       return 'money';
-    case 'loan_received': case 'credit':
+    case 'loan_received': case 'credit_card': case 'credit':
       return 'owed_by_me';
     case 'loan_given':
       return 'owed_to_me';
-    case 'car':
+    case 'broker': case 'oms': case 'stocks': case 'bonds':
+    case 'other_securities': case 'pif': case 'ofbu':
+    case 'fund': case 'insurance_savings': case 'savings_plan':
+    case 'npf': case 'pension': case 'pamm':
+      return 'investments';
+    case 'real_estate': case 'car': case 'water_transport':
+    case 'art': case 'business': case 'other_property':
+    case 'motorcycle': case 'air_transport':
       return 'property';
+    case 'bonus_card':
+      return 'loyalty';
     default:
       return 'money';
   }

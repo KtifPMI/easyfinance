@@ -1380,13 +1380,37 @@ class FinanceStore extends ChangeNotifier {
 
   String _accountTypeToApi(String type) {
     switch (type) {
-      case 'account': return '1';
+      case 'cash': return '1';
       case 'card': return '2';
-      case 'savings': return '5';
-      case 'loan_given': return '7';
-      case 'credit': return '8';
-      case 'loan_received': return '9';
+      case 'deposit': return '5';
       case 'electronic': return '15';
+      case 'bank_account': return '16';
+      case 'loan_given': return '6';
+      case 'loan_received': return '7';
+      case 'credit_card': return '8';
+      case 'credit': return '9';
+      case 'broker': return '32';
+      case 'oms': return '10';
+      case 'stocks': return '11';
+      case 'bonds': return '30';
+      case 'other_securities': return '19';
+      case 'pif': return '12';
+      case 'ofbu': return '13';
+      case 'fund': return '20';
+      case 'insurance_savings': return '21';
+      case 'savings_plan': return '22';
+      case 'npf': return '23';
+      case 'pension': return '14';
+      case 'pamm': return '31';
+      case 'real_estate': return '17';
+      case 'car': return '18';
+      case 'water_transport': return '24';
+      case 'art': return '25';
+      case 'business': return '26';
+      case 'other_property': return '27';
+      case 'motorcycle': return '29';
+      case 'air_transport': return '28';
+      case 'bonus_card': return '33';
       default: return '1';
     }
   }

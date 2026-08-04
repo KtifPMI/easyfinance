@@ -89,7 +89,7 @@
   "accounts.debt_amount": "Сумма долга",
   "accounts.type": "Тип счёта",
   "accounts.type.cash": "Наличные",
-  "accounts.type.card": "Карта",
+  "accounts.type.card": "Дебетовая карта",
   "accounts.type.deposit": "Депозит",
   "accounts.type.electronic": "Электронный кошелёк",
   "accounts.type.bank_account": "Банковский счёт",
