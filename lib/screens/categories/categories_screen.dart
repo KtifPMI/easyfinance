@@ -210,7 +210,7 @@ class CategoriesScreen extends StatelessWidget {
                 AppInput(label: context.tr('categories.name'), controller: nameCtrl),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  initialValue: type,
                   decoration: InputDecoration(
                     labelText: context.tr('categories.type'),
                     filled: true, fillColor: AppColors.cardFor(context),
@@ -225,7 +225,7 @@ class CategoriesScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String?>(
-                  value: parentId,
+                  initialValue: parentId,
                   decoration: InputDecoration(
                     labelText: context.tr('categories.parent'),
                     filled: true, fillColor: AppColors.cardFor(context),
@@ -292,7 +292,7 @@ class CategoriesScreen extends StatelessWidget {
                 AppInput(label: context.tr('categories.name'), controller: nameCtrl),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  initialValue: type,
                   decoration: InputDecoration(
                     labelText: context.tr('categories.type'),
                     filled: true, fillColor: AppColors.cardFor(context),
