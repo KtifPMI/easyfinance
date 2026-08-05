@@ -297,26 +297,17 @@ class _DebugScreenState extends State<DebugScreen> {
     'tags.post': '''{
   "request": {
     "request_data": {
-      "tags": [
-        {
-          "user_id": "USER_ID",
-          "name": "test_tag",
-          "operation_id": "OPERATION_ID"
-        }
-      ]
+      "name": "test_tag",
+      "created_at": "DATE",
+      "updated_at": "DATE"
     }
   }
 }''',
     'tags.set': '''{
   "request": {
     "request_data": {
-      "tags": [
-        {
-          "id": "TAG_ID",
-          "name": "renamed_tag",
-          "updated_at": "DATE"
-        }
-      ]
+      "name": "renamed_tag",
+      "updated_at": "DATE"
     }
   }
 }''',
