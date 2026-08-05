@@ -550,7 +550,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 ProgressBar(percent: budgetForecastPct, color: forecastColor),
                 const SizedBox(height: 4),
-                Text(context.tr('budget.forecast') + ' ${budgetForecastPct.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                Text('${context.tr('budget.forecast')} ${budgetForecastPct.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
               ],
             ),
           ),
@@ -684,11 +684,11 @@ class HomeScreen extends StatelessWidget {
         AppCard(
           child: Row(
             children: [
-              Expanded(child: _statBlock(context.tr('home.income'), store.fmt(income), AppColors.success)),
+              Expanded(child: _statBlock(context, context.tr('home.income'), store.fmt(income), AppColors.success)),
               Container(width: 1, height: 32, color: AppColors.border),
-              Expanded(child: _statBlock(context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
+              Expanded(child: _statBlock(context, context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
               Container(width: 1, height: 32, color: AppColors.border),
-              Expanded(child: _statBlock(context.tr('reports.balance'), store.fmt(profit), profit >= 0 ? AppColors.success : AppColors.danger)),
+              Expanded(child: _statBlock(context, context.tr('reports.balance'), store.fmt(profit), profit >= 0 ? AppColors.success : AppColors.danger)),
             ],
           ),
         ),
@@ -697,7 +697,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _statBlock(String label, String amount, Color color) {
+  Widget _statBlock(BuildContext context, String label, String amount, Color color) {
     return Column(
       children: [
         Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.center),

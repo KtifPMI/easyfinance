@@ -114,13 +114,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     );
   }
 
-  Widget _sectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
-    );
-  }
-
   List<Widget> _buildGrouped(BuildContext context, FinanceStore store, List<cat.Category> cats) {
     final grouped = <String?, List<cat.Category>>{};
     for (final c in cats) {

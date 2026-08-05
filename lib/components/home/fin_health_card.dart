@@ -83,6 +83,11 @@ class FinHealthCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(context.tr(labelKey), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ],
       ),
     );

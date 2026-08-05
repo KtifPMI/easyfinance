@@ -13,7 +13,6 @@ import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
 import '../../models/operation_template.dart';
-import '../../models/budget.dart';
 import '../../services/currency_rate_service.dart';
 import '../../utils/calc.dart';
 
@@ -574,7 +573,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     }
     final topIds = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    final top5 = topIds.take(5).map((e) => cats.where((c) => c.id == e.key).firstOrNull).where((c) => c != null).cast<cat.Category>().toList();
+    final top5 = <cat.Category>[];
+    for (final e in topIds.take(5)) {
+      final c = cats.where((x) => x.id == e.key).firstOrNull;
+      if (c != null) top5.add(c);
+    }
     if (top5.isEmpty) return const SizedBox.shrink();
 
     return Padding(
