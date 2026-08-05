@@ -30,6 +30,7 @@ class _DebugScreenState extends State<DebugScreen> {
   final _postBodyCtrl = TextEditingController();
   final _webLoginCtrl = TextEditingController();
   final _webPassCtrl = TextEditingController();
+  final _tagIdCtrl = TextEditingController();
   bool _webLoggedIn = false;
   String _postMethod = 'operations.post';
 
@@ -459,11 +460,16 @@ class _DebugScreenState extends State<DebugScreen> {
       var body = _postBodyCtrl.text;
       body = body.replaceAll('USER_ID', api.userId ?? '')
           .replaceAll('ACCOUNT_ID', store.accounts.isNotEmpty ? store.accounts.first.id : '1')
+          .replaceAll('CATEGORY_ID', store.categories.where((c) => c.type == 'expense').firstOrNull?.id ?? '')
           .replaceAll('DATE', isoStr)
           .replaceAll('TIME', timeStr)
           .replaceAll('CLIENT_ID', '${now.millisecondsSinceEpoch % 100000}');
 
-      final uri = api.buildPostUri(_postMethod);
+      var uri = api.buildPostUri(_postMethod);
+      if (_postMethod == 'tags.set' && _tagIdCtrl.text.isNotEmpty) {
+        uri = uri.replace(queryParameters: {...uri.queryParameters, 'tag_id': _tagIdCtrl.text});
+      }
+
       final resp = await http.post(uri, body: body, headers: {'Content-Type': 'application/json'}).timeout(const Duration(seconds: 15));
 
       if (mounted) {
@@ -522,6 +528,7 @@ class _DebugScreenState extends State<DebugScreen> {
     _postBodyCtrl.dispose();
     _webLoginCtrl.dispose();
     _webPassCtrl.dispose();
+    _tagIdCtrl.dispose();
     super.dispose();
   }
 
@@ -660,6 +667,20 @@ class _DebugScreenState extends State<DebugScreen> {
               style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
             ),
           ),
+          if (_postMethod == 'tags.set')
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              child: TextField(
+                controller: _tagIdCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'tag_id (required for tags.set)',
+                  hintText: 'Enter tag ID',
+                  isDense: true, border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             child: SizedBox(
