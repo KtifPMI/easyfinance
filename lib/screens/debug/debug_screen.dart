@@ -256,13 +256,17 @@ class _DebugScreenState extends State<DebugScreen> {
     "request_data": {
       "categories": [
         {
+          "parent_id": "0",
+          "system_id": "0",
+          "user_id": "USER_ID",
           "name": "Test Category",
           "type": "-1",
-          "icon": "accountimage1",
-          "system_id": "0",
+          "is_hidden": "0",
           "custom": "1",
           "created_at": "DATE",
-          "updated_at": "DATE"
+          "updated_at": "DATE",
+          "deleted_at": null,
+          "client_id": 443
         }
       ]
     }
@@ -274,11 +278,17 @@ class _DebugScreenState extends State<DebugScreen> {
       "categories": [
         {
           "id": "CATEGORY_ID",
+          "parent_id": "0",
+          "system_id": "0",
+          "user_id": "USER_ID",
           "name": "Renamed Category",
           "type": "-1",
-          "icon": "accountimage1",
-          "parent_id": null,
-          "updated_at": "DATE"
+          "is_hidden": "0",
+          "custom": "1",
+          "created_at": "DATE",
+          "updated_at": "DATE",
+          "deleted_at": null,
+          "client_id": 444
         }
       ]
     }
