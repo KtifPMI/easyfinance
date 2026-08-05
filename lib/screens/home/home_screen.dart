@@ -460,7 +460,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        ...store.recommendations.take(3).map((r) => Padding(
+        ...store.recommendations.take(3).map((r) => GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RecommendationsScreen())),
+          child: Padding(
           padding: const EdgeInsets.only(bottom: 6),
           child: AppCard(
             child: Row(
@@ -481,7 +483,7 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-        )),
+        ))),
         const SizedBox(height: 16),
       ],
     );
@@ -626,7 +628,10 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        ...plannedPayments.upcomingEvents.take(5).map((e) => _upcomingTile(context, e, store)),
+        ...plannedPayments.upcomingEvents.take(5).map((e) => GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/planned-payments'),
+          child: _upcomingTile(context, e, store),
+        )),
         const SizedBox(height: 16),
       ],
     );
