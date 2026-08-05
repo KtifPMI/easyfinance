@@ -41,6 +41,8 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('operations.post', 'operations.post'),
     _MethodItem('operations.set', 'operations.set'),
     _MethodItem('categories.get', 'categories.get'),
+    _MethodItem('categories.post', 'categories.post'),
+    _MethodItem('categories.set', 'categories.set'),
     _MethodItem('currencies.get', 'currencies.get'),
     _MethodItem('budget.get', 'budget.get'),
     _MethodItem('budget.post', 'budget.post'),
@@ -57,6 +59,8 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('targets.post', 'targets.post'),
     _MethodItem('targets.set', 'targets.set'),
     _MethodItem('tags.get', 'tags.get'),
+    _MethodItem('tags.post', 'tags.post'),
+    _MethodItem('tags.set', 'tags.set'),
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
   ];
 
@@ -82,6 +86,21 @@ class _DebugScreenState extends State<DebugScreen> {
           "updated_at": "DATE",
           "deleted_at": null,
           "client_id": CLIENT_ID
+        }
+      ]
+    }
+  }
+}''',
+    'operations.set': '''{
+  "request": {
+    "request_data": {
+      "operations": [
+        {
+          "id": "OPERATION_ID",
+          "amount": "-200.00",
+          "comment": "Updated comment",
+          "accepted": true,
+          "updated_at": "DATE"
         }
       ]
     }
@@ -227,6 +246,61 @@ class _DebugScreenState extends State<DebugScreen> {
           "amount": 100000,
           "amount_done": 0,
           "end": "2026-12-31"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.post': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "user_id": "USER_ID",
+          "name": "Test Category",
+          "type": "0",
+          "system_id": null,
+          "created_at": "DATE",
+          "updated_at": "DATE"
+        }
+      ]
+    }
+  }
+}''',
+    'categories.set': '''{
+  "request": {
+    "request_data": {
+      "categories": [
+        {
+          "id": "CATEGORY_ID",
+          "name": "Renamed Category",
+          "updated_at": "DATE"
+        }
+      ]
+    }
+  }
+}''',
+    'tags.post': '''{
+  "request": {
+    "request_data": {
+      "tags": [
+        {
+          "user_id": "USER_ID",
+          "name": "test_tag",
+          "operation_id": "OPERATION_ID"
+        }
+      ]
+    }
+  }
+}''',
+    'tags.set': '''{
+  "request": {
+    "request_data": {
+      "tags": [
+        {
+          "id": "TAG_ID",
+          "name": "renamed_tag",
+          "updated_at": "DATE"
         }
       ]
     }
