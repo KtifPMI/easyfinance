@@ -527,7 +527,9 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
         if (totalPlanned > 0)
-          AppCard(
+          GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlanScreen())),
+            child: AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -553,6 +555,7 @@ class HomeScreen extends StatelessWidget {
                 Text('${context.tr('budget.forecast')} ${budgetForecastPct.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
               ],
             ),
+          ),
           ),
         const SizedBox(height: 16),
       ],
