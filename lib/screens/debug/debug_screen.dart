@@ -30,7 +30,6 @@ class _DebugScreenState extends State<DebugScreen> {
   final _postBodyCtrl = TextEditingController();
   final _webLoginCtrl = TextEditingController();
   final _webPassCtrl = TextEditingController();
-  final _tagIdCtrl = TextEditingController();
   bool _webLoggedIn = false;
   String _postMethod = 'operations.post';
 
@@ -60,8 +59,6 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('targets.post', 'targets.post'),
     _MethodItem('targets.set', 'targets.set'),
     _MethodItem('tags.get', 'tags.get'),
-    _MethodItem('tags.post', 'tags.post'),
-    _MethodItem('tags.set', 'tags.set'),
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
   ];
 
@@ -279,36 +276,13 @@ class _DebugScreenState extends State<DebugScreen> {
       "categories": [
         {
           "id": "CATEGORY_ID",
-          "parent_id": "0",
-          "system_id": "0",
-          "user_id": "USER_ID",
           "name": "Renamed Category",
           "type": "-1",
-          "is_hidden": "0",
-          "custom": "1",
-          "created_at": "DATE",
-          "updated_at": "DATE",
-          "deleted_at": null,
-          "client_id": 444
+          "icon": "accountimage1",
+          "parent_id": null,
+          "updated_at": "DATE"
         }
       ]
-    }
-  }
-}''',
-    'tags.post': '''{
-  "request": {
-    "request_data": {
-      "name": "test_tag",
-      "created_at": "DATE",
-      "updated_at": "DATE"
-    }
-  }
-}''',
-    'tags.set': '''{
-  "request": {
-    "request_data": {
-      "name": "renamed_tag",
-      "updated_at": "DATE"
     }
   }
 }''',
@@ -466,9 +440,6 @@ class _DebugScreenState extends State<DebugScreen> {
           .replaceAll('CLIENT_ID', '${now.millisecondsSinceEpoch % 100000}');
 
       var uri = api.buildPostUri(_postMethod);
-      if (_postMethod == 'tags.set' && _tagIdCtrl.text.isNotEmpty) {
-        uri = uri.replace(queryParameters: {...uri.queryParameters, 'tag_id': _tagIdCtrl.text});
-      }
 
       final resp = await http.post(uri, body: body, headers: {'Content-Type': 'application/json'}).timeout(const Duration(seconds: 15));
 
@@ -528,7 +499,6 @@ class _DebugScreenState extends State<DebugScreen> {
     _postBodyCtrl.dispose();
     _webLoginCtrl.dispose();
     _webPassCtrl.dispose();
-    _tagIdCtrl.dispose();
     super.dispose();
   }
 
@@ -667,20 +637,6 @@ class _DebugScreenState extends State<DebugScreen> {
               style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
             ),
           ),
-          if (_postMethod == 'tags.set')
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-              child: TextField(
-                controller: _tagIdCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'tag_id (required for tags.set)',
-                  hintText: 'Enter tag ID',
-                  isDense: true, border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                style: const TextStyle(fontSize: 13),
-              ),
-            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             child: SizedBox(
