@@ -35,6 +35,8 @@ jobs:
           class AppConfig {
             static const String appId = '${{ secrets.APP_ID }}';
             static const String secretKey = '${{ secrets.SECRET_KEY }}';
+            static const String yandexVisionApiKey = '${{ secrets.YANDEX_API_KEY }}';
+            static const String yandexFolderId = '${{ secrets.YANDEX_FOLDER_ID }}';
           }
           EOF
 
