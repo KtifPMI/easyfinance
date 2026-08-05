@@ -256,10 +256,11 @@ class _DebugScreenState extends State<DebugScreen> {
     "request_data": {
       "categories": [
         {
-          "user_id": "USER_ID",
           "name": "Test Category",
-          "type": "0",
+          "type": "-1",
+          "icon": "accountimage1",
           "system_id": "0",
+          "custom": "1",
           "created_at": "DATE",
           "updated_at": "DATE"
         }
@@ -274,7 +275,9 @@ class _DebugScreenState extends State<DebugScreen> {
         {
           "id": "CATEGORY_ID",
           "name": "Renamed Category",
-          "system_id": "0",
+          "type": "-1",
+          "icon": "accountimage1",
+          "parent_id": null,
           "updated_at": "DATE"
         }
       ]
