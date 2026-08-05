@@ -259,7 +259,7 @@ class _DebugScreenState extends State<DebugScreen> {
           "user_id": "USER_ID",
           "name": "Test Category",
           "type": "0",
-          "system_id": null,
+          "system_id": "0",
           "created_at": "DATE",
           "updated_at": "DATE"
         }
@@ -274,6 +274,7 @@ class _DebugScreenState extends State<DebugScreen> {
         {
           "id": "CATEGORY_ID",
           "name": "Renamed Category",
+          "system_id": "0",
           "updated_at": "DATE"
         }
       ]
