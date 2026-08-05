@@ -14,9 +14,24 @@ String formatMoney(double amount, {String currency = 'RUB'}) {
   final symbol = symbols[currency] ?? currency;
   final sign = amount < 0 ? '-' : '';
   final abs = amount.abs();
-  final locale = Intl.defaultLocale ?? 'ru';
-  final formatted = NumberFormat('#,###', locale).format(abs);
-  return '$sign$formatted $symbol';
+  final parts = abs.toStringAsFixed(2).split('.');
+  final intPart = parts[0].replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]} ',
+  );
+  return '$sign$intPart.${parts[1]} $symbol';
+}
+
+String formatMoneyWhole(double amount, {String currency = 'RUB'}) {
+  final symbols = {'RUB': '₽', 'USD': '\$', 'EUR': '€'};
+  final symbol = symbols[currency] ?? currency;
+  final sign = amount < 0 ? '-' : '';
+  final abs = amount.abs();
+  final intPart = abs.toStringAsFixed(0).replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]} ',
+  );
+  return '$sign$intPart $symbol';
 }
 
 String formatSignedMoney(double amount, {String currency = 'RUB'}) {

@@ -18,6 +18,7 @@ import '../accounts/add_account_screen.dart';
 import '../accounts/accounts_screen.dart';
 import '../budget/plan_screen.dart';
 import '../recommendations/recommendations_screen.dart';
+import '../reports/reports_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -88,9 +89,10 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _buildRatesSection(context, store),
               _buildRecommendationsSection(context, store),
+              _buildUpcomingPaymentsSection(context, plannedPayments, store),
               _buildBudgetsSection(context, store),
               _buildGoalsSection(context, store),
-              _buildUpcomingPaymentsSection(context, plannedPayments, store),
+              _buildReportsSection(context, store),
             ],
           ),
         );
@@ -100,6 +102,11 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildBalanceBanner(BuildContext context, FinanceStore store) {
     final savings = store.monthIncome - store.monthExpense;
+    final moneyAccounts = store.accounts.where((a) =>
+      !a.isArchived && a.includeInTotal &&
+      (a.type == 'cash' || a.type == 'card' || a.type == 'deposit' || a.type == 'bank_account')
+    );
+    final moneyTotal = moneyAccounts.fold<double>(0, (s, a) => s + a.balance);
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen())),
       child: Container(
@@ -115,12 +122,20 @@ class HomeScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+                Text(context.tr('home.capital'), style: TextStyle(color: Colors.white70, fontSize: 13)),
                 Icon(Icons.chevron_right, color: Colors.white54, size: 20),
               ],
             ),
             const SizedBox(height: 4),
             Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(context.tr('home.money'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                const Spacer(),
+                Text(store.fmt(moneyTotal), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
+              ],
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -477,7 +492,9 @@ class HomeScreen extends StatelessWidget {
 
     final totalPlanned = store.budgets.fold(0.0, (sum, b) => sum + b.limit);
     final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
-    final budgetPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
+    final totalForecast = store.budgets.fold(0.0, (sum, b) => sum + getBudgetForecastPercent(b) * b.limit / 100);
+    final budgetForecastPct = totalPlanned > 0 ? (totalForecast / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
+    final forecastColor = budgetForecastColor(budgetForecastPct);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,9 +548,9 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                ProgressBar(percent: budgetPercent, color: budgetPercent > 100 ? AppColors.expense : AppColors.primary),
+                ProgressBar(percent: budgetForecastPct, color: forecastColor),
                 const SizedBox(height: 4),
-                Text('${budgetPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                Text(context.tr('budget.forecast') + ' ${budgetForecastPct.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
               ],
             ),
           ),
@@ -641,6 +658,54 @@ class HomeScreen extends StatelessWidget {
       ),
     ),
   );
+
+  Widget _buildReportsSection(BuildContext context, FinanceStore store) {
+    final now = DateTime.now();
+    final monthOps = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, now)).toList();
+    final income = monthOps.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
+    final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
+    if (income == 0 && expense == 0) return const SizedBox.shrink();
+
+    final profit = income - expense;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(context.tr('reports.title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        AppCard(
+          child: Row(
+            children: [
+              Expanded(child: _statBlock(context.tr('home.income'), store.fmt(income), AppColors.success)),
+              Container(width: 1, height: 32, color: AppColors.border),
+              Expanded(child: _statBlock(context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
+              Container(width: 1, height: 32, color: AppColors.border),
+              Expanded(child: _statBlock(context.tr('reports.balance'), store.fmt(profit), profit >= 0 ? AppColors.success : AppColors.danger)),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _statBlock(String label, String amount, Color color) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.center),
+        const SizedBox(height: 4),
+        Text(amount, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: color), textAlign: TextAlign.center),
+      ],
+    );
+  }
 
   Color _parseColor(String hex) {
     hex = hex.replaceAll('#', '');

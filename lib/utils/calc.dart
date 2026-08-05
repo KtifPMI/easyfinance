@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/operation.dart';
@@ -233,4 +234,21 @@ double getTotalBalance(List<Account> accounts, Map<String, double> rates) {
 double getBudgetPercent(Budget budget) {
   if (budget.limit <= 0) return 0;
   return (budget.spent / budget.limit) * 100;
+}
+
+double getBudgetForecastPercent(Budget budget) {
+  if (budget.limit <= 0) return 0;
+  final now = DateTime.now();
+  final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+  final daysPassed = now.day.clamp(1, daysInMonth);
+  if (daysPassed <= 0 || budget.spent <= 0) return 0;
+  final dailyRate = budget.spent / daysPassed;
+  final forecast = dailyRate * daysInMonth;
+  return (forecast / budget.limit * 100).clamp(0.0, 300.0);
+}
+
+Color budgetForecastColor(double forecastPercent) {
+  if (forecastPercent > 90) return const Color(0xFFEF4444);
+  if (forecastPercent > 70) return const Color(0xFFF59E0B);
+  return const Color(0xFF16A34A);
 }

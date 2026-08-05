@@ -61,6 +61,11 @@ class OperationDetailScreen extends StatelessWidget {
           onPressed: () => _confirmRefund(context, store, op),
         ),
       IconButton(
+        icon: const Icon(Icons.copy),
+        tooltip: context.tr('operations.copy'),
+        onPressed: () => _copyOperation(context, store, op),
+      ),
+      IconButton(
         icon: const Icon(Icons.edit_outlined),
         onPressed: () => Navigator.pushNamed(context, '/add-operation',
             arguments: {'type': op.type, 'operationId': op.id}),
@@ -175,6 +180,23 @@ class OperationDetailScreen extends StatelessWidget {
       return (op.transferAmount! / op.amount).toStringAsFixed(2);
     }
     return '1.00';
+  }
+
+  void _copyOperation(BuildContext context, FinanceStore store, Operation op) {
+    final newId = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
+    store.addOperation(Operation(
+      id: newId,
+      type: op.type,
+      amount: op.amount,
+      transferAmount: op.transferAmount,
+      date: DateTime.now().toIso8601String().substring(0, 10),
+      accountId: op.accountId,
+      toAccountId: op.toAccountId,
+      categoryId: op.categoryId,
+      comment: op.comment,
+      tags: op.tags,
+      clientId: newId,
+    ));
   }
 
   void _confirmDelete(BuildContext context, FinanceStore store, Operation op) {

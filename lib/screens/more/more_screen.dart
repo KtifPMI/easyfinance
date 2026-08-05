@@ -13,6 +13,7 @@ import '../ai_assistant/ai_assistant_screen.dart';
 import '../templates/templates_screen.dart';
 import '../categories/categories_screen.dart';
 import '../tags/tags_screen.dart';
+import '../settings/support_screen.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -29,6 +30,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
       (Icons.bug_report_outlined, context.tr('more.debug'), const DebugScreen()),
+      (Icons.help_outline, context.tr('more.support'), const SupportScreen()),
     ];
 
     return ScreenScaffold(

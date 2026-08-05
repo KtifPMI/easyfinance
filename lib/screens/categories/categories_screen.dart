@@ -11,15 +11,41 @@ import '../../theme/theme.dart';
 import '../../utils/category_icons.dart';
 import '../../utils/translate_category.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabCtrl;
+  String _search = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _tabCtrl = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final incomes = store.categories.where((c) => c.type == 'income').toList();
-        final expenses = store.categories.where((c) => c.type == 'expense').toList();
+        final allIncomes = store.categories.where((c) => c.type == 'income').toList();
+        final allExpenses = store.categories.where((c) => c.type == 'expense').toList();
+        final incomes = _search.isEmpty
+            ? allIncomes
+            : allIncomes.where((c) => c.name.toLowerCase().contains(_search.toLowerCase())).toList();
+        final expenses = _search.isEmpty
+            ? allExpenses
+            : allExpenses.where((c) => c.name.toLowerCase().contains(_search.toLowerCase())).toList();
 
         return ScreenScaffold(
           title: context.tr('categories.title'),
@@ -29,26 +55,58 @@ class CategoriesScreen extends StatelessWidget {
             child: const Icon(Icons.add),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (incomes.isNotEmpty) ...[
-                _sectionHeader(context, context.tr('categories.incomes')),
-                const SizedBox(height: 8),
-                ..._buildGrouped(context, store, incomes),
-                const SizedBox(height: 16),
-              ],
-              if (expenses.isNotEmpty) ...[
-                _sectionHeader(context, context.tr('categories.expenses')),
-                const SizedBox(height: 8),
-                ..._buildGrouped(context, store, expenses),
-              ],
-              if (incomes.isEmpty && expenses.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: context.tr('common.search'),
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    filled: true,
+                    fillColor: AppColors.cardFor(context),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                  onChanged: (v) => setState(() => _search = v),
                 ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.cardFor(context),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TabBar(
+                  controller: _tabCtrl,
+                  labelColor: AppColors.primary,
+                  unselectedLabelColor: AppColors.textSecondaryFor(context),
+                  indicatorColor: AppColors.primary,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: [
+                    Tab(text: context.tr('categories.incomes')),
+                    Tab(text: context.tr('categories.expenses')),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabCtrl,
+                  children: [
+                    incomes.isEmpty
+                        ? Center(child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
+                        : SingleChildScrollView(child: Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Column(children: _buildGrouped(context, store, incomes)),
+                          )),
+                    expenses.isEmpty
+                        ? Center(child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
+                        : SingleChildScrollView(child: Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Column(children: _buildGrouped(context, store, expenses)),
+                          )),
+                  ],
+                ),
+              ),
             ],
           ),
         );
@@ -113,7 +171,7 @@ class CategoriesScreen extends StatelessWidget {
 
   Widget _categoryTile(BuildContext context, FinanceStore store, cat.Category c) {
     final icon = categoryIconFor(c, allCategories: store.categories);
-    final color = _parseColor(c.color);
+    final color = c.type == 'income' ? AppColors.income : AppColors.expense;
     final isSystem = c.isDefault;
 
     return Padding(
@@ -330,10 +388,5 @@ class CategoriesScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
   }
 }

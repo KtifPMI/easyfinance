@@ -147,8 +147,8 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           ],
           ...store.budgets.map((b) {
             final cat = store.getCategory(b.categoryId);
-            final percent = getBudgetPercent(b);
-            final color = _parseColor(cat?.color ?? '#6B7280');
+            final forecastPct = getBudgetForecastPercent(b);
+            final color = budgetForecastColor(forecastPct);
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: GestureDetector(
@@ -191,9 +191,9 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                         ],
                       ),
                       const SizedBox(height: 8),
-                      ProgressBar(percent: percent, color: color),
+                      ProgressBar(percent: forecastPct.clamp(0, 100), color: color),
                       const SizedBox(height: 4),
-                      Text('${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      Text(context.tr('budget.planned'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),

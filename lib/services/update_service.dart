@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../theme/theme.dart';
 
 class UpdateInfo {
   final String version;
@@ -93,9 +94,17 @@ class UpdateService {
     await OpenFilex.open(file.path);
   }
 
-  static Future<void> checkAndShow(BuildContext context) async {
+  static Future<void> checkAndShow(BuildContext context, {bool showLatest = false}) async {
     final update = await check();
-    if (update == null || !context.mounted) return;
+    if (update == null) {
+      if (showLatest && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.tr('update.latest_version')), backgroundColor: AppColors.success, duration: const Duration(seconds: 2)),
+        );
+      }
+      return;
+    }
+    if (!context.mounted) return;
 
     showDialog(
       context: context,

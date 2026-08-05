@@ -261,7 +261,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   void _save() {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
-    final amount = double.tryParse(_amountCtrl.text.trim()) ?? 0;
+    final amount = (double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.')) ?? 0).abs();
+    if (amount <= 0) return;
     final store = context.read<PlannedPaymentStore>();
 
     final event = FinancialEvent(

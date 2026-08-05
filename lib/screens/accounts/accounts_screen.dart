@@ -10,22 +10,32 @@ import '../../utils/currency_utils.dart';
 import '../../utils/format.dart';
 import 'add_account_screen.dart';
 
-class AccountsScreen extends StatelessWidget {
+class AccountsScreen extends StatefulWidget {
   const AccountsScreen({super.key});
+
+  @override
+  State<AccountsScreen> createState() => _AccountsScreenState();
+}
+
+class _AccountsScreenState extends State<AccountsScreen> {
+  String _search = '';
 
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final accounts = store.accounts.toList();
-        accounts.sort((a, b) {
+        final all = store.accounts.toList();
+        all.sort((a, b) {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
           final ga = groupOrder[groupForType(a.type)] ?? 99;
           final gb = groupOrder[groupForType(b.type)] ?? 99;
-          if (ga != gb) return ga.compareTo(gb);
-          return a.name.compareTo(b.name);
+          return ga != gb ? ga.compareTo(gb) : a.name.compareTo(b.name);
         });
+
+        final accounts = _search.isEmpty
+            ? all
+            : all.where((a) => a.name.toLowerCase().contains(_search.toLowerCase())).toList();
 
         final grouped = <String, List<Account>>{};
         for (final a in accounts) {
@@ -39,25 +49,50 @@ class AccountsScreen extends StatelessWidget {
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
             child: const Icon(Icons.add),
           ),
-          child: accounts.isEmpty
-              ? Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
+          child: accounts.isEmpty && all.isNotEmpty
+              ? Center(child: Text(context.tr('common.no_results'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(
                   children: [
-                    AppCard(
-                      child: Column(
-                        children: [
-                          Text(context.tr('accounts.my_capital'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                          const SizedBox(height: 4),
-                          Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-                          if (accounts.where((a) => !a.isArchived).length > 1) ...[
-                            const SizedBox(height: 8),
-                            _buildCurrencyRow(context, store),
-                          ],
-                        ],
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: context.tr('common.search'),
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          filled: true,
+                          fillColor: AppColors.cardFor(context),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        onChanged: (v) => setState(() => _search = v),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    ..._buildGrouped(context, store, grouped),
+                    if (accounts.isEmpty)
+                      Center(child: Text(context.tr('accounts.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
+                    else
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              AppCard(
+                                child: Column(
+                                  children: [
+                                    Text(context.tr('accounts.my_capital'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                                    const SizedBox(height: 4),
+                                    Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                                    if (all.where((a) => !a.isArchived).length > 1) ...[
+                                      const SizedBox(height: 8),
+                                      _buildCurrencyRow(context, store),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ..._buildGrouped(context, store, grouped),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
         );

@@ -502,7 +502,7 @@ class FinanceStore extends ChangeNotifier {
     final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
     final prevExpense = prevOps.where((o) => o.type == 'expense' && !isInvest(o)).fold(0.0, (s, o) => s + o.amount);
 
-    String fmt(double v) => v.toStringAsFixed(0);
+    String fmt(double v) => formatMoneyWhole(v, currency: 'RUB').replaceAll(' ₽', '');
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
 
     // 1 — budget overspent or near limit
@@ -946,7 +946,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> addOperation(Operation op) async {
     _error = null;
     if (_operations.length >= 1000) {
-      _error = 'Достигнут лимит в 1000 операций. Удалите старые операции для добавления новых.';
+      _error = 'LIMIT';
       notifyListeners();
       return;
     }

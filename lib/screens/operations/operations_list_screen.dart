@@ -25,7 +25,24 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   String _advAmountTo = '';
   String _advComment = '';
   String? _advTagName;
-  String? _advAccountId;
+  List<String> _advAccountIds = [];
+  bool _sortByInputTime = false;
+  String? _reportCategoryId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map<String, dynamic> && _reportCategoryId == null) {
+      setState(() {
+        _reportCategoryId = args['categoryId'] as String?;
+        final dateFrom = args['dateFrom'] as String?;
+        final dateTo = args['dateTo'] as String?;
+        if (dateFrom != null) _advDateFrom = DateTime.tryParse(dateFrom);
+        if (dateTo != null) _advDateTo = DateTime.tryParse(dateTo);
+      });
+    }
+  }
 
   bool get _hasAdvFilter =>
       _advTypeFilter != null ||
@@ -35,7 +52,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       _advAmountTo.isNotEmpty ||
       _advComment.isNotEmpty ||
       _advTagName != null ||
-      _advAccountId != null;
+      _advAccountIds.isNotEmpty;
 
   void _resetAdvFilter() {
     setState(() {
@@ -46,7 +63,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       _advAmountTo = '';
       _advComment = '';
       _advTagName = null;
-      _advAccountId = null;
+      _advAccountIds = [];
     });
   }
 
@@ -59,13 +76,13 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         if (_advTypeFilter != null) {
           ops = ops.where((o) => o.type == _advTypeFilter).toList();
         }
-        if (_advAccountId != null) {
-          ops = ops.where((o) => o.accountId == _advAccountId || o.toAccountId == _advAccountId).toList();
+        if (_reportCategoryId != null) {
+          ops = ops.where((o) => o.categoryId == _reportCategoryId).toList();
+        }
+        if (_advAccountIds.isNotEmpty) {
+          ops = ops.where((o) => _advAccountIds.contains(o.accountId) || (o.toAccountId != null && _advAccountIds.contains(o.toAccountId))).toList();
         }
 
-        if (_advTypeFilter != null) {
-          ops = ops.where((o) => o.type == _advTypeFilter).toList();
-        }
         if (_advDateFrom != null) {
           ops = ops.where((o) {
             final d = DateTime.tryParse(o.date);
@@ -95,6 +112,10 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           ops = ops.where((o) => store.getTagsForOperation(o).contains(_advTagName)).toList();
         }
 
+        if (_sortByInputTime) {
+          ops.sort((a, b) => (b.clientId ?? '').compareTo(a.clientId ?? ''));
+        }
+
         final grouped = groupByDay(ops);
 
         return Stack(
@@ -103,9 +124,16 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               title: context.tr('operations.title'),
               actions: [
                 IconButton(
+                  icon: _sortByInputTime
+                      ? Icon(Icons.access_time_filled, color: AppColors.primary, size: 22)
+                      : Icon(Icons.access_time, color: AppColors.textSecondaryFor(context), size: 22),
+                  onPressed: () => setState(() => _sortByInputTime = !_sortByInputTime),
+                  tooltip: context.tr('filters.recent'),
+                ),
+                IconButton(
                   icon: _hasAdvFilter
-                      ? Icon(Icons.filter_list, color: AppColors.primary, size: 22)
-                      : Icon(Icons.filter_list, color: AppColors.textSecondaryFor(context), size: 22),
+                      ? Icon(Icons.tune, color: AppColors.primary, size: 22)
+                      : Icon(Icons.tune, color: AppColors.textSecondaryFor(context), size: 22),
                   onPressed: () => _showAdvFilterSheet(context, store),
                   tooltip: context.tr('filters.advanced_filter'),
                 ),
@@ -247,11 +275,17 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         Wrap(
                           spacing: 8,
                           children: [
-                            ChoiceChip(label: Text(context.tr('filters.all_accounts')), selected: _advAccountId == null, onSelected: (_) => setSheetState(() => _advAccountId = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
+                            ChoiceChip(label: Text(context.tr('filters.all_accounts')), selected: _advAccountIds.isEmpty, onSelected: (_) => setSheetState(() => _advAccountIds = []), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
                             ...store.accounts.map((a) => ChoiceChip(
                               label: Text(a.name),
-                              selected: _advAccountId == a.id,
-                              onSelected: (_) => setSheetState(() => _advAccountId = _advAccountId == a.id ? null : a.id),
+                              selected: _advAccountIds.contains(a.id),
+                              onSelected: (_) => setSheetState(() {
+                                if (_advAccountIds.contains(a.id)) {
+                                  _advAccountIds = _advAccountIds.where((id) => id != a.id).toList();
+                                } else {
+                                  _advAccountIds = [..._advAccountIds, a.id];
+                                }
+                              }),
                               selectedColor: AppColors.primary.withValues(alpha: 0.15),
                             )),
                           ],

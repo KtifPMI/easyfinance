@@ -230,7 +230,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final color = _chartPalette[top.indexOf(e) % _chartPalette.length];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: Column(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/operations',
+                arguments: {
+                  'categoryId': e.category.id,
+                  'dateFrom': _customFrom?.toIso8601String().substring(0, 10) ?? _selectedMonth.toIso8601String().substring(0, 10),
+                  'dateTo': _customTo?.toIso8601String().substring(0, 10) ?? DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).toIso8601String().substring(0, 10),
+                },
+              );
+            },
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -246,6 +256,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 child: Container(height: 6, color: AppColors.borderFor(context), child: FractionallySizedBox(widthFactor: percent / 100, child: Container(color: color))),
               ),
             ],
+          ),
           ),
         );
       }),

@@ -12,7 +12,10 @@ import '../../theme/theme.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 import '../../models/operation.dart';
+import '../../models/operation_template.dart';
+import '../../models/budget.dart';
 import '../../services/currency_rate_service.dart';
+import '../../utils/calc.dart';
 
 class AddOperationScreen extends StatefulWidget {
   final String? type;
@@ -208,16 +211,92 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
     if (!mounted) return;
     if (store.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
-      );
+      if (store.error == 'LIMIT') {
+        _showLimitDialog(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+        );
+      }
       return;
     }
+    if (!_isEditing && catId != null) {
+      _offerSaveTemplate(context, amount, catId, accountId, toAccountId);
+      return;
+    }
+    _popAfterSave(context);
+  }
+
+  void _showLimitDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('operations.limit_reached')),
+        content: Text(context.tr('operations.limit_desc')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.tr('common.cancel')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('https://easyfinance.ru/my/shop'), duration: const Duration(seconds: 5)),
+              );
+            },
+            child: Text(context.tr('operations.upgrade_tariff'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _popAfterSave(BuildContext context) {
     if (Navigator.of(context).canPop()) {
       Navigator.pop(context);
     } else {
       Navigator.pushReplacementNamed(context, '/main');
     }
+  }
+
+  void _offerSaveTemplate(BuildContext context, double amount, String catId, String accountId, String? toAccountId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('templates.save_as_template')),
+        content: Text(context.tr('templates.save_as_template_desc')),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _popAfterSave(context);
+            },
+            child: Text(context.tr('common.skip')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              final store = context.read<FinanceStore>();
+              final cat = store.getCategory(catId);
+              store.addTemplate(OperationTemplate(
+                id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+                name: cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new'),
+                type: _type,
+                amount: amount,
+                accountId: accountId,
+                categoryId: catId,
+                toAccountId: toAccountId,
+                comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+                tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
+              ));
+              _popAfterSave(context);
+            },
+            child: Text(context.tr('templates.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -310,6 +389,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ),
               const SizedBox(height: 16),
               if (_type != 'transfer') ...[
+                _buildTopCategories(context, store),
                 _buildPicker(
                   label: context.tr('operations.category'),
                   value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
@@ -367,6 +447,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 onTap: () => _showDateTimePicker(),
               ),
               const SizedBox(height: 24),
+              if (_type == 'expense' && _categoryId != null) _buildBudgetWarning(context, store),
               AppButton(title: context.tr('operations.save'), onPressed: _save),
            ],
           ),
@@ -477,6 +558,91 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               },
             )),
             const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopCategories(BuildContext context, FinanceStore store) {
+    final cats = store.categories.where((c) => c.type == _type && c.icon != 'invest').toList();
+    if (cats.length < 3) return const SizedBox.shrink();
+
+    final counts = <String, int>{};
+    for (final op in store.operations.where((o) => o.type == _type && !o.isDeleted)) {
+      if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
+    }
+    final topIds = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top5 = topIds.take(5).map((e) => cats.where((c) => c.id == e.key).firstOrNull).where((c) => c != null).cast<cat.Category>().toList();
+    if (top5.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('categories.popular'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: top5.map((c) => GestureDetector(
+              onTap: () => setState(() => _categoryId = c.id),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _categoryId == c.id ? AppColors.primary : AppColors.cardFor(context),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: _categoryId == c.id ? AppColors.primary : AppColors.borderFor(context)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(categoryIconFor(c, allCategories: store.categories), size: 14, color: _categoryId == c.id ? Colors.white : AppColors.textSecondaryFor(context)),
+                    const SizedBox(width: 4),
+                    Text(tCat(context, c.name), style: TextStyle(fontSize: 12, color: _categoryId == c.id ? Colors.white : AppColors.textFor(context))),
+                  ],
+                ),
+              ),
+            )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildBudgetWarning(BuildContext context, FinanceStore store) {
+    final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
+    if (amount <= 0) return const SizedBox.shrink();
+    final budget = store.budgets.where((b) => b.categoryId == _categoryId && !b.isDeleted).firstOrNull;
+    if (budget == null) return const SizedBox.shrink();
+    final newSpent = budget.spent + amount;
+    final forecastPct = getBudgetForecastPercent(budget.copyWith(spent: newSpent));
+    if (forecastPct <= 90) return const SizedBox.shrink();
+
+    final cat = store.getCategory(_categoryId!);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: forecastPct > 100 ? AppColors.danger.withValues(alpha: 0.12) : AppColors.warning.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: forecastPct > 100 ? AppColors.danger : AppColors.warning, width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, size: 20, color: forecastPct > 100 ? AppColors.danger : AppColors.warning),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                context.tr('budget.warning_fmt', namedArgs: {
+                  'name': cat != null ? tCat(context, cat.name) : '',
+                  'pct': '${forecastPct.round()}',
+                }),
+                style: TextStyle(fontSize: 12, color: AppColors.textFor(context)),
+              ),
+            ),
           ],
         ),
       ),

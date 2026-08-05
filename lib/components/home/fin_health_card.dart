@@ -31,7 +31,7 @@ class FinHealthCard extends StatelessWidget {
 
     final items = [
       ('health.status', Icons.favorite, indicators.finState, finColor, indicators.finStateTip),
-      ('health.liquidity', Icons.water_drop, indicators.money, moneyColor, indicators.moneyTip),
+      ('health.money', Icons.water_drop, indicators.money, moneyColor, indicators.moneyTip),
       ('health.budget', Icons.bar_chart, indicators.budget, budgetColor, indicators.budgetTip),
       ('health.debts', Icons.account_balance, indicators.debt, debtColor, indicators.debtTip),
       ('health.savings', Icons.savings, indicators.income, incomeColor, indicators.incomeTip),
@@ -83,13 +83,6 @@ class FinHealthCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(context.tr(labelKey), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 8),
-          Text(context.tr('health.detail'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.center),
         ],
       ),
     );

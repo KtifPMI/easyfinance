@@ -59,39 +59,50 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-              const AppLogo.hero(),
-              const SizedBox(height: 20),
-              Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
-              const SizedBox(height: 40),
-              Text(
-                context.tr('auth.description'),
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondaryFor(context), fontSize: 14),
-              ),
-              const Spacer(),
-              AppButton(
-                title: context.tr('auth.login'),
-                onPressed: _startOAuth,
-                loading: _loading,
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                title: context.tr('auth.register'),
-                onPressed: () => Navigator.pushNamed(context, '/register'),
-                variant: 'outline',
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: _skipLogin,
-                child: Text(context.tr('auth.skip'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
-              ),
-              const SizedBox(height: 48),
-            ],
+        child: Center(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final maxW = constraints.maxWidth > 400 ? 400.0 : constraints.maxWidth;
+              return SingleChildScrollView(
+                child: Container(
+                  width: maxW,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 48),
+                      const AppLogo.hero(),
+                      const SizedBox(height: 20),
+                      Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
+                      const SizedBox(height: 40),
+                      Text(
+                        context.tr('auth.description'),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: AppColors.textSecondaryFor(context), fontSize: 14),
+                      ),
+                      const SizedBox(height: 48),
+                      AppButton(
+                        title: context.tr('auth.login'),
+                        onPressed: _startOAuth,
+                        loading: _loading,
+                      ),
+                      const SizedBox(height: 12),
+                      AppButton(
+                        title: context.tr('auth.register'),
+                        onPressed: () => Navigator.pushNamed(context, '/register'),
+                        variant: 'outline',
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: _skipLogin,
+                        child: Text(context.tr('auth.skip'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
+                      ),
+                      const SizedBox(height: 48),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

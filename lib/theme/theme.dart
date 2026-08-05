@@ -6,8 +6,8 @@ class AppColors {
   /// Darker green for text-on-light / pressed states
   static const primaryDark = Color(0xFF1B5E20);
   static const primaryLight = Color(0xFFE8F5E9);
-  /// Brand teal (logo gradient start)
-  static const teal = Color(0xFF6CD1C5);
+  /// Brand accent green
+  static const teal = Color(0xFF43A047);
   static const accent = teal;
 
   static const income = Color(0xFF2E7D32);

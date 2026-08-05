@@ -31,10 +31,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _creditLimitCtrl = TextEditingController();
   final _commissionOneCtrl = TextEditingController();
   final _commissionMonthlyCtrl = TextEditingController();
+  final _openDateCtrl = TextEditingController();
   String _paymentType = 'annuity';
   int _paymentDay = 1;
 
-  bool get _isCreditType => _type == 'credit' || _type == 'credit_card';
+  bool get _isCreditType => _type == 'credit' || _type == 'credit_card' || _type == 'loan_received';
+  bool get _isDepositType => _type == 'deposit' || _type == 'insurance_savings' || _type == 'savings_plan' || _type == 'npf' || _type == 'pension';
+  bool get _isDebitCard => _type == 'card';
   bool get _isDebtType => _type == 'credit' || _type == 'credit_card' || _type == 'loan_received';
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
@@ -60,6 +63,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         _commissionMonthlyCtrl.text = acc.commissionMonthly?.toStringAsFixed(2) ?? '0.00';
         _paymentType = acc.paymentType ?? 'annuity';
         _paymentDay = acc.paymentDay ?? 1;
+        _openDateCtrl.text = acc.openDate ?? '';
       }
     }
   }
@@ -73,6 +77,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     _creditLimitCtrl.dispose();
     _commissionOneCtrl.dispose();
     _commissionMonthlyCtrl.dispose();
+    _openDateCtrl.dispose();
     super.dispose();
   }
 
@@ -131,7 +136,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       isArchived: _state == 2,
       isFavorite: _isFavorite,
       description: _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
-      annualRate: _isCreditType && _annualRateCtrl.text.isNotEmpty
+      annualRate: (_isCreditType || _isDepositType) && _annualRateCtrl.text.isNotEmpty
           ? double.tryParse(_annualRateCtrl.text.replaceAll(',', '.'))
           : null,
       paymentType: _isCreditType ? _paymentType : null,
@@ -144,6 +149,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           : null,
       commissionMonthly: _isCreditType && _commissionMonthlyCtrl.text.isNotEmpty
           ? double.tryParse(_commissionMonthlyCtrl.text.replaceAll(',', '.'))
+          : null,
+      openDate: (_isDepositType || _isDebitCard) && _openDateCtrl.text.isNotEmpty
+          ? _openDateCtrl.text.trim()
           : null,
     );
 
@@ -348,6 +356,30 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   ),
                 ),
               ],
+            ),
+          ],
+          if (_isDepositType) ...[
+            const SizedBox(height: 16),
+            _sectionHeader(context, context.tr('accounts.annual_rate')),
+            const SizedBox(height: 12),
+            AppInput(
+              label: context.tr('accounts.annual_rate'),
+              controller: _annualRateCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 12),
+            AppInput(
+              label: context.tr('accounts.open_date'),
+              controller: _openDateCtrl,
+              hint: 'YYYY-MM-DD',
+            ),
+          ],
+          if (_isDebitCard) ...[
+            const SizedBox(height: 16),
+            AppInput(
+              label: context.tr('accounts.open_date'),
+              controller: _openDateCtrl,
+              hint: 'YYYY-MM-DD',
             ),
           ],
           const SizedBox(height: 24),
