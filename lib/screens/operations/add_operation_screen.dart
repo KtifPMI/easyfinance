@@ -573,7 +573,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     }
     final topIds = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    final top5 = <cat.Category>[];
+    final top5 = <dynamic>[];
     for (final e in topIds.take(5)) {
       final c = cats.where((x) => x.id == e.key).firstOrNull;
       if (c != null) top5.add(c);
@@ -590,30 +590,35 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           Wrap(
             spacing: 6,
             runSpacing: 4,
-            children: top5.map((c) => GestureDetector(
-              onTap: () => setState(() => _categoryId = c.id),
+            children: top5.map((c) {
+              final catId = (c as dynamic).id as String;
+              final catName = (c as dynamic).name as String;
+              return GestureDetector(
+              onTap: () => setState(() => _categoryId = catId),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _categoryId == c.id ? AppColors.primary : AppColors.cardFor(context),
+                  color: _categoryId == catId ? AppColors.primary : AppColors.cardFor(context),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _categoryId == c.id ? AppColors.primary : AppColors.borderFor(context)),
+                  border: Border.all(color: _categoryId == catId ? AppColors.primary : AppColors.borderFor(context)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(categoryIconFor(c, allCategories: store.categories), size: 14, color: _categoryId == c.id ? Colors.white : AppColors.textSecondaryFor(context)),
+                    Icon(categoryIconFor(c as dynamic, allCategories: store.categories), size: 14, color: _categoryId == catId ? Colors.white : AppColors.textSecondaryFor(context)),
                     const SizedBox(width: 4),
-                    Text(tCat(context, c.name), style: TextStyle(fontSize: 12, color: _categoryId == c.id ? Colors.white : AppColors.textFor(context))),
+                    Text(tCat(context, catName), style: TextStyle(fontSize: 12, color: _categoryId == catId ? Colors.white : AppColors.textFor(context))),
                   ],
                 ),
               ),
-            )).toList(),
+            );
+            }).toList(),
           ),
         ],
       ),
     );
   }
+
   Widget _buildBudgetWarning(BuildContext context, FinanceStore store) {
     final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
     if (amount <= 0) return const SizedBox.shrink();
