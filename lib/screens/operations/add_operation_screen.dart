@@ -393,16 +393,23 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   label: context.tr('operations.category'),
                   value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
                   onTap: () async {
+                    final allCats = store.categories.where((c) => c.type == _type).toList();
+                    final parents = allCats.where((c) => c.parentId == null || c.parentId!.isEmpty).toList();
+                    final sorted = <String>[];
+                    for (final p in parents) {
+                      sorted.add(p.id);
+                      for (final ch in allCats.where((c) => c.parentId == p.id)) {
+                        sorted.add(ch.id);
+                      }
+                    }
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
                       title: context.tr('operations.category'),
-                      items: store.categories.where((c) => c.type == _type).map((c) => c.id).toList(),
+                      items: sorted,
                       labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
                       groupBuilder: (id) {
                         final c = store.categories.firstWhere((c) => c.id == id);
-                        if (c.parentId == null || c.parentId!.isEmpty) {
-                          return tCat(context, c.name);
-                        }
+                        if (c.parentId == null || c.parentId!.isEmpty) return tCat(context, c.name);
                         final parent = store.categories.where((p) => p.id == c.parentId);
                         return parent.isNotEmpty ? tCat(context, parent.first.name) : '';
                       },

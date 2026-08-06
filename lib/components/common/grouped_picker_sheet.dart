@@ -127,7 +127,7 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (hasHeader) ...[
-                    if (gi > 0) const SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Container(
                       width: double.infinity,
                       height: 1,
