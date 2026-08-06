@@ -634,5 +634,27 @@
   "profile.name": "Nome",
   "auth.register": "Registrati",
   "goals.no_deadline": "Senza scadenza",
-  "more.debug": "Debug API"
+  "more.debug": "Debug API",
+
+  "home.capital": "Capitale",
+  "home.money": "Denaro",
+  "budget.forecast": "Previsione",
+  "categories.popular": "Categorie popolari",
+  "common.cancel": "Annulla",
+  "common.no_results": "Nessun risultato",
+  "common.skip": "Salta",
+  "filters.no_results": "Nessuna operazione per il filtro selezionato",
+  "filters.count": "Trovate: {count}",
+  "more.support": "Supporto",
+  "operations.copy": "Copia",
+  "operations.limit_reached": "Limite operazioni",
+  "operations.limit_desc": "Hai raggiunto il limite di 1000 operazioni. Aggiorna il tuo piano.",
+  "operations.upgrade_tariff": "Aggiorna piano",
+  "templates.save_as_template": "Salvare come modello?",
+  "templates.save_as_template_desc": "Puoi salvare questa operazione come modello per una ripetizione rapida.",
+  "update.latest_version": "Hai l'ultima versione",
+  "health.detail": "",
+  "health.money": "Denaro",
+  "budget.warning_fmt": "«{name}»: previsione {pct}% del budget. Riduci le spese.",
+  "filters.recent": "Recenti"
 }

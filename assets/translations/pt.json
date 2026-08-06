@@ -634,5 +634,27 @@
   "profile.name": "Nome",
   "auth.register": "Registrar",
   "goals.no_deadline": "Sem prazo",
-  "more.debug": "Debug API"
+  "more.debug": "Debug API",
+
+  "home.capital": "Capital",
+  "home.money": "Dinheiro",
+  "budget.forecast": "Previsão",
+  "categories.popular": "Categorias populares",
+  "common.cancel": "Cancelar",
+  "common.no_results": "Nenhum resultado",
+  "common.skip": "Pular",
+  "filters.no_results": "Nenhuma operação para o filtro selecionado",
+  "filters.count": "Encontradas: {count}",
+  "more.support": "Suporte",
+  "operations.copy": "Copiar",
+  "operations.limit_reached": "Limite de operações",
+  "operations.limit_desc": "Você atingiu o limite de 1000 operações. Atualize seu plano.",
+  "operations.upgrade_tariff": "Atualizar plano",
+  "templates.save_as_template": "Salvar como modelo?",
+  "templates.save_as_template_desc": "Você pode salvar esta operação como modelo para repetição rápida.",
+  "update.latest_version": "Você tem a versão mais recente",
+  "health.detail": "",
+  "health.money": "Dinheiro",
+  "budget.warning_fmt": "«{name}»: previsão {pct}% do orçamento. Reduza os gastos.",
+  "filters.recent": "Recentes"
 }

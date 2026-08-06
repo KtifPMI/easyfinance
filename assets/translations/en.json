@@ -702,5 +702,27 @@
   "scan.add_expense": "Add expense",
   "more.debug": "Debug API",
   "currency.cny_name": "Chinese Yuan",
-  "update.whats_new": "Bug fixes and stability improvements."
+  "update.whats_new": "Bug fixes and stability improvements.",
+
+  "home.capital": "Capital",
+  "home.money": "Money",
+  "budget.forecast": "Forecast",
+  "categories.popular": "Popular categories",
+  "common.cancel": "Cancel",
+  "common.no_results": "Nothing found",
+  "common.skip": "Skip",
+  "filters.no_results": "No operations found for the selected filter",
+  "filters.count": "Found: {count}",
+  "more.support": "Support",
+  "operations.copy": "Copy",
+  "operations.limit_reached": "Operations limit",
+  "operations.limit_desc": "You have reached the limit of 1000 operations. Upgrade your tariff plan to add more.",
+  "operations.upgrade_tariff": "Upgrade tariff",
+  "templates.save_as_template": "Save as template?",
+  "templates.save_as_template_desc": "You can save this operation as a template for quick repetition in the future.",
+  "update.latest_version": "You have the latest version",
+  "health.detail": "",
+  "health.money": "Money",
+  "budget.warning_fmt": "«{name}»: forecast {pct}% of budget. Reduce spending in this category.",
+  "filters.recent": "Recent"
 }

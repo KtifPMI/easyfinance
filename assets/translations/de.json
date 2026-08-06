@@ -662,5 +662,27 @@
   "profile.name": "Name",
   "auth.register": "Registrieren",
   "goals.no_deadline": "Ohne Frist",
-  "more.debug": "Debug API"
+  "more.debug": "Debug API",
+
+  "home.capital": "Kapital",
+  "home.money": "Geld",
+  "budget.forecast": "Prognose",
+  "categories.popular": "Beliebte Kategorien",
+  "common.cancel": "Abbrechen",
+  "common.no_results": "Nichts gefunden",
+  "common.skip": "Überspringen",
+  "filters.no_results": "Keine Operationen für den gewählten Filter",
+  "filters.count": "Gefunden: {count}",
+  "more.support": "Support",
+  "operations.copy": "Kopieren",
+  "operations.limit_reached": "Operationslimit",
+  "operations.limit_desc": "Sie haben das Limit von 1000 Operationen erreicht. Upgrade Ihren Tarifplan.",
+  "operations.upgrade_tariff": "Tarif upgraden",
+  "templates.save_as_template": "Als Vorlage speichern?",
+  "templates.save_as_template_desc": "Sie können diese Operation als Vorlage für schnelle Wiederholung speichern.",
+  "update.latest_version": "Sie haben die neueste Version",
+  "health.detail": "",
+  "health.money": "Geld",
+  "budget.warning_fmt": "„{name}“: Prognose {pct}% des Budgets. Reduzieren Sie die Ausgaben.",
+  "filters.recent": "Zuletzt"
 }

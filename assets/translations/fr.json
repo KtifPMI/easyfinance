@@ -634,5 +634,27 @@
   "profile.name": "Nom",
   "auth.register": "S'inscrire",
   "goals.no_deadline": "Sans échéance",
-  "more.debug": "Debug API"
+  "more.debug": "Debug API",
+
+  "home.capital": "Capital",
+  "home.money": "Argent",
+  "budget.forecast": "Prévision",
+  "categories.popular": "Catégories populaires",
+  "common.cancel": "Annuler",
+  "common.no_results": "Aucun résultat",
+  "common.skip": "Passer",
+  "filters.no_results": "Aucune opération pour le filtre sélectionné",
+  "filters.count": "Trouvées : {count}",
+  "more.support": "Support",
+  "operations.copy": "Copier",
+  "operations.limit_reached": "Limite d'opérations",
+  "operations.limit_desc": "Vous avez atteint la limite de 1000 opérations. Mettez à jour votre forfait.",
+  "operations.upgrade_tariff": "Mettre à jour le forfait",
+  "templates.save_as_template": "Enregistrer comme modèle ?",
+  "templates.save_as_template_desc": "Vous pouvez enregistrer cette opération comme modèle pour une répétition rapide.",
+  "update.latest_version": "Vous avez la dernière version",
+  "health.detail": "",
+  "health.money": "Argent",
+  "budget.warning_fmt": "«{name}» : prévision {pct}% du budget. Réduisez les dépenses.",
+  "filters.recent": "Récents"
 }
