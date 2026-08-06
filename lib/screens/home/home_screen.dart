@@ -13,6 +13,9 @@ import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
+import '../../utils/calc.dart';
+import '../../utils/translate_category.dart';
+import '../../components/common/simple_pie_chart.dart';
 import '../../store/planned_payment_store.dart';
 import '../accounts/add_account_screen.dart';
 import '../accounts/accounts_screen.dart';
@@ -675,6 +678,22 @@ class HomeScreen extends StatelessWidget {
     if (income == 0 && expense == 0) return const SizedBox.shrink();
 
     final profit = income - expense;
+
+    final catTotals = store.categories
+        .where((c) => c.type == 'expense')
+        .map((c) => (category: c, total: monthOps.where((o) => o.categoryId == c.id && o.type == 'expense').fold<double>(0, (s, o) => s + o.amount)))
+        .where((e) => e.total > 0)
+        .toList()
+      ..sort((a, b) => b.total.compareTo(a.total));
+
+    final chartPalette = [AppColors.expense, const Color(0xFF1E88E5), AppColors.warning, const Color(0xFF8E24AA), const Color(0xFF00ACC1)];
+    final chartSlices = <({String label, double value, Color color})>[];
+    for (int i = 0; i < catTotals.length && i < 5; i++) {
+      chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: chartPalette[i % chartPalette.length]));
+    }
+    final otherTotal = catTotals.length > 5 ? catTotals.skip(5).fold<double>(0, (s, e) => s + e.total) : 0.0;
+    if (otherTotal > 0) chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: AppColors.textSecondary));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -690,13 +709,43 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         AppCard(
-          child: Row(
+          child: Column(
             children: [
-              Expanded(child: _statBlock(context, context.tr('home.income'), store.fmt(income), AppColors.success)),
-              Container(width: 1, height: 32, color: AppColors.border),
-              Expanded(child: _statBlock(context, context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
-              Container(width: 1, height: 32, color: AppColors.border),
-              Expanded(child: _statBlock(context, context.tr('reports.balance'), store.fmt(profit), profit >= 0 ? AppColors.success : AppColors.danger)),
+              Row(
+                children: [
+                  Expanded(child: _statBlock(context, context.tr('home.income'), store.fmt(income), AppColors.success)),
+                  Container(width: 1, height: 32, color: AppColors.border),
+                  Expanded(child: _statBlock(context, context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
+                  Container(width: 1, height: 32, color: AppColors.border),
+                  Expanded(child: _statBlock(context, context.tr('reports.balance'), store.fmt(profit), profit >= 0 ? AppColors.success : AppColors.danger)),
+                ],
+              ),
+              if (chartSlices.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+                  child: SimplePieChart(slices: chartSlices, size: 160, holeRadius: 0.55, showPercentages: true),
+                ),
+                const SizedBox(height: 8),
+                ...chartSlices.take(4).map((s) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/operations', arguments: {
+                      'categoryId': catTotals.where((c) => tCat(context, c.category.name) == s.label).firstOrNull?.category.id,
+                      'dateFrom': DateTime(now.year, now.month, 1).toIso8601String().substring(0, 10),
+                      'dateTo': DateTime(now.year, now.month + 1, 0).toIso8601String().substring(0, 10),
+                    }),
+                    child: Row(
+                      children: [
+                        Container(width: 10, height: 10, decoration: BoxDecoration(color: s.color, shape: BoxShape.circle)),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(s.label, style: TextStyle(fontSize: 12, color: AppColors.textFor(context)))),
+                        Text(store.fmt(s.value), style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      ],
+                    ),
+                  ),
+                )),
+              ],
             ],
           ),
         ),
