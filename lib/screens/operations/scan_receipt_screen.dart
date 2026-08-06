@@ -156,7 +156,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
     _amountCtrl.text = _parsedAmount;
     _dateCtrl.text = _parsedDate;
-    _commentCtrl.text = _normalizeDisplay(_parsedStore);
+    _commentCtrl.text = _extractItems(lines, _parsedStore);
   }
 
   String _normalize(String s) {
@@ -198,6 +198,46 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         .replaceAll('U', 'И').replaceAll('u', 'и')
         .replaceAll('X', 'Х').replaceAll('x', 'х')
         .replaceAll('Y', 'У').replaceAll('y', 'у');
+  }
+
+  String _extractItems(List<String> lines, String storeName) {
+    final skipKeywords = ['итого', 'итог', 'сумма', 'к оплате', 'оплата', 'сдача',
+      'наличными', 'безнал', 'карта', 'карту', 'ндс', 'ккт', 'эклз', 'фп',
+      'чек', 'кассир', 'продавец', 'покупатель', 'спасибо', 'ждём', 'ждем',
+      '---------', '=======', 'терминал', 'экземпляр', 'аванс', 'предоплат'];
+    final amountPattern = RegExp(r'[\d]+[.,]\d{2}');
+    final items = <String>[];
+
+    for (final line in lines) {
+      final lower = line.toLowerCase();
+      // Skip lines with skip keywords
+      if (skipKeywords.any((k) => lower.contains(k))) continue;
+      // Skip store name line
+      if (storeName.isNotEmpty && lower.contains(storeName.toLowerCase().substring(0, storeName.length.clamp(0, 8)))) continue;
+      // Skip pure number/amount lines
+      if (amountPattern.hasMatch(line) && line.replaceAll(RegExp(r'[\d.,\s%]+'), '').length < 3) continue;
+      // Skip very short lines
+      if (line.length < 4) continue;
+      // Skip lines that are mostly numbers
+      final digits = RegExp(r'\d').allMatches(line).length;
+      if (digits > line.length * 0.6) continue;
+
+      // Clean up: remove trailing amounts and quantities
+      var cleaned = line
+          .replaceAll(RegExp(r'\s+[\d]+[.,]\d{2}\s*$'), '')
+          .replaceAll(RegExp(r'\s+\d+\s*шт\.?\s*$'), '')
+          .replaceAll(RegExp(r'\s+\d+[.,]\d+\s*кг\.?\s*$'), '')
+          .replaceAll(RegExp(r'\s+x\d+\s*$'), '')
+          .replaceAll(RegExp(r'\s+\*\s*\d+\s*$'), '')
+          .trim();
+
+      if (cleaned.length >= 3 && cleaned.length <= 60) {
+        items.add(cleaned);
+      }
+    }
+
+    if (items.isEmpty) return storeName.isNotEmpty ? storeName : '';
+    return items.take(8).join(', ');
   }
 
   String _findStoreName(List<String> lines) {
