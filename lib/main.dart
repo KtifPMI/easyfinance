@@ -9,6 +9,7 @@ import 'config.dart';
 import 'services/api_client.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
+import 'services/cloud_ocr_service.dart';
 import 'store/finance_store.dart';
 import 'store/locale_store.dart';
 import 'store/planned_payment_store.dart';
@@ -54,6 +55,11 @@ void main() async {
   } catch (e, stack) {
     debugPrint('Notification init error: $e\n$stack');
   }
+
+  CloudOcrService.configure(
+    apiKey: AppConfig.yandexVisionApiKey,
+    folderId: AppConfig.yandexFolderId,
+  );
 
   runApp(
     MultiProvider(

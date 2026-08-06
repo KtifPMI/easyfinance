@@ -9,6 +9,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
+import '../../models/operation_template.dart';
 
 class OperationsListScreen extends StatefulWidget {
   const OperationsListScreen({super.key});
@@ -144,8 +145,10 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 children: [
                   ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
               const SizedBox(height: 16),
-              if (grouped.isEmpty)
+              if (ops.isEmpty)
                 Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
+              else if (_sortByInputTime)
+                _buildFlatList(context, store, ops)
               else
                 ...grouped.map((entry) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,6 +193,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             icon: iconData,
                             iconColor: iconColor,
                             onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+                            onLongPress: () => _showOpActions(context, store, op),
                             isPending: op.isPending,
                           );
                         }).toList(),
@@ -212,6 +216,250 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
     );
   },
 );
+  }
+
+  Widget _buildFlatList(BuildContext context, FinanceStore store, List<dynamic> ops) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        children: ops.map((op) {
+          final cat = store.getCategory(op.categoryId);
+          final acc = store.getAccount(op.accountId);
+          final toAcc = store.getAccount(op.toAccountId);
+          final IconData iconData;
+          final Color iconColor;
+          if (op.type == 'transfer') {
+            iconData = Icons.swap_horiz;
+            iconColor = AppColors.transfer;
+          } else if (op.type == 'expense') {
+            iconData = Icons.trending_down;
+            iconColor = AppColors.expense;
+          } else {
+            iconData = Icons.trending_up;
+            iconColor = AppColors.success;
+          }
+          final title = op.type == 'transfer'
+              ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
+              : tCat(context, cat?.name ?? context.tr('operations.no_category'));
+          return OperationListItem(
+            title: title,
+            subtitle: op.comment ?? acc?.name ?? '',
+            tags: store.getTagsForOperation(op),
+            formattedAmount: store.fmt(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
+            type: op.type,
+            icon: iconData,
+            iconColor: iconColor,
+            onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+            onLongPress: () => _showOpActions(context, store, op),
+            isPending: op.isPending,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  void _showOpActions(BuildContext context, FinanceStore store, dynamic op) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(Icons.edit_outlined, color: AppColors.primary),
+              title: Text(context.tr('operations.edit')),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'operationId': op.id});
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.copy, color: AppColors.primary),
+              title: Text(context.tr('operations.copy')),
+              onTap: () {
+                Navigator.pop(ctx);
+                final store2 = context.read<FinanceStore>();
+                final cat = store2.getCategory(op.categoryId);
+                store2.addTemplate(OperationTemplate(
+                  id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+                  name: cat != null ? tCat(context, cat.name) : (op.comment ?? context.tr('templates.new')),
+                  type: op.type,
+                  amount: op.amount,
+                  accountId: op.accountId,
+                  categoryId: op.categoryId,
+                  toAccountId: op.toAccountId,
+                  comment: op.comment,
+                ));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(context.tr('templates.save_as_template')), duration: const Duration(seconds: 2)),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete_outline, color: AppColors.danger),
+              title: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.danger)),
+              onTap: () {
+                Navigator.pop(ctx);
+                showDialog(
+                  context: context,
+                  builder: (dCtx) => AlertDialog(
+                    title: Text(context.tr('operations.delete_confirm')),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(dCtx), child: Text(context.tr('operations.cancel'))),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(dCtx);
+                          store.deleteOperation(op.id);
+                        },
+                        child: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.danger)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAccountPicker(BuildContext context, FinanceStore store, void Function(void Function()) setSheetState) {
+    final searchCtrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setPickerState) {
+          final q = searchCtrl.text.toLowerCase();
+          final filtered = q.isEmpty
+              ? store.accounts
+              : store.accounts.where((a) => a.name.toLowerCase().contains(q)).toList();
+          return DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (ctx, scrollCtrl) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: TextField(
+                    controller: searchCtrl,
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onChanged: (_) => setPickerState(() {}),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) {
+                      final a = filtered[i];
+                      final selected = _advAccountIds.contains(a.id);
+                      return CheckboxListTile(
+                        value: selected,
+                        onChanged: (v) {
+                          setPickerState(() {
+                            if (v == true) {
+                              _advAccountIds = [..._advAccountIds, a.id];
+                            } else {
+                              _advAccountIds = _advAccountIds.where((id) => id != a.id).toList();
+                            }
+                          });
+                          setSheetState(() {});
+                        },
+                        secondary: Icon(_accountIcon(a.icon), color: _parseColor(a.color)),
+                        title: Text(a.name, style: const TextStyle(fontSize: 14)),
+                        activeColor: AppColors.primary,
+                        controlAffinity: ListTileControlAffinity.leading,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showTagPicker(BuildContext context, List<String> tags, void Function(void Function()) setSheetState) {
+    final searchCtrl = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setPickerState) {
+          final q = searchCtrl.text.toLowerCase();
+          final filtered = q.isEmpty ? tags : tags.where((t) => t.toLowerCase().contains(q)).toList();
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (ctx, scrollCtrl) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: TextField(
+                    controller: searchCtrl,
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onChanged: (_) => setPickerState(() {}),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: filtered.length + 1,
+                    itemBuilder: (_, i) {
+                      if (i == 0) return ListTile(
+                        leading: Icon(Icons.clear, color: AppColors.danger),
+                        title: Text(context.tr('filters.all_tags'), style: const TextStyle(fontSize: 14)),
+                        onTap: () {
+                          setPickerState(() => _advTagName = null);
+                          setSheetState(() {});
+                          Navigator.pop(ctx);
+                        },
+                      );
+                      final t = filtered[i - 1];
+                      return ListTile(
+                        leading: Icon(Icons.label, color: _advTagName == t ? AppColors.primary : AppColors.textSecondaryFor(context)),
+                        title: Text(t, style: TextStyle(fontSize: 14, fontWeight: _advTagName == t ? FontWeight.w600 : FontWeight.w400)),
+                        trailing: _advTagName == t ? Icon(Icons.check, color: AppColors.primary) : null,
+                        onTap: () {
+                          setPickerState(() => _advTagName = _advTagName == t ? null : t);
+                          setSheetState(() {});
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _showAdvFilterSheet(BuildContext context, FinanceStore store) {
@@ -272,23 +520,33 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       if (store.accounts.length > 1) ...[
                         Text(context.tr('filters.account'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            ChoiceChip(label: Text(context.tr('filters.all_accounts')), selected: _advAccountIds.isEmpty, onSelected: (_) => setSheetState(() => _advAccountIds = []), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
-                            ...store.accounts.map((a) => ChoiceChip(
-                              label: Text(a.name),
-                              selected: _advAccountIds.contains(a.id),
-                              onSelected: (_) => setSheetState(() {
-                                if (_advAccountIds.contains(a.id)) {
-                                  _advAccountIds = _advAccountIds.where((id) => id != a.id).toList();
-                                } else {
-                                  _advAccountIds = [..._advAccountIds, a.id];
-                                }
-                              }),
-                              selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                            )),
-                          ],
+                        GestureDetector(
+                          onTap: () => _showAccountPicker(context, store, setSheetState),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppColors.cardFor(context),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _advAccountIds.isEmpty ? AppColors.borderFor(context) : AppColors.primary),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.account_balance_wallet, size: 18, color: _advAccountIds.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.primary),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _advAccountIds.isEmpty
+                                        ? context.tr('filters.all_accounts')
+                                        : _advAccountIds.map((id) => store.accounts.where((a) => a.id == id).firstOrNull?.name ?? id).join(', '),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 14, color: _advAccountIds.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                                  ),
+                                ),
+                                Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
+                              ],
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -342,18 +600,31 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         const SizedBox(height: 20),
                         Text(context.tr('filters.tag'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            ChoiceChip(label: Text(context.tr('filters.all_tags')), selected: _advTagName == null, onSelected: (_) => setSheetState(() => _advTagName = null), selectedColor: AppColors.primary.withValues(alpha: 0.15)),
-                            ...tags.map((t) => ChoiceChip(
-                              label: Text(t),
-                              selected: _advTagName == t,
-                              onSelected: (_) => setSheetState(() => _advTagName = _advTagName == t ? null : t),
-                              selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                            )),
-                          ],
+                        GestureDetector(
+                          onTap: () => _showTagPicker(context, tags, setSheetState),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: AppColors.cardFor(context),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _advTagName == null ? AppColors.borderFor(context) : AppColors.primary),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.label_outline, size: 18, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.primary),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _advTagName ?? context.tr('filters.all_tags'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 14, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                                  ),
+                                ),
+                                Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                       const SizedBox(height: 24),
@@ -422,5 +693,15 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         ),
       ),
     );
+  }
+
+  IconData _accountIcon(String icon) {
+    const map = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.account_balance_wallet, 'payments': Icons.payments, 'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard};
+    return map[icon] ?? Icons.account_balance_wallet;
+  }
+
+  Color _parseColor(String hex) {
+    hex = hex.replaceAll('#', '');
+    return Color(int.parse('FF$hex', radix: 16));
   }
 }

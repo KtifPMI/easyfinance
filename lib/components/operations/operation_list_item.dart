@@ -10,6 +10,7 @@ class OperationListItem extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final bool isPending;
 
   const OperationListItem({
@@ -22,6 +23,7 @@ class OperationListItem extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.onTap,
+    this.onLongPress,
     this.isPending = false,
   });
 
@@ -41,6 +43,7 @@ class OperationListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
