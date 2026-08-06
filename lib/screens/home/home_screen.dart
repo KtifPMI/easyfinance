@@ -711,17 +711,7 @@ class HomeScreen extends StatelessWidget {
         AppCard(
           child: Column(
             children: [
-              Row(
-                children: [
-                  Expanded(child: _statBlock(context, context.tr('home.income'), store.fmt(income), AppColors.success)),
-                  Container(width: 1, height: 32, color: AppColors.border),
-                  Expanded(child: _statBlock(context, context.tr('home.expense'), store.fmt(expense), AppColors.expense)),
-                  Container(width: 1, height: 32, color: AppColors.border),
-                  Expanded(child: _statBlock(context, context.tr('reports.balance'), store.fmt(profit), profit >= 0 ? AppColors.success : AppColors.danger)),
-                ],
-              ),
               if (chartSlices.isNotEmpty) ...[
-                const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
                   child: SimplePieChart(slices: chartSlices, size: 160, holeRadius: 0.55, showPercentages: true),

@@ -9,7 +9,6 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
-import '../../models/operation_template.dart';
 
 class OperationsListScreen extends StatefulWidget {
   const OperationsListScreen({super.key});
@@ -193,7 +192,6 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             icon: iconData,
                             iconColor: iconColor,
                             onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-                            onLongPress: () => _showOpActions(context, store, op),
                             isPending: op.isPending,
                           );
                         }).toList(),
@@ -252,77 +250,9 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
             icon: iconData,
             iconColor: iconColor,
             onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-            onLongPress: () => _showOpActions(context, store, op),
             isPending: op.isPending,
           );
         }).toList(),
-      ),
-    );
-  }
-
-  void _showOpActions(BuildContext context, FinanceStore store, dynamic op) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.edit_outlined, color: AppColors.primary),
-              title: Text(context.tr('operations.edit')),
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'operationId': op.id});
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.copy, color: AppColors.primary),
-              title: Text(context.tr('operations.copy')),
-              onTap: () {
-                Navigator.pop(ctx);
-                final store2 = context.read<FinanceStore>();
-                final cat = store2.getCategory(op.categoryId);
-                store2.addTemplate(OperationTemplate(
-                  id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-                  name: cat != null ? tCat(context, cat.name) : (op.comment ?? context.tr('templates.new')),
-                  type: op.type,
-                  amount: op.amount,
-                  accountId: op.accountId,
-                  categoryId: op.categoryId,
-                  toAccountId: op.toAccountId,
-                  comment: op.comment,
-                ));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(context.tr('templates.save_as_template')), duration: const Duration(seconds: 2)),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.delete_outline, color: AppColors.danger),
-              title: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.danger)),
-              onTap: () {
-                Navigator.pop(ctx);
-                showDialog(
-                  context: context,
-                  builder: (dCtx) => AlertDialog(
-                    title: Text(context.tr('operations.delete_confirm')),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(dCtx), child: Text(context.tr('operations.cancel'))),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(dCtx);
-                          store.deleteOperation(op.id);
-                        },
-                        child: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.danger)),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

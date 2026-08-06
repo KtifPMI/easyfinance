@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/operation.dart';
+import '../../models/operation_template.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
@@ -64,6 +65,11 @@ class OperationDetailScreen extends StatelessWidget {
         icon: const Icon(Icons.copy),
         tooltip: context.tr('operations.copy'),
         onPressed: () => _copyOperation(context, store, op),
+      ),
+      IconButton(
+        icon: const Icon(Icons.description_outlined),
+        tooltip: context.tr('templates.save_as_template'),
+        onPressed: () => _saveAsTemplate(context, store, op),
       ),
       IconButton(
         icon: const Icon(Icons.edit_outlined),
@@ -197,6 +203,24 @@ class OperationDetailScreen extends StatelessWidget {
       tags: op.tags,
       clientId: newId,
     ));
+  }
+
+  void _saveAsTemplate(BuildContext context, FinanceStore store, Operation op) {
+    final cat = store.getCategory(op.categoryId);
+    store.addTemplate(OperationTemplate(
+      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+      name: cat != null ? tCat(context, cat.name) : (op.comment ?? context.tr('templates.new')),
+      type: op.type,
+      amount: op.amount,
+      accountId: op.accountId,
+      categoryId: op.categoryId,
+      toAccountId: op.toAccountId,
+      comment: op.comment,
+      tags: op.tags,
+    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(context.tr('templates.save_as_template')), duration: const Duration(seconds: 2)),
+    );
   }
 
   void _confirmDelete(BuildContext context, FinanceStore store, Operation op) {
