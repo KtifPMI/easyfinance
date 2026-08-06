@@ -25,6 +25,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   bool _scanning = false;
   String? _recognizedText;
   String? _error;
+  String? _ocrSource;
+  String? _ocrLog;
   bool _showConfirm = false;
 
   String _parsedAmount = '';
@@ -85,6 +87,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   Future<void> _scanReceipt(FinanceStore store) async {
     if (_image == null) return;
+    String? ocrSource;
+    String? ocrLog;
     try {
       String? text;
       final processed = _preprocessImage(_image!);
@@ -94,13 +98,23 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         try {
           final cloudResult = await CloudOcrService.recognize(processed);
           text = cloudResult.text;
-        } on CloudOcrException {
+          ocrSource = 'Yandex Vision';
+          ocrLog = 'OK: ${text.length} символов';
+        } on CloudOcrException catch (e) {
+          ocrSource = 'Yandex Vision (ошибка)';
+          ocrLog = e.message;
           // Cloud failed — fall through to ML Kit
+        } catch (e) {
+          ocrSource = 'Yandex Vision (исключение)';
+          ocrLog = e.toString();
         }
+      } else {
+        ocrLog = 'Не настроен (ключ: ${CloudOcrService.apiKey.isEmpty ? "пустой" : "есть"}, folder: ${CloudOcrService.folderId.isEmpty ? "пустой" : "есть"})';
       }
 
       // Fallback to on-device ML Kit
       text ??= await _runMlKit(processed);
+      if (ocrSource == null) ocrSource = 'ML Kit (on-device)';
 
       if (!mounted) return;
       if (text == null || text.isEmpty) {
@@ -110,6 +124,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       _parseReceiptText(text, store);
       setState(() {
         _recognizedText = text;
+        _ocrSource = ocrSource;
+        _ocrLog = ocrLog;
         _scanning = false;
         _showConfirm = true;
       });
@@ -493,6 +509,21 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               child: Image.file(_image!, height: 200, width: double.infinity, fit: BoxFit.cover),
             ),
             const SizedBox(height: 16),
+          ],
+          if (_ocrSource != null) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'OCR: $_ocrSource${_ocrLog != null ? '\n$_ocrLog' : ''}',
+                style: TextStyle(fontSize: 11, color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
           if (_recognizedText != null) ...[
             Container(
