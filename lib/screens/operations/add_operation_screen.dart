@@ -394,13 +394,17 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
                   onTap: () async {
                     final allCats = store.categories.where((c) => c.type == _type).toList();
-                    final parents = allCats.where((c) => c.parentId == null || c.parentId!.isEmpty).toList();
+                    final parents = allCats.where((c) => c.parentId == null || c.parentId!.isEmpty || c.parentId == '0').toList();
+                    final parentIds = parents.map((c) => c.id).toSet();
                     final sorted = <String>[];
                     for (final p in parents) {
                       sorted.add(p.id);
                       for (final ch in allCats.where((c) => c.parentId == p.id)) {
                         sorted.add(ch.id);
                       }
+                    }
+                    for (final c in allCats) {
+                      if (!sorted.contains(c.id)) sorted.add(c.id);
                     }
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
