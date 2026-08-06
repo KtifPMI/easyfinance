@@ -99,9 +99,9 @@ class ScreenScaffold extends StatelessWidget {
         width: slot,
         child: Center(child: leading),
       );
-      right = SizedBox(
-        width: slot,
-        child: Center(child: trailing),
+      right = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: actions!,
       );
     }
 

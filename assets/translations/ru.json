@@ -714,6 +714,8 @@
   "filters.all_tags": "Все теги",
   "filters.apply": "Применить",
   "filters.reset": "Сбросить",
+  "filters.no_results": "Нет операций для выбранного фильтра",
+  "filters.count": "Найдено: {count}",
   "calendar.plan": "Запланировать",
   "calendar.scheduled_payments": "Запланированные платежи",
   "calendar.operations": "Операции",

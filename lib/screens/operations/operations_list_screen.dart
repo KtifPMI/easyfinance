@@ -124,13 +124,6 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               title: context.tr('operations.title'),
               actions: [
                 IconButton(
-                  icon: _sortByInputTime
-                      ? Icon(Icons.access_time_filled, color: AppColors.primary, size: 22)
-                      : Icon(Icons.access_time, color: AppColors.textSecondaryFor(context), size: 22),
-                  onPressed: () => setState(() => _sortByInputTime = !_sortByInputTime),
-                  tooltip: context.tr('filters.recent'),
-                ),
-                IconButton(
                   icon: _hasAdvFilter
                       ? Icon(Icons.tune, color: AppColors.primary, size: 22)
                       : Icon(Icons.tune, color: AppColors.textSecondaryFor(context), size: 22),
@@ -144,7 +137,31 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 children: [
                   ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
               const SizedBox(height: 16),
-              if (ops.isEmpty)
+              if (_hasAdvFilter || _reportCategoryId != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          ops.isEmpty
+                              ? context.tr('filters.no_results')
+                              : context.tr('filters.count', namedArgs: {'count': ops.length.toString()}),
+                          style: TextStyle(fontSize: 13, color: ops.isEmpty ? AppColors.warning : AppColors.textSecondaryFor(context)),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _resetAdvFilter();
+                          _reportCategoryId = null;
+                          _sortByInputTime = false;
+                        }),
+                        child: Text(context.tr('filters.reset'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                      ),
+                    ],
+                  ),
+                ),
+              if (ops.isEmpty && !_hasAdvFilter && _reportCategoryId == null)
                 Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
               else if (_sortByInputTime)
                 _buildFlatList(context, store, ops)
