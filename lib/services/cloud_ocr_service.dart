@@ -56,10 +56,10 @@ class CloudOcrService {
         .timeout(const Duration(seconds: 15));
 
     if (response.statusCode == 401 || response.statusCode == 403) {
-      throw CloudOcrException('Неверный API-ключ Yandex Vision');
+      throw CloudOcrException('Неверный API-ключ Yandex Vision: ${response.body}');
     }
     if (response.statusCode != 200) {
-      throw CloudOcrException('Ошибка Yandex Vision: HTTP ${response.statusCode}');
+      throw CloudOcrException('Ошибка Yandex Vision: HTTP ${response.statusCode} — ${response.body}');
     }
 
     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
