@@ -205,9 +205,9 @@ class OperationDetailScreen extends StatelessWidget {
     ));
   }
 
-  void _saveAsTemplate(BuildContext context, FinanceStore store, Operation op) {
+  Future<void> _saveAsTemplate(BuildContext context, FinanceStore store, Operation op) async {
     final cat = store.getCategory(op.categoryId);
-    store.addTemplate(OperationTemplate(
+    await store.addTemplate(OperationTemplate(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       name: cat != null ? tCat(context, cat.name) : (op.comment ?? context.tr('templates.new')),
       type: op.type,
@@ -218,9 +218,11 @@ class OperationDetailScreen extends StatelessWidget {
       comment: op.comment,
       tags: op.tags,
     ));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('templates.save_as_template')), duration: const Duration(seconds: 2)),
-    );
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('templates.save_as_template')), duration: const Duration(seconds: 2)),
+      );
+    }
   }
 
   void _confirmDelete(BuildContext context, FinanceStore store, Operation op) {

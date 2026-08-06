@@ -274,11 +274,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             child: Text(context.tr('common.skip')),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
               final store = context.read<FinanceStore>();
               final cat = store.getCategory(catId);
-              store.addTemplate(OperationTemplate(
+              await store.addTemplate(OperationTemplate(
                 id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
                 name: cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new'),
                 type: _type,
@@ -289,7 +289,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
                 tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
               ));
-              _popAfterSave(context);
+              if (context.mounted) _popAfterSave(context);
             },
             child: Text(context.tr('templates.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),
