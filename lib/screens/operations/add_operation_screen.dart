@@ -400,12 +400,14 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                       labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
                       groupBuilder: (id) {
                         final c = store.categories.firstWhere((c) => c.id == id);
-                        if (c.parentId == null || c.parentId!.isEmpty) return '';
+                        if (c.parentId == null || c.parentId!.isEmpty) {
+                          return tCat(context, c.name);
+                        }
                         final parent = store.categories.where((p) => p.id == c.parentId);
-                        return parent.isNotEmpty ? parent.first.name : '';
+                        return parent.isNotEmpty ? tCat(context, parent.first.name) : '';
                       },
                       iconBuilder: (id) => categoryIconFor(store.categories.firstWhere((c) => c.id == id), allCategories: store.categories),
-                      colorBuilder: (id) => _hexToColor(store.categories.firstWhere((c) => c.id == id).color),
+                      colorBuilder: (id) => _type == 'income' ? AppColors.income : AppColors.expense,
                       selectedId: _categoryId,
                     );
                     if (result != null) setState(() => _categoryId = result);
