@@ -99,10 +99,12 @@ class ScreenScaffold extends StatelessWidget {
         width: slot,
         child: Center(child: leading),
       );
-      right = Row(
-        mainAxisSize: MainAxisSize.min,
-        children: actions!,
-      );
+      right = (actions == null || actions!.isEmpty)
+          ? const SizedBox.shrink()
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: actions!,
+            );
     }
 
     return SizedBox(
