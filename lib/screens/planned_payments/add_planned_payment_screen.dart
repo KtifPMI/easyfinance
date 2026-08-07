@@ -107,6 +107,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         _chip(context, 'income', context.tr('planned_payments.income'), AppColors.success),
         const SizedBox(width: 8),
         _chip(context, 'expense', context.tr('planned_payments.expense'), AppColors.expense),
+        const SizedBox(width: 8),
+        _chip(context, 'transfer', context.tr('planned_payments.transfer'), AppColors.transfer),
       ],
     );
   }

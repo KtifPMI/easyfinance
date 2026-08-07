@@ -37,6 +37,7 @@
   "planned_payments.type": "Тип",
   "planned_payments.income": "Доход",
   "planned_payments.expense": "Расход",
+  "planned_payments.transfer": "Перевод",
   "planned_payments.empty": "Нет запланированных платежей",
   "planned_payments.comment": "Комментарий",
   "planned_payments.confirm_delete": "Удалить запланированный платёж?",
