@@ -121,24 +121,13 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
             itemBuilder: (ctx, gi) {
               final entry = groups.entries.elementAt(gi);
               final hasHeader = entry.key.isNotEmpty;
-              final firstLabel = entry.value.isNotEmpty ? widget.labelBuilder(entry.value.first) : '';
-              final headerIsDuplicate = hasHeader && firstLabel.toLowerCase() == entry.key.toLowerCase();
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (hasHeader) ...[
+                    const SizedBox(height: 12),
+                    Text(entry.key, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
                     const SizedBox(height: 4),
-                    Container(
-                      width: double.infinity,
-                      height: 1,
-                      color: AppColors.borderFor(context),
-                    ),
-                    if (!headerIsDuplicate) ...[
-                      const SizedBox(height: 8),
-                      Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
-                      const SizedBox(height: 4),
-                    ] else
-                      const SizedBox(height: 8),
                   ],
                   ...entry.value.map((item) {
                     final isSelected = widget.selectedId != null && item == widget.selectedId;

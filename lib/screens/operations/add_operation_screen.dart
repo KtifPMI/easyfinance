@@ -393,29 +393,16 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   label: context.tr('operations.category'),
                   value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
                   onTap: () async {
-                    final allCats = store.categories.where((c) => c.type == _type).toList();
-                    final parents = allCats.where((c) => c.parentId == null || c.parentId!.isEmpty || c.parentId == '0').toList();
-                    final parentIds = parents.map((c) => c.id).toSet();
-                    final sorted = <String>[];
-                    for (final p in parents) {
-                      sorted.add(p.id);
-                      for (final ch in allCats.where((c) => c.parentId == p.id)) {
-                        sorted.add(ch.id);
-                      }
-                    }
-                    for (final c in allCats) {
-                      if (!sorted.contains(c.id)) sorted.add(c.id);
-                    }
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
                       title: context.tr('operations.category'),
-                      items: sorted,
+                      items: store.categories.where((c) => c.type == _type).map((c) => c.id).toList(),
                       labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
                       groupBuilder: (id) {
                         final c = store.categories.firstWhere((c) => c.id == id);
-                        if (c.parentId == null || c.parentId!.isEmpty) return tCat(context, c.name);
+                        if (c.parentId == null || c.parentId!.isEmpty) return '';
                         final parent = store.categories.where((p) => p.id == c.parentId);
-                        return parent.isNotEmpty ? tCat(context, parent.first.name) : '';
+                        return parent.isNotEmpty ? parent.first.name : '';
                       },
                       iconBuilder: (id) => categoryIconFor(store.categories.firstWhere((c) => c.id == id), allCategories: store.categories),
                       colorBuilder: (id) => _type == 'income' ? AppColors.income : AppColors.expense,
