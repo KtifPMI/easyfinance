@@ -107,7 +107,11 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         }
         if (_advComment.isNotEmpty) {
           final q = _advComment.toLowerCase();
-          ops = ops.where((o) => (o.comment ?? '').toLowerCase().contains(q)).toList();
+          ops = ops.where((o) {
+            if ((o.comment ?? '').toLowerCase().contains(q)) return true;
+            if (store.getTagsForOperation(o).any((t) => t.toLowerCase().contains(q))) return true;
+            return false;
+          }).toList();
         }
         if (_advTagName != null) {
           ops = ops.where((o) => store.getTagsForOperation(o).contains(_advTagName)).toList();
