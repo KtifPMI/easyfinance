@@ -42,8 +42,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final daysInMonth = DateTime(_currentMonth.year, _currentMonth.month + 1, 0).day;
         final firstWeekday = DateTime(_currentMonth.year, _currentMonth.month, 1).weekday;
         final offset = firstWeekday - 1;
-        final locale = Intl.defaultLocale ?? 'ru';
-        final monthLabel = DateFormat.yMMMM(locale).format(_currentMonth);
+        final monthName = context.tr('month.long.${_currentMonth.month}');
+        final monthLabel = '${monthName[0].toUpperCase()}${monthName.substring(1)} ${_currentMonth.year}';
 
         final opsByDate = <DateTime, List<Operation>>{};
         for (final op in store.operations) {
