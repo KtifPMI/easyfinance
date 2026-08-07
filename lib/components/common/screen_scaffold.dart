@@ -109,19 +109,18 @@ class ScreenScaffold extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      child: Row(
+      height: kToolbarHeight,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          left,
-          Expanded(
-            child: Center(
-              child: Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-          right,
+          Positioned(left: 0, child: left),
+          Positioned(right: 0, child: right ?? const SizedBox.shrink()),
         ],
       ),
     );

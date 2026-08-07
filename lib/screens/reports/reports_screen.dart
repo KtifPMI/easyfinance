@@ -118,11 +118,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: AppCard(
                       child: Column(
                         children: [
-                          Icon(Icons.arrow_downward, color: AppColors.success, size: 28),
+                          Text(context.tr('reports.income'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.success)),
                           const SizedBox(height: 4),
-                          Text(context.tr('reports.income'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                          const SizedBox(height: 4),
-                          Text(store.fmt(monthIncome), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.success)),
+                          Text(store.fmt(monthIncome), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                         ],
                       ),
                     ),
@@ -132,11 +130,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: AppCard(
                       child: Column(
                         children: [
-                          Icon(Icons.arrow_upward, color: AppColors.expense, size: 28),
+                          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.expense)),
                           const SizedBox(height: 4),
-                          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                          const SizedBox(height: 4),
-                          Text(store.fmt(monthExpense), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.expense)),
+                          Text(store.fmt(monthExpense), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                         ],
                       ),
                     ),

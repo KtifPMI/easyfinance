@@ -9,6 +9,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
+import '../../utils/category_icons.dart';
 
 class OperationsListScreen extends StatefulWidget {
   const OperationsListScreen({super.key});
@@ -186,15 +187,9 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           if (op.type == 'transfer') {
                             iconData = Icons.swap_horiz;
                             iconColor = AppColors.transfer;
-                          } else if (cat != null && cat.name.toLowerCase().contains('инвестицион')) {
-                            iconData = Icons.track_changes;
-                            iconColor = AppColors.warning;
-                          } else if (op.type == 'expense') {
-                            iconData = Icons.trending_down;
-                            iconColor = AppColors.expense;
                           } else {
-                            iconData = Icons.trending_up;
-                            iconColor = AppColors.success;
+                            iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
+                            iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
                           }
                           final title = op.type == 'transfer'
                               ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
@@ -248,12 +243,9 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           if (op.type == 'transfer') {
             iconData = Icons.swap_horiz;
             iconColor = AppColors.transfer;
-          } else if (op.type == 'expense') {
-            iconData = Icons.trending_down;
-            iconColor = AppColors.expense;
           } else {
-            iconData = Icons.trending_up;
-            iconColor = AppColors.success;
+            iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
+            iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
           }
           final title = op.type == 'transfer'
               ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
