@@ -5,7 +5,6 @@ import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../theme/theme.dart';
 import '../accounts/accounts_screen.dart';
-import '../planned_payments/planned_payments_screen.dart';
 import '../debug/debug_screen.dart';
 import '../recommendations/recommendations_screen.dart';
 import '../settings/settings_screen.dart';
@@ -21,7 +20,6 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.calendar_today, context.tr('more.planned_payments'), const PlannedPaymentsScreen()),
       (Icons.account_balance, context.tr('more.easybank'), const AccountsScreen()),
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
