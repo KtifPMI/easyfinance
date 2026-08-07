@@ -70,6 +70,7 @@ class AppRouter {
         operationId: args?['operationId'] as String?,
         presetDate: args?['presetDate'] as String?,
         templateId: args?['templateId'] as String?,
+        copyFrom: args?['copyFrom'] as String?,
       );
     } else if (name == addPlannedPayment) {
       final arg = settings.arguments;

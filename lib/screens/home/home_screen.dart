@@ -125,18 +125,18 @@ class HomeScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('home.capital'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+                Text(context.tr('home.money'), style: TextStyle(color: Colors.white70, fontSize: 13)),
                 Icon(Icons.chevron_right, color: Colors.white54, size: 20),
               ],
             ),
             const SizedBox(height: 4),
-            Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
+            Text(store.fmt(moneyTotal), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Row(
               children: [
-                Text(context.tr('home.money'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
                 const Spacer(),
-                Text(store.fmt(moneyTotal), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
+                Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 12),

@@ -21,8 +21,9 @@ class AddOperationScreen extends StatefulWidget {
   final String? operationId;
   final String? presetDate;
   final String? templateId;
+  final String? copyFrom;
 
-  const AddOperationScreen({super.key, this.type, this.operationId, this.presetDate, this.templateId});
+  const AddOperationScreen({super.key, this.type, this.operationId, this.presetDate, this.templateId, this.copyFrom});
 
   @override
   State<AddOperationScreen> createState() => _AddOperationScreenState();
@@ -147,6 +148,17 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
 
       if (_isEditing) {
         final op = store.operations.where((o) => o.id == widget.operationId).firstOrNull;
+        if (op != null) {
+          _type = op.type;
+          _amountCtrl.text = op.amount.toStringAsFixed(0);
+          _accountId = op.accountId;
+          _categoryId = op.categoryId;
+          _toAccountId = op.toAccountId;
+          if (op.comment != null) _commentCtrl.text = op.comment!;
+          if (op.tags != null) _tagsCtrl.text = op.tags!;
+        }
+      } else if (widget.copyFrom != null) {
+        final op = store.operations.where((o) => o.id == widget.copyFrom).firstOrNull;
         if (op != null) {
           _type = op.type;
           _amountCtrl.text = op.amount.toStringAsFixed(0);
@@ -309,7 +321,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         }
 
         return ScreenScaffold(
-          title: _isEditing ? context.tr('operations.edit') : context.tr('operations.add'),
+          title: _isEditing ? context.tr('operations.edit') : widget.copyFrom != null ? context.tr('operations.copy') : context.tr('operations.add'),
           showLogo: false,
           actions: [
             if (!_isEditing)

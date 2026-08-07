@@ -55,16 +55,11 @@ class OperationDetailScreen extends StatelessWidget {
 
   List<Widget> _buildActions(BuildContext context, FinanceStore store, Operation op) {
     return [
-      if (op.type == 'expense')
-        IconButton(
-          icon: const Icon(Icons.replay),
-          tooltip: context.tr('operations.refund'),
-          onPressed: () => _confirmRefund(context, store, op),
-        ),
       IconButton(
         icon: const Icon(Icons.copy),
         tooltip: context.tr('operations.copy'),
-        onPressed: () => _copyOperation(context, store, op),
+        onPressed: () => Navigator.pushNamed(context, '/add-operation',
+            arguments: {'type': op.type, 'copyFrom': op.id}),
       ),
       IconButton(
         icon: const Icon(Icons.description_outlined),

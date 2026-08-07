@@ -125,8 +125,8 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               actions: [
                 IconButton(
                   icon: _hasAdvFilter
-                      ? Icon(Icons.tune, color: AppColors.primary, size: 22)
-                      : Icon(Icons.tune, color: AppColors.textSecondaryFor(context), size: 22),
+                      ? Icon(Icons.search, color: AppColors.primary, size: 22)
+                      : Icon(Icons.search, color: AppColors.textSecondaryFor(context), size: 22),
                   onPressed: () => _showAdvFilterSheet(context, store),
                   tooltip: context.tr('filters.advanced_filter'),
                 ),
