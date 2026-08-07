@@ -10,6 +10,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/translate_category.dart';
+import '../../utils/category_icons.dart';
 import '../goals/add_goal_screen.dart';
 import 'add_budget_screen.dart';
 
@@ -159,6 +160,10 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     children: [
                       Row(
                         children: [
+                          if (cat != null) ...[
+                            Icon(categoryIconFor(cat, allCategories: store.categories), size: 18, color: cat.type == 'income' ? AppColors.income : AppColors.expense),
+                            const SizedBox(width: 8),
+                          ],
                           Expanded(
                             child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                           ),
