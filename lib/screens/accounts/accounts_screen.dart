@@ -19,12 +19,13 @@ class AccountsScreen extends StatefulWidget {
 
 class _AccountsScreenState extends State<AccountsScreen> {
   String _search = '';
+  final Set<String> _revealed = {};
 
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final all = store.accounts.where((a) => !a.isArchived && !a.isHidden).toList();
+        final all = store.accounts.where((a) => !a.isArchived).toList();
         all.sort((a, b) {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
@@ -174,13 +175,29 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   children: [
                     Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     Text(context.tr(accountTypeLabels[int.tryParse(_typeToId(a.type)) ?? 1] ?? 'accounts.type.cash'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                    if (a.isHidden)
+                      Text(context.tr('accounts.hidden'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.warning)),
                     if (a.isArchived)
                       Text(context.tr('accounts.archived'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text(formatMoney(a.balance, currency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+              GestureDetector(
+                onTap: a.isHidden ? () => setState(() {
+                  if (_revealed.contains(a.id)) {
+                    _revealed.remove(a.id);
+                  } else {
+                    _revealed.add(a.id);
+                  }
+                }) : null,
+                child: Text(
+                  a.isHidden && !_revealed.contains(a.id) ? '***' : formatMoney(a.balance, currency: a.currency),
+                  maxLines: 1, softWrap: false,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                    color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense),
+                ),
+              ),
               const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => store.updateAccountFavorite(a.id, !a.isFavorite),

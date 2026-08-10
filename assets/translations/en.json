@@ -88,6 +88,7 @@
   "accounts.title": "Accounts",
   "accounts.empty": "No accounts",
   "accounts.archived": "Archived",
+  "accounts.hidden": "Hidden",
   "accounts.my_capital": "My Capital",
   "accounts.group.money": "Money",
   "accounts.group.owed_by_me": "I Owe",

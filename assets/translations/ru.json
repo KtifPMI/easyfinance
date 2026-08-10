@@ -91,6 +91,7 @@
   "accounts.title": "Счета",
   "accounts.empty": "Нет счетов",
   "accounts.archived": "Архивный",
+  "accounts.hidden": "Скрытый",
   "accounts.my_capital": "Мой капитал",
   "accounts.group.money": "Деньги",
   "accounts.group.owed_by_me": "Я должен",
