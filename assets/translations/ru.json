@@ -600,6 +600,7 @@
   "goals.total_to_pay": "Всего к выплате",
   "goals.calc_hint": "Пример: 12 + 33 * 45 <Enter>",
   "goals.first_payment_date": "Дата первого взноса",
+  "goals.initial_payment": "Первый взнос",
   "goals.monthly_payment": "Я могу выплачивать ежемесячно",
   "goals.monthly_hint": "Выводится усредненная сумма к выплате за 30 дней",
   "goals.or": "или",

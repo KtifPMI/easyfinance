@@ -19,6 +19,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   final _titleCtrl = TextEditingController();
   final _totalCtrl = TextEditingController();
   final _monthlyCtrl = TextEditingController();
+  final _initialCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   final _totalFocus = FocusNode();
 
@@ -97,6 +98,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     _titleCtrl.dispose();
     _totalCtrl.dispose();
     _monthlyCtrl.dispose();
+    _initialCtrl.dispose();
     _commentCtrl.dispose();
     _totalFocus.dispose();
     super.dispose();
@@ -174,9 +176,17 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     if (_calculating) return;
     final total = _parseAmount(_totalCtrl.text);
     final monthly = _parseAmount(_monthlyCtrl.text);
+    final initial = _parseAmount(_initialCtrl.text);
     if (total <= 0 || monthly <= 0 || _firstPaymentDate == null) return;
     _calculating = true;
-    final months = (total / monthly).ceil();
+    final remaining = (total - initial).clamp(0, total);
+    if (remaining <= 0) {
+      _targetDate = _firstPaymentDate;
+      _calculating = false;
+      setState(() {});
+      return;
+    }
+    final months = (remaining / monthly).ceil();
     final end = DateTime(_firstPaymentDate!.year, _firstPaymentDate!.month + months, _firstPaymentDate!.day);
     setState(() { _targetDate = end; });
     Future.microtask(() => _calculating = false);
@@ -185,12 +195,20 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   void _recalcFromDate() {
     if (_calculating) return;
     final total = _parseAmount(_totalCtrl.text);
+    final initial = _parseAmount(_initialCtrl.text);
     if (total <= 0 || _firstPaymentDate == null || _targetDate == null) return;
     if (!_targetDate!.isAfter(_firstPaymentDate!)) return;
     _calculating = true;
+    final remaining = (total - initial).clamp(0, total);
+    if (remaining <= 0) {
+      _monthlyCtrl.text = '0';
+      _calculating = false;
+      setState(() {});
+      return;
+    }
     final months = (_targetDate!.year - _firstPaymentDate!.year) * 12 + (_targetDate!.month - _firstPaymentDate!.month);
     if (months <= 0) { _calculating = false; return; }
-    final monthly = total / months;
+    final monthly = remaining / months;
     _monthlyCtrl.text = monthly.toStringAsFixed(0);
     setState(() {});
     Future.microtask(() => _calculating = false);
@@ -371,6 +389,21 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               onChanged: (_) => setState(() {}),
             ),
             Text(context.tr('goals.calc_hint'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            const SizedBox(height: 12),
+
+            _label(context.tr('goals.initial_payment')),
+            TextFormField(
+              controller: _initialCtrl,
+              decoration: _decoration(),
+              keyboardType: TextInputType.number,
+              onChanged: (_) {
+                if (_targetDate != null && _targetDate!.isAfter(_firstPaymentDate ?? DateTime.now())) {
+                  _recalcFromDate();
+                } else {
+                  _recalcFromMonthly();
+                }
+              },
+            ),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.first_payment_date')),

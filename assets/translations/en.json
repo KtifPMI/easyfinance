@@ -277,6 +277,7 @@
   "goals.total_to_pay": "Total to Pay",
   "goals.calc_hint": "Example: 12 + 33 * 45 <Enter>",
   "goals.first_payment_date": "First Payment Date",
+  "goals.initial_payment": "Initial payment",
   "goals.monthly_payment": "I can pay monthly",
   "goals.monthly_hint": "Average monthly payment over 30 days",
   "goals.or": "or",
