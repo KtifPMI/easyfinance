@@ -13,7 +13,6 @@ import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
-import '../../utils/calc.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
 import '../../components/common/simple_pie_chart.dart';
@@ -691,8 +690,6 @@ class HomeScreen extends StatelessWidget {
     final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
     if (income == 0 && expense == 0) return const SizedBox.shrink();
 
-    final profit = income - expense;
-
     final catTotals = store.categories
         .where((c) => c.type == 'expense')
         .map((c) => (category: c, total: monthOps.where((o) => o.categoryId == c.id && o.type == 'expense').fold<double>(0, (s, o) => s + o.amount)))
@@ -754,16 +751,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _statBlock(BuildContext context, String label, String amount, Color color) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.center),
-        const SizedBox(height: 4),
-        Text(amount, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: color), textAlign: TextAlign.center),
       ],
     );
   }
