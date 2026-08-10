@@ -106,7 +106,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBalanceBanner(BuildContext context, FinanceStore store) {
     final savings = store.monthIncome - store.monthExpense;
     final moneyAccounts = store.accounts.where((a) =>
-      !a.isArchived && a.includeInTotal &&
+      !a.isArchived && !a.isHidden && a.includeInTotal &&
       (a.type == 'cash' || a.type == 'card' || a.type == 'deposit' || a.type == 'bank_account')
     );
     final moneyTotal = moneyAccounts.fold<double>(0, (s, a) => s + a.balance);
@@ -220,7 +220,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildAccountsSection(BuildContext context, FinanceStore store) {
-    final accounts = store.accounts.where((a) => !a.isArchived).toList();
+    final accounts = store.accounts.where((a) => !a.isArchived && !a.isHidden).toList();
     if (accounts.isEmpty) return const SizedBox.shrink();
 
     final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};

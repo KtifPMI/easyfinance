@@ -24,7 +24,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final all = store.accounts.toList();
+        final all = store.accounts.where((a) => !a.isArchived && !a.isHidden).toList();
         all.sort((a, b) {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
