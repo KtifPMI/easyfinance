@@ -173,9 +173,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ],
                         ),
                       ),
+                      ),
                     ),
-                  )),
-                })).toList(),
+                  );
+                }).toList(),
                 ],
                 if (selectedOps.isNotEmpty) ...[
                   if (selectedPlanned.isNotEmpty)

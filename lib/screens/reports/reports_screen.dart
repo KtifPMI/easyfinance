@@ -73,8 +73,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         }
         final monthIncome = opsInMonth.where((o) => o.type == 'income' && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o));
         final monthExpense = opsInMonth.where((o) => o.type == 'expense' && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o));
-        final balance = store.totalBalance;
-
         final catTotals = store.categories
             .where((c) => c.type == 'expense' && c.icon != 'invest')
             .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o))))
