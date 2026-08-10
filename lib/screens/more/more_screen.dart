@@ -11,7 +11,6 @@ import '../settings/settings_screen.dart';
 import '../ai_assistant/ai_assistant_screen.dart';
 import '../templates/templates_screen.dart';
 import '../categories/categories_screen.dart';
-import '../tags/tags_screen.dart';
 import '../settings/support_screen.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -24,8 +23,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
       (Icons.description_outlined, context.tr('templates.title'), const TemplatesScreen()),
-      (Icons.category_outlined, context.tr('more.edit_categories'), const CategoriesScreen()),
-      (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
+      (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
       (Icons.bug_report_outlined, context.tr('more.debug'), const DebugScreen()),
       (Icons.help_outline, context.tr('more.support'), const SupportScreen()),
