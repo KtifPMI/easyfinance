@@ -175,16 +175,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   children: [
                     Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     Text(context.tr(accountTypeLabels[int.tryParse(_typeToId(a.type)) ?? 1] ?? 'accounts.type.cash'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                    if (a.isHidden)
-                      Text(context.tr('accounts.hidden'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.warning)),
                     if (a.isArchived)
-                      Text(context.tr('accounts.archived'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      Text(context.tr('accounts.hidden'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.warning)),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: a.isHidden ? () => setState(() {
+                onTap: a.isArchived ? () => setState(() {
                   if (_revealed.contains(a.id)) {
                     _revealed.remove(a.id);
                   } else {
@@ -192,7 +190,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   }
                 }) : null,
                 child: Text(
-                  a.isHidden && !_revealed.contains(a.id) ? '***' : formatMoney(a.balance, currency: a.currency),
+                  a.isArchived && !_revealed.contains(a.id) ? '***' : formatMoney(a.balance, currency: a.currency),
                   maxLines: 1, softWrap: false,
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
                     color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense),
