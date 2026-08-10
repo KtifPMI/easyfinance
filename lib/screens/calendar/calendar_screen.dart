@@ -11,7 +11,6 @@ import '../../models/operation.dart';
 import '../../models/financial_event.dart';
 import '../../utils/format.dart';
 import '../../utils/category_icons.dart';
-import '../../utils/translate_category.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -143,40 +142,39 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
                     final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
                     return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: AppCard(
-                      child: InkWell(
-                        onTap: () => _confirmCreateOp(context, e, store),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40, height: 40,
-                              decoration: BoxDecoration(
-                                color: iconColor.withValues(alpha: 0.15),
-                                shape: BoxShape.circle,
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: AppCard(
+                        child: InkWell(
+                          onTap: () => _confirmCreateOp(context, e, store),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 40, height: 40,
+                                decoration: BoxDecoration(
+                                  color: iconColor.withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(iconData, size: 20, color: iconColor),
                               ),
-                              child: Icon(iconData, size: 20, color: iconColor),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                   Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                   if (e.comment != null && e.comment!.isNotEmpty)
-                                     Text(e.comment!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                                ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                    if (e.comment != null && e.comment!.isNotEmpty)
+                                      Text(e.comment!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
-                          ],
+                              const SizedBox(width: 8),
+                              Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
+                            ],
+                          ),
                         ),
                       ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                    );
+                  }).toList(),
                 ],
                 if (selectedOps.isNotEmpty) ...[
                   if (selectedPlanned.isNotEmpty)
