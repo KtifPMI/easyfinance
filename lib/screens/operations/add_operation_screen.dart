@@ -37,6 +37,8 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   final _amountCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   final _tagsCtrl = TextEditingController();
+  bool _commentExpanded = false;
+  final List<String> _selectedTags = [];
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
@@ -141,7 +143,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           _categoryId = t.categoryId;
           _toAccountId = t.toAccountId;
           if (t.comment != null) _commentCtrl.text = t.comment!;
-          if (t.tags != null) _tagsCtrl.text = t.tags!;
+          if (t.tags != null) {
+            _tagsCtrl.text = t.tags!;
+            _selectedTags.addAll(t.tags!.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+          }
           return;
         }
       }
@@ -155,7 +160,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           _categoryId = op.categoryId;
           _toAccountId = op.toAccountId;
           if (op.comment != null) _commentCtrl.text = op.comment!;
-          if (op.tags != null) _tagsCtrl.text = op.tags!;
+          if (op.tags != null) {
+            _tagsCtrl.text = op.tags!;
+            _selectedTags.addAll(op.tags!.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty));
+          }
         }
       } else if (widget.copyFrom != null) {
         final op = store.operations.where((o) => o.id == widget.copyFrom).firstOrNull;
@@ -166,7 +174,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           _categoryId = op.categoryId;
           _toAccountId = op.toAccountId;
           if (op.comment != null) _commentCtrl.text = op.comment!;
-          if (op.tags != null) _tagsCtrl.text = op.tags!;
+          if (op.tags != null) {
+            _tagsCtrl.text = op.tags!;
+            _selectedTags.addAll(op.tags!.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty));
+          }
         }
       }
     }
@@ -178,6 +189,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     _commentCtrl.dispose();
     _tagsCtrl.dispose();
     super.dispose();
+  }
+
+  String _combinedTags() {
+    return {
+      ..._selectedTags,
+      ..._tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty),
+    }.join(', ');
   }
 
   Future<void> _save() async {
@@ -210,7 +228,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       toAccountId: toAccountId,
       categoryId: catId,
       comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
-      tags: _tagsCtrl.text.isNotEmpty ? _tagsCtrl.text : null,
+      tags: _combinedTags().isNotEmpty ? _combinedTags() : null,
       clientId: clientId,
     );
 
@@ -299,7 +317,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 categoryId: catId,
                 toAccountId: toAccountId,
                 comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
-                tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
+                tags: _combinedTags().isEmpty ? null : _combinedTags(),
               ));
               if (context.mounted) _popAfterSave(context);
             },
@@ -448,9 +466,37 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 ),
               ],
               const SizedBox(height: 16),
-              AppInput(label: context.tr('operations.comment'), controller: _commentCtrl),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Text(context.tr('operations.comment'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
+                      GestureDetector(
+                        onTap: () => setState(() => _commentExpanded = !_commentExpanded),
+                        child: Icon(_commentExpanded ? Icons.expand_less : Icons.expand_more, size: 20, color: AppColors.textSecondaryFor(context)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: _commentCtrl,
+                    maxLines: _commentExpanded ? 5 : 1,
+                    style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: AppColors.cardFor(context),
+                      hintText: context.tr('operations.comment_hint'),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
-              AppInput(label: context.tr('operations.tags'), controller: _tagsCtrl),
+              _buildTagSelector(context, store),
               const SizedBox(height: 16),
               _buildPicker(
                 label: context.tr('operations.date_time'),
@@ -564,7 +610,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   _categoryId = t.categoryId;
                   _toAccountId = t.toAccountId;
                   if (t.comment != null) _commentCtrl.text = t.comment!;
-                  if (t.tags != null) _tagsCtrl.text = t.tags!;
+                  if (t.tags != null) {
+                    _tagsCtrl.text = t.tags!;
+                    _selectedTags.addAll(t.tags!.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty));
+                  }
                 });
               },
             )),
@@ -628,6 +677,79 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTagSelector(BuildContext context, FinanceStore store) {
+    final availableTags = store.tags.map((t) => t.name).toList();
+    final customTags = _tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+    final allTags = <String>{
+      ..._selectedTags,
+      ...customTags,
+    }.toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('operations.tags'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 8),
+        if (availableTags.isNotEmpty || allTags.isNotEmpty)
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              ...allTags.map((t) => Chip(
+                label: Text('#$t', style: TextStyle(fontSize: 12, color: Colors.white)),
+                backgroundColor: AppColors.primary,
+                deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
+                onDeleted: () {
+                  setState(() {
+                    _selectedTags.remove(t);
+                    final ctags = _tagsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+                    ctags.remove(t);
+                    _tagsCtrl.text = ctags.join(', ');
+                  });
+                },
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+              )),
+            ],
+          ),
+        if (availableTags.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: null,
+            decoration: InputDecoration(
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              hintText: context.tr('tags.add_tag'),
+            ),
+            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: TextStyle(fontSize: 14)))).toList(),
+            onChanged: (v) {
+              if (v != null && !_selectedTags.contains(v)) {
+                setState(() => _selectedTags.add(v));
+              }
+            },
+            isExpanded: true,
+          ),
+        ],
+        const SizedBox(height: 4),
+        TextField(
+          controller: _tagsCtrl,
+          style: TextStyle(fontSize: 13, color: AppColors.textFor(context)),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.cardFor(context),
+            hintText: context.tr('tags.custom_tag_hint'),
+            hintStyle: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+        ),
+      ],
     );
   }
 

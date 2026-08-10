@@ -2,6 +2,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:workmanager/workmanager.dart';
 import 'navigation/app_router.dart';
@@ -15,6 +16,7 @@ import 'store/locale_store.dart';
 import 'store/planned_payment_store.dart';
 import 'store/theme_store.dart';
 import 'theme/theme.dart';
+import 'utils/format.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +62,9 @@ void main() async {
     apiKey: AppConfig.yandexVisionApiKey,
     folderId: AppConfig.yandexFolderId,
   );
+
+  final prefs = await SharedPreferences.getInstance();
+  showKopeks = prefs.getBool('easyfinance_show_kopeks') ?? false;
 
   runApp(
     MultiProvider(

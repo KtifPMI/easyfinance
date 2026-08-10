@@ -140,6 +140,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               ),
               const SizedBox(height: 12),
+              _buildMonthlyTrendChart(context, store),
+              const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -260,7 +262,72 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ];
   }
 
-  static const _chartPalette = [
+  Widget _buildMonthlyTrendChart(BuildContext context, FinanceStore store) {
+    final now = DateTime.now();
+    final months = <DateTime>[];
+    for (int i = 5; i >= 0; i--) {
+      final m = DateTime(now.year, now.month - i, 1);
+      months.add(m);
+    }
+    final incomeData = <({String label, double value, Color color})>[];
+    final expenseData = <({String label, double value, Color color})>[];
+    final netData = <({String label, double value, Color color})>[];
+
+    for (final m in months) {
+      final ops = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, m)).toList();
+      double amtRub(o) {
+        final acc = store.getAccount(o.accountId);
+        return CurrencyRateService.convert(o.amount, acc?.currency ?? o.currency, 'RUB', store.rates);
+      }
+      final inv = store.categories.where((c) => c.icon == 'invest').map((c) => c.id).toSet();
+      final inc = ops.where((o) => o.type == 'income' && !inv.contains(o.categoryId)).fold(0.0, (s, o) => s + amtRub(o));
+      final exp = ops.where((o) => o.type == 'expense' && !inv.contains(o.categoryId)).fold(0.0, (s, o) => s + amtRub(o));
+      final monthLabel = context.tr('month.short.${m.month}');
+      incomeData.add((label: monthLabel, value: inc, color: AppColors.success));
+      expenseData.add((label: monthLabel, value: exp, color: AppColors.expense));
+      netData.add((label: monthLabel, value: inc - exp, color: AppColors.primary));
+    }
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('reports.monthly_trends'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _trendStat(context, context.tr('reports.income'), incomeData.fold(0.0, (s, e) => s + e.value), AppColors.success),
+              _trendStat(context, context.tr('reports.expense'), expenseData.fold(0.0, (s, e) => s + e.value), AppColors.expense),
+              _trendStat(context, context.tr('reports.net'), netData.fold(0.0, (s, e) => s + e.value), AppColors.primary),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(context.tr('reports.income'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          SimpleBarChart(slices: incomeData, height: 120, showPercentages: false),
+          const SizedBox(height: 12),
+          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 12, color: AppColors.expense, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          SimpleBarChart(slices: expenseData, height: 120, showPercentages: false),
+          const SizedBox(height: 12),
+          Text(context.tr('reports.net'), style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          SimpleBarChart(slices: netData, height: 120, showPercentages: false),
+        ],
+      ),
+    );
+  }
+
+  Widget _trendStat(BuildContext context, String label, double value, Color color) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 2),
+        Text(formatMoney(value), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color)),
+      ],
+    );
+  }
     Color(0xFFE53935), // красный
     Color(0xFF1E88E5), // синий
     Color(0xFF43A047), // зелёный

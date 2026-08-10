@@ -198,7 +198,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                       const SizedBox(height: 8),
                       ProgressBar(percent: forecastPct.clamp(0, 100), color: color),
                       const SizedBox(height: 4),
-                      Text(context.tr('budget.planned'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      _budgetRiskScale(context, b, store),
                     ],
                   ),
                 ),
@@ -480,6 +480,54 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 4),
         Text(formattedAmount, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
+      ],
+    );
+  }
+
+  Widget _budgetRiskScale(BuildContext context, Budget b, FinanceStore store) {
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysPassed = now.day;
+    final timePct = (daysPassed / daysInMonth * 100).clamp(0.0, 100.0);
+    final forecastPct = getBudgetForecastPercent(b);
+    final color = budgetForecastColor(forecastPct);
+    final remaining = b.limit - b.spent;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.textSecondary, shape: BoxShape.circle)),
+                const SizedBox(width: 4),
+                Text('${context.tr('reports.net').toLowerCase()} ${timePct.round()}%', style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+              ],
+            ),
+            Text(remaining > 0 ? '+${store.fmt(remaining)}' : store.fmt(remaining), style: TextStyle(fontSize: 11, color: remaining >= 0 ? AppColors.success : AppColors.expense, fontWeight: FontWeight.w600)),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: Container(
+            height: 4,
+            child: Row(
+              children: [
+                Container(
+                  width: (timePct / 100 * (MediaQuery.of(context).size.width - 72)).clamp(0, MediaQuery.of(context).size.width - 72),
+                  color: AppColors.textSecondary.withValues(alpha: 0.3),
+                ),
+                Container(
+                  width: (((forecastPct - timePct) / 100 * (MediaQuery.of(context).size.width - 72)).clamp(0, MediaQuery.of(context).size.width - 72)),
+                  color: forecastPct > timePct ? color.withValues(alpha: 0.6) : AppColors.success.withValues(alpha: 0.4),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

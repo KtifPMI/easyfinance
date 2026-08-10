@@ -15,6 +15,7 @@ import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/calc.dart';
 import '../../utils/translate_category.dart';
+import '../../utils/category_icons.dart';
 import '../../components/common/simple_pie_chart.dart';
 import '../../store/planned_payment_store.dart';
 import '../accounts/add_account_screen.dart';
@@ -495,6 +496,7 @@ class HomeScreen extends StatelessWidget {
 
     final totalPlanned = store.budgets.fold(0.0, (sum, b) => sum + b.limit);
     final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
+    final totalRemaining = totalPlanned - totalSpent;
     final totalForecast = store.budgets.fold(0.0, (sum, b) => sum + getBudgetForecastPercent(b) * b.limit / 100);
     final budgetForecastPct = totalPlanned > 0 ? (totalForecast / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
     final forecastColor = budgetForecastColor(budgetForecastPct);
@@ -550,6 +552,15 @@ class HomeScreen extends StatelessWidget {
                     Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                     Text(store.fmt(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
                       color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(context.tr('budget.remaining'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    Text(store.fmt(totalRemaining), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                      color: totalRemaining < 0 ? AppColors.expense : AppColors.success)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -638,7 +649,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _upcomingTile(BuildContext context, FinancialEvent e, FinanceStore store) => Padding(
+  Widget _upcomingTile(BuildContext context, FinancialEvent e, FinanceStore store) {
+    final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
+    final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
+    final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
+    return Padding(
     padding: const EdgeInsets.only(bottom: 6),
     child: AppCard(
       child: Row(
@@ -646,10 +661,10 @@ class HomeScreen extends StatelessWidget {
           Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              color: (e.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
+              color: iconColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: e.type == 'income' ? AppColors.success : AppColors.expense),
+            child: Icon(iconData, size: 20, color: iconColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -667,6 +682,7 @@ class HomeScreen extends StatelessWidget {
       ),
     ),
   );
+  }
 
   Widget _buildReportsSection(BuildContext context, FinanceStore store) {
     final now = DateTime.now();

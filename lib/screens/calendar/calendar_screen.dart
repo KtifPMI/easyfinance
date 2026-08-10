@@ -10,6 +10,8 @@ import '../../theme/theme.dart';
 import '../../models/operation.dart';
 import '../../models/financial_event.dart';
 import '../../utils/format.dart';
+import '../../utils/category_icons.dart';
+import '../../utils/translate_category.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -136,20 +138,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
                   ),
-                  ...selectedPlanned.map((e) => Padding(
+                  ...selectedPlanned.map((e) {
+                    final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
+                    final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
+                    final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
+                    return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: AppCard(
                       child: InkWell(
-                        onTap: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: e),
+                        onTap: () => _confirmCreateOp(context, e, store),
                         child: Row(
                           children: [
                             Container(
                               width: 40, height: 40,
                               decoration: BoxDecoration(
-                                color: AppColors.warning.withValues(alpha: 0.15),
+                                color: iconColor.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: AppColors.warning),
+                              child: Icon(iconData, size: 20, color: iconColor),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -163,12 +169,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.warning)),
+                            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
                           ],
                         ),
                       ),
                     ),
                   )),
+                }));
                 ],
                 if (selectedOps.isNotEmpty) ...[
                   if (selectedPlanned.isNotEmpty)
@@ -214,6 +221,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _confirmCreateOp(BuildContext context, FinancialEvent e, FinanceStore store) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(e.title),
+        content: Text('${store.fmt(e.amount)}\n${context.tr('calendar.confirm_create_op')}'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pushNamed(context, '/add-planned-payment', arguments: e);
+            },
+            child: Text(context.tr('calendar.edit_payment')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pushNamed(context, '/add-operation', arguments: {
+                'type': e.type,
+                'presetDate': e.date.length >= 10 ? e.date.substring(0, 10) : e.date,
+              });
+            },
+            child: Text(context.tr('calendar.create_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
     );
   }
 

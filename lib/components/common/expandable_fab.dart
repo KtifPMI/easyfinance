@@ -51,9 +51,11 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
     return Stack(
       children: [
         if (_isOpen)
-          GestureDetector(
-            onTap: _toggle,
-            child: Container(color: Colors.black26),
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: _toggle,
+              child: Container(color: Colors.black26),
+            ),
           ),
         Positioned(
           bottom: 16,

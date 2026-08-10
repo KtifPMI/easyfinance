@@ -1464,6 +1464,7 @@ class FinanceStore extends ChangeNotifier {
               limit: b.limit, spent: spent, period: b.period,
             ));
             await _saveBudgets();
+            _generateRecommendations();
             notifyListeners();
             return;
           }
@@ -1479,6 +1480,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _budgets.add(b.copyWith(spent: spent));
     await _saveBudgets();
+    _generateRecommendations();
     notifyListeners();
   }
 
@@ -1586,6 +1588,7 @@ class FinanceStore extends ChangeNotifier {
     final idx = _budgets.indexWhere((b) => b.id == id);
     if (idx >= 0) _budgets[idx] = _budgets[idx].copyWith(isDeleted: true);
     await _saveBudgets();
+    _generateRecommendations();
     notifyListeners();
   }
 

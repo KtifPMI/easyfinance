@@ -24,7 +24,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.lightbulb_outline, context.tr('more.recommendations'), const RecommendationsScreen()),
       (Icons.smart_toy_outlined, context.tr('more.ai_assistant'), const AiAssistantScreen()),
       (Icons.description_outlined, context.tr('templates.title'), const TemplatesScreen()),
-      (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
+      (Icons.category_outlined, context.tr('more.edit_categories'), const CategoriesScreen()),
       (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
       (Icons.bug_report_outlined, context.tr('more.debug'), const DebugScreen()),

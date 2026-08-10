@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/operation.dart';
 
+bool showKopeks = false;
+
 String formatApiDateTime([DateTime? dt]) {
   final now = dt ?? DateTime.now();
   final tz = now.timeZoneOffset;
@@ -10,6 +12,9 @@ String formatApiDateTime([DateTime? dt]) {
 }
 
 String formatMoney(double amount, {String currency = 'RUB'}) {
+  if (!showKopeks) {
+    return formatMoneyWhole(amount, currency: currency);
+  }
   final symbols = {'RUB': '₽', 'USD': '\$', 'EUR': '€'};
   final symbol = symbols[currency] ?? currency;
   final sign = amount < 0 ? '-' : '';
