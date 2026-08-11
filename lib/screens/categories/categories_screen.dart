@@ -50,10 +50,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
         return ScreenScaffold(
           title: context.tr('categories.title'),
           showLogo: false,
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _showAddSheet(context, store),
-            child: const Icon(Icons.add),
-          ),
           child: Column(
             children: [
               Padding(

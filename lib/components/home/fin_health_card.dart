@@ -51,39 +51,40 @@ class FinHealthCard extends StatelessWidget {
           Text(context.tr('health.title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: items.map((item) {
-              final (labelKey, icon, value, c, tipKey) = item;
-              final displayValue = value.round();
-              return GestureDetector(
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text(context.tr(labelKey), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                      content: SingleChildScrollView(child: Text(context.tr(tipKey), style: TextStyle(fontSize: 14))),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
-                      ],
-                    ),
-                  );
-                },
-                child: Column(
-                  children: [
-                    Container(
-                      width: 52, height: 52,
-                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: c, width: 3)),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon, size: 14, color: c),
-                          Text('$displayValue%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: c)),
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(context.tr(item.$1), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        content: SingleChildScrollView(child: Text(context.tr(item.$5), style: TextStyle(fontSize: 14))),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(context.tr(labelKey), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
-                  ],
+                    );
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 52, height: 52,
+                        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: item.$4, width: 3)),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(item.$2, size: 14, color: item.$4),
+                            Text('${item.$3.round()}%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: item.$4)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(context.tr(item.$1), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
                 ),
               );
             }).toList(),

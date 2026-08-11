@@ -105,11 +105,6 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildBalanceBanner(BuildContext context, FinanceStore store) {
     final savings = store.monthIncome - store.monthExpense;
-    final moneyAccounts = store.accounts.where((a) =>
-      !a.isArchived && a.includeInTotal &&
-      (a.type == 'cash' || a.type == 'card' || a.type == 'deposit' || a.type == 'bank_account')
-    );
-    final moneyTotal = moneyAccounts.fold<double>(0, (s, a) => s + a.balance);
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountsScreen())),
       child: Container(
@@ -120,31 +115,34 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('home.money'), style: TextStyle(color: Colors.white70, fontSize: 13)),
-                Icon(Icons.chevron_right, color: Colors.white54, size: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(context.tr('home.money'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                    const SizedBox(height: 4),
+                    Text(store.fmt(store.monthIncome + store.monthExpense), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(store.fmt(moneyTotal), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
-                const Spacer(),
-                Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
-              ],
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
                 _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
-                const SizedBox(width: 16),
-                _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
+                const SizedBox(width: 12),
+                _statLineExpense(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
               ],
             ),
             const SizedBox(height: 8),
@@ -168,13 +166,50 @@ class HomeScreen extends StatelessWidget {
               color: color,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Text(
-              amount,
-              style: TextStyle(
-                color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  amount,
+                  style: TextStyle(
+                    color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statLineExpense(String label, String amount, Color color) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 15),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  amount,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+              ],
             ),
           ),
         ],

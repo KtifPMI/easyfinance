@@ -45,10 +45,42 @@ class _CalculatorInputState extends State<CalculatorInput> {
     });
   }
 
+  String _formatDisplay(String raw) {
+    if (raw.isEmpty) return '0';
+    final parts = raw.split(RegExp(r'[+\-×÷]'));
+    final result = StringBuffer();
+    int rawPos = 0;
+    for (int i = 0; i < parts.length; i++) {
+      if (i > 0) {
+        result.write(raw[rawPos]);
+        rawPos++;
+      }
+      final num = parts[i];
+      if (num.isEmpty) continue;
+      if (num.contains('.')) {
+        final dotParts = num.split('.');
+        final intFormatted = _addSpaces(dotParts[0]);
+        result.write('$intFormatted.${dotParts[1]}');
+      } else {
+        result.write(_addSpaces(num));
+      }
+      rawPos += num.length;
+    }
+    return result.toString();
+  }
+
+  String _addSpaces(String num) {
+    if (num.isEmpty) return num;
+    return num.replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]} ',
+    );
+  }
+
   String _evaluate(String expr) {
     if (expr.isEmpty) return '';
     try {
-      final cleaned = expr.replaceAll('×', '*').replaceAll('÷', '/');
+      final cleaned = expr.replaceAll('×', '*').replaceAll('÷', '/').replaceAll(' ', '');
       _parsePos = 0;
       final result = _parseExpr(cleaned);
       if (result == result.toInt().toDouble()) return result.toInt().toString();
@@ -101,7 +133,7 @@ class _CalculatorInputState extends State<CalculatorInput> {
         ],
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           decoration: BoxDecoration(
             color: AppColors.cardFor(context),
             borderRadius: BorderRadius.circular(12),
@@ -111,21 +143,21 @@ class _CalculatorInputState extends State<CalculatorInput> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (_result.isNotEmpty && _result != _expression)
-                Text(_result, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-              Text(_expression.isEmpty ? '0' : _expression, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                Text(_addSpaces(_result), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+              Text(_expression.isEmpty ? '0' : _formatDisplay(_expression), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
             ],
           ),
         ),
         const SizedBox(height: 8),
-        _buildRow(['7', '8', '9', '÷']),
+        _buildRow(['÷', '×', '-', '+']),
         const SizedBox(height: 4),
-        _buildRow(['4', '5', '6', '×']),
+        _buildRow(['7', '8', '9', 'C']),
         const SizedBox(height: 4),
-        _buildRow(['1', '2', '3', '-']),
+        _buildRow(['4', '5', '6', '⌫']),
         const SizedBox(height: 4),
-        _buildRow(['0', '.', '+', '=']),
+        _buildRow(['1', '2', '3', '=']),
         const SizedBox(height: 4),
-        _buildRow(['C', '(', ')', '⌫']),
+        _buildRow(['0', '00', '.', '']),
       ],
     );
   }
@@ -133,13 +165,14 @@ class _CalculatorInputState extends State<CalculatorInput> {
   Widget _buildRow(List<String> keys) {
     return Row(
       children: keys.map((k) {
+        if (k.isEmpty) return const Expanded(child: SizedBox.shrink());
         final isOp = ['÷', '×', '-', '+', '='].contains(k);
         final isSpecial = ['C', '⌫'].contains(k);
         return Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
             child: GestureDetector(
-              onTap: () => _onKey(k),
+              onTap: () => _onKey(k == '00' ? '00' : k),
               child: Container(
                 height: 44,
                 decoration: BoxDecoration(

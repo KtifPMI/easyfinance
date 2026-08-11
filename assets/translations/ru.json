@@ -236,6 +236,8 @@
   "budget.warning_fmt": "«{name}»: прогноз {pct}% бюджета. Умерьте расходы в этой категории.",
   "budget.forecast": "Прогноз",
   "budget.planned": "Запланировано",
+  "budget.received": "Получено",
+  "budget.under_received": "Недополучено",
   "budget.spent_total": "Потрачено",
   "budget.remaining": "Остаток",
   "budget.add_budget": "Добавить бюджет",

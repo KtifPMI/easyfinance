@@ -95,11 +95,26 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildBudgetsTab(BuildContext context, FinanceStore store, double totalPlanned, double totalSpent, double budgetPercent, double monthIncome, double monthExpense) {
+    final incomeBudgets = store.budgets.where((b) {
+      final cat = store.getCategory(b.categoryId);
+      return cat != null && cat.type == 'income';
+    }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
+
+    final expenseBudgets = store.budgets.where((b) {
+      final cat = store.getCategory(b.categoryId);
+      return cat == null || cat.type != 'income';
+    }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
+
+    final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
+    final incomeSpent = incomeBudgets.fold(0.0, (s, b) => s + b.spent);
+    final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
+    final expenseSpent = expenseBudgets.fold(0.0, (s, b) => s + b.spent);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (totalPlanned > 0 || monthIncome > 0 || monthExpense > 0) ...[
+          if (monthIncome > 0 || monthExpense > 0) ...[
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,94 +134,124 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                       Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
                     ],
                   ),
-                  if (totalPlanned > 0) ...[
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(context.tr('budget.planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                        Text(store.fmt(totalPlanned), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                        Text(store.fmt(totalSpent), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ProgressBar(percent: budgetPercent, color: budgetPercent > 100 ? AppColors.expense : AppColors.primary),
-                    const SizedBox(height: 4),
-                    Text('${budgetPercent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                  ],
                 ],
               ),
             ),
             const SizedBox(height: 16),
           ],
-          ...store.budgets.map((b) {
-            final cat = store.getCategory(b.categoryId);
-            final forecastPct = getBudgetForecastPercent(b);
-            final color = budgetForecastColor(forecastPct);
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: GestureDetector(
-                onTap: () => _editBudgetDialog(context, b, store),
-                child: AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (cat != null) ...[
-                            Icon(categoryIconFor(cat, allCategories: store.categories), size: 18, color: cat.type == 'income' ? AppColors.income : AppColors.expense),
-                            const SizedBox(width: 8),
+
+          if (incomeBudgets.isNotEmpty) ...[
+            Text(context.tr('budget.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.income)),
+            const SizedBox(height: 4),
+            _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
+            _summaryRow(context, 'budget.received', store.fmt(incomeSpent), AppColors.success),
+            if (incomePlanned > incomeSpent)
+              _summaryRow(context, 'budget.under_received', store.fmt(incomePlanned - incomeSpent), AppColors.warning),
+            const SizedBox(height: 8),
+            ...incomeBudgets.map((b) => _budgetItem(context, b, store)),
+            const SizedBox(height: 12),
+          ],
+
+          if (expenseBudgets.isNotEmpty) ...[
+            Text(context.tr('budget.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
+            const SizedBox(height: 4),
+            _summaryRow(context, 'budget.planned', store.fmt(expensePlanned)),
+            _summaryRow(context, 'budget.spent_total', store.fmt(expenseSpent), expenseSpent > expensePlanned ? AppColors.expense : null),
+            _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - expenseSpent), (expensePlanned - expenseSpent) >= 0 ? AppColors.success : AppColors.expense),
+            const SizedBox(height: 8),
+            ...expenseBudgets.map((b) => _budgetItem(context, b, store)),
+          ],
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _summaryRow(BuildContext context, String labelKey, String value, [Color? color]) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(context.tr(labelKey), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color ?? AppColors.textFor(context))),
+        ],
+      ),
+    );
+  }
+
+  Widget _budgetItem(BuildContext context, Budget b, FinanceStore store) {
+    final cat = store.getCategory(b.categoryId);
+    final forecastPct = getBudgetForecastPercent(b);
+    final color = budgetForecastColor(forecastPct);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: () => _editBudgetDialog(context, b, store),
+        child: AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (cat != null) ...[
+                    Icon(categoryIconFor(cat, allCategories: store.categories), size: 18, color: cat.type == 'income' ? AppColors.income : AppColors.expense),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(context.tr('budget.confirm_delete')),
+                          content: Text(b.name ?? tCat(context, cat?.name ?? '')),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+                            TextButton(
+                              onPressed: () {
+                                store.deleteBudget(b.id);
+                                Navigator.pop(ctx);
+                              },
+                              child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
+                            ),
                           ],
-                          Expanded(
-                            child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-                          ),
-                          const SizedBox(width: 8),
-                          Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (ctx) => AlertDialog(
-                                  title: Text(context.tr('budget.confirm_delete')),
-                                  content: Text(b.name ?? tCat(context, cat?.name ?? '')),
-                                  actions: [
-                                    TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
-                                    TextButton(
-                                      onPressed: () {
-                                        store.deleteBudget(b.id);
-                                        Navigator.pop(ctx);
-                                      },
-                                      child: Text(context.tr('budget.delete'), style: TextStyle(color: AppColors.danger)),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                            child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      ProgressBar(percent: forecastPct.clamp(0, 100), color: color),
-                      const SizedBox(height: 4),
-                      _budgetRiskScale(context, b, store),
-                    ],
+                        ),
+                      );
+                    },
+                    child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  height: 4,
+                  color: AppColors.borderFor(context),
+                  child: FractionallySizedBox(
+                    widthFactor: (forecastPct / 100).clamp(0.0, 1.0),
+                    child: Container(color: color),
                   ),
                 ),
               ),
-            );
-          }),
-          const SizedBox(height: 24),
-        ],
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(context.tr('budget.forecast'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                  Text('${forecastPct.round()}%', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -480,54 +525,6 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 4),
         Text(formattedAmount, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
-      ],
-    );
-  }
-
-  Widget _budgetRiskScale(BuildContext context, Budget b, FinanceStore store) {
-    final now = DateTime.now();
-    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
-    final daysPassed = now.day;
-    final timePct = (daysPassed / daysInMonth * 100).clamp(0.0, 100.0);
-    final forecastPct = getBudgetForecastPercent(b);
-    final color = budgetForecastColor(forecastPct);
-    final remaining = b.limit - b.spent;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.textSecondary, shape: BoxShape.circle)),
-                const SizedBox(width: 4),
-                Text('${context.tr('reports.net').toLowerCase()} ${timePct.round()}%', style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
-              ],
-            ),
-            Text(remaining > 0 ? '+${store.fmt(remaining)}' : store.fmt(remaining), style: TextStyle(fontSize: 11, color: remaining >= 0 ? AppColors.success : AppColors.expense, fontWeight: FontWeight.w600)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(3),
-          child: Container(
-            height: 4,
-            child: Row(
-              children: [
-                Container(
-                  width: (timePct / 100 * (MediaQuery.of(context).size.width - 72)).clamp(0, MediaQuery.of(context).size.width - 72),
-                  color: AppColors.textSecondary.withValues(alpha: 0.3),
-                ),
-                Container(
-                  width: (((forecastPct - timePct) / 100 * (MediaQuery.of(context).size.width - 72)).clamp(0, MediaQuery.of(context).size.width - 72)),
-                  color: forecastPct > timePct ? color.withValues(alpha: 0.6) : AppColors.success.withValues(alpha: 0.4),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }
