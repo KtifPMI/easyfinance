@@ -144,37 +144,22 @@ class OperationDetailScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, top: 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/add-operation',
-                  arguments: {'type': op.type, 'copyFrom': op.id}),
-              icon: const Icon(Icons.copy, size: 18),
-              label: Text(context.tr('operations.copy')),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-            ),
+          IconButton(
+            icon: const Icon(Icons.copy, size: 24),
+            tooltip: context.tr('operations.copy'),
+            onPressed: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'copyFrom': op.id}),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/add-operation',
-                  arguments: {'type': op.type, 'operationId': op.id}),
-              icon: const Icon(Icons.edit_outlined, size: 18),
-              label: Text(context.tr('operations.edit')),
-              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-            ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 24),
+            tooltip: context.tr('operations.edit'),
+            onPressed: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'operationId': op.id}),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => _confirmDelete(context, store, op),
-              icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.expense),
-              label: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.expense)),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                side: BorderSide(color: AppColors.expense),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 24, color: AppColors.expense),
+            tooltip: context.tr('operations.delete'),
+            onPressed: () => _confirmDelete(context, store, op),
           ),
         ],
       ),

@@ -114,19 +114,6 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (store.budgets.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: OutlinedButton.icon(
-                onPressed: () => _copyBudgets(context, store),
-                icon: const Icon(Icons.copy, size: 16),
-                label: Text(context.tr('budget.copy_month'), style: TextStyle(fontSize: 12)),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  side: BorderSide(color: AppColors.borderFor(context)),
-                ),
-              ),
-            ),
           if (monthIncome > 0 || monthExpense > 0) ...[
             AppCard(
               child: Column(

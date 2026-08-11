@@ -142,7 +142,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerLeft,
-              child: _pill(context.tr('home.savings'), store.fmt(savings), Colors.white),
+              child: _pill(context.tr('home.profit'), store.fmt(savings), Colors.white),
             ),
           ],
         ),

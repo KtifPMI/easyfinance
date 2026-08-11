@@ -108,7 +108,9 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
       animation: _expandAnimation,
       builder: (context, child) {
         final animationValue = _expandAnimation.value;
-        return Opacity(
+        return IgnorePointer(
+          ignoring: animationValue < 0.1,
+          child: Opacity(
           opacity: animationValue,
           child: Transform.translate(
             offset: Offset(0, -8 * (1 - animationValue)),
@@ -150,7 +152,8 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
               ),
             ),
           ),
-        );
+        ),
+      );
       },
     );
   }
