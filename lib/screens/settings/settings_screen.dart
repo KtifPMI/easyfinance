@@ -28,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _appVersion = '';
   bool _pinEnabled = false;
   bool _kopeksEnabled = false;
+  bool _kopeksInOpsEnabled = false;
 
   @override
   void initState() {
@@ -51,8 +52,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadKopeksStatus() async {
     final prefs = await SharedPreferences.getInstance();
     final val = prefs.getBool('easyfinance_show_kopeks') ?? false;
+    final opsVal = prefs.getBool('easyfinance_show_kopeks_ops') ?? false;
     showKopeks = val;
-    if (mounted) setState(() => _kopeksEnabled = val);
+    showKopeksInOps = opsVal;
+    if (mounted) setState(() { _kopeksEnabled = val; _kopeksInOpsEnabled = opsVal; });
   }
 
   @override
@@ -71,6 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _darkModeItem(context),
           _pinItem(context),
           _kopeksItem(context),
+          _kopeksInOpsItem(context),
           _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           _exportItem(context),
@@ -225,6 +229,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await prefs.setBool('easyfinance_show_kopeks', v);
                 showKopeks = v;
                 if (mounted) setState(() => _kopeksEnabled = v);
+              },
+              activeThumbColor: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _kopeksInOpsItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(context.tr('settings.show_kopeks_ops'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Switch(
+              value: _kopeksInOpsEnabled,
+              onChanged: (v) async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('easyfinance_show_kopeks_ops', v);
+                showKopeksInOps = v;
+                if (mounted) setState(() => _kopeksInOpsEnabled = v);
               },
               activeThumbColor: AppColors.primary,
             ),

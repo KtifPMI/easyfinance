@@ -65,6 +65,7 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   showKopeks = prefs.getBool('easyfinance_show_kopeks') ?? false;
+  showKopeksInOps = prefs.getBool('easyfinance_show_kopeks_ops') ?? false;
 
   runApp(
     MultiProvider(

@@ -59,7 +59,7 @@ class OperationDetailScreen extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            formatMoney(op.amount),
+            formatMoneyOps(op.amount),
             style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w700,

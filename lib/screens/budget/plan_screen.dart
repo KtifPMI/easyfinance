@@ -114,6 +114,19 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (store.budgets.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: OutlinedButton.icon(
+                onPressed: () => _copyBudgets(context, store),
+                icon: const Icon(Icons.copy, size: 16),
+                label: Text(context.tr('budget.copy_month'), style: TextStyle(fontSize: 12)),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  side: BorderSide(color: AppColors.borderFor(context)),
+                ),
+              ),
+            ),
           if (monthIncome > 0 || monthExpense > 0) ...[
             AppCard(
               child: Column(
@@ -507,6 +520,33 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
               Navigator.pop(ctx);
             },
             child: Text(context.tr('goals.save')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _copyBudgets(BuildContext context, FinanceStore store) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('budget.copy_month')),
+        content: Text(context.tr('budget.copy_month_confirm')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              for (final b in store.budgets) {
+                store.addBudget(Budget(
+                  id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+                  categoryId: b.categoryId,
+                  limit: b.limit,
+                  name: b.name,
+                ));
+              }
+            },
+            child: Text(context.tr('budget.copy'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

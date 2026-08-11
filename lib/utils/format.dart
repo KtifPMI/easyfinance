@@ -3,18 +3,23 @@ import 'package:easy_localization/easy_localization.dart';
 import '../models/operation.dart';
 
 bool showKopeks = false;
+bool showKopeksInOps = false;
 
-String formatApiDateTime([DateTime? dt]) {
-  final now = dt ?? DateTime.now();
-  final tz = now.timeZoneOffset;
-  final tzStr = '${tz.isNegative ? '-' : '+'}${tz.inHours.abs().toString().padLeft(2, '0')}:${(tz.inMinutes % 60).abs().toString().padLeft(2, '0')}';
-  return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}$tzStr';
+String formatMoneyOps(double amount, {String currency = 'RUB'}) {
+  if (!showKopeksInOps) {
+    return formatMoneyWhole(amount, currency: currency);
+  }
+  return _formatMoneyWithKopeks(amount, currency: currency);
 }
 
 String formatMoney(double amount, {String currency = 'RUB'}) {
   if (!showKopeks) {
     return formatMoneyWhole(amount, currency: currency);
   }
+  return _formatMoneyWithKopeks(amount, currency: currency);
+}
+
+String _formatMoneyWithKopeks(double amount, {String currency = 'RUB'}) {
   final symbols = {'RUB': '₽', 'USD': '\$', 'EUR': '€'};
   final symbol = symbols[currency] ?? currency;
   final sign = amount < 0 ? '-' : '';
