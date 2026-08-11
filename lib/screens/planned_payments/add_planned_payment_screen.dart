@@ -31,6 +31,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   String _type = 'expense';
   int _repeatMode = 0;
   String? _accountId;
+  String? _toAccountId;
   String? _categoryId;
   DateTime? _date;
 
@@ -45,6 +46,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     _type = e?.type ?? 'expense';
     _repeatMode = e?.repeatMode ?? 0;
     _accountId = e?.accountId;
+    _toAccountId = e?.toAccountId;
     _categoryId = e?.categoryId;
     if (e?.date != null && e!.date.isNotEmpty) {
       _date = DateTime.tryParse(e.date);
@@ -87,6 +89,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           _repeatDropdown(context),
           const SizedBox(height: 12),
           _accountDropdown(context, store),
+          if (_type == 'transfer') ...[
+            const SizedBox(height: 12),
+            _toAccountDropdown(context, store),
+          ],
           const SizedBox(height: 12),
           _categoryPicker(context, store),
           const SizedBox(height: 12),
@@ -202,6 +208,21 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     );
   }
 
+  Widget _toAccountDropdown(BuildContext context, FinanceStore store) {
+    final accounts = store.accounts.where((a) => !a.isArchived && a.id != _accountId).toList();
+    return DropdownButtonFormField<String>(
+      initialValue: _toAccountId,
+      decoration: InputDecoration(
+        labelText: context.tr('planned_payments.to_account'),
+        filled: true, fillColor: AppColors.cardFor(context),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
+      onChanged: (v) => setState(() => _toAccountId = v),
+    );
+  }
+
   Widget _categoryPicker(BuildContext context, FinanceStore store) {
     final cat = _categoryId != null ? store.categories.where((c) => c.id == _categoryId).firstOrNull : null;
     return InkWell(
@@ -277,6 +298,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
       repeatMode: _repeatMode,
       accountId: _accountId,
+      toAccountId: _type == 'transfer' ? _toAccountId : null,
       categoryId: _categoryId,
       dayOfMonth: _repeatMode == 30 ? (_date?.day) : null,
       isRecurring: _repeatMode > 0,

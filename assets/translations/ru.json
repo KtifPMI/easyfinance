@@ -48,6 +48,7 @@
   "planned_payments.disabled": "Отключён",
   "planned_payments.date": "Дата",
   "planned_payments.account": "Счёт",
+  "planned_payments.to_account": "Счёт получателя",
   "planned_payments.category": "Категория",
   "planned_payments.category_hint": "Выберите категорию",
   "planned_payments.tags": "Метки",

@@ -311,12 +311,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              Navigator.pushNamed(context, '/add-operation', arguments: {
-                'type': e.type,
-                'presetDate': e.date.length >= 10 ? e.date.substring(0, 10) : e.date,
-              });
+              final now = DateTime.now();
+              final op = Operation(
+                id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+                type: e.type,
+                amount: e.amount,
+                date: e.date.isNotEmpty ? e.date : now.toIso8601String(),
+                accountId: e.accountId ?? store.accounts.firstOrNull?.id ?? '',
+                toAccountId: e.toAccountId,
+                categoryId: e.categoryId,
+                comment: e.comment ?? e.title,
+                tags: e.tags,
+                isPending: false,
+              );
+              await store.addOperation(op);
             },
             child: Text(context.tr('calendar.create_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),

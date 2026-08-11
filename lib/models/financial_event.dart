@@ -10,6 +10,7 @@ class FinancialEvent {
   final String? specificDate;
   final bool enabled;
   final String? accountId;
+  final String? toAccountId;
   final String? categoryId;
   final String? tags;
   final int repeatMode;
@@ -28,6 +29,7 @@ class FinancialEvent {
     this.specificDate,
     this.enabled = true,
     this.accountId,
+    this.toAccountId,
     this.categoryId,
     this.tags,
     this.repeatMode = 0,
@@ -74,6 +76,7 @@ class FinancialEvent {
     'specificDate': specificDate,
     'enabled': enabled,
     if (accountId != null) 'accountId': accountId,
+    if (toAccountId != null) 'toAccountId': toAccountId,
     if (categoryId != null) 'categoryId': categoryId,
     if (tags != null) 'tags': tags,
     'repeatMode': repeatMode,
@@ -93,6 +96,7 @@ class FinancialEvent {
     specificDate: json['specificDate'] as String?,
     enabled: json['enabled'] as bool? ?? true,
     accountId: json['accountId'] as String?,
+    toAccountId: json['toAccountId'] as String?,
     categoryId: json['categoryId'] as String?,
     tags: json['tags'] as String?,
     repeatMode: json['repeatMode'] as int? ?? 0,
