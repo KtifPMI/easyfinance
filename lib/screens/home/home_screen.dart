@@ -117,101 +117,56 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
-                    const SizedBox(height: 4),
-                    Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(context.tr('home.money'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
-                    const SizedBox(height: 4),
-                    Text(store.fmt(store.monthIncome + store.monthExpense), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
-                  ],
-                ),
+                Text(context.tr('home.money'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                const Spacer(),
+                Text(store.fmt(store.monthIncome + store.monthExpense), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                const Spacer(),
+                Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
               ],
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
-                const SizedBox(width: 12),
-                _statLineExpense(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
+                _pill(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
+                const Spacer(),
+                _pill(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
               ],
             ),
             const SizedBox(height: 8),
-            _statLine(context.tr('home.savings'), store.fmt(savings), Colors.white),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: _pill(context.tr('home.savings'), store.fmt(savings), Colors.white),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _statLine(String label, String amount, Color color) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 11)),
-          const SizedBox(height: 4),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  amount,
-                  style: TextStyle(
-                    color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+  Widget _pill(String label, String amount, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(20),
       ),
-    );
-  }
-
-  Widget _statLineExpense(String label, String amount, Color color) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 15),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  amount,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-              ],
-            ),
-          ),
+          Text(label, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 11)),
+          const SizedBox(width: 6),
+          Text(amount, style: TextStyle(
+            color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          )),
         ],
       ),
     );
