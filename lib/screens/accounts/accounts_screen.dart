@@ -26,6 +26,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         final all = store.accounts.where((a) => !a.isArchived).toList();
+        final hidden = store.accounts.where((a) => a.isArchived).toList();
         all.sort((a, b) {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
@@ -89,7 +90,13 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              ..._buildGrouped(context, store, grouped),
+                               ..._buildGrouped(context, store, grouped),
+                               if (hidden.isNotEmpty) ...[
+                                 const SizedBox(height: 16),
+                                 Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+                                 const SizedBox(height: 8),
+                                 ...hidden.map((a) => _accountTile(context, store, a)),
+                               ],
                             ],
                           ),
                         ),

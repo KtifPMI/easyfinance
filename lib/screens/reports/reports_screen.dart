@@ -263,7 +263,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _buildMonthlyTrendChart(BuildContext context, FinanceStore store) {
     final now = DateTime.now();
     final months = <DateTime>[];
-    for (int i = 5; i >= 0; i--) {
+    for (int i = 11; i >= 0; i--) {
       final m = DateTime(now.year, now.month - i, 1);
       months.add(m);
     }
