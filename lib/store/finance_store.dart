@@ -1222,12 +1222,22 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateAccountFavorite(String accountId, bool isFavorite) {
+  void updateAccountFavorite(String accountId, bool isFavorite) async {
     final idx = _accounts.indexWhere((a) => a.id == accountId);
-    if (idx >= 0) {
-      _accounts[idx] = _accounts[idx].copyWith(isFavorite: isFavorite);
-      _saveCache();
-      notifyListeners();
+    if (idx < 0) return;
+    _accounts[idx] = _accounts[idx].copyWith(isFavorite: isFavorite);
+    _saveCache();
+    notifyListeners();
+    if (authService.isAuthenticated) {
+      try {
+        await authService.apiService.setAccount({
+          'accounts': [{
+            'id': accountId,
+            'state': isFavorite ? '1' : '0',
+            'updated_at': formatApiDateTime(),
+          }]
+        }, accountId: accountId);
+      } catch (_) {}
     }
   }
 
