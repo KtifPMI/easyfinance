@@ -286,6 +286,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       netData.add((label: monthLabel, value: inc - exp, color: AppColors.primary));
     }
 
+    final maxInc = incomeData.fold(0.0, (m, s) => s.value > m ? s.value : m);
+    final maxExp = expenseData.fold(0.0, (m, s) => s.value > m ? s.value : m);
+    final maxNet = netData.map((s) => s.value.abs()).fold(0.0, (a, b) => a > b ? a : b);
+
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,17 +305,68 @@ class _ReportsScreenState extends State<ReportsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(context.tr('reports.income'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          SimpleBarChart(slices: incomeData, height: 120, showPercentages: false),
+          _trendLegend(context),
+          const SizedBox(height: 8),
+          ...incomeData.asMap().entries.map((e) =>
+            _trendLine(context, e.value.label, e.value.value, maxInc > 0 ? maxInc : 1, AppColors.success)),
           const SizedBox(height: 12),
-          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 12, color: AppColors.expense, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          SimpleBarChart(slices: expenseData, height: 120, showPercentages: false),
+          const Divider(height: 1),
           const SizedBox(height: 12),
-          Text(context.tr('reports.net'), style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          SimpleBarChart(slices: netData, height: 120, showPercentages: false),
+          ...expenseData.asMap().entries.map((e) =>
+            _trendLine(context, e.value.label, e.value.value, maxExp > 0 ? maxExp : 1, AppColors.expense)),
+          const SizedBox(height: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 12),
+          ...netData.asMap().entries.map((e) =>
+            _trendLine(context, e.value.label, e.value.value, maxNet > 0 ? maxNet : 1, AppColors.primary)),
+        ],
+      ),
+    );
+  }
+
+  Widget _trendLegend(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(width: 16, height: 3, color: AppColors.success),
+        const SizedBox(width: 4),
+        Text(context.tr('reports.income'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(width: 16),
+        Container(width: 16, height: 3, color: AppColors.expense),
+        const SizedBox(width: 4),
+        Text(context.tr('reports.expense'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(width: 16),
+        Container(width: 16, height: 3, color: AppColors.primary),
+        const SizedBox(width: 4),
+        Text(context.tr('reports.net'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+      ],
+    );
+  }
+
+  Widget _trendLine(BuildContext context, String label, double value, double max, Color color) {
+    final fraction = max > 0 ? (value / max).clamp(0.0, 1.0) : 0.0;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          SizedBox(width: 32, child: Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context)))),
+          const SizedBox(width: 8),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: Container(
+                height: 4,
+                color: AppColors.borderFor(context),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: fraction,
+                  child: Container(color: color),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(width: 72, child: Text(formatMoney(value), style: TextStyle(fontSize: 10, color: AppColors.textFor(context)), textAlign: TextAlign.right)),
         ],
       ),
     );

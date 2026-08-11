@@ -437,11 +437,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ],
               Row(
                 children: [
-                  _typeBtn('expense', context.tr('operations.type_expense')),
+                  _typeBtn('expense', Icons.trending_down, AppColors.expense, context.tr('operations.type_expense')),
                   const SizedBox(width: 8),
-                  _typeBtn('income', context.tr('operations.type_income')),
+                  _typeBtn('income', Icons.trending_up, AppColors.success, context.tr('operations.type_income')),
                   const SizedBox(width: 8),
-                  _typeBtn('transfer', context.tr('operations.type_transfer')),
+                  _typeBtn('transfer', Icons.swap_horiz, AppColors.transfer, context.tr('operations.type_transfer')),
                 ],
               ),
               const SizedBox(height: 20),
@@ -568,22 +568,28 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     );
   }
 
-  Widget _typeBtn(String type, String label) {
+  Widget _typeBtn(String type, IconData icon, Color color, String label) {
     final active = _type == type;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _type = type),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: active ? AppColors.primary : AppColors.cardFor(context),
+            color: active ? color : AppColors.cardFor(context),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: active ? AppColors.primary : AppColors.borderFor(context)),
+            border: Border.all(color: active ? color : AppColors.borderFor(context)),
           ),
-          child: Text(label, textAlign: TextAlign.center, style: TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w600,
-            color: active ? Colors.white : AppColors.textFor(context),
-          )),
+          child: Column(
+            children: [
+              Icon(icon, size: 22, color: active ? Colors.white : color),
+              const SizedBox(height: 2),
+              Text(label, textAlign: TextAlign.center, style: TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w500,
+                color: active ? Colors.white : AppColors.textFor(context),
+              )),
+            ],
+          ),
         ),
       ),
     );
