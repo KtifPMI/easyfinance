@@ -21,7 +21,15 @@ class _TagsScreenState extends State<TagsScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final all = store.tags.toList()..sort((a, b) => a.name.compareTo(b.name));
+        final apiTags = store.tags.map((t) => t.name).toSet();
+        final opTags = <String>{};
+        for (final op in store.operations) {
+          for (final t in store.getTagsForOperation(op)) {
+            opTags.add(t);
+          }
+        }
+        final allNames = {...apiTags, ...opTags}.toList()..sort();
+        final all = allNames.map((n) => Tag(id: n, name: n)).toList();
         final tags = _search.isEmpty
             ? all
             : all.where((t) => t.name.toLowerCase().contains(_search.toLowerCase())).toList();
