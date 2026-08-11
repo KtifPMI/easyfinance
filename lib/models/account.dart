@@ -161,6 +161,7 @@ class Account {
     final icon = json['icon']?.toString() ?? '';
     final state = int.tryParse(json['state']?.toString() ?? '0') ?? 0;
     final isArchived = state == 2;
+    final isFavorite = state == 1;
     final initBalance = double.tryParse(json['init_balance']?.toString() ?? '0') ?? 0;
     final currencyId = json['currency_id']?.toString();
     return Account(
@@ -174,6 +175,7 @@ class Account {
       type: _parseAccountType(json['type_id']),
       includeInTotal: !isArchived && json['include_in_total']?.toString() != '0',
       isArchived: isArchived,
+      isFavorite: isFavorite,
       initBalance: initBalance,
       createdAt: json['created_at']?.toString() ?? '',
       updatedAt: json['updated_at']?.toString() ?? '',

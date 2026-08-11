@@ -55,7 +55,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         _type = acc.type;
         _currencyId = acc.currencyId ?? '1';
         _isFavorite = acc.isFavorite;
-        _state = acc.isArchived ? 2 : 0;
+        _state = acc.isArchived ? 2 : (acc.isFavorite ? 1 : 0);
         _descriptionCtrl.text = acc.description ?? '';
         _annualRateCtrl.text = acc.annualRate?.toStringAsFixed(2) ?? '0.00';
         _creditLimitCtrl.text = acc.creditLimit?.toStringAsFixed(2) ?? '';
@@ -134,7 +134,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       createdAt: createdAt.isNotEmpty ? createdAt : now,
       updatedAt: now,
       isArchived: _state == 2,
-      isFavorite: _isFavorite,
+      isFavorite: _state == 1,
       description: _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
       annualRate: (_isCreditType || _isDepositType) && _annualRateCtrl.text.isNotEmpty
           ? double.tryParse(_annualRateCtrl.text.replaceAll(',', '.'))
@@ -274,6 +274,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             ),
             items: [
               DropdownMenuItem(value: 0, child: Text(context.tr('accounts.state.active'))),
+              DropdownMenuItem(value: 1, child: Text(context.tr('accounts.favorite'))),
               DropdownMenuItem(value: 2, child: Text(context.tr('accounts.state.hidden'))),
             ],
             onChanged: (v) => setState(() => _state = v!),
