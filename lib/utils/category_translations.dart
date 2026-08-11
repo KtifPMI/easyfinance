@@ -1,4 +1,4 @@
-const Map<String, Map<String, String>> categoryTranslations = {
+﻿const Map<String, Map<String, String>> categoryTranslations = {
   'ru': {},
   'en': {
     'Автомобиль': 'Car',
