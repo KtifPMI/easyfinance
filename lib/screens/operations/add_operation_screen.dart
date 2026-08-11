@@ -38,6 +38,8 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   final _tagsCtrl = TextEditingController();
   bool _commentExpanded = false;
   final List<String> _selectedTags = [];
+  final _categoryKey = GlobalKey();
+  final _scrollCtrl = ScrollController();
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
@@ -468,20 +470,33 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     colorBuilder: (id) => _hexToColor(store.accounts.firstWhere((a) => a.id == id).color),
                     selectedId: _accountId,
                   );
-                  if (result != null) setState(() => _accountId = result);
+                  if (result != null) {
+                    setState(() => _accountId = result);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (_categoryKey.currentContext != null) {
+                        Scrollable.ensureVisible(_categoryKey.currentContext!, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                      }
+                    });
+                  }
                 },
               ),
               const SizedBox(height: 16),
               if (_type != 'transfer') ...[
                 _buildTopCategories(context, store),
-                _buildPicker(
+                Container(key: _categoryKey, child: _buildPicker(
                   label: context.tr('operations.category'),
                   value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
                   onTap: () async {
+                    final cats = store.categories.where((c) => c.type == _type).toList();
+                    final counts = <String, int>{};
+                    for (final op in store.operations.where((o) => o.type == _type && !o.isDeleted)) {
+                      if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
+                    }
+                    cats.sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
                       title: context.tr('operations.category'),
-                      items: store.categories.where((c) => c.type == _type).map((c) => c.id).toList(),
+                      items: cats.map((c) => c.id).toList(),
                       labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
                       groupBuilder: (id) {
                         final c = store.categories.firstWhere((c) => c.id == id);
@@ -495,7 +510,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     );
                     if (result != null) setState(() => _categoryId = result);
                   },
-                ),
+                )),
               ],
               if (_type == 'transfer') ...[
                 _buildPicker(

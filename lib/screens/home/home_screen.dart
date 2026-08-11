@@ -659,7 +659,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildUpcomingPaymentsSection(BuildContext context, PlannedPaymentStore plannedPayments, FinanceStore store) {
-    if (plannedPayments.upcomingExpenses.isEmpty && plannedPayments.upcomingIncomes.isEmpty) return const SizedBox.shrink();
+    if (plannedPayments.events.isEmpty) return const SizedBox.shrink();
+    final upcoming = plannedPayments.upcomingEvents;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -674,7 +675,13 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        ...plannedPayments.upcomingEvents.take(5).map((e) => GestureDetector(
+        if (upcoming.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(context.tr('calendar.empty'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          )
+        else
+          ...upcoming.take(5).map((e) => GestureDetector(
           onTap: () => Navigator.pushNamed(context, '/planned-payments'),
           child: _upcomingTile(context, e, store),
         )),
