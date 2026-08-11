@@ -31,7 +31,6 @@ class OperationDetailScreen extends StatelessWidget {
 
         return ScreenScaffold(
           title: context.tr('operations.title_detail'),
-          actions: _buildActions(context, store, op),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -46,36 +45,13 @@ class OperationDetailScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 _tagsCard(context, op),
               ],
+              const Spacer(),
+              _bottomActions(context, store, op),
             ],
           ),
         );
       },
     );
-  }
-
-  List<Widget> _buildActions(BuildContext context, FinanceStore store, Operation op) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.copy),
-        tooltip: context.tr('operations.copy'),
-        onPressed: () => Navigator.pushNamed(context, '/add-operation',
-            arguments: {'type': op.type, 'copyFrom': op.id}),
-      ),
-      IconButton(
-        icon: const Icon(Icons.description_outlined),
-        tooltip: context.tr('templates.save_as_template'),
-        onPressed: () => _saveAsTemplate(context, store, op),
-      ),
-      IconButton(
-        icon: const Icon(Icons.edit_outlined),
-        onPressed: () => Navigator.pushNamed(context, '/add-operation',
-            arguments: {'type': op.type, 'operationId': op.id}),
-      ),
-      IconButton(
-        icon: const Icon(Icons.delete_outline),
-        onPressed: () => _confirmDelete(context, store, op),
-      ),
-    ];
   }
 
   Widget _amountCard(BuildContext context, Operation op, dynamic cat) {
@@ -101,12 +77,17 @@ class OperationDetailScreen extends StatelessWidget {
   }
 
   Widget _detailCard(BuildContext context, Operation op, FinanceStore store, dynamic acc, dynamic toAcc) {
+    final dt = DateTime.tryParse(op.date);
+    final dateStr = dt != null
+        ? '${formatDateLong(op.date)} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}'
+        : formatDateLong(op.date);
+
     return AppCard(
       child: Column(
         children: [
           if (acc != null) _infoRow(context, context.tr('operations.account'), acc.name),
           if (toAcc != null) _infoRow(context, context.tr('operations.account_to'), toAcc.name),
-          _infoRow(context, context.tr('operations.date'), formatDateLong(op.date)),
+          _infoRow(context, context.tr('operations.date'), dateStr),
           if (op.type == 'transfer' && toAcc != null && acc != null)
             _infoRow(context, context.tr('operations.rate'), _transferRate(op, store, acc, toAcc)),
         ],
@@ -159,6 +140,47 @@ class OperationDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget _bottomActions(BuildContext context, FinanceStore store, Operation op) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, top: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/add-operation',
+                  arguments: {'type': op.type, 'copyFrom': op.id}),
+              icon: const Icon(Icons.copy, size: 18),
+              label: Text(context.tr('operations.copy')),
+              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/add-operation',
+                  arguments: {'type': op.type, 'operationId': op.id}),
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: Text(context.tr('operations.edit')),
+              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _confirmDelete(context, store, op),
+              icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.expense),
+              label: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.expense)),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                side: BorderSide(color: AppColors.expense),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _infoRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -183,43 +205,6 @@ class OperationDetailScreen extends StatelessWidget {
     return '1.00';
   }
 
-  void _copyOperation(BuildContext context, FinanceStore store, Operation op) {
-    final newId = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
-    store.addOperation(Operation(
-      id: newId,
-      type: op.type,
-      amount: op.amount,
-      transferAmount: op.transferAmount,
-      date: DateTime.now().toIso8601String().substring(0, 10),
-      accountId: op.accountId,
-      toAccountId: op.toAccountId,
-      categoryId: op.categoryId,
-      comment: op.comment,
-      tags: op.tags,
-      clientId: newId,
-    ));
-  }
-
-  Future<void> _saveAsTemplate(BuildContext context, FinanceStore store, Operation op) async {
-    final cat = store.getCategory(op.categoryId);
-    await store.addTemplate(OperationTemplate(
-      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-      name: cat != null ? tCat(context, cat.name) : (op.comment ?? context.tr('templates.new')),
-      type: op.type,
-      amount: op.amount,
-      accountId: op.accountId,
-      categoryId: op.categoryId,
-      toAccountId: op.toAccountId,
-      comment: op.comment,
-      tags: op.tags,
-    ));
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.tr('templates.save_as_template')), duration: const Duration(seconds: 2)),
-      );
-    }
-  }
-
   void _confirmDelete(BuildContext context, FinanceStore store, Operation op) {
     showDialog(
       context: context,
@@ -235,28 +220,6 @@ class OperationDetailScreen extends StatelessWidget {
               if (context.mounted) Navigator.pop(context);
             },
             child: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.expense)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmRefund(BuildContext context, FinanceStore store, Operation op) {
-    final cat = store.getCategory(op.categoryId);
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.tr('operations.refund_confirm')),
-        content: Text('${formatMoney(op.amount)} — ${tCat(context, cat?.name ?? '')}'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('operations.cancel'))),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx, true);
-              store.refundOperation(op);
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: Text(context.tr('operations.refund')),
           ),
         ],
       ),

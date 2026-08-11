@@ -249,10 +249,66 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       return;
     }
     if (!_isEditing && catId != null) {
-      _offerSaveTemplate(context, amount, catId, accountId, toAccountId);
+      _showSaveResult(context, store, op, catId);
       return;
     }
     _popAfterSave(context);
+  }
+
+  void _showSaveResult(BuildContext context, FinanceStore store, Operation op, String catId) {
+    final cat = store.getCategory(catId);
+    String? budgetInfo;
+    if (op.type == 'expense') {
+      final budget = store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull;
+      if (budget != null) {
+        final newSpent = budget.spent + op.amount;
+        final pct = budget.limit > 0 ? (newSpent / budget.limit * 100).round() : 0;
+        budgetInfo = '${context.tr('budget.forecast')}: $pct% (${store.fmt(newSpent)} / ${store.fmt(budget.limit)})';
+      }
+    }
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('operations.saved')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 4),
+            Text(tCat(context, cat?.name ?? ''), style: TextStyle(fontSize: 14)),
+            if (budgetInfo != null) ...[
+              const SizedBox(height: 8),
+              Text(budgetInfo, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _offerSaveTemplate(context, op.amount, catId, op.accountId, op.toAccountId);
+            },
+            child: Text(context.tr('templates.save_as_template'), style: TextStyle(fontSize: 13)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _popAfterSave(context);
+              Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'copyFrom': op.id});
+            },
+            child: Text(context.tr('operations.more'), style: TextStyle(fontSize: 13)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _popAfterSave(context);
+            },
+            child: Text(context.tr('common.ok'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showLimitDialog(BuildContext context) {

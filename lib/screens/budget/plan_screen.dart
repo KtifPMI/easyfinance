@@ -265,7 +265,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: GestureDetector(
-                onTap: () => _editGoalDialog(context, g, store),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddGoalScreen(goalId: g.id))),
                 child: AppCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

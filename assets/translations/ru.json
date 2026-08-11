@@ -176,6 +176,8 @@
   "operations.rate": "Курс",
   "operations.category": "Категория",
   "operations.to_account": "На счёт",
+  "operations.saved": "Операция сохранена",
+  "operations.more": "Ещё",
   "operations.comment": "Комментарий",
   "operations.comment_hint": "Добавить комментарий...",
   "operations.date_time": "Дата и время",
