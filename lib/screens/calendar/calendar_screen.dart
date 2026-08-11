@@ -28,7 +28,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     super.initState();
     final now = DateTime.now();
     _currentMonth = DateTime(now.year, now.month);
-    _selectedDate = DateTime(now.year, now.month, now.day);
   }
 
   void _prevMonth() => setState(() => _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1));
@@ -82,8 +81,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
           }));
         }
 
-        final selectedOps = opsByDate[_selectedDate] ?? <Operation>[];
-        final selectedPlanned = plannedByDate[_selectedDate] ?? <FinancialEvent>[];
+        final selectedOps = _selectedDate != null ? (opsByDate[_selectedDate] ?? <Operation>[]) : <Operation>[];
+        final selectedPlanned = _selectedDate != null ? (plannedByDate[_selectedDate] ?? <FinancialEvent>[]) : <FinancialEvent>[];
+
+        final upcomingPlanned = _selectedDate == null ? _allUpcoming(plannedStore) : <FinancialEvent>[];
 
         return ScreenScaffold(
           title: context.tr('calendar.title'),
@@ -121,105 +122,183 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 childAspectRatio: 1,
                 children: dayCells,
               ),
-              const SizedBox(height: 16),
-              if (_selectedDate != null) ...[
-                Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 8),
-              ],
-              if (selectedOps.isEmpty && selectedPlanned.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 24),
-                  child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
-                )
-              else ...[
-                if (selectedPlanned.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
-                  ),
-                  ...selectedPlanned.map((e) {
-                    final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
-                    final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
-                    final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: AppCard(
-                        child: InkWell(
-                          onTap: () => _confirmCreateOp(context, e, store),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 40, height: 40,
-                                decoration: BoxDecoration(
-                                  color: iconColor.withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(iconData, size: 20, color: iconColor),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                    if (e.comment != null && e.comment!.isNotEmpty)
-                                      Text(e.comment!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ],
-                if (selectedOps.isNotEmpty) ...[
-                  if (selectedPlanned.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: Text(context.tr('calendar.operations'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
-                    ),
-                  ...selectedOps.map((op) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: AppCard(
-                      child: InkWell(
-                        onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 40, height: 40,
-                              decoration: BoxDecoration(
-                                color: (op.type == 'income' ? AppColors.success : AppColors.expense).withValues(alpha: 0.15),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(op.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20, color: op.type == 'income' ? AppColors.success : AppColors.expense),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                   Text(op.comment ?? store.getCategory(op.categoryId)?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                   Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  )),
-                ],
-              ],
+              const SizedBox(height: 12),
+              Expanded(
+                child: _selectedDate != null
+                    ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
+                    : _buildAllUpcoming(context, store, plannedStore, upcomingPlanned),
+              ),
             ],
           ),
         );
       },
+    );
+  }
+
+  List<FinancialEvent> _allUpcoming(PlannedPaymentStore plannedStore) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final result = plannedStore.events.where((e) {
+      if (!e.enabled) return false;
+      if (e.date.isEmpty) return false;
+      final d = DateTime.tryParse(e.date);
+      return d != null && !d.isBefore(today);
+    }).toList();
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
+  }
+
+  Widget _buildAllUpcoming(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<FinancialEvent> events) {
+    if (events.isEmpty) {
+      return Center(child: Text(context.tr('calendar.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))));
+    }
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+        ),
+        ...events.map((e) => _plannedPaymentTile(context, store, e)),
+      ],
+    );
+  }
+
+  Widget _buildDayEvents(BuildContext context, FinanceStore store, List<Operation> ops, List<FinancialEvent> planned) {
+    return ListView(
+      children: [
+        Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        if (ops.isEmpty && planned.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
+          ),
+        if (planned.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+          ),
+          ...planned.map((e) => _plannedPaymentTile(context, store, e)),
+        ],
+        if (ops.isNotEmpty) ...[
+          if (planned.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: Text(context.tr('calendar.operations'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+            ),
+          ...ops.map((op) => _operationTile(context, store, op)),
+        ],
+      ],
+    );
+  }
+
+  Widget _plannedPaymentTile(BuildContext context, FinanceStore store, FinancialEvent e) {
+    final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
+    final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
+    final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AppCard(
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(iconData, size: 20, color: iconColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, size: 20, color: AppColors.textSecondaryFor(context)),
+              onSelected: (v) {
+                if (v == 'edit') {
+                  Navigator.pushNamed(context, '/add-planned-payment', arguments: e);
+                } else if (v == 'confirm') {
+                  _confirmCreateOp(context, e, store);
+                } else if (v == 'delete') {
+                  _confirmDeletePlanned(context, e, store);
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 'edit', child: Text(context.tr('calendar.edit_payment'))),
+                PopupMenuItem(value: 'confirm', child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary))),
+                PopupMenuItem(value: 'delete', child: Text(context.tr('calendar.delete_payment'), style: TextStyle(color: AppColors.expense))),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _operationTile(BuildContext context, FinanceStore store, Operation op) {
+    final cat = store.getCategory(op.categoryId);
+    final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
+    final iconColor = op.type == 'income' ? AppColors.success : AppColors.expense;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AppCard(
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+          child: Row(
+            children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(iconData, size: 20, color: iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeletePlanned(BuildContext context, FinancialEvent e, FinanceStore store) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('calendar.delete_payment')),
+        content: Text('${e.title} — ${store.fmt(e.amount)}'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<PlannedPaymentStore>().remove(e.id);
+            },
+            child: Text(context.tr('calendar.delete'), style: TextStyle(color: AppColors.expense)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -230,13 +309,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: Text(e.title),
         content: Text('${store.fmt(e.amount)}\n${context.tr('calendar.confirm_create_op')}'),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pushNamed(context, '/add-planned-payment', arguments: e);
-            },
-            child: Text(context.tr('calendar.edit_payment')),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
