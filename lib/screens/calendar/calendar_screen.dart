@@ -46,12 +46,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final monthLabel = '${monthName[0].toUpperCase()}${monthName.substring(1)} ${_currentMonth.year}';
 
         final opsByDate = <DateTime, List<Operation>>{};
+        final pendingByDate = <DateTime, List<Operation>>{};
         for (final op in store.operations) {
+          if (op.isDeleted) continue;
           final d = DateTime.tryParse(op.date.substring(0, 10));
           if (d != null) {
             final key = DateTime(d.year, d.month, d.day);
-            opsByDate.putIfAbsent(key, () => []);
-            opsByDate[key]!.add(op);
+            if (op.isPending) {
+              pendingByDate.putIfAbsent(key, () => []);
+              pendingByDate[key]!.add(op);
+            } else {
+              opsByDate.putIfAbsent(key, () => []);
+              opsByDate[key]!.add(op);
+            }
           }
         }
 
@@ -75,15 +82,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
           final isToday = date == today;
           final isSelected = date == _selectedDate;
           final hasOps = opsByDate.containsKey(date);
+          final hasPending = pendingByDate.containsKey(date);
           final hasPlanned = plannedByDate.containsKey(date);
-          dayCells.add(_dayCell(d, isToday, isSelected, hasOps, hasPlanned, () {
+          dayCells.add(_dayCell(d, isToday, isSelected, hasOps, hasPending || hasPlanned, () {
             setState(() => _selectedDate = date);
           }));
         }
 
         final selectedOps = _selectedDate != null ? (opsByDate[_selectedDate] ?? <Operation>[]) : <Operation>[];
+        final selectedPending = _selectedDate != null ? (pendingByDate[_selectedDate] ?? <Operation>[]) : <Operation>[];
         final selectedPlanned = _selectedDate != null ? (plannedByDate[_selectedDate] ?? <FinancialEvent>[]) : <FinancialEvent>[];
 
+        final upcomingPending = _selectedDate == null ? _allPendingOps(store) : <Operation>[];
         final upcomingPlanned = _selectedDate == null ? _allUpcoming(plannedStore) : <FinancialEvent>[];
 
         return ScreenScaffold(
@@ -125,14 +135,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
               const SizedBox(height: 12),
               Expanded(
                 child: _selectedDate != null
-                    ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
-                    : _buildAllUpcoming(context, store, plannedStore, upcomingPlanned),
+                    ? _buildDayEvents(context, store, selectedOps, selectedPending, selectedPlanned)
+                    : _buildAllUpcoming(context, store, plannedStore, upcomingPending, upcomingPlanned),
               ),
             ],
           ),
         );
       },
     );
+  }
+
+  List<Operation> _allPendingOps(FinanceStore store) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final result = store.operations.where((o) {
+      if (!o.isPending || o.isDeleted) return false;
+      final d = DateTime.tryParse(o.date.substring(0, 10));
+      return d != null && !d.isBefore(today);
+    }).toList();
+    result.sort((a, b) => a.date.compareTo(b.date));
+    return result;
   }
 
   List<FinancialEvent> _allUpcoming(PlannedPaymentStore plannedStore) {
@@ -148,8 +170,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return result;
   }
 
-  Widget _buildAllUpcoming(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<FinancialEvent> events) {
-    if (events.isEmpty) {
+  Widget _buildAllUpcoming(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<Operation> pendingOps, List<FinancialEvent> events) {
+    if (pendingOps.isEmpty && events.isEmpty) {
       return Center(child: Text(context.tr('calendar.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))));
     }
     return ListView(
@@ -158,26 +180,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
         ),
+        ...pendingOps.map((op) => _pendingOpTile(context, store, op)),
         ...events.map((e) => _plannedPaymentTile(context, store, e)),
       ],
     );
   }
 
-  Widget _buildDayEvents(BuildContext context, FinanceStore store, List<Operation> ops, List<FinancialEvent> planned) {
+  Widget _buildDayEvents(BuildContext context, FinanceStore store, List<Operation> ops, List<Operation> pendingOps, List<FinancialEvent> planned) {
     return ListView(
       children: [
         Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         const SizedBox(height: 8),
-        if (ops.isEmpty && planned.isEmpty)
+        if (ops.isEmpty && pendingOps.isEmpty && planned.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
           ),
-        if (planned.isNotEmpty) ...[
+        if (pendingOps.isNotEmpty || planned.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
           ),
+          ...pendingOps.map((op) => _pendingOpTile(context, store, op)),
           ...planned.map((e) => _plannedPaymentTile(context, store, e)),
         ],
         if (ops.isNotEmpty) ...[
@@ -189,6 +213,64 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ...ops.map((op) => _operationTile(context, store, op)),
         ],
       ],
+    );
+  }
+
+  Widget _pendingOpTile(BuildContext context, FinanceStore store, Operation op) {
+    final cat = store.getCategory(op.categoryId);
+    final acc = store.getAccount(op.accountId);
+    final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
+    final iconColor = op.type == 'income' ? AppColors.success : AppColors.expense;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AppCard(
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.15), shape: BoxShape.circle),
+              child: Icon(iconData, size: 20, color: iconColor),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Row(
+                    children: [
+                      Text(formatDate(op.date), maxLines: 1, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      if (acc != null) ...[
+                        const SizedBox(width: 4),
+                        Text(acc.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, size: 20, color: AppColors.textSecondaryFor(context)),
+              onSelected: (v) {
+                if (v == 'edit') {
+                  Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'operationId': op.id});
+                } else if (v == 'confirm') {
+                  _confirmPendingOp(context, store, op);
+                } else if (v == 'delete') {
+                  _confirmDeleteOp(context, store, op);
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(value: 'edit', child: Text(context.tr('calendar.edit_payment'))),
+                PopupMenuItem(value: 'confirm', child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary))),
+                PopupMenuItem(value: 'delete', child: Text(context.tr('calendar.delete_payment'), style: TextStyle(color: AppColors.expense))),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -294,6 +376,46 @@ class _CalendarScreenState extends State<CalendarScreen> {
             onPressed: () {
               Navigator.pop(ctx);
               context.read<PlannedPaymentStore>().remove(e.id);
+            },
+            child: Text(context.tr('calendar.delete'), style: TextStyle(color: AppColors.expense)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmPendingOp(BuildContext context, FinanceStore store, Operation op) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('calendar.confirm_operation')),
+        content: Text('${store.fmt(op.amount)} — ${op.comment ?? ''}'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await store.updateOperation(op.copyWith(isPending: false));
+            },
+            child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteOp(BuildContext context, FinanceStore store, Operation op) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('calendar.delete_payment')),
+        content: Text('${op.comment ?? ''} — ${store.fmt(op.amount)}'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              store.deleteOperation(op.id);
             },
             child: Text(context.tr('calendar.delete'), style: TextStyle(color: AppColors.expense)),
           ),
