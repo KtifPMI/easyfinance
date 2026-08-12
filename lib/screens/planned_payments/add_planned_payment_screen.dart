@@ -1,18 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:uuid/uuid.dart';
-import '../../components/common/app_button.dart';
-import '../../components/common/app_input.dart';
-import '../../components/common/grouped_picker_sheet.dart';
-import '../../components/common/screen_scaffold.dart';
 import '../../models/financial_event.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
-import '../../utils/category_icons.dart';
-import '../../utils/format.dart';
-import '../../utils/translate_category.dart';
 
 class AddPlannedPaymentScreen extends StatefulWidget {
   final FinancialEvent? existing;
@@ -24,297 +16,643 @@ class AddPlannedPaymentScreen extends StatefulWidget {
 }
 
 class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
-  final _nameCtrl = TextEditingController();
   final _amountCtrl = TextEditingController();
-  final _commentCtrl = TextEditingController();
+  final _hourCtrl = TextEditingController();
+  final _minuteCtrl = TextEditingController();
   final _tagsCtrl = TextEditingController();
+  final _commentCtrl = TextEditingController();
+
   String _type = 'expense';
-  int _repeatMode = 0;
-  String? _accountId;
-  String? _toAccountId;
-  String? _categoryId;
+  String _repeatOption = 'none'; // none | day | week | month | quarter | year
+  String _limitMode = 'count'; // count | until
+  String _repeatCount = '1';
   DateTime? _date;
+  DateTime? _untilDate;
+  String? _accountId;
+  String? _categoryId;
+  final List<bool> _weekdays = List.filled(7, false); // Пн..Вс
+
+  final Color _orange = const Color(0xFFFF8A3D);
+  final Color _teal = AppColors.primary;
+  final Color _mutedBrown = const Color(0xFF6B5B4F);
 
   @override
   void initState() {
     super.initState();
     final e = widget.existing;
-    _nameCtrl.text = e?.title ?? '';
-    _amountCtrl.text = e != null && e.amount > 0 ? e.amount.toString() : '';
-    _commentCtrl.text = e?.comment ?? '';
-    _tagsCtrl.text = e?.tags ?? '';
-    _type = e?.type ?? 'expense';
-    _repeatMode = e?.repeatMode ?? 0;
-    _accountId = e?.accountId;
-    _toAccountId = e?.toAccountId;
-    _categoryId = e?.categoryId;
-    if (e?.date != null && e!.date.isNotEmpty) {
-      _date = DateTime.tryParse(e.date);
+    if (e != null) {
+      _amountCtrl.text = e.amount > 0 ? e.amount.toStringAsFixed(2) : '';
+      _type = e.type;
+      _commentCtrl.text = e.comment ?? '';
+      _tagsCtrl.text = e.tags ?? '';
+      _accountId = e.accountId;
+      _categoryId = e.categoryId;
+      _date = e.dateStart != null
+          ? DateTime.tryParse(e.dateStart!)
+          : (e.date.isNotEmpty ? DateTime.tryParse(e.date) : null);
+      _date ??= DateTime.now();
+      _hourCtrl.text = '21';
+      _minuteCtrl.text = '56';
+      _repeatOption = _optionFromPeriod(e.repeatMode);
+      if (e.repeatMode > 0) {
+        if (e.dateEnd != null && e.dateEnd!.isNotEmpty) {
+          _limitMode = 'until';
+          _untilDate = DateTime.tryParse(e.dateEnd!);
+        } else {
+          _limitMode = 'count';
+          _repeatCount = '1';
+        }
+      }
+      if (e.weekDays != null && e.weekDays!.length == 7) {
+        for (int i = 0; i < 7; i++) _weekdays[i] = e.weekDays![i] == '1';
+      }
+    } else {
+      _date = widget.presetDate != null ? DateTime.tryParse(widget.presetDate!) : DateTime.now();
+      _hourCtrl.text = '21';
+      _minuteCtrl.text = '56';
+      _weekdays[2] = true; // Ср по умолчанию
     }
-    if (_date == null && widget.presetDate != null) {
-      _date = DateTime.tryParse(widget.presetDate!);
-    }
-    _date ??= DateTime.now();
   }
 
   @override
   void dispose() {
-    _nameCtrl.dispose();
     _amountCtrl.dispose();
-    _commentCtrl.dispose();
+    _hourCtrl.dispose();
+    _minuteCtrl.dispose();
     _tagsCtrl.dispose();
+    _commentCtrl.dispose();
+    _repeatCountController?.dispose();
     super.dispose();
   }
+
+  static String _optionFromPeriod(int period) {
+    switch (period) {
+      case 1:
+        return 'day';
+      case 7:
+        return 'week';
+      case 30:
+        return 'month';
+      case 90:
+        return 'quarter';
+      case 365:
+        return 'year';
+      default:
+        return 'none';
+    }
+  }
+
+  int get _period {
+    switch (_repeatOption) {
+      case 'day':
+        return 1;
+      case 'week':
+        return 7;
+      case 'month':
+        return 30;
+      case 'quarter':
+        return 90;
+      case 'year':
+        return 365;
+      default:
+        return 0;
+    }
+  }
+
+  String _fmt(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FinanceStore>();
-    final isEdit = widget.existing != null;
+    return Scaffold(
+      backgroundColor: const Color(0xFFF2F3F5),
+      body: SafeArea(
+        child: Center(
+          child: Container(
+            margin: const EdgeInsets.all(16),
+            constraints: BoxConstraints(maxWidth: 560, maxHeight: MediaQuery.of(context).size.height * 0.92),
+            decoration: BoxDecoration(color: const Color(0xFFF2F3F5), borderRadius: BorderRadius.circular(16)),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                _header(),
+                Container(height: 2, color: _orange),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: _body(context, store),
+                  ),
+                ),
+                _footer(context),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-    return ScreenScaffold(
-      title: context.tr(isEdit ? 'planned_payments.edit' : 'planned_payments.add'),
-      showLogo: false,
-      child: ListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
+  Widget _header() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
         children: [
-          _typeToggle(context),
-          const SizedBox(height: 16),
-          AppInput(controller: _nameCtrl, label: context.tr('planned_payments.name')),
-          const SizedBox(height: 12),
-          AppInput(controller: _amountCtrl, label: context.tr('planned_payments.amount'), keyboardType: TextInputType.number),
-          const SizedBox(height: 12),
-          _datePicker(context),
-          const SizedBox(height: 12),
-          _repeatDropdown(context),
-          const SizedBox(height: 12),
-          _accountDropdown(context, store),
-          if (_type == 'transfer') ...[
-            const SizedBox(height: 12),
-            _toAccountDropdown(context, store),
-          ],
-          const SizedBox(height: 12),
-          _categoryPicker(context, store),
-          const SizedBox(height: 12),
-          AppInput(controller: _tagsCtrl, label: context.tr('planned_payments.tags'), hint: context.tr('planned_payments.tags_hint')),
-          const SizedBox(height: 12),
-          AppInput(controller: _commentCtrl, label: context.tr('planned_payments.comment'), maxLines: 2),
-          const SizedBox(height: 24),
-          AppButton(title: context.tr('planned_payments.save'), onPressed: _save),
-          const SizedBox(height: 32),
+          Expanded(
+            child: Text(
+              'ДОБАВИТЬ СЕРИЮ ОПЕРАЦИЙ',
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF3A3A3A), letterSpacing: 0.3),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: const Icon(Icons.close, size: 22, color: Color(0xFF3A3A3A)),
+          ),
         ],
       ),
     );
   }
 
-  Widget _typeToggle(BuildContext context) {
-    return Row(
+  Widget _footer(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Отмена', style: TextStyle(color: _mutedBrown, fontWeight: FontWeight.w600)),
+          ),
+          const SizedBox(width: 12),
+          OutlinedButton(
+            onPressed: _save,
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: _teal),
+              foregroundColor: _teal,
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Сохранить', style: TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context, FinanceStore store) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _chip(context, 'income', context.tr('planned_payments.income'), AppColors.success),
-        const SizedBox(width: 8),
-        _chip(context, 'expense', context.tr('planned_payments.expense'), AppColors.expense),
-        const SizedBox(width: 8),
-        _chip(context, 'transfer', context.tr('planned_payments.transfer'), AppColors.transfer),
-      ],
-    );
-  }
-
-  Widget _chip(BuildContext context, String type, String label, Color color) {
-    final selected = _type == type;
-    return GestureDetector(
-      onTap: () => setState(() => _type = type),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? color.withValues(alpha: 0.15) : AppColors.cardFor(context),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? color : AppColors.borderFor(context)),
+        Align(
+          alignment: Alignment.topRight,
+          child: Text('Открывается в новом окне', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
         ),
-        child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: selected ? color : AppColors.textSecondaryFor(context))),
-      ),
-    );
-  }
-
-  Widget _datePicker(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: _date ?? DateTime.now(),
-          firstDate: DateTime(2020),
-          lastDate: DateTime(2100),
-        );
-        if (picked != null) setState(() => _date = picked);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.cardFor(context),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderFor(context)),
-        ),
-        child: Row(
+        const SizedBox(height: 12),
+        // Верхняя строка: сумма / дата / время
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(context.tr('planned_payments.date'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                  const SizedBox(height: 2),
-                  Text(formatDateLong(_date?.toIso8601String().substring(0, 10) ?? ''), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
-                ],
-              ),
+              flex: 3,
+              child: _amountField(),
             ),
-            Icon(Icons.calendar_today, size: 20, color: AppColors.textSecondaryFor(context)),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 3,
+              child: _dateField(context),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              flex: 2,
+              child: _timeField(),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _repeatDropdown(BuildContext context) {
-    return DropdownButtonFormField<int>(
-      initialValue: _repeatMode,
-      decoration: InputDecoration(
-        labelText: context.tr('planned_payments.repeat_mode'),
-        filled: true, fillColor: AppColors.cardFor(context),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-      items: [
-        DropdownMenuItem(value: 0, child: Text(context.tr('planned_payments.repeat_none'))),
-        DropdownMenuItem(value: 1, child: Text(context.tr('planned_payments.repeat_daily'))),
-        DropdownMenuItem(value: 7, child: Text(context.tr('planned_payments.repeat_weekly'))),
-        DropdownMenuItem(value: 30, child: Text(context.tr('planned_payments.repeat_monthly'))),
-        DropdownMenuItem(value: 90, child: Text(context.tr('planned_payments.repeat_quarterly'))),
-        DropdownMenuItem(value: 365, child: Text(context.tr('planned_payments.repeat_yearly'))),
-      ],
-      onChanged: (v) => setState(() => _repeatMode = v!),
-    );
-  }
-
-  Widget _accountDropdown(BuildContext context, FinanceStore store) {
-    final accounts = store.accounts.where((a) => !a.isArchived).toList();
-    return DropdownButtonFormField<String>(
-      initialValue: _accountId,
-      decoration: InputDecoration(
-        labelText: context.tr('planned_payments.account'),
-        filled: true, fillColor: AppColors.cardFor(context),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-      items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
-      onChanged: (v) => setState(() => _accountId = v),
-    );
-  }
-
-  Widget _toAccountDropdown(BuildContext context, FinanceStore store) {
-    final accounts = store.accounts.where((a) => !a.isArchived && a.id != _accountId).toList();
-    return DropdownButtonFormField<String>(
-      initialValue: _toAccountId,
-      decoration: InputDecoration(
-        labelText: context.tr('planned_payments.to_account'),
-        filled: true, fillColor: AppColors.cardFor(context),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
-      items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
-      onChanged: (v) => setState(() => _toAccountId = v),
-    );
-  }
-
-  Widget _categoryPicker(BuildContext context, FinanceStore store) {
-    final cat = _categoryId != null ? store.categories.where((c) => c.id == _categoryId).firstOrNull : null;
-    return InkWell(
-      onTap: () async {
-        final cats = store.categories.where((c) => c.type == _type).toList();
-        if (cats.isEmpty) return;
-        final selected = await GroupedPickerSheet.show<String>(
-          context: context,
-          title: context.tr('planned_payments.category'),
-          items: cats.map((c) => c.id).toList(),
-          labelBuilder: (id) => tCat(context, cats.firstWhere((c) => c.id == id).name),
-          groupBuilder: (id) {
-            final c = cats.firstWhere((c) => c.id == id);
-            if (c.parentId == null || c.parentId!.isEmpty) return '';
-            final parent = store.categories.where((p) => p.id == c.parentId);
-            return parent.isNotEmpty ? parent.first.name : '';
-          },
-          iconBuilder: (id) => categoryIconFor(cats.firstWhere((c) => c.id == id), allCategories: store.categories),
-          colorBuilder: (id) => _hexToColor(cats.firstWhere((c) => c.id == id).color),
-          selectedId: _categoryId,
-        );
-        if (selected != null) setState(() => _categoryId = selected);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.cardFor(context),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.borderFor(context)),
-        ),
-        child: Row(
+        const SizedBox(height: 6),
+        _hint('Пример: 12 + 33 * 45 <Enter>'),
+        _hint('Если не указывать время операции, то в операцию запишется время момента ее сохранения.'),
+        const SizedBox(height: 12),
+        // Счёт + тип операции
+        Row(
           children: [
-            if (cat != null) ...[
-              Container(
-                width: 28, height: 28,
-                decoration: BoxDecoration(color: _hexToColor(cat.color).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-                child: Icon(categoryIconFor(cat, allCategories: store.categories), size: 16, color: _hexToColor(cat.color)),
+            Expanded(child: _accountField(store)),
+            const SizedBox(width: 8),
+            Expanded(child: _typeField()),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _categoryField(store),
+        const SizedBox(height: 12),
+        _tagsField(),
+        const SizedBox(height: 12),
+        _commentField(),
+        const SizedBox(height: 12),
+        _repeatField(),
+        const SizedBox(height: 8),
+        _repeatBlock(context),
+      ],
+    );
+  }
+
+  Widget _hint(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 2),
+        child: Text(text, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+      );
+
+  Widget _label(String text) => Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text(text, style: const TextStyle(fontSize: 12, color: Color(0xFF3A3A3A))),
+      );
+
+  Widget _amountField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Сумма:'),
+          Container(
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _amountCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    textAlign: TextAlign.right,
+                    decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
+                    onSubmitted: (_) => _evalAmount(),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calculate_outlined, size: 20, color: Colors.grey),
+                  onPressed: _evalAmount,
+                  tooltip: 'Калькулятор',
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+
+  Widget _dateField(BuildContext context) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Дата:'),
+          InkWell(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _date ?? DateTime.now(),
+                firstDate: DateTime(2020),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) setState(() => _date = picked);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+              child: Text(_date != null ? _fmt(_date!) : '—', style: const TextStyle(fontSize: 15)),
+            ),
+          ),
+        ],
+      );
+
+  Widget _timeField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Время:'),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+                  child: TextField(
+                    controller: _hourCtrl,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    maxLength: 2,
+                    decoration: const InputDecoration(border: InputBorder.none, counterText: ''),
+                  ),
+                ),
               ),
-              const SizedBox(width: 10),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+                  child: TextField(
+                    controller: _minuteCtrl,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    maxLength: 2,
+                    decoration: const InputDecoration(border: InputBorder.none, counterText: ''),
+                  ),
+                ),
+              ),
             ],
-            Expanded(
-              child: Text(
-                cat != null ? tCat(context, cat.name) : context.tr('planned_payments.category_hint'),
-                style: TextStyle(fontSize: 16, color: cat != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
-              ),
-            ),
-            Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
-          ],
+          ),
+        ],
+      );
+
+  Widget _accountField(FinanceStore store) {
+    final accounts = store.accounts.where((a) => !a.isArchived).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Счет:'),
+        DropdownButtonFormField<String>(
+          value: _accountId,
+          isExpanded: true,
+          decoration: _dropdownDecoration(),
+          hint: const Text('кошелек (₽)'),
+          items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
+          onChanged: (v) => setState(() => _accountId = v),
         ),
+      ],
+    );
+  }
+
+  Widget _typeField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Тип операции:'),
+          DropdownButtonFormField<String>(
+            value: _type,
+            isExpanded: true,
+            decoration: _dropdownDecoration(),
+            items: const [
+              DropdownMenuItem(value: 'expense', child: Text('Расход')),
+              DropdownMenuItem(value: 'income', child: Text('Доход')),
+              DropdownMenuItem(value: 'transfer', child: Text('Перевод')),
+            ],
+            onChanged: (v) => setState(() => _type = v!),
+          ),
+        ],
+      );
+
+  Widget _categoryField(FinanceStore store) {
+    final cats = store.categories.where((c) => c.type == _type).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Категория:'),
+        DropdownButtonFormField<String>(
+          value: _categoryId,
+          isExpanded: true,
+          decoration: _dropdownDecoration(),
+          hint: const Text('Часто используемые категории', style: TextStyle(fontWeight: FontWeight.w700)),
+          items: cats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, overflow: TextOverflow.ellipsis))).toList(),
+          onChanged: (v) => setState(() => _categoryId = v),
+        ),
+      ],
+    );
+  }
+
+  Widget _tagsField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Метки:'),
+          Container(
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _tagsCtrl,
+                    decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
+                  ),
+                ),
+                const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey)),
+              ],
+            ),
+          ),
+          _hint('Пометки для быстрого поиска. Например: аванс'),
+        ],
+      );
+
+  Widget _commentField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Комментарии:'),
+          Container(
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+            child: TextField(
+              controller: _commentCtrl,
+              maxLines: 3,
+              minLines: 2,
+              decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
+            ),
+          ),
+        ],
+      );
+
+  InputDecoration _dropdownDecoration() => InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      );
+
+  Widget _repeatField() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label('Повторить:'),
+          DropdownButtonFormField<String>(
+            value: _repeatOption,
+            isExpanded: true,
+            decoration: _dropdownDecoration(),
+            items: const [
+              DropdownMenuItem(value: 'none', child: Text('Без повторения')),
+              DropdownMenuItem(value: 'day', child: Text('Каждый день')),
+              DropdownMenuItem(value: 'week', child: Text('Каждую неделю')),
+              DropdownMenuItem(value: 'month', child: Text('Каждый месяц')),
+              DropdownMenuItem(value: 'quarter', child: Text('Каждый квартал')),
+              DropdownMenuItem(value: 'year', child: Text('Каждый год')),
+            ],
+            onChanged: (v) => setState(() => _repeatOption = v!),
+          ),
+        ],
+      );
+
+  Widget _repeatBlock(BuildContext context) {
+    if (_repeatOption == 'none') return const SizedBox.shrink();
+    final children = <Widget>[
+      if (_repeatOption == 'week') _weekdaySelector(),
+      _limitBlock(),
+    ];
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+  }
+
+  Widget _weekdaySelector() {
+    const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: List.generate(7, (i) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Checkbox(
+                value: _weekdays[i],
+                activeColor: Colors.red,
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                onChanged: (v) => setState(() => _weekdays[i] = v!),
+              ),
+              Text(labels[i], style: const TextStyle(fontSize: 13)),
+            ],
+          );
+        }),
       ),
     );
   }
 
-  Color _hexToColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
+  Widget _limitBlock() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _radio('count', 'Повторить несколько раз', _countField()),
+          _radio('until', 'Повторить до даты', _untilField()),
+        ],
+      );
+
+  Widget _radio(String mode, String title, Widget trailing) => Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Radio<String>(
+            value: mode,
+            groupValue: _limitMode,
+            activeColor: Colors.red,
+            onChanged: (v) => setState(() => _limitMode = v!),
+          ),
+          Expanded(child: Text(title, style: const TextStyle(fontSize: 13))),
+          trailing,
+        ],
+      );
+
+  Widget _countField() => SizedBox(
+        width: 56,
+        child: Container(
+          margin: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+          child: TextField(
+            controller: _repeatCountCtrl(),
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            maxLength: 3,
+            decoration: const InputDecoration(border: InputBorder.none, counterText: ''),
+          ),
+        ),
+      );
+
+  Widget _untilField() => InkWell(
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: _untilDate ?? (_date ?? DateTime.now()),
+            firstDate: DateTime(2020),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null) setState(() => _untilDate = picked);
+        },
+        child: Container(
+          margin: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+          child: Text(_untilDate != null ? _fmt(_untilDate!) : '', style: const TextStyle(fontSize: 14)),
+        ),
+      );
+
+  // Отдельный контрлер для количества повторов (лениво)
+  TextEditingController? _repeatCountController;
+  TextEditingController _repeatCountCtrl() => _repeatCountController ??= TextEditingController(text: _repeatCount);
+
+  void _evalAmount() {
+    final expr = _amountCtrl.text.trim();
+    if (expr.isEmpty) return;
+    final value = _evaluate(expr.replaceAll(' ', ''));
+    if (value != null) {
+      setState(() => _amountCtrl.text = value.toStringAsFixed(2));
+    }
+  }
+
+  double? _evaluate(String s) {
+    try {
+      int pos = 0;
+      double parseTerm() {
+        double parseFactor() {
+          if (s[pos] == '(') {
+            pos++;
+            final v = parseTerm();
+            pos++; // закрывающая скобка
+            return v;
+          }
+          final start = pos;
+          while (pos < s.length && (s[pos].isDigit || s[pos] == '.')) pos++;
+          return double.parse(s.substring(start, pos));
+        }
+
+        var left = parseFactor();
+        while (pos < s.length && (s[pos] == '*' || s[pos] == '/')) {
+          final op = s[pos++];
+          final right = parseFactor();
+          left = op == '*' ? left * right : left / right;
+        }
+        return left;
+      }
+
+      var left = parseTerm();
+      while (pos < s.length && (s[pos] == '+' || s[pos] == '-')) {
+        final op = s[pos++];
+        final right = parseTerm();
+        left = op == '+' ? left + right : left - right;
+      }
+      return left;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _buildWeekDays() {
+    if (_repeatOption != 'week') return null;
+    return _weekdays.map((b) => b ? '1' : '0').join('');
   }
 
   void _save() {
-    final name = _nameCtrl.text.trim();
-    if (name.isEmpty) return;
     final amount = (double.tryParse(_amountCtrl.text.trim().replaceAll(',', '.')) ?? 0).abs();
-    if (amount <= 0) return;
-    final store = context.read<PlannedPaymentStore>();
-
-    String? weekDays;
-    if (_repeatMode == 7 && _date != null) {
-      final chars = List.filled(7, '0');
-      chars[_date!.weekday - 1] = '1';
-      weekDays = chars.join('');
+    if (amount <= 0) {
+      Navigator.pop(context);
+      return;
     }
-    final dateStart = _repeatMode > 0 ? (_date?.toIso8601String().substring(0, 10)) : null;
+    final period = _period;
+    final dateStr = _date != null ? _fmt(_date!) : _fmt(DateTime.now());
+    final dateStart = period > 0 ? dateStr : null;
+    final dateEnd = (period > 0 && _limitMode == 'until') ? (_untilDate != null ? _fmt(_untilDate!) : null) : null;
+    final weekDays = _buildWeekDays();
+    final dayOfMonth = period == 30 ? (_date?.day) : null;
 
     final event = FinancialEvent(
       id: widget.existing?.id ?? const Uuid().v4(),
-      title: name,
-      date: _date?.toIso8601String().substring(0, 10) ?? DateTime.now().toIso8601String().substring(0, 10),
+      title: _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : 'Запланированный платёж',
+      date: dateStr,
       amount: amount,
       type: _type,
       comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
       tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
-      repeatMode: _repeatMode,
+      repeatMode: period,
       accountId: _accountId,
-      toAccountId: _type == 'transfer' ? _toAccountId : null,
+      toAccountId: _type == 'transfer' ? _accountId : null,
       categoryId: _categoryId,
-      dayOfMonth: _repeatMode == 30 ? (_date?.day) : null,
-      isRecurring: _repeatMode > 0,
+      dayOfMonth: dayOfMonth,
+      isRecurring: period > 0,
       weekDays: weekDays,
       dateStart: dateStart,
+      dateEnd: dateEnd,
       enabled: widget.existing?.enabled ?? true,
     );
 
+    final store = context.read<PlannedPaymentStore>();
     if (widget.existing != null) {
       store.update(widget.existing!.id, event);
     } else {

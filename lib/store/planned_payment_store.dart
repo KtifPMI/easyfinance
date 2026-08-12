@@ -19,7 +19,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     final today = DateTime(now.year, now.month, now.day);
     final result = _events.where((e) {
       if (!e.enabled) return false;
-      final next = e.nextOccurrence();
+      final next = e.nextOccurrence() ?? _dateOnly(e.date);
       return next != null && !next.isBefore(today);
     }).toList();
     result.sort((a, b) => (a.nextOccurrence() ?? today).compareTo(b.nextOccurrence() ?? today));
@@ -244,7 +244,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     final accepted = acceptedRaw == 1 || acceptedRaw == '1' || acceptedRaw == true;
     final typeRaw = json['type']?.toString();
     final type = typeRaw == '1' ? 'income' : typeRaw == '2' ? 'transfer' : 'expense';
-    final everyDay = int.tryParse(json['every_day']?.toString() ?? '0') ?? 0;
+    final everyDay = int.tryParse(json['every_day']?.toString() ?? json['every']?.toString() ?? '0') ?? 0;
     final startStr = json['date_start']?.toString() ?? json['date']?.toString() ?? '';
     final startDay = _parseDay(startStr);
     return FinancialEvent(
@@ -281,6 +281,12 @@ class PlannedPaymentStore extends ChangeNotifier {
     final s = _parseDate(d);
     if (s.length < 10) return null;
     return int.tryParse(s.substring(8, 10));
+  }
+
+  DateTime? _dateOnly(String? d) {
+    final s = _parseDate(d);
+    if (s.length < 10) return null;
+    return DateTime.tryParse(s);
   }
 
   Map<String, dynamic> _toCalendarBody(FinancialEvent e) {

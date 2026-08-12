@@ -26,10 +26,18 @@ import '../reports/reports_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  static bool _plannedSynced = false;
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<FinanceStore, PlannedPaymentStore>(
       builder: (context, store, plannedPayments, _) {
+        if (!_plannedSynced) {
+          _plannedSynced = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            plannedPayments.syncFromServer();
+          });
+        }
         final indicators = calcFinHealth(store.accounts, store.operations, store.budgets, store.rates);
         final accountType = store.currentUser?.accountType ?? 'individual';
 
