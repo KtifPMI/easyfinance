@@ -262,16 +262,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   Widget _buildMonthlyTrendChart(BuildContext context, FinanceStore store) {
     final now = DateTime.now();
-    final months = <DateTime>[];
+    final labels = <String>[];
+    final expense = <double>[];
+    final income = <double>[];
+    final net = <double>[];
     for (int i = 11; i >= 0; i--) {
       final m = DateTime(now.year, now.month - i, 1);
-      months.add(m);
-    }
-    final incomeData = <({String label, double value, Color color})>[];
-    final expenseData = <({String label, double value, Color color})>[];
-    final netData = <({String label, double value, Color color})>[];
-
-    for (final m in months) {
       final ops = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, m)).toList();
       double amtRub(o) {
         final acc = store.getAccount(o.accountId);
@@ -280,87 +276,63 @@ class _ReportsScreenState extends State<ReportsScreen> {
       final inv = store.categories.where((c) => c.icon == 'invest').map((c) => c.id).toSet();
       final inc = ops.where((o) => o.type == 'income' && !inv.contains(o.categoryId)).fold(0.0, (s, o) => s + amtRub(o));
       final exp = ops.where((o) => o.type == 'expense' && !inv.contains(o.categoryId)).fold(0.0, (s, o) => s + amtRub(o));
-      final monthLabel = context.tr('month.short.${m.month}');
-      incomeData.add((label: monthLabel, value: inc, color: AppColors.success));
-      expenseData.add((label: monthLabel, value: exp, color: AppColors.expense));
-      netData.add((label: monthLabel, value: inc - exp, color: AppColors.primary));
+      labels.add(context.tr('month.short.${m.month}'));
+      income.add(inc);
+      expense.add(exp);
+      net.add(inc - exp);
     }
-
-    final maxExp = expenseData.fold(0.0, (m, s) => s.value > m ? s.value : m);
-    final maxLines = [incomeData, netData].expand((e) => e.map((s) => s.value.abs())).fold(0.0, (a, b) => a > b ? a : b);
-
+    final expenseColor = AppColors.expense;
+    final incomeColor = AppColors.income;
+    final netColor = AppColors.transfer;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(context.tr('reports.monthly_trends'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 12),
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Container(width: 16, height: 3, color: AppColors.expense), const SizedBox(width: 4),
-            Text(context.tr('reports.expense'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-            const SizedBox(width: 16),
-            Container(width: 16, height: 3, color: AppColors.success), const SizedBox(width: 4),
-            Text(context.tr('reports.income'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-            const SizedBox(width: 16),
-            Container(width: 16, height: 3, color: AppColors.primary), const SizedBox(width: 4),
-            Text(context.tr('reports.net'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-          ]),
-          const SizedBox(height: 12),
-          ...expenseData.asMap().entries.map((e) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 3),
-            child: Row(children: [
-              SizedBox(width: 32, child: Text(e.value.label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)))),
-              const SizedBox(width: 4),
-              Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(2), child: Container(
-                height: 16,
-                color: AppColors.borderFor(context),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: maxExp > 0 ? (e.value.value / maxExp).clamp(0.0, 1.0) : 0,
-                  child: Container(color: AppColors.expense.withValues(alpha: 0.7)),
+          SizedBox(
+            height: 220,
+            child: LayoutBuilder(
+              builder: (ctx, constraints) => CustomPaint(
+                size: Size(constraints.maxWidth, 220),
+                painter: _ComboChartPainter(
+                  labels: labels,
+                  expense: expense,
+                  income: income,
+                  net: net,
+                  expenseColor: expenseColor,
+                  incomeColor: incomeColor,
+                  netColor: netColor,
+                  textColor: AppColors.textSecondaryFor(context),
                 ),
-              ))),
-              const SizedBox(width: 4),
-              SizedBox(width: 60, child: Text(formatMoney(e.value.value), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.right)),
-            ]),
-          )),
-          const SizedBox(height: 16),
-          ...List.generate(12, (i) {
-            final inc = incomeData[i].value;
-            final net = netData[i].value;
-            final label = incomeData[i].label;
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(children: [
-                SizedBox(width: 32, child: Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context)))),
-                const SizedBox(width: 4),
-                Expanded(child: Column(children: [
-                  _lineBar(inc, maxLines, AppColors.success),
-                  const SizedBox(height: 3),
-                  _lineBar(net, maxLines, AppColors.primary),
-                ])),
-              ]),
-            );
-          }),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _legendItem(expenseColor, context.tr('reports.expense')),
+              const SizedBox(width: 16),
+              _legendItem(incomeColor, context.tr('reports.income')),
+              const SizedBox(width: 16),
+              _legendItem(netColor, context.tr('reports.net')),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _lineBar(double value, double max, Color color) {
-    final fraction = max > 0 ? (value.abs() / max).clamp(0.0, 1.0) : 0.0;
-    return Row(children: [
-      Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(2), child: Container(
-        height: 8,
-        color: AppColors.borderFor(context),
-        child: FractionallySizedBox(
-          alignment: value >= 0 ? Alignment.centerLeft : Alignment.centerRight,
-          widthFactor: fraction,
-          child: Container(color: color.withValues(alpha: 0.8)),
-        ),
-      ))),
-      if (value != 0) ...[const SizedBox(width: 4), SizedBox(width: 60, child: Text(formatMoney(value), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.right))],
-    ]);
+  Widget _legendItem(Color color, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(width: 14, height: 14, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
+        const SizedBox(width: 6),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+      ],
+    );
   }
 
   static const _chartPalette = [
@@ -385,4 +357,117 @@ class _ReportsScreenState extends State<ReportsScreen> {
     const Color(0xFF00897B),
     const Color(0xFFF06292),
   ];
+}
+
+class _ComboChartPainter extends CustomPainter {
+  _ComboChartPainter({
+    required this.labels,
+    required this.expense,
+    required this.income,
+    required this.net,
+    required this.expenseColor,
+    required this.incomeColor,
+    required this.netColor,
+    required this.textColor,
+  });
+
+  final List<String> labels;
+  final List<double> expense;
+  final List<double> income;
+  final List<double> net;
+  final Color expenseColor;
+  final Color incomeColor;
+  final Color netColor;
+  final Color textColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = labels.length;
+    if (n == 0) return;
+    const left = 8.0;
+    const right = 8.0;
+    const top = 12.0;
+    const bottom = 22.0;
+    final plotW = size.width - left - right;
+    final plotH = size.height - top - bottom;
+
+    final all = <double>[...expense, ...income, ...net];
+    final maxV = all.fold<double>(0, (m, v) => v > m ? v : m);
+    final minV = all.fold<double>(0, (m, v) => v < m ? v : m);
+    var hi = maxV;
+    var lo = minV < 0 ? minV : 0.0;
+    if (hi - lo < 1e-9) {
+      if (hi >= 1) lo = hi - 1; else hi = hi + 1;
+    }
+    final span = hi - lo;
+
+    double yFor(double v) => top + (hi - v) / span * plotH;
+
+    final axisPaint = Paint()
+      ..color = textColor.withOpacity(0.3)
+      ..strokeWidth = 1;
+    final baselineY = yFor(0);
+    canvas.drawLine(Offset(left, baselineY), Offset(size.width - right, baselineY), axisPaint);
+    canvas.drawLine(Offset(left, top), Offset(left, size.height - bottom), axisPaint);
+
+    final colW = plotW / n;
+    final barW = colW * 0.5;
+    final barPaint = Paint()..color = expenseColor;
+    for (int i = 0; i < n; i++) {
+      final cx = left + (i + 0.5) * colW;
+      final y = yFor(expense[i]);
+      final topY = expense[i] >= 0 ? y : baselineY;
+      final botY = expense[i] >= 0 ? baselineY : y;
+      canvas.drawRect(Rect.fromLTRB(cx - barW / 2, topY, cx + barW / 2, botY), barPaint);
+    }
+
+    void drawLine(List<double> values, Color color) {
+      final paint = Paint()
+        ..color = color
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+      final path = Path();
+      for (int i = 0; i < n; i++) {
+        final cx = left + (i + 0.5) * colW;
+        final y = yFor(values[i]);
+        if (i == 0) {
+          path.moveTo(cx, y);
+        } else {
+          path.lineTo(cx, y);
+        }
+      }
+      canvas.drawPath(path, paint);
+      final dot = Paint()..color = color;
+      for (int i = 0; i < n; i++) {
+        final cx = left + (i + 0.5) * colW;
+        canvas.drawCircle(Offset(cx, yFor(values[i])), 2.5, dot);
+      }
+    }
+
+    drawLine(income, incomeColor);
+    drawLine(net, netColor);
+
+    final textStyle = TextStyle(fontSize: 9, color: textColor);
+    for (int i = 0; i < n; i++) {
+      final cx = left + (i + 0.5) * colW;
+      final tp = TextPainter(
+        text: TextSpan(text: labels[i], style: textStyle),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      tp.layout();
+      tp.paint(canvas, Offset(cx - tp.width / 2, size.height - bottom + 4));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ComboChartPainter old) =>
+      old.labels != labels ||
+      old.expense != expense ||
+      old.income != income ||
+      old.net != net ||
+      old.expenseColor != expenseColor ||
+      old.incomeColor != incomeColor ||
+      old.netColor != netColor ||
+      old.textColor != textColor;
 }
