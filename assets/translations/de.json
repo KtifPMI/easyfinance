@@ -243,6 +243,7 @@
   "reports.expense": "Ausgaben",
   "reports.balance": "Saldo",
   "reports.by_category": "Nach Kategorie",
+  "reports.by_category_income": "Einnahmen nach Kategorie",
   "reports.monthly_trends": "Monatstrends",
   "reports.net": "Nettoeinkommen",
 

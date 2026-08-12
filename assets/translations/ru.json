@@ -292,6 +292,7 @@
   "reports.expense": "Расходы",
   "reports.balance": "Баланс",
   "reports.by_category": "По категориям",
+  "reports.by_category_income": "Доходы по категориям",
   "reports.monthly_trends": "По месяцам",
   "reports.net": "Чистый доход",
 

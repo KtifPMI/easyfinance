@@ -243,6 +243,7 @@
   "reports.expense": "Uscite",
   "reports.balance": "Saldo",
   "reports.by_category": "Per Categoria",
+  "reports.by_category_income": "Entrate per Categoria",
   "reports.monthly_trends": "Andamento mensile",
   "reports.net": "Reddito netto",
 

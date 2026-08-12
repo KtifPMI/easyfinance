@@ -243,6 +243,7 @@
   "reports.expense": "Giderler",
   "reports.balance": "Bakiye",
   "reports.by_category": "Kategoriye Göre",
+  "reports.by_category_income": "Kategoriye Göre Gelirler",
   "reports.monthly_trends": "Aylık trendler",
   "reports.net": "Net gelir",
 

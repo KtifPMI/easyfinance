@@ -25,6 +25,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _customFrom;
   DateTime? _customTo;
   String _chartType = 'pie';
+  String _incomeChartType = 'pie';
 
   @override
   void initState() {
@@ -89,6 +90,23 @@ class _ReportsScreenState extends State<ReportsScreen> {
         }
         if (otherTotal > 0) {
           chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: const Color(0xFF9E9E9E)));
+        }
+
+        final incomeCatTotals = store.categories
+            .where((c) => c.type == 'income' && !investCatIds.contains(c.id))
+            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o))))
+            .where((e) => e.total > 0)
+            .toList()
+          ..sort((a, b) => b.total.compareTo(a.total));
+
+        final incomeCatTotal = incomeCatTotals.fold<double>(0, (s, e) => s + e.total);
+        final incomeOtherTotal = incomeCatTotals.length > 6 ? incomeCatTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
+        final incomeChartSlices = <({String label, double value, Color color})>[];
+        for (int i = 0; i < incomeCatTotals.length && i < 6; i++) {
+          incomeChartSlices.add((label: tCat(context, incomeCatTotals[i].category.name), value: incomeCatTotals[i].total, color: _chartPalette[i % _chartPalette.length]));
+        }
+        if (incomeOtherTotal > 0) {
+          incomeChartSlices.add((label: context.tr('reports.other'), value: incomeOtherTotal, color: const Color(0xFF9E9E9E)));
         }
 
         return ScreenScaffold(
@@ -183,6 +201,50 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
                 const SizedBox(height: 16),
                 ..._buildCategoryRows(catTotals, catExpense, store),
+              ],
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(context.tr('reports.by_category_income'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.pie_chart, color: _incomeChartType == 'pie' ? AppColors.primary : AppColors.textSecondaryFor(context), size: 22),
+                        onPressed: () => setState(() => _incomeChartType = 'pie'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: Icon(Icons.bar_chart, color: _incomeChartType == 'bar' ? AppColors.primary : AppColors.textSecondaryFor(context), size: 22),
+                        onPressed: () => setState(() => _incomeChartType = 'bar'),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (incomeCatTotals.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(child: Text(context.tr('home.no_expenses'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+                )
+              else ...[
+                Center(
+                  child: _incomeChartType == 'bar'
+                    ? SimpleBarChart(slices: incomeChartSlices, height: 200, showPercentages: true)
+                    : SimplePieChart(
+                        slices: incomeChartSlices,
+                        size: 220,
+                        holeRadius: 0.5,
+                        showPercentages: true,
+                      ),
+                ),
+                const SizedBox(height: 16),
+                ..._buildCategoryRows(incomeCatTotals, incomeCatTotal, store),
               ],
             ],
           ),

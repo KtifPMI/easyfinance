@@ -243,6 +243,7 @@
   "reports.expense": "Dépenses",
   "reports.balance": "Solde",
   "reports.by_category": "Par Catégorie",
+  "reports.by_category_income": "Revenus par Catégorie",
   "reports.monthly_trends": "Tendances mensuelles",
   "reports.net": "Revenu net",
 
