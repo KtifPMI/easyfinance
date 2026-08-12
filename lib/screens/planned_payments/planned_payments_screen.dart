@@ -5,8 +5,10 @@ import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/financial_event.dart';
 import '../../store/planned_payment_store.dart';
+import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
+import '../../utils/planned_event_title.dart';
 
 class PlannedPaymentsScreen extends StatelessWidget {
   const PlannedPaymentsScreen({super.key});
@@ -75,7 +77,7 @@ class PlannedPaymentsScreen extends StatelessWidget {
             child: Icon(e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward, size: 20,
                 color: e.enabled ? (e.type == 'income' ? AppColors.success : AppColors.expense) : AppColors.textSecondaryFor(context)),
           ),
-          title: Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
+          title: Text(plannedEventTitle(e, Provider.of<FinanceStore>(context, listen: false)), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
               color: e.enabled ? AppColors.textFor(context) : AppColors.textSecondaryFor(context))),
           subtitle: Text(
             e.isRecurring ? '${context.tr('planned_payments.day')} ${e.dayOfMonth}' : formatDate(e.date),

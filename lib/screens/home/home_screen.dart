@@ -15,6 +15,7 @@ import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
+import '../../utils/planned_event_title.dart';
 import '../../components/common/simple_pie_chart.dart';
 import '../../store/planned_payment_store.dart';
 import '../accounts/add_account_screen.dart';
@@ -658,7 +659,7 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
               ],
             ),

@@ -11,6 +11,7 @@ import '../../models/operation.dart';
 import '../../models/financial_event.dart';
 import '../../utils/format.dart';
 import '../../utils/category_icons.dart';
+import '../../utils/planned_event_title.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -213,7 +214,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   Row(
                     children: [
                       Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
@@ -294,7 +295,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('calendar.delete_payment')),
-        content: Text('${e.title} — ${store.fmt(e.amount)}'),
+        content: Text('${plannedEventTitle(e, store)} — ${store.fmt(e.amount)}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
           TextButton(
@@ -357,7 +358,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(e.title),
+        title: Text(plannedEventTitle(e, store)),
         content: Text('${store.fmt(e.amount)}\n${context.tr('calendar.confirm_create_op')}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
