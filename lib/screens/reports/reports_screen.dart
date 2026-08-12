@@ -157,7 +157,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              _buildMonthlyTrendChart(context, store),
+              _buildMonthlyTrendChart(context, store, _selectedMonth, _customFrom, _customTo),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -323,14 +323,30 @@ class _ReportsScreenState extends State<ReportsScreen> {
     ];
   }
 
-  Widget _buildMonthlyTrendChart(BuildContext context, FinanceStore store) {
-    final now = DateTime.now();
+  Widget _buildMonthlyTrendChart(BuildContext context, FinanceStore store, DateTime selectedMonth, DateTime? customFrom, DateTime? customTo) {
     final labels = <String>[];
     final expense = <double>[];
     final income = <double>[];
     final net = <double>[];
-    for (int i = 11; i >= 0; i--) {
-      final m = DateTime(now.year, now.month - i, 1);
+    final months = <DateTime>[];
+    if (customFrom != null || customTo != null) {
+      final start = customFrom != null
+          ? DateTime(customFrom.year, customFrom.month, 1)
+          : DateTime(customTo!.year, customTo!.month, 1);
+      final end = customTo != null
+          ? DateTime(customTo.year, customTo.month, 1)
+          : DateTime(DateTime.now().year, DateTime.now().month, 1);
+      var m = start;
+      while (!m.isAfter(end)) {
+        months.add(m);
+        m = DateTime(m.year, m.month + 1, 1);
+      }
+    } else {
+      for (int i = 11; i >= 0; i--) {
+        months.add(DateTime(selectedMonth.year, selectedMonth.month - i, 1));
+      }
+    }
+    for (final m in months) {
       final ops = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, m)).toList();
       double amtRub(o) {
         final acc = store.getAccount(o.accountId);
