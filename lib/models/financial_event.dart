@@ -16,6 +16,10 @@ class FinancialEvent {
   final int repeatMode;
   final String? serverId;
   final String? chain; // 0=none, 1=daily, 7=weekly, 30=monthly, 90=quarterly, 365=yearly
+  final String? weekDays; // 7 chars, Mon..Sun, '1'/'0'
+  final String? dateStart;
+  final String? dateEnd;
+  final List<String> acceptedDates; // 'YYYY-MM-DD' occurrences already confirmed
 
   FinancialEvent({
     required this.id,
@@ -35,33 +39,82 @@ class FinancialEvent {
     this.repeatMode = 0,
     this.serverId,
     this.chain,
+    this.weekDays,
+    this.dateStart,
+    this.dateEnd,
+    this.acceptedDates = const [],
   });
 
   bool get isRepeating => repeatMode > 0;
 
-  DateTime nextOccurrence() {
-    if (date.isNotEmpty) {
-      final d = DateTime.tryParse(date);
-      if (d != null) return d;
+  bool isAcceptedOn(String ymd) => acceptedDates.contains(ymd);
+
+  /// All occurrence dates of this event inside the given [month].
+  List<DateTime> occurrencesInMonth(DateTime month) {
+    final year = month.year;
+    final mon = month.month;
+    final daysInMonth = DateTime(year, mon + 1, 0).day;
+    final List<DateTime> result = [];
+
+    void add(int d) {
+      if (d >= 1 && d <= daysInMonth) result.add(DateTime(year, mon, d));
     }
-    if (isRecurring && dayOfMonth != null) {
-      final now = DateTime.now();
-      var next = _dateForDay(now.year, now.month, dayOfMonth!);
-      if (next.isBefore(DateTime(now.year, now.month, now.day))) {
-        next = _dateForDay(now.year, now.month + 1, dayOfMonth!);
-      }
-      return next;
+
+    if (repeatMode == 0) {
+      // One-time event: anchor date or specific date.
+      final anchor = _parseDate(specificDate) ?? _parseDate(date);
+      if (anchor != null && anchor.year == year && anchor.month == mon) add(anchor.day);
+      return result;
     }
-    if (specificDate != null) {
-      final d = DateTime.tryParse(specificDate!);
-      if (d != null) return d;
+
+    switch (repeatMode) {
+      case 1: // daily
+        for (int d = 1; d <= daysInMonth; d++) add(d);
+        break;
+      case 7: // weekly — same weekday as the anchor date
+        final anchor = _parseDate(date);
+        if (anchor != null) {
+          final wd = anchor.weekday;
+          for (int d = 1; d <= daysInMonth; d++) {
+            if (DateTime(year, mon, d).weekday == wd) add(d);
+          }
+        }
+        break;
+      case 30: // monthly by day of month
+        add(dayOfMonth ?? _parseDate(date)?.day ?? 1);
+        break;
+      case 90: // quarterly
+        final anchor = _parseDate(date);
+        if (anchor != null && ((mon - anchor.month) % 3 + 12) % 12 == 0) {
+          add(anchor.day > daysInMonth ? daysInMonth : anchor.day);
+        }
+        break;
+      case 365: // yearly
+        final anchor = _parseDate(date);
+        if (anchor != null && anchor.month == mon) add(anchor.day > daysInMonth ? daysInMonth : anchor.day);
+        break;
+      default:
+        add(dayOfMonth ?? _parseDate(date)?.day ?? 1);
     }
-    return DateTime.now();
+    return result;
   }
 
-  DateTime _dateForDay(int year, int month, int day) {
-    final lastDay = DateTime(year, month + 1, 0).day;
-    return DateTime(year, month, day > lastDay ? lastDay : day);
+  /// Next future occurrence on or after [from] (inclusive), within 3 years.
+  DateTime? nextOccurrence({DateTime? from}) {
+    final today = from ?? DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    for (int i = 0; i < 36; i++) {
+      final m = DateTime(today.year, today.month + i, 1);
+      final occ = occurrencesInMonth(m);
+      for (final d in occ) {
+        if (!d.isBefore(today)) return d;
+      }
+    }
+    return null;
+  }
+
+  DateTime? _parseDate(String? s) {
+    if (s == null || s.isEmpty) return null;
+    return DateTime.tryParse(s.length >= 10 ? s.substring(0, 10) : s);
   }
 
   Map<String, dynamic> toJson() => {
@@ -82,6 +135,10 @@ class FinancialEvent {
     'repeatMode': repeatMode,
     if (serverId != null) 'serverId': serverId,
     if (chain != null) 'chain': chain,
+    if (weekDays != null) 'weekDays': weekDays,
+    if (dateStart != null) 'dateStart': dateStart,
+    if (dateEnd != null) 'dateEnd': dateEnd,
+    'acceptedDates': acceptedDates,
   };
 
   factory FinancialEvent.fromJson(Map<String, dynamic> json) => FinancialEvent(
@@ -102,5 +159,9 @@ class FinancialEvent {
     repeatMode: json['repeatMode'] as int? ?? 0,
     serverId: json['serverId'] as String?,
     chain: json['chain'] as String?,
+    weekDays: json['weekDays'] as String?,
+    dateStart: json['dateStart'] as String?,
+    dateEnd: json['dateEnd'] as String?,
+    acceptedDates: (json['acceptedDates'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
   );
 }

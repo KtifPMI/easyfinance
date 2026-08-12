@@ -644,6 +644,8 @@
   "calendar.create_operation": "Créer opération",
   "calendar.edit_payment": "Modifier paiement",
   "calendar.operations": "Opérations",
+  "calendar.overdue": "En retard",
+  "calendar.completed": "Terminé",
   "home.offline_pending": "Hors ligne : {count} opérations en attente",
   "quick_actions.receipt": "Reçu",
   "hints.home": "Solde total, budget mensuel et paiements à venir. Ajoutez revenus et dépenses via les actions rapides.",

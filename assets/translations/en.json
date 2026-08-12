@@ -658,6 +658,8 @@
   "calendar.create_operation": "Create operation",
   "calendar.edit_payment": "Edit payment",
   "calendar.operations": "Operations",
+  "calendar.overdue": "Overdue",
+  "calendar.completed": "Completed",
   "home.offline_pending": "Offline: {count} operations pending sync",
   "quick_actions.receipt": "Receipt",
   "hints.home": "Total balance, monthly budget, and upcoming payments overview. Add income and expenses via quick action buttons.",

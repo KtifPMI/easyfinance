@@ -59,9 +59,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final plannedByDate = <DateTime, List<FinancialEvent>>{};
         for (final e in plannedStore.events) {
           if (!e.enabled) continue;
-          final date = _occurrenceInMonth(e, _currentMonth);
-          if (date != null) {
-            final key = DateTime(date.year, date.month, date.day);
+          for (final occ in e.occurrencesInMonth(_currentMonth)) {
+            final key = DateTime(occ.year, occ.month, occ.day);
             plannedByDate.putIfAbsent(key, () => []);
             plannedByDate[key]!.add(e);
           }
@@ -168,7 +167,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Padding(padding: const EdgeInsets.only(top: 16), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
         if (planned.isNotEmpty) ...[
           Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
-          ...planned.map((e) => _plannedPaymentTile(context, store, e)),
+          ...planned.map((e) => _plannedPaymentTile(context, store, e, occurrenceDate: _selectedDate)),
         ],
         if (ops.isNotEmpty) ...[
           if (planned.isNotEmpty)
@@ -182,10 +181,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _plannedPaymentTile(BuildContext context, FinanceStore store, FinancialEvent e) {
+  Widget _plannedPaymentTile(BuildContext context, FinanceStore store, FinancialEvent e, {DateTime? occurrenceDate}) {
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final ymd = occurrenceDate != null ? '${occurrenceDate.year}-${occurrenceDate.month.toString().padLeft(2, '0')}-${occurrenceDate.day.toString().padLeft(2, '0')}' : e.date;
+    final accepted = e.isAcceptedOn(ymd);
+    final isOverdue = occurrenceDate != null && occurrenceDate.isBefore(today) && !accepted;
+
     final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
     final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
-    final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
+    final iconColor = isOverdue ? AppColors.expense : (e.type == 'income' ? AppColors.success : AppColors.expense);
+    final statusLabel = accepted ? context.tr('calendar.completed') : isOverdue ? context.tr('calendar.overdue') : null;
+    final statusColor = accepted ? AppColors.success : AppColors.expense;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: AppCard(
@@ -205,7 +211,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                  Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                  Row(
+                    children: [
+                      Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                      if (statusLabel != null) ...[
+                        const SizedBox(width: 6),
+                        Text('• $statusLabel', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: statusColor)),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -361,29 +375,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 isPending: false,
               );
               await store.addOperation(op);
+              if (context.mounted) {
+                context.read<PlannedPaymentStore>().accept(e, e.date);
+              }
             },
             child: Text(context.tr('calendar.create_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
     );
-  }
-
-  DateTime? _occurrenceInMonth(FinancialEvent e, DateTime month) {
-    if (e.isRecurring && e.dayOfMonth != null) {
-      final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-      final day = e.dayOfMonth! > daysInMonth ? daysInMonth : e.dayOfMonth!;
-      return DateTime(month.year, month.month, day);
-    }
-    if (e.specificDate != null) {
-      final d = DateTime.tryParse(e.specificDate!);
-      if (d != null && d.year == month.year && d.month == month.month) return d;
-    }
-    if (e.date.isNotEmpty) {
-      final d = DateTime.tryParse(e.date);
-      if (d != null && d.year == month.year && d.month == month.month) return d;
-    }
-    return null;
   }
 
   Widget _dayCell(int day, bool isToday, bool isSelected, bool hasOps, bool hasPlanned, VoidCallback onTap) {

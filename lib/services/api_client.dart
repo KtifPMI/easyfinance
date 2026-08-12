@@ -414,6 +414,42 @@ class ApiClient {
     }
   }
 
+  // --- Calendar / Planned Payments (API v2) ---
+
+  String _transactKey() => DateTime.now().microsecondsSinceEpoch.toString();
+
+  /// Fetches planned/calendar events from the API v2 (method `calendar.get`).
+  Future<List<Map<String, dynamic>>> getCalendarEventsV2({String? from, String? to, bool accepted = false}) async {
+    final params = <String, String>{};
+    if (from != null) params['from'] = from;
+    if (to != null) params['to'] = to;
+    if (accepted) params['options'] = 'accepted';
+    final data = await get('calendar.get', params: params);
+    final list = data['calendar'] as List<dynamic>?;
+    if (list == null) return [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  /// Creates a planned calendar event (operation + chain) via API v2 `calendar.post`.
+  Future<Map<String, dynamic>> postCalendarEventV2(Map<String, dynamic> body) async {
+    return post('calendar.post', params: {'transact_key': _transactKey()}, body: {'request': {'request_data': body}});
+  }
+
+  /// Updates a planned calendar event via API v2 `calendar.set`.
+  Future<Map<String, dynamic>> setCalendarEventV2(String operationId, String chainId, Map<String, dynamic> body) async {
+    return post('calendar.set', params: {'transact_key': _transactKey(), 'operation_id': operationId, 'chain_id': chainId}, body: {'request': {'request_data': body}});
+  }
+
+  /// Deletes a planned calendar event via API v2 `calendar.delete`.
+  Future<Map<String, dynamic>> deleteCalendarEventV2(String operationId, String chainId) async {
+    return post('calendar.delete', params: {'transact_key': _transactKey(), 'operation_id': operationId, 'chain_id': chainId}, body: {'request': {'request_data': {}}});
+  }
+
+  /// Confirms (accepts) a planned occurrence via API v2 `calendar.accept`.
+  Future<Map<String, dynamic>> acceptCalendarEventV2(String operationId, String chainId, String date) async {
+    return post('calendar.accept', params: {'transact_key': _transactKey(), 'operation_id': operationId, 'chain_id': chainId}, body: {'request': {'request_data': {'date': date, 'accepted': 1}}});
+  }
+
   Future<DebugResponse> getRaw(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
     final response = await _httpClient.get(uri).timeout(_timeout);

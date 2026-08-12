@@ -757,6 +757,8 @@
   "calendar.cancel": "Отмена",
   "calendar.edit_payment": "Редактировать платёж",
   "calendar.operations": "Операции",
+  "calendar.overdue": "Просрочено",
+  "calendar.completed": "Выполнено",
   "home.offline_pending": "Оффлайн: {count} операций ожидает синхронизации",
   "quick_actions.receipt": "Чек",
   "hints.home": "Здесь вы видите общий баланс, бюджет на месяц и ближайшие платежи. Добавляйте доходы и расходы через кнопки быстрых действий.",

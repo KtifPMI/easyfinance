@@ -288,6 +288,14 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     if (amount <= 0) return;
     final store = context.read<PlannedPaymentStore>();
 
+    String? weekDays;
+    if (_repeatMode == 7 && _date != null) {
+      final chars = List.filled(7, '0');
+      chars[_date!.weekday - 1] = '1';
+      weekDays = chars.join('');
+    }
+    final dateStart = _repeatMode > 0 ? (_date?.toIso8601String().substring(0, 10)) : null;
+
     final event = FinancialEvent(
       id: widget.existing?.id ?? const Uuid().v4(),
       title: name,
@@ -302,6 +310,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       categoryId: _categoryId,
       dayOfMonth: _repeatMode == 30 ? (_date?.day) : null,
       isRecurring: _repeatMode > 0,
+      weekDays: weekDays,
+      dateStart: dateStart,
       enabled: widget.existing?.enabled ?? true,
     );
 

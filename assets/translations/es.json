@@ -669,6 +669,8 @@
   "calendar.create_operation": "Crear operación",
   "calendar.edit_payment": "Editar pago",
   "calendar.operations": "Operaciones",
+  "calendar.overdue": "Vencido",
+  "calendar.completed": "Completado",
   "home.offline_pending": "Sin conexión: {count} operaciones pendientes",
   "quick_actions.receipt": "Recibo",
   "hints.home": "Saldo total, presupuesto mensual y próximos pagos. Añada ingresos y gastos con los botones rápidos.",

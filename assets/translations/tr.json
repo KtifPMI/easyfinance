@@ -644,6 +644,8 @@
   "calendar.create_operation": "İşlem oluştur",
   "calendar.edit_payment": "Ödemeyi düzenle",
   "calendar.operations": "İşlemler",
+  "calendar.overdue": "Gecikmiş",
+  "calendar.completed": "Tamamlandı",
   "home.offline_pending": "Çevrimdışı: {count} işlem senkronizasyon bekliyor",
   "quick_actions.receipt": "Fiş",
   "hints.home": "Toplam bakiye, aylık bütçe ve yaklaşan ödemeler. Hızlı butonlarla gelir ve gider ekleyin.",
