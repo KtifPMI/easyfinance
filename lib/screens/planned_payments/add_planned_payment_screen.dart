@@ -425,14 +425,14 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               ],
             ),
           ),
-          _hint('Пометки для быстрого поиска. Например: аванс'),
+            _hint('Например: Аренда, Подписка, Аванс'),
         ],
       );
 
   Widget _commentField() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Комментарий (обязательно):'),
+          _label('Название (обязательно):'),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -450,7 +450,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           if (_commentError)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 4),
-              child: Text('Поле обязательно для заполнения', style: TextStyle(fontSize: 12, color: Colors.red)),
+              child: Text('Название обязательно для заполнения', style: TextStyle(fontSize: 12, color: Colors.red)),
             ),
         ],
       );
