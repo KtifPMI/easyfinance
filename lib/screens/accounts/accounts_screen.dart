@@ -115,7 +115,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     for (final group in order) {
       final list = grouped[group];
       if (list == null || list.isEmpty) continue;
-      result.add(_groupHeader(context, group, list));
+      result.add(_groupHeader(context, store, group, list));
       result.add(const SizedBox(height: 8));
       for (final a in list) {
         result.add(_accountTile(context, store, a));
@@ -125,7 +125,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     return result;
   }
 
-  Widget _groupHeader(BuildContext context, String group, List<Account> list) {
+  Widget _groupHeader(BuildContext context, FinanceStore store, String group, List<Account> list) {
     final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(a.balance, a.currency, 'RUB', store.rates));
     final labels = {
       'money': 'accounts.group.money',
