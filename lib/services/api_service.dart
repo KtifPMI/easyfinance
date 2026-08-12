@@ -57,6 +57,11 @@ class ApiService {
     return _parseList(json, 'tags', Tag.fromJson);
   }
 
+  /// Fetches planned (calendar) payments via API v2 `calendar.get`.
+  Future<List<Map<String, dynamic>>> getPlannedPayments() async {
+    return _client.getCalendarEventsV2();
+  }
+
   Future<Map<String, dynamic>> addTag(Map<String, dynamic> body) async {
     final json = await _client.post('tags.post', params: _writeParams(), body: {'request': {'request_data': body}});
     return json;

@@ -11,6 +11,7 @@ import '../screens/budget/plan_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
 import '../screens/reports/reports_screen.dart';
 import '../screens/more/more_screen.dart';
+import '../store/planned_payment_store.dart';
 
 class MainTabs extends StatefulWidget {
   final int initialIndex;
@@ -39,7 +40,10 @@ class _MainTabsState extends State<MainTabs> {
   void initState() {
     super.initState();
     _index = widget.initialIndex.clamp(0, _screens.length - 1);
-    WidgetsBinding.instance.addPostFrameCallback((_) => UpdateService.checkAndShow(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService.checkAndShow(context);
+      if (mounted) context.read<PlannedPaymentStore>().syncFromServer();
+    });
   }
 
   @override

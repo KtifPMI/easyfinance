@@ -56,6 +56,13 @@ class FinancialEvent {
     final daysInMonth = DateTime(year, mon + 1, 0).day;
     final List<DateTime> result = [];
 
+    if (dateEnd != null) {
+      final end = _parseDate(dateEnd);
+      if (end != null && DateTime(year, mon).isAfter(DateTime(end.year, end.month))) {
+        return result;
+      }
+    }
+
     void add(int d) {
       if (d >= 1 && d <= daysInMonth) result.add(DateTime(year, mon, d));
     }

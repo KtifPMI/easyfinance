@@ -18,6 +18,7 @@ import '../services/mock_data.dart' show mockCategories;
 import '../services/currency_rate_service.dart';
 import '../services/currency_prefs_service.dart';
 import '../services/rate_history_storage.dart';
+import '../store/planned_payment_store.dart';
 import '../utils/format.dart';
 import '../utils/currency_utils.dart';
 
@@ -48,13 +49,17 @@ class FinanceStore extends ChangeNotifier {
   String? _error;
   Future<void> _cacheReady = Future.value();
   Future<void> _templatesReady = Future.value();
+  PlannedPaymentStore? _plannedPayments;
 
-  FinanceStore({required this.authService, required this.apiClient}) {
+  FinanceStore({required this.authService, required this.apiClient, PlannedPaymentStore? plannedPayments})
+      : _plannedPayments = plannedPayments {
     apiClient.onAuthExpired = markAuthExpired;
     _cacheReady = _loadFromCache();
     _templatesReady = _loadTemplates();
     _loadRecPrefs();
   }
+
+  void setPlannedPaymentStore(PlannedPaymentStore store) => _plannedPayments = store;
 
   bool get authExpired => _authExpired;
 
@@ -393,6 +398,12 @@ class FinanceStore extends ChangeNotifier {
       _tags = await api.getTags();
     } catch (e) {
       debugPrint('getTags error: $e');
+    }
+
+    try {
+      await _plannedPayments?.syncFromServer();
+    } catch (e) {
+      debugPrint('planned payments sync error: $e');
     }
 
     try {

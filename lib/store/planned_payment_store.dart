@@ -244,6 +244,9 @@ class PlannedPaymentStore extends ChangeNotifier {
     final accepted = acceptedRaw == 1 || acceptedRaw == '1' || acceptedRaw == true;
     final typeRaw = json['type']?.toString();
     final type = typeRaw == '1' ? 'income' : typeRaw == '2' ? 'transfer' : 'expense';
+    final everyDay = int.tryParse(json['every_day']?.toString() ?? '0') ?? 0;
+    final startStr = json['date_start']?.toString() ?? json['date']?.toString() ?? '';
+    final startDay = _parseDay(startStr);
     return FinancialEvent(
       id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
       title: json['comment']?.toString() ?? '',
@@ -251,15 +254,15 @@ class PlannedPaymentStore extends ChangeNotifier {
       amount: (double.tryParse(json['amount']?.toString() ?? '0') ?? 0).abs(),
       type: type,
       comment: json['comment']?.toString(),
-      isRecurring: (int.tryParse(json['repeat']?.toString() ?? '0') ?? 0) > 0,
-      dayOfMonth: json['every_day'] != null ? int.tryParse(json['every_day'].toString()) : null,
+      isRecurring: everyDay > 0,
+      dayOfMonth: startDay,
       specificDate: null,
       enabled: true,
       accountId: json['account_id']?.toString(),
       toAccountId: json['transfer_account_id']?.toString(),
       categoryId: json['category_id']?.toString(),
       tags: json['tags']?.toString(),
-      repeatMode: int.tryParse(json['repeat']?.toString() ?? '0') ?? 0,
+      repeatMode: everyDay,
       serverId: serverId ?? json['id']?.toString(),
       chain: json['chain_id']?.toString(),
       weekDays: json['week_days']?.toString(),
@@ -272,6 +275,12 @@ class PlannedPaymentStore extends ChangeNotifier {
   String _parseDate(String? d) {
     if (d == null || d.isEmpty) return '';
     return d.length >= 10 ? d.substring(0, 10) : d;
+  }
+
+  int? _parseDay(String? d) {
+    final s = _parseDate(d);
+    if (s.length < 10) return null;
+    return int.tryParse(s.substring(8, 10));
   }
 
   Map<String, dynamic> _toCalendarBody(FinancialEvent e) {

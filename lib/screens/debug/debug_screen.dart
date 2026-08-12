@@ -60,6 +60,7 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('targets.set', 'targets.set'),
     _MethodItem('tags.get', 'tags.get'),
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
+    _MethodItem('calendar.get', 'calendar.get'),
   ];
 
   static const webMethods = [

@@ -70,7 +70,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FinanceStore(authService: authService, apiClient: apiClient)),
+        ChangeNotifierProvider(create: (_) => FinanceStore(authService: authService, apiClient: apiClient, plannedPayments: plannedPaymentStore)),
         ChangeNotifierProvider.value(value: localeStore),
         ChangeNotifierProvider.value(value: plannedPaymentStore),
         ChangeNotifierProvider.value(value: themeStore),
