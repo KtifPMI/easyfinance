@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -453,7 +454,7 @@ class _ComboChartPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(text: labels[i], style: textStyle),
         textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
+        textDirection: ui.TextDirection.ltr,
       );
       tp.layout();
       tp.paint(canvas, Offset(cx - tp.width / 2, size.height - bottom + 4));
