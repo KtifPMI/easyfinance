@@ -21,6 +21,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   final _minuteCtrl = TextEditingController();
   final _tagsCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
+  bool _commentError = false;
 
   String _type = 'expense';
   String _repeatOption = 'none'; // none | day | week | month | quarter | year
@@ -431,16 +432,26 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   Widget _commentField() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Комментарии:'),
+          _label('Комментарий (обязательно):'),
           Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: _commentError ? Colors.red : Colors.grey.shade300),
+            ),
             child: TextField(
               controller: _commentCtrl,
               maxLines: 3,
               minLines: 2,
+              onChanged: (_) => setState(() => _commentError = false),
               decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
             ),
           ),
+          if (_commentError)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, left: 4),
+              child: Text('Поле обязательно для заполнения', style: TextStyle(fontSize: 12, color: Colors.red)),
+            ),
         ],
       );
 
@@ -625,6 +636,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       Navigator.pop(context);
       return;
     }
+    final comment = _commentCtrl.text.trim();
+    if (widget.existing == null && comment.isEmpty) {
+      setState(() => _commentError = true);
+      return;
+    }
     final period = _period;
     final dateStr = _date != null ? _fmt(_date!) : _fmt(DateTime.now());
     final dateStart = period > 0 ? dateStr : null;
@@ -634,11 +650,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
 
     final event = FinancialEvent(
       id: widget.existing?.id ?? const Uuid().v4(),
-      title: _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : 'Запланированный платёж',
+      title: comment.isNotEmpty ? comment : (widget.existing?.title ?? ''),
       date: dateStr,
       amount: amount,
       type: _type,
-      comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+      comment: comment.isNotEmpty ? comment : widget.existing?.comment,
       tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
       repeatMode: period,
       accountId: _accountId,
