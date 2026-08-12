@@ -244,6 +244,9 @@
   "reports.balance": "Saldo",
   "reports.by_category": "Por Categoria",
   "reports.by_category_income": "Rendimentos por Categoria",
+  "reports.preset.week": "Última semana",
+  "reports.preset.month": "Último mês",
+  "reports.preset.year": "Último ano",
   "reports.monthly_trends": "Tendências mensais",
   "reports.net": "Renda líquida",
 

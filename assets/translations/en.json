@@ -337,6 +337,9 @@
   "reports.balance": "Balance",
   "reports.by_category": "By Category",
   "reports.by_category_income": "Income by Category",
+  "reports.preset.week": "Last week",
+  "reports.preset.month": "Last month",
+  "reports.preset.year": "Last year",
   "reports.monthly_trends": "Monthly Trends",
   "reports.net": "Net Income",
 

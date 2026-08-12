@@ -244,6 +244,9 @@
   "reports.balance": "Saldo",
   "reports.by_category": "Per Categoria",
   "reports.by_category_income": "Entrate per Categoria",
+  "reports.preset.week": "Ultima settimana",
+  "reports.preset.month": "Ultimo mese",
+  "reports.preset.year": "Ultimo anno",
   "reports.monthly_trends": "Andamento mensile",
   "reports.net": "Reddito netto",
 

@@ -244,6 +244,9 @@
   "reports.balance": "Saldo",
   "reports.by_category": "Por Categoría",
   "reports.by_category_income": "Ingresos por Categoría",
+  "reports.preset.week": "Última semana",
+  "reports.preset.month": "Último mes",
+  "reports.preset.year": "Último año",
   "reports.monthly_trends": "Tendencias mensuales",
   "reports.net": "Ingreso neto",
 

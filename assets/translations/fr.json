@@ -244,6 +244,9 @@
   "reports.balance": "Solde",
   "reports.by_category": "Par Catégorie",
   "reports.by_category_income": "Revenus par Catégorie",
+  "reports.preset.week": "Dernière semaine",
+  "reports.preset.month": "Dernier mois",
+  "reports.preset.year": "Dernière année",
   "reports.monthly_trends": "Tendances mensuelles",
   "reports.net": "Revenu net",
 

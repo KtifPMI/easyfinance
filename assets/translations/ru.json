@@ -293,6 +293,9 @@
   "reports.balance": "Баланс",
   "reports.by_category": "По категориям",
   "reports.by_category_income": "Доходы по категориям",
+  "reports.preset.week": "За неделю",
+  "reports.preset.month": "За месяц",
+  "reports.preset.year": "За год",
   "reports.monthly_trends": "По месяцам",
   "reports.net": "Чистый доход",
 

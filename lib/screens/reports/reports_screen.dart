@@ -26,6 +26,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _customTo;
   String _chartType = 'pie';
   String _incomeChartType = 'pie';
+  String? _preset;
 
   @override
   void initState() {
@@ -33,8 +34,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
     _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
   }
 
-  void _prevMonth() => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1, 1));
-  void _nextMonth() => setState(() => _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1));
+  void _prevMonth() => setState(() { _preset = null; _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1, 1); });
+  void _nextMonth() => setState(() { _preset = null; _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 1); });
+
+  void _applyPreset(String preset) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    setState(() {
+      _preset = preset;
+      switch (preset) {
+        case 'week':
+          _customFrom = today.subtract(const Duration(days: 6));
+          _customTo = today;
+        case 'month':
+          _customFrom = DateTime(today.year, today.month, today.day - 29);
+          _customTo = today;
+        case 'year':
+          _customFrom = DateTime(today.year - 1, today.month, today.day);
+          _customTo = today;
+      }
+    });
+  }
 
   bool get _isCustomPeriod => _customFrom != null || _customTo != null;
 
@@ -122,10 +142,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
                   IconButton(
                     icon: Icon(_isCustomPeriod ? Icons.clear : Icons.date_range, size: 20, color: _isCustomPeriod ? AppColors.danger : AppColors.textSecondaryFor(context)),
-                    onPressed: _isCustomPeriod ? () => setState(() { _customFrom = null; _customTo = null; }) : _pickPeriod,
+                    onPressed: _isCustomPeriod ? () => setState(() { _customFrom = null; _customTo = null; _preset = null; }) : _pickPeriod,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _presetChip(context, 'week', context.tr('reports.preset.week')),
+                  _presetChip(context, 'month', context.tr('reports.preset.month')),
+                  _presetChip(context, 'year', context.tr('reports.preset.year')),
                 ],
               ),
               const SizedBox(height: 16),
@@ -253,6 +283,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
+  Widget _presetChip(BuildContext context, String preset, String label) {
+    final active = _preset == preset;
+    return ChoiceChip(
+      label: Text(label, style: TextStyle(fontSize: 13, color: active ? Colors.white : AppColors.textFor(context))),
+      selected: active,
+      selectedColor: AppColors.primary,
+      backgroundColor: AppColors.backgroundFor(context),
+      onSelected: (_) => _applyPreset(preset),
+    );
+  }
+
   void _pickPeriod() async {
     final picked = await showDateRangePicker(
       context: context,
@@ -262,12 +303,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ? DateTimeRange(start: _customFrom!, end: _customTo!)
           : null,
     );
-    if (picked != null) {
-      setState(() {
-        _customFrom = picked.start;
-        _customTo = picked.end;
-      });
-    }
+     if (picked != null) {
+       setState(() {
+         _customFrom = picked.start;
+         _customTo = picked.end;
+         _preset = null;
+       });
+     }
   }
 
   List<Widget> _buildCategoryRows(List<({dynamic category, double total})> catTotals, double monthExpense, FinanceStore store) {
