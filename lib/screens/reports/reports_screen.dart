@@ -480,6 +480,19 @@ class _ReportsScreenState extends State<ReportsScreen> {
   ];
 }
 
+String _fmtAxis(double v) {
+  final a = v.abs();
+  if (a >= 1e6) {
+    final m = v / 1e6;
+    return '${m.toStringAsFixed((m.abs() % 1).abs() < 1e-9 ? 0 : 1)}M';
+  }
+  if (a >= 1e3) {
+    final k = v / 1e3;
+    return '${k.toStringAsFixed((k.abs() % 1).abs() < 1e-9 ? 0 : 1)}K';
+  }
+  return v.round().toString();
+}
+
 class _ComboChartPainter extends CustomPainter {
   _ComboChartPainter({
     required this.labels,
@@ -505,7 +518,7 @@ class _ComboChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final n = labels.length;
     if (n == 0) return;
-    const left = 8.0;
+    const left = 44.0;
     const right = 8.0;
     const top = 12.0;
     const bottom = 22.0;
@@ -513,22 +526,37 @@ class _ComboChartPainter extends CustomPainter {
     final plotH = size.height - top - bottom;
 
     final all = <double>[...expense, ...income, ...net];
-    final maxV = all.fold<double>(0, (m, v) => v > m ? v : m);
-    final minV = all.fold<double>(0, (m, v) => v < m ? v : m);
-    var hi = maxV;
-    var lo = minV < 0 ? minV : 0.0;
-    if (hi - lo < 1e-9) {
-      if (hi >= 1) lo = hi - 1; else hi = hi + 1;
+    double maxAbs = 0;
+    for (final v in all) {
+      final a = v.abs();
+      if (a > maxAbs) maxAbs = a;
     }
+    final hi = maxAbs <= 0 ? 1.0 : maxAbs;
+    final lo = -hi;
     final span = hi - lo;
 
     double yFor(double v) => top + (hi - v) / span * plotH;
 
-    final axisPaint = Paint()
-      ..color = textColor.withOpacity(0.3)
+    final gridPaint = Paint()
+      ..color = textColor.withOpacity(0.25)
       ..strokeWidth = 1;
-    final baselineY = yFor(0);
-    canvas.drawLine(Offset(left, baselineY), Offset(size.width - right, baselineY), axisPaint);
+    final axisPaint = Paint()
+      ..color = textColor.withOpacity(0.5)
+      ..strokeWidth = 1;
+
+    final zeroY = yFor(0.0);
+    final tickVals = [-hi, -hi / 2, 0.0, hi / 2, hi];
+    for (final tv in tickVals) {
+      final y = yFor(tv);
+      canvas.drawLine(Offset(left, y), Offset(size.width - right, y), tv == 0 ? axisPaint : gridPaint);
+      final tp = TextPainter(
+        text: TextSpan(text: _fmtAxis(tv), style: TextStyle(fontSize: 9, color: textColor)),
+        textAlign: TextAlign.right,
+        textDirection: ui.TextDirection.ltr,
+      );
+      tp.layout();
+      tp.paint(canvas, Offset(left - 6 - tp.width, y - tp.height / 2));
+    }
     canvas.drawLine(Offset(left, top), Offset(left, size.height - bottom), axisPaint);
 
     final colW = plotW / n;
@@ -537,8 +565,8 @@ class _ComboChartPainter extends CustomPainter {
     for (int i = 0; i < n; i++) {
       final cx = left + (i + 0.5) * colW;
       final y = yFor(expense[i]);
-      final topY = expense[i] >= 0 ? y : baselineY;
-      final botY = expense[i] >= 0 ? baselineY : y;
+      final topY = expense[i] >= 0 ? y : zeroY;
+      final botY = expense[i] >= 0 ? zeroY : y;
       canvas.drawRect(Rect.fromLTRB(cx - barW / 2, topY, cx + barW / 2, botY), barPaint);
     }
 

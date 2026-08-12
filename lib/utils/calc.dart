@@ -55,11 +55,7 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
   );
 }
 
-bool _isMoneyAccountType(String type) {
-  return type == 'account' || type == 'card' || type == 'savings' || type == 'electronic';
-}
-
-bool _isCreditType(String type) => type == 'credit' || type == 'loan';
+bool _isMoneyAccountType(String type) => groupForType(type) == 'money';
 
 double _opToRub(Operation o, List<Account> accounts, Map<String, double> rates) {
   final acc = accounts.where((a) => a.id == o.accountId).firstOrNull;
@@ -75,7 +71,7 @@ double _calcMoneyMonths(List<Account> accounts, List<Operation> operations, Date
     if (_isMoneyAccountType(a.type)) {
       moneyBalance += balanceRub;
     }
-    if (_isCreditType(a.type) && a.balance > 0) {
+    if (a.type == 'credit_card' && a.balance > 0) {
       moneyBalance += balanceRub;
     }
   }
@@ -101,7 +97,7 @@ double _calcMoneyMonths(List<Account> accounts, List<Operation> operations, Date
 }
 
 double _calcCreditPayments(List<Operation> ops, List<Account> accounts, Map<String, double> rates) {
-  final creditAccountIds = accounts.where((a) => _isCreditType(a.type)).map((a) => a.id).toSet();
+  final creditAccountIds = accounts.where((a) => groupForType(a.type) == 'owed_by_me').map((a) => a.id).toSet();
   return ops.where((o) =>
     o.type == 'transfer' &&
     o.toAccountId != null &&

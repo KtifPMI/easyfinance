@@ -7,6 +7,7 @@ import '../../models/account.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/currency_utils.dart';
+import '../../services/currency_rate_service.dart';
 import '../../utils/format.dart';
 import 'add_account_screen.dart';
 
@@ -125,7 +126,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
 
   Widget _groupHeader(BuildContext context, String group, List<Account> list) {
-    final total = list.where((a) => !a.isArchived).fold<double>(0, (s, a) => s + a.balance);
+    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(a.balance, a.currency, 'RUB', store.rates));
     final labels = {
       'money': 'accounts.group.money',
       'owed_by_me': 'accounts.group.owed_by_me',
@@ -142,7 +143,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             context.tr(labels[group] ?? ''),
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context)),
           ),
-          if (list.where((a) => !a.isArchived).length > 1 && total != 0) ...[
+          if (list.where((a) => a.includeInTotal).length > 1 && total != 0) ...[
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -151,7 +152,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                formatMoney(total, currency: list.first.currency),
+                store.fmt(total),
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: total >= 0 ? AppColors.success : AppColors.danger),
               ),
             ),
