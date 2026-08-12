@@ -286,9 +286,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
       netData.add((label: monthLabel, value: inc - exp, color: AppColors.primary));
     }
 
-    final maxInc = incomeData.fold(0.0, (m, s) => s.value > m ? s.value : m);
     final maxExp = expenseData.fold(0.0, (m, s) => s.value > m ? s.value : m);
-    final maxNet = netData.map((s) => s.value.abs()).fold(0.0, (a, b) => a > b ? a : b);
+    final maxLines = [incomeData, netData].expand((e) => e.map((s) => s.value.abs())).fold(0.0, (a, b) => a > b ? a : b);
 
     return AppCard(
       child: Column(
@@ -296,90 +295,72 @@ class _ReportsScreenState extends State<ReportsScreen> {
         children: [
           Text(context.tr('reports.monthly_trends'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _trendStat(context, context.tr('reports.income'), incomeData.fold(0.0, (s, e) => s + e.value), AppColors.success),
-              _trendStat(context, context.tr('reports.expense'), expenseData.fold(0.0, (s, e) => s + e.value), AppColors.expense),
-              _trendStat(context, context.tr('reports.net'), netData.fold(0.0, (s, e) => s + e.value), AppColors.primary),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _trendLegend(context),
-          const SizedBox(height: 8),
-          ...incomeData.asMap().entries.map((e) =>
-            _trendLine(context, e.value.label, e.value.value, maxInc > 0 ? maxInc : 1, AppColors.success)),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(width: 16, height: 3, color: AppColors.expense), const SizedBox(width: 4),
+            Text(context.tr('reports.expense'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+            const SizedBox(width: 16),
+            Container(width: 16, height: 3, color: AppColors.success), const SizedBox(width: 4),
+            Text(context.tr('reports.income'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+            const SizedBox(width: 16),
+            Container(width: 16, height: 3, color: AppColors.primary), const SizedBox(width: 4),
+            Text(context.tr('reports.net'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
+          ]),
           const SizedBox(height: 12),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-          ...expenseData.asMap().entries.map((e) =>
-            _trendLine(context, e.value.label, e.value.value, maxExp > 0 ? maxExp : 1, AppColors.expense)),
-          const SizedBox(height: 12),
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-          ...netData.asMap().entries.map((e) =>
-            _trendLine(context, e.value.label, e.value.value, maxNet > 0 ? maxNet : 1, AppColors.primary)),
-        ],
-      ),
-    );
-  }
-
-  Widget _trendLegend(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(width: 16, height: 3, color: AppColors.success),
-        const SizedBox(width: 4),
-        Text(context.tr('reports.income'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(width: 16),
-        Container(width: 16, height: 3, color: AppColors.expense),
-        const SizedBox(width: 4),
-        Text(context.tr('reports.expense'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(width: 16),
-        Container(width: 16, height: 3, color: AppColors.primary),
-        const SizedBox(width: 4),
-        Text(context.tr('reports.net'), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
-      ],
-    );
-  }
-
-  Widget _trendLine(BuildContext context, String label, double value, double max, Color color) {
-    final fraction = max > 0 ? (value / max).clamp(0.0, 1.0) : 0.0;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(width: 32, child: Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context)))),
-          const SizedBox(width: 8),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
-              child: Container(
-                height: 4,
+          ...expenseData.asMap().entries.map((e) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3),
+            child: Row(children: [
+              SizedBox(width: 32, child: Text(e.value.label, style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context)))),
+              const SizedBox(width: 4),
+              Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(2), child: Container(
+                height: 16,
                 color: AppColors.borderFor(context),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
-                  widthFactor: fraction,
-                  child: Container(color: color),
+                  widthFactor: maxExp > 0 ? (e.value.value / maxExp).clamp(0.0, 1.0) : 0,
+                  child: Container(color: AppColors.expense.withValues(alpha: 0.7)),
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(width: 72, child: Text(formatMoney(value), style: TextStyle(fontSize: 10, color: AppColors.textFor(context)), textAlign: TextAlign.right)),
+              ))),
+              const SizedBox(width: 4),
+              SizedBox(width: 60, child: Text(formatMoney(e.value.value), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.right)),
+            ]),
+          )),
+          const SizedBox(height: 16),
+          ...List.generate(12, (i) {
+            final inc = incomeData[i].value;
+            final net = netData[i].value;
+            final label = incomeData[i].label;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(children: [
+                SizedBox(width: 32, child: Text(label, style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context)))),
+                const SizedBox(width: 4),
+                Expanded(child: Column(children: [
+                  _lineBar(inc, maxLines, AppColors.success),
+                  const SizedBox(height: 3),
+                  _lineBar(net, maxLines, AppColors.primary),
+                ])),
+              ]),
+            );
+          }),
         ],
       ),
     );
   }
 
-  Widget _trendStat(BuildContext context, String label, double value, Color color) {
-    return Column(
-      children: [
-        Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(height: 2),
-        Text(formatMoney(value), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color)),
-      ],
-    );
+  Widget _lineBar(double value, double max, Color color) {
+    final fraction = max > 0 ? (value.abs() / max).clamp(0.0, 1.0) : 0.0;
+    return Row(children: [
+      Expanded(child: ClipRRect(borderRadius: BorderRadius.circular(2), child: Container(
+        height: 8,
+        color: AppColors.borderFor(context),
+        child: FractionallySizedBox(
+          alignment: value >= 0 ? Alignment.centerLeft : Alignment.centerRight,
+          widthFactor: fraction,
+          child: Container(color: color.withValues(alpha: 0.8)),
+        ),
+      ))),
+      if (value != 0) ...[const SizedBox(width: 4), SizedBox(width: 60, child: Text(formatMoney(value), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.right))],
+    ]);
   }
 
   static const _chartPalette = [

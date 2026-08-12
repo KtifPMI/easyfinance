@@ -251,66 +251,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       return;
     }
     if (!_isEditing && catId != null) {
-      _showSaveResult(context, store, op, catId);
+      _offerSaveTemplate(context, amount, catId, accountId, toAccountId);
       return;
     }
     _popAfterSave(context);
-  }
-
-  void _showSaveResult(BuildContext context, FinanceStore store, Operation op, String catId) {
-    final cat = store.getCategory(catId);
-    String? budgetInfo;
-    if (op.type == 'expense') {
-      final budget = store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull;
-      if (budget != null) {
-        final newSpent = budget.spent + op.amount;
-        final pct = budget.limit > 0 ? (newSpent / budget.limit * 100).round() : 0;
-        budgetInfo = '${context.tr('budget.forecast')}: $pct% (${store.fmt(newSpent)} / ${store.fmt(budget.limit)})';
-      }
-    }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.tr('operations.saved')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 4),
-            Text(tCat(context, cat?.name ?? ''), style: TextStyle(fontSize: 14)),
-            if (budgetInfo != null) ...[
-              const SizedBox(height: 8),
-              Text(budgetInfo, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _offerSaveTemplate(context, op.amount, catId, op.accountId, op.toAccountId);
-            },
-            child: Text(context.tr('templates.save_as_template'), style: TextStyle(fontSize: 13)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _popAfterSave(context);
-              Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'copyFrom': op.id});
-            },
-            child: Text(context.tr('operations.more'), style: TextStyle(fontSize: 13)),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _popAfterSave(context);
-            },
-            child: Text(context.tr('common.ok'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showLimitDialog(BuildContext context) {
@@ -347,42 +291,21 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   }
 
   void _offerSaveTemplate(BuildContext context, double amount, String catId, String accountId, String? toAccountId) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.tr('templates.save_as_template')),
-        content: Text(context.tr('templates.save_as_template_desc')),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _popAfterSave(context);
-            },
-            child: Text(context.tr('common.skip')),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final store = context.read<FinanceStore>();
-              final cat = store.getCategory(catId);
-              await store.addTemplate(OperationTemplate(
-                id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-                name: cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new'),
-                type: _type,
-                amount: amount,
-                accountId: accountId,
-                categoryId: catId,
-                toAccountId: toAccountId,
-                comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
-                tags: _combinedTags().isEmpty ? null : _combinedTags(),
-              ));
-              if (context.mounted) _popAfterSave(context);
-            },
-            child: Text(context.tr('templates.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
+    final store = context.read<FinanceStore>();
+    final cat = store.getCategory(catId);
+    final name = cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new');
+    store.addTemplate(OperationTemplate(
+      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+      name: name,
+      type: _type,
+      amount: amount,
+      accountId: accountId,
+      categoryId: catId,
+      toAccountId: toAccountId,
+      comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+      tags: _combinedTags().isEmpty ? null : _combinedTags(),
+    ));
+    _popAfterSave(context);
   }
 
   @override

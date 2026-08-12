@@ -115,60 +115,54 @@ class HomeScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(context.tr('home.money'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
-                const Spacer(),
-                Text(store.fmt(store.monthIncome + store.monthExpense), style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
-              ],
-            ),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(context.tr('home.money'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Icon(Icons.chevron_right, color: Colors.white54, size: 20),
+            ]),
+            const SizedBox(height: 4),
+            Text(store.fmt(store.monthIncome + store.monthExpense), style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
-                const Spacer(),
-                Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _pill(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
-                const Spacer(),
-                _pill(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense),
-              ],
-            ),
+            Row(children: [
+              Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 12)),
+              const Spacer(),
+              Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white60, fontSize: 14, fontWeight: FontWeight.w600)),
+            ]),
+            const SizedBox(height: 12),
+            Row(children: [
+              _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
+              const SizedBox(width: 12),
+              Expanded(child: Align(alignment: Alignment.centerRight, child: _pill(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense))),
+            ]),
             const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: _pill(context.tr('home.profit'), store.fmt(savings), Colors.white),
-            ),
+            _statLine(context.tr('home.profit'), store.fmt(savings), Colors.white),
           ],
         ),
       ),
     );
   }
 
+  Widget _statLine(String label, String amount, Color color) {
+    return Expanded(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 11)),
+        const SizedBox(height: 4),
+        Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+          child: Text(amount, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 13, fontWeight: FontWeight.w600))),
+      ]),
+    );
+  }
+
   Widget _pill(String label, String amount, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 11)),
-          const SizedBox(width: 6),
-          Text(amount, style: TextStyle(
-            color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          )),
-        ],
-      ),
+      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Text(amount, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
+        const SizedBox(width: 6),
+        Text(label, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 11)),
+      ]),
     );
   }
 
