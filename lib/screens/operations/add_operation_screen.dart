@@ -233,28 +233,46 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       clientId: clientId,
     );
 
-    if (_isEditing) {
-      await store.updateOperation(op);
-    } else {
-      await store.addOperation(op);
-    }
-
-    if (!mounted) return;
-    if (store.error != null) {
-      if (store.error == 'LIMIT') {
-        _showLimitDialog(context);
+    final doSave = () async {
+      if (_isEditing) {
+        await store.updateOperation(op);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
-        );
+        await store.addOperation(op);
+        if (catId != null) {
+          final cat = store.getCategory(catId);
+          final name = cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new');
+          store.addTemplate(OperationTemplate(
+            id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+            name: name, type: _type, amount: amount, accountId: accountId,
+            categoryId: catId, toAccountId: toAccountId,
+            comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
+            tags: _combinedTags().isEmpty ? null : _combinedTags(),
+          ));
+        }
       }
-      return;
-    }
-    if (!_isEditing && catId != null) {
-      _offerSaveTemplate(context, amount, catId, accountId, toAccountId);
-      return;
-    }
-    _popAfterSave(context);
+      if (!mounted) return;
+      if (store.error != null) {
+        if (store.error == 'LIMIT') { _showLimitDialog(context); }
+        else { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red)); }
+        return;
+      }
+      _popAfterSave(context);
+    };
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('operations.saved')),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+          if (catId != null) Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 14)),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('operations.cancel'))),
+          TextButton(onPressed: () { Navigator.pop(ctx); doSave(); }, child: Text(context.tr('operations.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600))),
+        ],
+      ),
+    );
   }
 
   void _showLimitDialog(BuildContext context) {
@@ -288,24 +306,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     } else {
       Navigator.pushReplacementNamed(context, '/main');
     }
-  }
-
-  void _offerSaveTemplate(BuildContext context, double amount, String catId, String accountId, String? toAccountId) {
-    final store = context.read<FinanceStore>();
-    final cat = store.getCategory(catId);
-    final name = cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new');
-    store.addTemplate(OperationTemplate(
-      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-      name: name,
-      type: _type,
-      amount: amount,
-      accountId: accountId,
-      categoryId: catId,
-      toAccountId: toAccountId,
-      comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
-      tags: _combinedTags().isEmpty ? null : _combinedTags(),
-    ));
-    _popAfterSave(context);
   }
 
   @override

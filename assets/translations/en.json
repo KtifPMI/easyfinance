@@ -62,7 +62,7 @@
   "health.liquidity": "Liquidity",
   "health.budget": "Budget",
   "health.debts": "Debts",
-  "health.savings": "Savings",
+  "health.savings": "Net Income",
   "health.detail": "Liquidity: 3-month buffer · Savings: 20% of income target",
   "common.ok": "OK",
   "health.money.tip1": "Extremely low cash reserve. You don't have enough emergency fund. Control your budget. Set aside 10% of income immediately after receiving it. You need to have enough cash for 3-6 months without income.",
