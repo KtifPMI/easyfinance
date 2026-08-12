@@ -510,6 +510,13 @@
   "goals.comments": "Commentaires",
   "goals.goal_completed": "Objectif atteint",
   "goals.choose_date": "Choisir la date",
+  "goals.save_goal_amount": "Montant de l'épargne",
+  "goals.save_initial": "Déjà épargné",
+  "goals.save_monthly": "J'épargnerai chaque mois",
+  "goals.save_monthly_hint": "Montant moyen d'épargne mensuel",
+  "goals.save_first_date": "Date de début de l'épargne",
+  "goals.save_target_date": "Date cible",
+  "goals.save_accounts": "Comptes d'épargne",
 
   "goal_cat.appliances": "Électroménager",
   "goal_cat.home": "Maison",

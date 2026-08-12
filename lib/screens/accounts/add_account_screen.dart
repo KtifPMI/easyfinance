@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
@@ -234,7 +234,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           const SizedBox(height: 16),
           AppInput(label: _isDebtType ? context.tr('accounts.debt_amount') : context.tr('accounts.balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
-          Text(context.tr('accounts.type'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('accounts.type'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _type,
@@ -251,7 +251,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             onChanged: (v) => setState(() => _type = v!),
           ),
           const SizedBox(height: 16),
-          Text(context.tr('accounts.currency'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('accounts.currency'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _currencyId,
@@ -400,7 +400,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   }
 
   Widget _sectionHeader(BuildContext context, String text) {
-    return Text(text, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context)));
+    return Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context)));
   }
 
   Widget _buildPaymentTypeDropdown(BuildContext context) {

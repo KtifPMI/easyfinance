@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
 class AppButton extends StatelessWidget {
@@ -33,7 +33,7 @@ class AppButton extends StatelessWidget {
         ),
         child: loading
             ? SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: isDanger ? Colors.white : AppColors.onPrimary))
-            : Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            : Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       ),
     );
   }

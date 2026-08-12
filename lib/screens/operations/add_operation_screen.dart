@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/calculator_input.dart';
@@ -92,7 +92,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           builder: (ctx, setSheetState) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(context.tr('operations.select_time'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              Text(context.tr('operations.select_time'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -100,7 +100,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   _TimeWheel(value: hour, onChanged: (v) => setSheetState(() => hour = v), isHour: true),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Text(':', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textFor(context))),
+                    child: Text(':', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: AppColors.textFor(context))),
                   ),
                   _TimeWheel(value: minute, onChanged: (v) => setSheetState(() => minute = v), isHour: false),
                 ],
@@ -118,7 +118,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     setState(() => _selectedDT = DateTime(date.year, date.month, date.day, hour, minute));
                     Navigator.pop(ctx);
                   },
-                  child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -233,46 +233,104 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       clientId: clientId,
     );
 
-    final doSave = () async {
-      if (_isEditing) {
-        await store.updateOperation(op);
+    if (_isEditing) {
+      await store.updateOperation(op);
+    } else {
+      await store.addOperation(op);
+    }
+    if (!mounted) return;
+    if (store.error != null) {
+      if (store.error == 'LIMIT') {
+        _showLimitDialog(context);
       } else {
-        await store.addOperation(op);
-        if (catId != null) {
-          final cat = store.getCategory(catId);
-          final name = cat != null ? tCat(context, cat.name) : _commentCtrl.text.trim().isNotEmpty ? _commentCtrl.text.trim() : context.tr('templates.new');
-          store.addTemplate(OperationTemplate(
-            id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-            name: name, type: _type, amount: amount, accountId: accountId,
-            categoryId: catId, toAccountId: toAccountId,
-            comment: _commentCtrl.text.trim().isEmpty ? null : _commentCtrl.text.trim(),
-            tags: _combinedTags().isEmpty ? null : _combinedTags(),
-          ));
-        }
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
       }
-      if (!mounted) return;
-      if (store.error != null) {
-        if (store.error == 'LIMIT') { _showLimitDialog(context); }
-        else { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red)); }
-        return;
-      }
-      _popAfterSave(context);
-    };
+      return;
+    }
+    _showSavedDialog(context, store, op);
+  }
 
+  void _showSavedDialog(BuildContext context, FinanceStore store, Operation op) {
+    final catId = op.categoryId;
+    final budget = catId != null ? store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull : null;
+    final children = <Widget>[
+      Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+      if (catId != null)
+        Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 15)),
+      const SizedBox(height: 12),
+      if (budget != null)
+        Text(
+          '${context.tr('budget.spent_total')}: ${store.fmt(budget.spent)} / ${store.fmt(budget.limit)}  •  '
+          '${context.tr('budget.remaining')}: ${store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}',
+          style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
+        ),
+      Text('${context.tr('operations.expense')}: ${store.fmt(store.monthExpense)}', style: TextStyle(fontSize: 15)),
+    ];
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('operations.saved')),
-        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-          if (catId != null) Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 14)),
-        ]),
+        content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: children),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('operations.cancel'))),
-          TextButton(onPressed: () { Navigator.pop(ctx); doSave(); }, child: Text(context.tr('operations.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600))),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _resetForAnother();
+            },
+            child: Text(context.tr('operations.more')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              store.addTemplate(OperationTemplate(
+                id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+                name: _templateName(store, op),
+                type: op.type,
+                amount: op.amount,
+                accountId: op.accountId,
+                categoryId: op.categoryId,
+                toAccountId: op.toAccountId,
+                comment: op.comment,
+                tags: op.tags,
+              ));
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('templates.new'))));
+              }
+            },
+            child: Text(context.tr('templates.save_as_template')),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await store.deleteOperation(op.id);
+              if (!mounted) return;
+              if (store.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
+                return;
+              }
+              _popAfterSave(context);
+            },
+            child: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.expense)),
+          ),
         ],
       ),
     );
+  }
+
+  String _templateName(FinanceStore store, Operation op) {
+    final cat = op.categoryId != null ? store.getCategory(op.categoryId) : null;
+    return cat != null
+        ? tCat(context, cat.name)
+        : (op.comment?.isNotEmpty == true ? op.comment! : context.tr('templates.new'));
+  }
+
+  void _resetForAnother() {
+    setState(() {
+      _amountCtrl.clear();
+      _commentCtrl.clear();
+      _tagsCtrl.clear();
+      _selectedTags.clear();
+    });
   }
 
   void _showLimitDialog(BuildContext context) {
@@ -338,6 +396,18 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  _typeBtn('expense', Icons.trending_down, AppColors.expense, context.tr('operations.type_expense')),
+                  const SizedBox(width: 8),
+                  _typeBtn('income', Icons.trending_up, AppColors.success, context.tr('operations.type_income')),
+                  const SizedBox(width: 8),
+                  _typeBtn('transfer', Icons.swap_horiz, AppColors.transfer, context.tr('operations.type_transfer')),
+                ],
+              ),
+              const SizedBox(height: 20),
+              CalculatorInput(controller: _amountCtrl, label: context.tr('operations.amount')),
+              const SizedBox(height: 16),
               if (store.templates.isNotEmpty && !_isEditing && widget.templateId == null) ...[
                 InkWell(
                   onTap: () => _showTemplatePicker(context, store),
@@ -353,25 +423,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                       children: [
                         Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
                         const SizedBox(width: 12),
-                        Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.primary)),
+                        Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.primary)),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
               ],
-              Row(
-                children: [
-                  _typeBtn('expense', Icons.trending_down, AppColors.expense, context.tr('operations.type_expense')),
-                  const SizedBox(width: 8),
-                  _typeBtn('income', Icons.trending_up, AppColors.success, context.tr('operations.type_income')),
-                  const SizedBox(width: 8),
-                  _typeBtn('transfer', Icons.swap_horiz, AppColors.transfer, context.tr('operations.type_transfer')),
-                ],
-              ),
-              const SizedBox(height: 20),
-              CalculatorInput(controller: _amountCtrl, label: context.tr('operations.amount')),
-              const SizedBox(height: 16),
               _buildPicker(
                 label: context.tr('operations.account'),
                 value: store.accounts.where((a) => a.id == _accountId).map((a) => a.name).firstOrNull,
@@ -405,7 +463,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ),
               const SizedBox(height: 16),
               if (_type != 'transfer') ...[
-                _buildTopCategories(context, store),
                 Container(key: _categoryKey, child: _buildPicker(
                   label: context.tr('operations.category'),
                   value: store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull,
@@ -464,7 +521,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(context.tr('operations.comment'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
+                      Expanded(child: Text(context.tr('operations.comment'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
                       GestureDetector(
                         onTap: () => setState(() => _commentExpanded = !_commentExpanded),
                         child: Icon(_commentExpanded ? Icons.expand_less : Icons.expand_more, size: 20, color: AppColors.textSecondaryFor(context)),
@@ -475,7 +532,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   TextField(
                     controller: _commentCtrl,
                     maxLines: _commentExpanded ? 5 : 1,
-                    style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
+                    style: TextStyle(fontSize: 16, color: AppColors.textFor(context)),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.cardFor(context),
@@ -523,7 +580,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               Icon(icon, size: 22, color: active ? Colors.white : color),
               const SizedBox(height: 2),
               Text(label, textAlign: TextAlign.center, style: TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w500,
+                fontSize: 12, fontWeight: FontWeight.w500,
                 color: active ? Colors.white : AppColors.textFor(context),
               )),
             ],
@@ -539,7 +596,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(label, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           Container(
             width: double.infinity,
@@ -554,7 +611,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 Expanded(
                   child: Text(
                     value ?? '',
-                    style: TextStyle(fontSize: 15, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
+                    style: TextStyle(fontSize: 16, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
                   ),
                 ),
                 Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondaryFor(context)),
@@ -590,7 +647,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              child: Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             ),
             ...store.templates.map((t) => ListTile(
               leading: Icon(
@@ -599,7 +656,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ),
               title: Text(t.name),
               subtitle: t.amount > 0 ? Text('${t.type == 'income' ? '+' : '-'}${context.read<FinanceStore>().fmt(t.amount)}',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))) : null,
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))) : null,
               onTap: () {
                 Navigator.pop(ctx);
                 setState(() {
@@ -623,62 +680,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     );
   }
 
-  Widget _buildTopCategories(BuildContext context, FinanceStore store) {
-    final cats = store.categories.where((c) => c.type == _type && c.icon != 'invest').toList();
-    if (cats.length < 3) return const SizedBox.shrink();
-
-    final counts = <String, int>{};
-    for (final op in store.operations.where((o) => o.type == _type && !o.isDeleted)) {
-      if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
-    }
-    final topIds = counts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final top5 = <dynamic>[];
-    for (final e in topIds.take(5)) {
-      final c = cats.where((x) => x.id == e.key).firstOrNull;
-      if (c != null) top5.add(c);
-    }
-    if (top5.isEmpty) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.tr('categories.popular'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-          const SizedBox(height: 6),
-          Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: top5.map((c) {
-              final catId = (c as dynamic).id as String;
-              final catName = (c as dynamic).name as String;
-              return GestureDetector(
-              onTap: () => setState(() => _categoryId = catId),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: _categoryId == catId ? AppColors.primary : AppColors.cardFor(context),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: _categoryId == catId ? AppColors.primary : AppColors.borderFor(context)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(categoryIconFor(c as dynamic, allCategories: store.categories), size: 14, color: _categoryId == catId ? Colors.white : AppColors.textSecondaryFor(context)),
-                    const SizedBox(width: 4),
-                    Text(tCat(context, catName), style: TextStyle(fontSize: 12, color: _categoryId == catId ? Colors.white : AppColors.textFor(context))),
-                  ],
-                ),
-              ),
-            );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildTagSelector(BuildContext context, FinanceStore store) {
     final availableTags = store.tags.map((t) => t.name).toList();
     final customTags = _tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
@@ -689,7 +690,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('operations.tags'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+        Text(context.tr('operations.tags'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 8),
         if (availableTags.isNotEmpty || allTags.isNotEmpty)
           Wrap(
@@ -697,7 +698,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             runSpacing: 4,
             children: [
               ...allTags.map((t) => Chip(
-                label: Text('#$t', style: TextStyle(fontSize: 12, color: Colors.white)),
+                label: Text('#$t', style: TextStyle(fontSize: 13, color: Colors.white)),
                 backgroundColor: AppColors.primary,
                 deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
                 onDeleted: () {
@@ -724,7 +725,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               hintText: context.tr('tags.add_tag'),
             ),
-            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: TextStyle(fontSize: 14)))).toList(),
+            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: TextStyle(fontSize: 15)))).toList(),
             onChanged: (v) {
               if (v != null && !_selectedTags.contains(v)) {
                 setState(() => _selectedTags.add(v));
@@ -736,12 +737,12 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         const SizedBox(height: 4),
         TextField(
           controller: _tagsCtrl,
-          style: TextStyle(fontSize: 13, color: AppColors.textFor(context)),
+          style: TextStyle(fontSize: 14, color: AppColors.textFor(context)),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.cardFor(context),
             hintText: context.tr('tags.custom_tag_hint'),
-            hintStyle: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
+            hintStyle: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
@@ -781,7 +782,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   'name': cat != null ? tCat(context, cat.name) : '',
                   'pct': '${forecastPct.round()}',
                 }),
-                style: TextStyle(fontSize: 12, color: AppColors.textFor(context)),
+                style: TextStyle(fontSize: 13, color: AppColors.textFor(context)),
               ),
             ),
           ],
@@ -855,7 +856,7 @@ class _TimeWheelState extends State<_TimeWheel> {
               child: Text(
                 index.toString().padLeft(2, '0'),
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 19,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                   color: selected ? AppColors.primary : AppColors.textSecondaryFor(context),
                 ),

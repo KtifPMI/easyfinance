@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -75,7 +75,7 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
   Widget _sectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+      child: Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
     );
   }
 
@@ -91,8 +91,8 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(context.tr(label), style: TextStyle(fontSize: 14, color: AppColors.textFor(context)))),
-                Text('$displayVal${suffix != null ? ' $suffix' : '%'}', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                Expanded(child: Text(context.tr(label), style: TextStyle(fontSize: 15, color: AppColors.textFor(context)))),
+                Text('$displayVal${suffix != null ? ' $suffix' : '%'}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary)),
               ],
             ),
             SliderTheme(

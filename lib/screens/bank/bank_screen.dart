@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -35,14 +35,14 @@ class BankScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    Text(context.tr('home.total_balance'), style: TextStyle(color: Colors.white70, fontSize: 14)),
                     const SizedBox(height: 4),
-                    Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+                    Text(store.fmt(store.totalBalance), style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ),
               const SizedBox(height: 16),
-              Text(context.tr('accounts.title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('accounts.title'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               const SizedBox(height: 8),
               if (store.accounts.isEmpty)
                 Padding(
@@ -67,13 +67,13 @@ class BankScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                                if (a.isArchived) Text(context.tr('accounts.archived'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                                Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                                if (a.isArchived) Text(context.tr('accounts.archived'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                               ],
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Text(store.fmt(a.balance, fromCurrency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
+                          Text(store.fmt(a.balance, fromCurrency: a.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense)),
                           const SizedBox(width: 8),
                           Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                         ],

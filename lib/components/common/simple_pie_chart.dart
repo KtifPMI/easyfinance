@@ -1,4 +1,4 @@
-import 'dart:math';
+﻿import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
@@ -55,7 +55,7 @@ class _PiePainter extends CustomPainter {
           final x = center.dx + labelRadius * cos(midAngle);
           final y = center.dy + labelRadius * sin(midAngle);
           final tp = TextPainter(
-            text: TextSpan(text: '$pct%', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+            text: TextSpan(text: '$pct%', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
             textDirection: TextDirection.ltr,
           )..layout();
           tp.paint(canvas, Offset(x - tp.width / 2, y - tp.height / 2));

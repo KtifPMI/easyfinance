@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_hint.dart';
@@ -47,7 +47,7 @@ class MoreScreen extends StatelessWidget {
                   children: [
                     Icon(icon, color: AppColors.primary, size: 24),
                     const SizedBox(width: 16),
-                    Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     const Spacer(),
                     Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                   ],

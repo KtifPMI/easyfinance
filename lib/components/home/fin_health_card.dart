@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
@@ -48,7 +48,7 @@ class FinHealthCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.tr('health.title'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          Text(context.tr('health.title'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -59,8 +59,8 @@ class FinHealthCard extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: Text(context.tr(item.$1), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                        content: SingleChildScrollView(child: Text(context.tr(item.$5), style: TextStyle(fontSize: 14))),
+                        title: Text(context.tr(item.$1), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                        content: SingleChildScrollView(child: Text(context.tr(item.$5), style: TextStyle(fontSize: 15))),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
                         ],
@@ -77,12 +77,12 @@ class FinHealthCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(item.$2, size: 14, color: item.$4),
-                            Text('${item.$3.round()}%', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: item.$4)),
+                            Text('${item.$3.round()}%', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: item.$4)),
                           ],
                         ),
                       ),
                       const SizedBox(height: 3),
-                      Text(context.tr(item.$1), style: TextStyle(fontSize: 9, color: AppColors.textSecondaryFor(context))),
+                      Text(context.tr(item.$1), style: TextStyle(fontSize: 10, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),

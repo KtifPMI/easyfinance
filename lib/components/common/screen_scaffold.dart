@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'app_logo.dart';
 import 'skeleton_loader.dart';
 
@@ -117,7 +117,7 @@ class ScreenScaffold extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
           ),
           Positioned(left: 0, child: left),
           Positioned(right: 0, child: right ?? const SizedBox.shrink()),

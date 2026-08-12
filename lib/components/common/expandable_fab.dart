@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
 class FabAction {
@@ -129,7 +129,7 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
                         color: Colors.black87,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(action.label, style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                      child: Text(action.label, style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
                     ),
                   ),
                   GestureDetector(

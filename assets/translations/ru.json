@@ -620,6 +620,13 @@
   "goals.comments": "Комментарии",
   "goals.goal_completed": "Фин. цель выполнена",
   "goals.choose_date": "Выберите дату",
+  "goals.save_goal_amount": "Сумма накопления",
+  "goals.save_initial": "Уже накоплено",
+  "goals.save_monthly": "Буду откладывать ежемесячно",
+  "goals.save_monthly_hint": "Средняя сумма накопления в месяц",
+  "goals.save_first_date": "Дата начала накопления",
+  "goals.save_target_date": "Дата достижения цели",
+  "goals.save_accounts": "Счета для накопления",
 
   "goal_cat.appliances": "Бытовая техника",
   "goal_cat.home": "Дом",

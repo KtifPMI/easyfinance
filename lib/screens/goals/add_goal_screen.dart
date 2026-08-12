@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
@@ -81,13 +81,25 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         if (g != null) {
           _titleCtrl.text = g.title;
           _totalCtrl.text = g.targetAmount > 0 ? g.targetAmount.toStringAsFixed(0) : '';
+          _initialCtrl.text = g.currentAmount > 0 ? g.currentAmount.toStringAsFixed(0) : '';
+          if (g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) {
+            _monthlyCtrl.text = g.monthlyRecommendation!.toStringAsFixed(0);
+          }
           _type = g.accountId != null ? 'save' : 'pay';
           _currencyId = g.currencyId;
+          if (g.startDate.isNotEmpty) {
+            _firstPaymentDate = DateTime.tryParse(g.startDate);
+          }
           if (g.deadline.isNotEmpty) {
             _targetDate = DateTime.tryParse(g.deadline);
           }
           _isCompleted = g.isCompleted;
           if (g.accountId != null) _selectedAccountIds = [g.accountId!];
+          final cats = _currentCategories(context);
+          if (cats.isNotEmpty) {
+            _categoryId = cats.keys.first;
+            _categoryName = cats[_categoryId]!;
+          }
         }
       }
     }
@@ -227,17 +239,32 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     if (!_canSave) return;
     final store = context.read<FinanceStore>();
     final total = _parseAmount(_totalCtrl.text);
+    final current = _parseAmount(_initialCtrl.text);
+    final startStr = _firstPaymentDate != null
+        ? '${_firstPaymentDate!.year}-${_firstPaymentDate!.month.toString().padLeft(2, '0')}-${_firstPaymentDate!.day.toString().padLeft(2, '0')}'
+        : '';
     final endStr = _targetDate != null
         ? '${_targetDate!.year}-${_targetDate!.month.toString().padLeft(2, '0')}-${_targetDate!.day.toString().padLeft(2, '0')}'
         : '';
     if (_isEditing) {
-      await store.updateGoal(widget.goalId!, title: _titleCtrl.text.trim(), targetAmount: total);
+      await store.updateGoal(
+        widget.goalId!,
+        title: _titleCtrl.text.trim(),
+        targetAmount: total,
+        currentAmount: current,
+        isCompleted: _isCompleted,
+        deadline: endStr,
+        startDate: startStr,
+        accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
+        currencyId: _currencyId,
+      );
     } else {
       await store.addGoal(Goal(
         id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
         title: _titleCtrl.text.trim(),
         targetAmount: total,
-        currentAmount: 0,
+        currentAmount: current,
+        startDate: startStr,
         deadline: endStr,
         isCompleted: _isCompleted,
         accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
@@ -287,7 +314,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 24),
 
             // Блок 1
-            Text(context.tr('goals.main_params'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.main_params'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.want_to')),
@@ -340,7 +367,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 24),
 
             // Блок 2
-            Text(context.tr('goals.financial_links'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.financial_links'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.goal_currency')),
@@ -356,7 +383,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
             const SizedBox(height: 12),
 
-            _label(context.tr('goals.accounts_for_payment')),
+            _label(_flabel(context, 'goals.accounts_for_payment', 'goals.save_accounts')),
             DropdownButtonFormField<String>(
               initialValue: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
               decoration: _decoration(hint: context.tr('goals.select_accounts_hint')),
@@ -366,14 +393,15 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               },
             ),
             const SizedBox(height: 4),
-            Text(context.tr('goals.debt_label', namedArgs: {'currency': _currencyLabel(currencies)}), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            if (_type == 'pay')
+              Text(context.tr('goals.debt_label', namedArgs: {'currency': _currencyLabel(currencies)}), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             const SizedBox(height: 24),
 
             // Блок 3
-            Text(context.tr('goals.payment_params'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.payment_params'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
-            _label(context.tr('goals.total_to_pay')),
+            _label(_flabel(context, 'goals.total_to_pay', 'goals.save_goal_amount')),
             TextFormField(
               controller: _totalCtrl,
               focusNode: _totalFocus,
@@ -388,10 +416,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               },
               onChanged: (_) => setState(() {}),
             ),
-            Text(context.tr('goals.calc_hint'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text(context.tr('goals.calc_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 12),
 
-            _label(context.tr('goals.initial_payment')),
+            _label(_flabel(context, 'goals.initial_payment', 'goals.save_initial')),
             TextFormField(
               controller: _initialCtrl,
               decoration: _decoration(),
@@ -406,27 +434,27 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ),
             const SizedBox(height: 12),
 
-            _label(context.tr('goals.first_payment_date')),
+            _label(_flabel(context, 'goals.first_payment_date', 'goals.save_first_date')),
             _datePicker(context, _firstPaymentDate, (d) {
               setState(() => _firstPaymentDate = d);
               _recalcFromMonthly();
             }),
             const SizedBox(height: 12),
 
-            _label(context.tr('goals.monthly_payment')),
+            _label(_flabel(context, 'goals.monthly_payment', 'goals.save_monthly')),
             TextFormField(
               controller: _monthlyCtrl,
               decoration: _decoration(),
               keyboardType: TextInputType.number,
               onChanged: (_) => _recalcFromMonthly(),
             ),
-            Text(context.tr('goals.monthly_hint'), style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+            Text(_flabel(context, 'goals.monthly_hint', 'goals.save_monthly_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
 
             Center(child: Text(context.tr('goals.or'), style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic))),
             const SizedBox(height: 8),
 
-            _label(context.tr('goals.target_date')),
+            _label(_flabel(context, 'goals.target_date', 'goals.save_target_date')),
             _datePicker(context, _targetDate, (d) {
               setState(() => _targetDate = d);
               _recalcFromDate();
@@ -434,7 +462,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 24),
 
             // Блок 4
-            Text(context.tr('goals.additional'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.additional'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.comments')),
@@ -492,8 +520,12 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   Widget _label(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Text(text, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+      child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
     );
+  }
+
+  String _flabel(BuildContext context, String payKey, String saveKey) {
+    return context.tr(_type == 'save' ? saveKey : payKey);
   }
 
   InputDecoration _decoration({String? hint, Widget? suffix}) {

@@ -510,6 +510,13 @@
   "goals.comments": "Yorumlar",
   "goals.goal_completed": "Hedef tamamlandı",
   "goals.choose_date": "Tarih seçin",
+  "goals.save_goal_amount": "Birikim tutarı",
+  "goals.save_initial": "Zaten birikmiş",
+  "goals.save_monthly": "Aylık biriktireceğim",
+  "goals.save_monthly_hint": "Aylık ortalama birikim tutarı",
+  "goals.save_first_date": "Birikim başlangıç tarihi",
+  "goals.save_target_date": "Hedef tarih",
+  "goals.save_accounts": "Birikim hesapları",
 
   "goal_cat.appliances": "Beyaz eşya",
   "goal_cat.home": "Ev",

@@ -266,6 +266,10 @@ class FinanceStore extends ChangeNotifier {
   double get totalBalance => _accounts
       .where((a) => a.includeInTotal && !a.isArchived)
       .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(a.balance, a.currency, 'RUB', _rates));
+
+  double get moneyBalance => _accounts
+      .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
+      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(a.balance, a.currency, 'RUB', _rates));
   double _amountInRub(Operation o) {
     final acc = getAccount(o.accountId);
     final from = acc?.currency ?? o.currency;
@@ -909,7 +913,7 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
-  Map<String, dynamic> _buildOperationPayload(Operation op, {String? existingId, String? createdAt, String? updatedAt}) {
+  Map<String, dynamic> _buildOperationPayload(Operation op, {String? existingId, String? createdAt, String? updatedAt, String? deletedAt}) {
     final now = DateTime.now();
     final operationDate = DateTime.tryParse(op.date) ?? now;
     final dateStr = formatApiDateTime(operationDate);
@@ -937,9 +941,10 @@ class FinanceStore extends ChangeNotifier {
       if (op.tags != null) 'tags': op.tags,
       'accepted': true,
       if (existingId == null) 'client_id': clientIdNum,
+      if (deletedAt != null) 'state': '2',
       'created_at': created,
       'updated_at': updated,
-      'deleted_at': null,
+      'deleted_at': deletedAt,
     };
   }
 
@@ -984,6 +989,17 @@ class FinanceStore extends ChangeNotifier {
     _operations.insert(0, op);
     _recalcAccountBalances();
     _recalcBudgetSpent();
+    if (op.type != 'transfer' && op.categoryId != null) {
+      final hasBudget = _budgets.any((b) => b.categoryId == op.categoryId && !b.isDeleted);
+      if (!hasBudget) {
+        await addBudget(Budget(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          categoryId: op.categoryId!,
+          limit: 0,
+        ));
+        _error = null;
+      }
+    }
     _generateRecommendations();
     await _saveCache();
     if (_rates.isNotEmpty) {
@@ -1067,7 +1083,7 @@ class FinanceStore extends ChangeNotifier {
             'updated_at': updatedAt,
             'deleted_at': null,
           }]
-        });
+        }, operationId: op.id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -1103,13 +1119,9 @@ class FinanceStore extends ChangeNotifier {
     }
     if (authService.isAuthenticated) {
       try {
-        await authService.apiService.setOperation({
-          'operations': [{
-            'id': op.id,
-            'state': '2',
-            'deleted_at': formatApiDateTime(),
-          }]
-        });
+        final now = formatApiDateTime();
+        final payload = _buildOperationPayload(op, existingId: op.id, updatedAt: now, deletedAt: now);
+        await authService.apiService.setOperation({'operations': [payload]}, operationId: op.id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -1726,13 +1738,17 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted, String? title, double? targetAmount}) async {
+  Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId}) async {
     _error = null;
     final idx = _goals.indexWhere((g) => g.id == id);
     if (idx < 0) return;
     final g = _goals[idx];
     final newTitle = title ?? g.title;
     final newTarget = targetAmount ?? g.targetAmount;
+    final newDeadline = deadline ?? g.deadline;
+    final newStartDate = startDate ?? g.startDate;
+    final newAccountId = accountId ?? g.accountId;
+    final newCurrencyId = currencyId ?? g.currencyId;
 
     if (authService.isAuthenticated) {
       try {
@@ -1741,12 +1757,12 @@ class FinanceStore extends ChangeNotifier {
           'amount': newTarget.toStringAsFixed(2),
           'amount_done': (currentAmount ?? g.currentAmount).toStringAsFixed(2),
           'visible': '1',
-          'currency_id': g.currencyId ?? '1',
-          if (g.startDate.isNotEmpty) 'date_begin': g.startDate,
-          if (g.deadline.isNotEmpty) 'date_end': g.deadline,
-          if (g.accountId != null) 'account_id': g.accountId,
+          'currency_id': newCurrencyId ?? '1',
+          if (newStartDate.isNotEmpty) 'date_begin': newStartDate,
+          if (newDeadline.isNotEmpty) 'date_end': newDeadline,
+          if (newAccountId != null) 'account_id': newAccountId,
         }, targetId: id);
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1767,12 +1783,12 @@ class FinanceStore extends ChangeNotifier {
             'name': newTitle,
             'type': '4',
             'amount': newTarget.toStringAsFixed(2),
-            if (g.accountId != null) 'account_id': g.accountId,
+            if (newAccountId != null) 'account_id': newAccountId,
             'updated_at': now,
           }]
         }, id: id);
         _error = null;
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1784,7 +1800,7 @@ class FinanceStore extends ChangeNotifier {
     }
 
     if (authService.isAuthenticated) return;
-    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget);
+    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId);
     await _saveGoals();
     notifyListeners();
   }

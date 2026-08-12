@@ -510,6 +510,13 @@
   "goals.comments": "Comentários",
   "goals.goal_completed": "Objetivo concluído",
   "goals.choose_date": "Escolher data",
+  "goals.save_goal_amount": "Valor da poupança",
+  "goals.save_initial": "Já poupado",
+  "goals.save_monthly": "Vou poupar mensalmente",
+  "goals.save_monthly_hint": "Valor médio de poupança mensal",
+  "goals.save_first_date": "Data de início da poupança",
+  "goals.save_target_date": "Data alvo",
+  "goals.save_accounts": "Contas de poupança",
 
   "goal_cat.appliances": "Eletrodomésticos",
   "goal_cat.home": "Casa",

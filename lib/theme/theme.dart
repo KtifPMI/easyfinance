@@ -12,7 +12,7 @@ class AppColors {
 
   static const income = Color(0xFF2E7D32);
   static const expense = Color(0xFFD32F2F);
-  static const transfer = teal;
+  static const transfer = Color(0xFF1565C0);
   static const background = Color(0xFFF5F8F8);
   static const card = Color(0xFFFFFFFF);
   static const text = Color(0xFF1A1C1E);

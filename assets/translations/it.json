@@ -510,6 +510,13 @@
   "goals.comments": "Commenti",
   "goals.goal_completed": "Obiettivo raggiunto",
   "goals.choose_date": "Scegli data",
+  "goals.save_goal_amount": "Importo di risparmio",
+  "goals.save_initial": "Già risparmiato",
+  "goals.save_monthly": "Risparmierò mensilmente",
+  "goals.save_monthly_hint": "Importo medio di risparmio mensile",
+  "goals.save_first_date": "Data di inizio risparmio",
+  "goals.save_target_date": "Data obiettivo",
+  "goals.save_accounts": "Conti di risparmio",
 
   "goal_cat.appliances": "Elettrodomestici",
   "goal_cat.home": "Casa",

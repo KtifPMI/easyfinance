@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -58,9 +58,9 @@ class RecommendationsScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                            Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                             const SizedBox(height: 4),
-                            Text(desc, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                            Text(desc, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                             if (r.actionType != null) ...[
                               const SizedBox(height: 8),
                               _ActionButton(r: r, store: store),
@@ -115,7 +115,7 @@ class _ActionButton extends StatelessWidget {
     return OutlinedButton.icon(
       onPressed: onTap,
       icon: Icon(Icons.add, size: 16, color: AppColors.primary),
-      label: Text(label, style: TextStyle(fontSize: 13, color: AppColors.primary)),
+      label: Text(label, style: TextStyle(fontSize: 14, color: AppColors.primary)),
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         side: BorderSide(color: AppColors.primary),

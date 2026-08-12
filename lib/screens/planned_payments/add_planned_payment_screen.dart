@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:uuid/uuid.dart';
@@ -130,7 +130,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: selected ? color : AppColors.borderFor(context)),
         ),
-        child: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: selected ? color : AppColors.textSecondaryFor(context))),
+        child: Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: selected ? color : AppColors.textSecondaryFor(context))),
       ),
     );
   }
@@ -159,9 +159,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.tr('planned_payments.date'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  Text(context.tr('planned_payments.date'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                   const SizedBox(height: 2),
-                  Text(formatDateLong(_date?.toIso8601String().substring(0, 10) ?? ''), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                  Text(formatDateLong(_date?.toIso8601String().substring(0, 10) ?? ''), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
                 ],
               ),
             ),
@@ -266,7 +266,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             Expanded(
               child: Text(
                 cat != null ? tCat(context, cat.name) : context.tr('planned_payments.category_hint'),
-                style: TextStyle(fontSize: 15, color: cat != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
+                style: TextStyle(fontSize: 16, color: cat != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
               ),
             ),
             Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),

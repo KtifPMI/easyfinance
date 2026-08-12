@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
 class OperationListItem extends StatelessWidget {
@@ -58,22 +58,22 @@ class OperationListItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   if (subtitle != null && subtitle!.isNotEmpty)
-                    Padding(padding: const EdgeInsets.only(top: 2), child: Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
+                    Padding(padding: const EdgeInsets.only(top: 2), child: Text(subtitle!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))),
                   if (tags.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Wrap(
                         spacing: 4,
-                        children: tags.map((t) => Text('#$t', style: TextStyle(fontSize: 11, color: AppColors.primary))).toList(),
+                        children: tags.map((t) => Text('#$t', style: TextStyle(fontSize: 12, color: AppColors.primary))).toList(),
                       ),
                     ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            Text('$_amountPrefix$formattedAmount', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _amountColor(context))),
+            Text('$_amountPrefix$formattedAmount', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _amountColor(context))),
             if (isPending) ...[
               const SizedBox(width: 4),
               Icon(Icons.sync, size: 14, color: AppColors.textSecondary),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,8 +51,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadKopeksStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    final val = prefs.getBool('easyfinance_show_kopeks') ?? false;
-    final opsVal = prefs.getBool('easyfinance_show_kopeks_ops') ?? false;
+    final val = prefs.getBool('easyfinance_show_kopeks') ?? true;
+    final opsVal = prefs.getBool('easyfinance_show_kopeks_ops') ?? true;
     showKopeks = val;
     showKopeksInOps = opsVal;
     if (mounted) setState(() { _kopeksEnabled = val; _kopeksInOpsEnabled = opsVal; });
@@ -68,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           _profileSection(context),
           const SizedBox(height: 8),
-          Text(context.tr('settings.app_section'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('settings.app_section'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           _langItem(context),
           _darkModeItem(context),
@@ -88,7 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(context.tr('settings.check_updates'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                    Text(context.tr('settings.check_updates'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
                     Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
                   ],
                 ),
@@ -111,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     Icon(Icons.logout, color: AppColors.expense, size: 20),
                     const SizedBox(width: 12),
-                    Text(context.tr('settings.logout'), style: TextStyle(fontSize: 15, color: AppColors.expense)),
+                    Text(context.tr('settings.logout'), style: TextStyle(fontSize: 16, color: AppColors.expense)),
                   ],
                 ),
               ),
@@ -133,8 +133,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
-            Text(value, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+            Text(title, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+            Text(value, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           ],
         ),
       ),
@@ -153,8 +153,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('settings.language'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
-              Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+              Text(context.tr('settings.language'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+              Text(label, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),
@@ -171,7 +171,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(context.tr('settings.dark_mode'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Text(context.tr('settings.dark_mode'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
             Switch(
               value: themeStore.isDark,
               onChanged: (_) => themeStore.toggle(),
@@ -191,7 +191,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(context.tr('settings.pin_code'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Text(context.tr('settings.pin_code'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
             Switch(
               value: _pinEnabled,
               onChanged: (v) async {
@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(context.tr('settings.show_kopeks'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Text(context.tr('settings.show_kopeks'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
             Switch(
               value: _kopeksEnabled,
               onChanged: (v) async {
@@ -246,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(context.tr('settings.show_kopeks_ops'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Text(context.tr('settings.show_kopeks_ops'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
             Switch(
               value: _kopeksInOpsEnabled,
               onChanged: (v) async {
@@ -302,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('settings.start_screen'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              Text(context.tr('settings.start_screen'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -349,7 +349,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('profile.title'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+        Text(context.tr('profile.title'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 8),
         _infoItem(context.tr('profile.name'), name),
         _infoItem('Email', email),
@@ -371,7 +371,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Icon(Icons.support_agent, color: AppColors.primary, size: 20),
               const SizedBox(width: 12),
-              Text(context.tr('settings.support'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              Text(context.tr('settings.support'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
             ],
           ),
         ),
@@ -408,7 +408,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Icon(Icons.file_download_outlined, color: AppColors.primary, size: 20),
               const SizedBox(width: 12),
-              Text(context.tr('settings.export_csv'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              Text(context.tr('settings.export_csv'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
             ],
           ),
         ),

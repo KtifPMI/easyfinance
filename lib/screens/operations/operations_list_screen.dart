@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/expandable_fab.dart';
@@ -152,7 +152,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           ops.isEmpty
                               ? context.tr('filters.no_results')
                               : context.tr('filters.count', namedArgs: {'count': ops.length.toString()}),
-                          style: TextStyle(fontSize: 13, color: ops.isEmpty ? AppColors.warning : AppColors.textSecondaryFor(context)),
+                          style: TextStyle(fontSize: 14, color: ops.isEmpty ? AppColors.warning : AppColors.textSecondaryFor(context)),
                         ),
                       ),
                       GestureDetector(
@@ -161,7 +161,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           _reportCategoryId = null;
                           _sortByInputTime = false;
                         }),
-                        child: Text(context.tr('filters.reset'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                        child: Text(context.tr('filters.reset'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
                       ),
                     ],
                   ),
@@ -176,7 +176,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(top: 12, bottom: 4),
-                      child: Text(formatDayLabel(entry.key, context), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+                      child: Text(formatDayLabel(entry.key, context), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -323,7 +323,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           setSheetState(() {});
                         },
                         secondary: Icon(_accountIcon(a.icon), color: _parseColor(a.color)),
-                        title: Text(a.name, style: const TextStyle(fontSize: 14)),
+                        title: Text(a.name, style: const TextStyle(fontSize: 15)),
                         activeColor: AppColors.primary,
                         controlAffinity: ListTileControlAffinity.leading,
                       );
@@ -376,7 +376,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                     itemBuilder: (_, i) {
                       if (i == 0) return ListTile(
                         leading: Icon(Icons.clear, color: AppColors.danger),
-                        title: Text(context.tr('filters.all_tags'), style: const TextStyle(fontSize: 14)),
+                        title: Text(context.tr('filters.all_tags'), style: const TextStyle(fontSize: 15)),
                         onTap: () {
                           setPickerState(() => _advTagName = null);
                           setSheetState(() {});
@@ -386,7 +386,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       final t = filtered[i - 1];
                       return ListTile(
                         leading: Icon(Icons.label, color: _advTagName == t ? AppColors.primary : AppColors.textSecondaryFor(context)),
-                        title: Text(t, style: TextStyle(fontSize: 14, fontWeight: _advTagName == t ? FontWeight.w600 : FontWeight.w400)),
+                        title: Text(t, style: TextStyle(fontSize: 15, fontWeight: _advTagName == t ? FontWeight.w600 : FontWeight.w400)),
                         trailing: _advTagName == t ? Icon(Icons.check, color: AppColors.primary) : null,
                         onTap: () {
                           setPickerState(() => _advTagName = _advTagName == t ? null : t);
@@ -435,19 +435,19 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(context.tr('filters.advanced_filter'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                          Text(context.tr('filters.advanced_filter'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                           TextButton(
                             onPressed: () {
                               setSheetState(() {});
                               setState(() => _resetAdvFilter());
                             },
-                            child: Text(context.tr('filters.reset'), style: TextStyle(color: AppColors.danger, fontSize: 14)),
+                            child: Text(context.tr('filters.reset'), style: TextStyle(color: AppColors.danger, fontSize: 15)),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
 
-                      Text(context.tr('filters.type'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.type'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
@@ -461,7 +461,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       const SizedBox(height: 20),
 
                       if (store.accounts.length > 1) ...[
-                        Text(context.tr('filters.account'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        Text(context.tr('filters.account'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () => _showAccountPicker(context, store, setSheetState),
@@ -483,7 +483,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                         : _advAccountIds.map((id) => store.accounts.where((a) => a.id == id).firstOrNull?.name ?? id).join(', '),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 14, color: _advAccountIds.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                                    style: TextStyle(fontSize: 15, color: _advAccountIds.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
                                   ),
                                 ),
                                 Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
@@ -494,7 +494,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         const SizedBox(height: 20),
                       ],
 
-                      Text(context.tr('filters.period'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.period'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -509,7 +509,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      Text(context.tr('filters.amount'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.amount'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -532,7 +532,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      Text(context.tr('filters.comment'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.comment'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       TextField(
                         decoration: InputDecoration(hintText: context.tr('filters.comment_hint'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true, prefixIcon: const Icon(Icons.search, size: 20)),
@@ -541,7 +541,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
 
                       if (tags.isNotEmpty) ...[
                         const SizedBox(height: 20),
-                        Text(context.tr('filters.tag'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        Text(context.tr('filters.tag'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () => _showTagPicker(context, tags, setSheetState),
@@ -561,7 +561,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                     _advTagName ?? context.tr('filters.all_tags'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 14, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                                    style: TextStyle(fontSize: 15, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
                                   ),
                                 ),
                                 Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
@@ -583,7 +583,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             setState(() {});
                             Navigator.pop(ctx);
                           },
-                          child: Text(context.tr('filters.apply'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                          child: Text(context.tr('filters.apply'), style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -624,7 +624,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
             Expanded(
               child:               Text(
                 value != null ? formatDate(value.toIso8601String().substring(0, 10)) : label,
-                style: TextStyle(fontSize: 13, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
+                style: TextStyle(fontSize: 14, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
               ),
             ),
             if (value != null)

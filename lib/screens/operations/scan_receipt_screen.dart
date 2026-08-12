@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -497,7 +497,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: AppColors.expense.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-            child: Text(_error!, style: TextStyle(color: AppColors.expense, fontSize: 14)),
+            child: Text(_error!, style: TextStyle(color: AppColors.expense, fontSize: 15)),
           ),
           const SizedBox(height: 16),
         ],
@@ -560,7 +560,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               ),
               child: Text(
                 'OCR: $_ocrSource${_ocrLog != null ? '\n$_ocrLog' : ''}',
-                style: TextStyle(fontSize: 11, color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
+                style: TextStyle(fontSize: 12, color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
               ),
             ),
             const SizedBox(height: 8),
@@ -574,11 +574,11 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.borderFor(context)),
               ),
-              child: Text(_recognizedText!, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+              child: Text(_recognizedText!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
             ),
             const SizedBox(height: 16),
           ],
-          Text(context.tr('scan.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.account'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _selectedAccountId,
@@ -591,7 +591,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             onChanged: (v) => setState(() => _selectedAccountId = v),
           ),
           const SizedBox(height: 16),
-          Text(context.tr('scan.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.category'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             initialValue: _selectedCategoryId,
@@ -604,7 +604,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             onChanged: (v) => setState(() => _selectedCategoryId = v),
           ),
           const SizedBox(height: 16),
-          Text(context.tr('scan.amount'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.amount'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           TextField(
             controller: _amountCtrl,
@@ -614,10 +614,10 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textFor(context)),
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: AppColors.textFor(context)),
           ),
           const SizedBox(height: 16),
-          Text(context.tr('scan.date'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.date'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           TextField(
             controller: _dateCtrl,
@@ -626,10 +626,10 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-            style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
+            style: TextStyle(fontSize: 16, color: AppColors.textFor(context)),
           ),
           const SizedBox(height: 16),
-          Text(context.tr('scan.comment'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(context.tr('scan.comment'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 4),
           TextField(
             controller: _commentCtrl,
@@ -638,7 +638,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             ),
-            style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
+            style: TextStyle(fontSize: 16, color: AppColors.textFor(context)),
           ),
           const SizedBox(height: 24),
           SizedBox(
@@ -651,7 +651,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(context.tr('scan.add_expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+              child: Text(context.tr('scan.add_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 8),

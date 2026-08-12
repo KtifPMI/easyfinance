@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
+import '../../components/common/grouped_picker_sheet.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/budget.dart';
 import '../../store/finance_store.dart';
@@ -20,7 +21,6 @@ class AddBudgetScreen extends StatefulWidget {
 
 class _AddBudgetScreenState extends State<AddBudgetScreen> {
   final _limitCtrl = TextEditingController();
-  final _searchCtrl = TextEditingController();
   String? _categoryId;
   String _typeFilter = 'expense';
 
@@ -33,8 +33,14 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
   @override
   void dispose() {
     _limitCtrl.dispose();
-    _searchCtrl.dispose();
     super.dispose();
+  }
+
+  void _switchType(String type) {
+    setState(() {
+      _typeFilter = type;
+      _categoryId = null;
+    });
   }
 
   void _save() {
@@ -50,27 +56,85 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
     Navigator.pop(context);
   }
 
+  Future<void> _pickCategory(FinanceStore store) async {
+    final existingIds = store.budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
+    final cats = store.categories.where((c) => c.type == _typeFilter && !existingIds.contains(c.id)).toList();
+    if (cats.isEmpty) return;
+    final result = await GroupedPickerSheet.show<String>(
+      context: context,
+      title: context.tr('operations.category'),
+      items: cats.map((c) => c.id).toList(),
+      labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
+      groupBuilder: (id) {
+        final c = store.categories.firstWhere((c) => c.id == id);
+        if (c.parentId == null || c.parentId!.isEmpty) return '';
+        final parent = store.categories.where((p) => p.id == c.parentId);
+        return parent.isNotEmpty ? parent.first.name : '';
+      },
+      iconBuilder: (id) => categoryIconFor(store.categories.firstWhere((c) => c.id == id), allCategories: store.categories),
+      colorBuilder: (id) => _typeFilter == 'income' ? AppColors.income : AppColors.expense,
+      selectedId: _categoryId,
+    );
+    if (result != null) setState(() => _categoryId = result);
+  }
+
+  Widget _buildCategoryPicker(FinanceStore store) {
+    final selected = store.categories.where((c) => c.id == _categoryId).map((c) => tCat(context, c.name)).firstOrNull;
+    return GestureDetector(
+      onTap: () => _pickCategory(store),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('operations.category'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.cardFor(context),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.borderFor(context)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    selected ?? '',
+                    style: TextStyle(fontSize: 16, color: selected != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)),
+                  ),
+                ),
+                Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondaryFor(context)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _typeTab(String type, String label, Color activeColor) {
+    return GestureDetector(
+      onTap: () => _switchType(type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: _typeFilter == type ? activeColor : AppColors.cardFor(context),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(label, textAlign: TextAlign.center, style: TextStyle(
+          fontSize: 15, fontWeight: FontWeight.w600,
+          color: _typeFilter == type ? Colors.white : AppColors.textFor(context),
+        )),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         final existingIds = store.budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
-        final allCats = store.categories.where((c) => c.type == _typeFilter).toList();
-        final q = _searchCtrl.text.toLowerCase();
-
-        final grouped = <String, List<dynamic>>{};
-        for (final c in allCats.where((c) => !existingIds.contains(c.id) && (q.isEmpty || tCat(context, c.name).toLowerCase().contains(q)))) {
-          String parentName = '';
-          if (c.parentId != null && c.parentId!.isNotEmpty) {
-            final parent = store.categories.where((p) => p.id == c.parentId).firstOrNull;
-            if (parent != null) parentName = parent.name;
-          }
-          final key = parentName.isNotEmpty ? parentName : '-';
-          grouped.putIfAbsent(key, () => []);
-          grouped[key]!.add(c);
-        }
-        final available = grouped.entries.expand((e) => e.value).toList();
-        _categoryId ??= available.isNotEmpty ? (available.first as dynamic).id : null;
+        final available = store.categories.where((c) => c.type == _typeFilter && !existingIds.contains(c.id)).toList();
 
         return ScreenScaffold(
           title: context.tr('budget.new'),
@@ -79,92 +143,17 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _typeFilter = 'expense'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _typeFilter == 'expense' ? AppColors.expense : AppColors.cardFor(context),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(context.tr('operations.type_expense'), textAlign: TextAlign.center, style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600,
-                          color: _typeFilter == 'expense' ? Colors.white : AppColors.textFor(context),
-                        )),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _typeTab('expense', context.tr('operations.type_expense'), AppColors.expense)),
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _typeFilter = 'income'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: _typeFilter == 'income' ? AppColors.income : AppColors.cardFor(context),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(context.tr('operations.type_income'), textAlign: TextAlign.center, style: TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600,
-                          color: _typeFilter == 'income' ? Colors.white : AppColors.textFor(context),
-                        )),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _typeTab('income', context.tr('operations.type_income'), AppColors.income)),
                 ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _searchCtrl,
-                decoration: InputDecoration(
-                  hintText: context.tr('common.search'),
-                  prefixIcon: const Icon(Icons.search, size: 20),
-                  filled: true, fillColor: AppColors.cardFor(context),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                ),
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
+              _buildCategoryPicker(store),
               if (available.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(top: 12),
                   child: Text(context.tr('common.no_results'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
-                )
-              else
-                Expanded(
-                  child: ListView(
-                    children: grouped.entries.map((entry) {
-                      final parentName = entry.key;
-                      final cats = entry.value;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (parentName != '-')
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8, bottom: 4),
-                              child: Text(parentName, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
-                            ),
-                          ...cats.map((c) => RadioListTile<String>(
-                            value: (c as dynamic).id as String,
-                            groupValue: _categoryId,
-                            title: Row(
-                              children: [
-                                Icon(categoryIconFor(c as dynamic, allCategories: store.categories), size: 18, color: _typeFilter == 'income' ? AppColors.income : AppColors.expense),
-                                const SizedBox(width: 8),
-                                Expanded(child: Text(tCat(context, (c as dynamic).name as String), overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14))),
-                              ],
-                            ),
-                            onChanged: (v) => setState(() => _categoryId = v),
-                            activeColor: AppColors.primary,
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                          )),
-                        ],
-                      );
-                    }).toList(),
-                  ),
                 ),
               const SizedBox(height: 16),
               AppInput(label: context.tr('budget.limit'), controller: _limitCtrl, keyboardType: TextInputType.number),

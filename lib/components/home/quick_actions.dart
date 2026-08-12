@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 
@@ -40,7 +40,7 @@ class QuickActions extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 26),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),

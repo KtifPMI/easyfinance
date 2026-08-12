@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -36,8 +36,8 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 20),
           CircleAvatar(radius: 40, backgroundColor: AppColors.primaryLightFor(context), child: Icon(Icons.person, size: 40, color: AppColors.primary)),
           const SizedBox(height: 12),
-          Text(name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-          Text(email, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+          Text(name, style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+          Text(email, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 24),
           _info(context, context.tr('profile.reg_date'), regDate),
           _info(context, context.tr('profile.tariff'), plan),
@@ -66,8 +66,8 @@ class ProfileScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(label, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
+            Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           ],
         ),
       ),

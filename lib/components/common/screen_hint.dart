@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../services/hint_service.dart';
 import '../../theme/theme.dart';
 
@@ -49,7 +49,7 @@ class _ScreenHintState extends State<ScreenHint> {
         children: [
           widget.icon ?? Icon(Icons.lightbulb_outline, color: AppColors.primary, size: 20),
           const SizedBox(width: 10),
-          Expanded(child: Text(widget.text, style: const TextStyle(fontSize: 13))),
+          Expanded(child: Text(widget.text, style: const TextStyle(fontSize: 14))),
           GestureDetector(
             onTap: _dismiss,
             child: Icon(Icons.close, size: 18, color: AppColors.textSecondaryFor(context)),

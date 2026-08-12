@@ -526,6 +526,13 @@
   "goals.comments": "Comentarios",
   "goals.goal_completed": "Objetivo completado",
   "goals.choose_date": "Elegir fecha",
+  "goals.save_goal_amount": "Cantidad de ahorro",
+  "goals.save_initial": "Ya ahorrado",
+  "goals.save_monthly": "Ahorraré mensualmente",
+  "goals.save_monthly_hint": "Importe medio de ahorro mensual",
+  "goals.save_first_date": "Fecha de inicio del ahorro",
+  "goals.save_target_date": "Fecha objetivo",
+  "goals.save_accounts": "Cuentas de ahorro",
 
   "goal_cat.appliances": "Electrodomésticos",
   "goal_cat.home": "Hogar",

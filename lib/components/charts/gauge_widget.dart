@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
@@ -31,9 +31,9 @@ class GaugeWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('${clamped.round()}%', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-            if (label != null) Text(label!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-            if (sublabel != null) Text(sublabel!, style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+            Text('${clamped.round()}%', style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+            if (label != null) Text(label!, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+            if (sublabel != null) Text(sublabel!, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
           ],
         ),
       ),

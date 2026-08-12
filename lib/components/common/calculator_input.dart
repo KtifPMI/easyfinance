@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
 class CalculatorInput extends StatefulWidget {
@@ -128,7 +128,7 @@ class _CalculatorInputState extends State<CalculatorInput> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.label != null) ...[
-          Text(widget.label!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(widget.label!, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
         ],
         Container(
@@ -143,21 +143,21 @@ class _CalculatorInputState extends State<CalculatorInput> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               if (_result.isNotEmpty && _result != _expression)
-                Text(_addSpaces(_result), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-              Text(_expression.isEmpty ? '0' : _formatDisplay(_expression), style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                Text(_addSpaces(_result), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
+              Text(_expression.isEmpty ? '0' : _formatDisplay(_expression), style: TextStyle(fontSize: 33, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
             ],
           ),
         ),
         const SizedBox(height: 8),
-        _buildRow(['÷', '×', '-', '+']),
+        _buildRow(['÷', '7', '8', '9']),
         const SizedBox(height: 4),
-        _buildRow(['7', '8', '9', 'C']),
+        _buildRow(['×', '4', '5', '6']),
         const SizedBox(height: 4),
-        _buildRow(['4', '5', '6', '⌫']),
+        _buildRow(['-', '1', '2', '3']),
         const SizedBox(height: 4),
-        _buildRow(['1', '2', '3', '=']),
+        _buildRow(['+', '0', '.', 'C']),
         const SizedBox(height: 4),
-        _buildRow(['0', '00', '.', '']),
+        _buildRow(['', '⌫', '00', '=']),
       ],
     );
   }
@@ -181,7 +181,7 @@ class _CalculatorInputState extends State<CalculatorInput> {
                 ),
                 child: Center(
                   child: Text(k, style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 19,
                     fontWeight: isOp ? FontWeight.w700 : FontWeight.w500,
                     color: isOp ? AppColors.primary : isSpecial ? AppColors.expense : AppColors.textFor(context),
                   )),

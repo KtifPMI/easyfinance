@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_card.dart';
@@ -50,6 +50,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
         return ScreenScaffold(
           title: context.tr('categories.title'),
           showLogo: false,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddSheet(context, store),
+            child: const Icon(Icons.add),
+          ),
           child: Column(
             children: [
               Padding(
@@ -92,13 +96,19 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         ? Center(child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
                         : SingleChildScrollView(child: Padding(
                             padding: const EdgeInsets.only(top: 8),
-                            child: Column(children: _buildGrouped(context, store, incomes)),
+                            child: Column(children: [
+                              ..._buildFrequent(context, store, 'income'),
+                              ..._buildGrouped(context, store, incomes),
+                            ]),
                           )),
                     expenses.isEmpty
                         ? Center(child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
                         : SingleChildScrollView(child: Padding(
                             padding: const EdgeInsets.only(top: 8),
-                            child: Column(children: _buildGrouped(context, store, expenses)),
+                            child: Column(children: [
+                              ..._buildFrequent(context, store, 'expense'),
+                              ..._buildGrouped(context, store, expenses),
+                            ]),
                           )),
                   ],
                 ),
@@ -138,6 +148,25 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     return result;
   }
 
+  List<Widget> _buildFrequent(BuildContext context, FinanceStore store, String type) {
+    final counts = <String, int>{};
+    for (final op in store.operations.where((o) => o.type == type && !o.isDeleted && o.categoryId != null)) {
+      counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
+    }
+    final top = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    final cats = top
+        .take(5)
+        .map((e) => store.categories.where((c) => c.id == e.key && c.type == type).firstOrNull)
+        .where((c) => c != null)
+        .cast<cat.Category>()
+        .toList();
+    if (cats.isEmpty) return [];
+    return [
+      _groupLabel(context, context.tr('categories.popular')),
+      ...cats.map((c) => _categoryTile(context, store, c)),
+    ];
+  }
+
   String? _rootName(cat.Category c, List<cat.Category> all) {
     cat.Category? current = c;
     final seen = <String>{};
@@ -153,7 +182,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       padding: const EdgeInsets.only(top: 8, bottom: 4, left: 4),
       child: Text(
         tCat(context, name),
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)),
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)),
       ),
     );
   }
@@ -185,9 +214,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                    Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
                     if (isSystem)
-                      Text(context.tr('categories.system'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      Text(context.tr('categories.system'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
@@ -252,7 +281,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(context.tr('categories.new'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(context.tr('categories.new'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 16),
                 AppInput(label: context.tr('categories.name'), controller: nameCtrl),
                 const SizedBox(height: 12),
@@ -334,7 +363,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(context.tr('categories.edit'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(context.tr('categories.edit'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 16),
                 AppInput(label: context.tr('categories.name'), controller: nameCtrl),
                 const SizedBox(height: 12),

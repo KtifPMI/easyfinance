@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -559,7 +559,7 @@ class _DebugScreenState extends State<DebugScreen> {
                         child: Text(
                           m.label,
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: !isGet && !m.apiMethod.endsWith('.get') && m.label != m.apiMethod ? FontWeight.w400 : FontWeight.w500,
                           ),
                         ),
@@ -574,18 +574,18 @@ class _DebugScreenState extends State<DebugScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Text('--- Web (direct) ---', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondaryFor(context))),
+            child: Text('--- Web (direct) ---', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.textSecondaryFor(context))),
           ),
           if (!_webLoggedIn)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               child: Row(
                 children: [
-                  Expanded(child: TextField(controller: _webLoginCtrl, decoration: const InputDecoration(hintText: 'Web login', isDense: true, border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)), style: const TextStyle(fontSize: 13))),
+                  Expanded(child: TextField(controller: _webLoginCtrl, decoration: const InputDecoration(hintText: 'Web login', isDense: true, border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)), style: const TextStyle(fontSize: 14))),
                   const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: _webPassCtrl, obscureText: true, decoration: const InputDecoration(hintText: 'Password', isDense: true, border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)), style: const TextStyle(fontSize: 13))),
+                  Expanded(child: TextField(controller: _webPassCtrl, obscureText: true, decoration: const InputDecoration(hintText: 'Password', isDense: true, border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6)), style: const TextStyle(fontSize: 14))),
                   const SizedBox(width: 8),
-                  SizedBox(height: 36, child: ElevatedButton(onPressed: _loading ? null : _webLogin, child: const Text('Login', style: TextStyle(fontSize: 12)))),
+                  SizedBox(height: 36, child: ElevatedButton(onPressed: _loading ? null : _webLogin, child: const Text('Login', style: TextStyle(fontSize: 13)))),
                 ],
               ),
             )
@@ -594,8 +594,8 @@ class _DebugScreenState extends State<DebugScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
               child: Row(
                 children: [
-                  Expanded(child: Text('Web session: active', style: TextStyle(fontSize: 12, color: Colors.green))),
-                  SizedBox(height: 28, child: TextButton(onPressed: () { context.read<FinanceStore>().apiClient.clearWebSession(); setState(() => _webLoggedIn = false); }, child: const Text('Logout', style: TextStyle(fontSize: 12)))),
+                  Expanded(child: Text('Web session: active', style: TextStyle(fontSize: 13, color: Colors.green))),
+                  SizedBox(height: 28, child: TextButton(onPressed: () { context.read<FinanceStore>().apiClient.clearWebSession(); setState(() => _webLoggedIn = false); }, child: const Text('Logout', style: TextStyle(fontSize: 13)))),
                 ],
               ),
             ),
@@ -606,7 +606,7 @@ class _DebugScreenState extends State<DebugScreen> {
               child: OutlinedButton.icon(
                 onPressed: _loading ? null : () => _callWeb(m.apiMethod),
                 icon: const Icon(Icons.language, size: 18),
-                label: Text(m.label, style: const TextStyle(fontSize: 13)),
+                label: Text(m.label, style: const TextStyle(fontSize: 14)),
               ),
             ),
           )),
@@ -620,7 +620,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 isDense: true, border: const OutlineInputBorder(),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              style: const TextStyle(fontSize: 13),
+              style: const TextStyle(fontSize: 14),
               onSubmitted: _selectedMethod != null && !_selectedMethod!.startsWith('POST ') ? (_) => _callMethod(_selectedMethod!) : null,
             ),
           ),
@@ -634,7 +634,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 isDense: true, border: const OutlineInputBorder(),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
             ),
           ),
           Padding(
@@ -647,7 +647,7 @@ class _DebugScreenState extends State<DebugScreen> {
                 textColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                child: Text(_loading ? 'Sending...' : '▶ POST $_postMethod', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                child: Text(_loading ? 'Sending...' : '▶ POST $_postMethod', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               ),
             ),
           ),
@@ -661,7 +661,7 @@ class _DebugScreenState extends State<DebugScreen> {
                   Expanded(
                     child: Text(
                       _response!.url,
-                      style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace'),
+                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'monospace'),
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -693,7 +693,7 @@ class _DebugScreenState extends State<DebugScreen> {
                             ),
                             child: Text(
                               'HTTP ${_response!.statusCode}',
-                              style: TextStyle(fontSize: 12, color: _statusColor(_response!.statusCode)),
+                              style: TextStyle(fontSize: 13, color: _statusColor(_response!.statusCode)),
                             ),
                           ),
                           const Spacer(),
@@ -714,7 +714,7 @@ class _DebugScreenState extends State<DebugScreen> {
                           _response!.body,
                           style: const TextStyle(
                             fontFamily: 'monospace',
-                            fontSize: 12,
+                            fontSize: 13,
                             color: Color(0xFFD4D4D4),
                             height: 1.5,
                           ),

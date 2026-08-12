@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../models/operation.dart';
@@ -220,7 +220,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                           children: [
                             Icon(Icons.smart_toy_outlined, size: 64, color: AppColors.textSecondaryFor(context)),
                             const SizedBox(height: 16),
-                            Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 16, color: AppColors.textSecondaryFor(context))),
+                            Text(context.tr('ai_assistant.hint'), style: TextStyle(fontSize: 17, color: AppColors.textSecondaryFor(context))),
                           ],
                         ),
                       )
@@ -248,7 +248,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                                         bottomLeft: isUser ? const Radius.circular(12) : Radius.zero,
                                       ),
                                     ),
-                                    child: Text(msg.text, style: TextStyle(color: isUser ? Colors.white : AppColors.textFor(context), fontSize: 14)),
+                                    child: Text(msg.text, style: TextStyle(color: isUser ? Colors.white : AppColors.textFor(context), fontSize: 15)),
                                   ),
                                   if (!isUser && msg.navLabel != null && msg.navRoute != null) ...[
                                     const SizedBox(height: 6),
@@ -266,7 +266,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                                           children: [
                                             Icon(Icons.open_in_new, size: 14, color: AppColors.primary),
                                             const SizedBox(width: 6),
-                                            Text(msg.navLabel!, style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+                                            Text(msg.navLabel!, style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
                                           ],
                                         ),
                                       ),
@@ -331,7 +331,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(color: AppColors.primaryLightFor(context), borderRadius: BorderRadius.circular(16)),
-          child: Text(label, style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w500)),
+          child: Text(label, style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
         ),
       ),
     );

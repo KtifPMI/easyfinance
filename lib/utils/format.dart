@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/operation.dart';
 
-bool showKopeks = false;
-bool showKopeksInOps = false;
+bool showKopeks = true;
+bool showKopeksInOps = true;
 
 String formatApiDateTime([DateTime? dt]) {
   final now = dt ?? DateTime.now();

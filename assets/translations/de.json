@@ -538,6 +538,13 @@
   "goals.comments": "Kommentare",
   "goals.goal_completed": "Ziel erreicht",
   "goals.choose_date": "Datum wählen",
+  "goals.save_goal_amount": "Sparbetrag",
+  "goals.save_initial": "Bereits gespart",
+  "goals.save_monthly": "Ich spare monatlich",
+  "goals.save_monthly_hint": "Durchschnittlicher monatlicher Sparbetrag",
+  "goals.save_first_date": "Startdatum des Sparens",
+  "goals.save_target_date": "Zieldatum",
+  "goals.save_accounts": "Sparkonten",
 
   "goal_cat.appliances": "Haushaltsgeräte",
   "goal_cat.home": "Zuhause",

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class SimpleBarChart extends StatelessWidget {
   final List<({String label, double value, Color color})> slices;
@@ -34,7 +34,7 @@ class SimpleBarChart extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       if (showPercentages && total > 0)
-                        Text('${(s.value / total * 100).round()}%', style: TextStyle(fontSize: 10, color: Colors.grey[500], fontWeight: FontWeight.w600)),
+                        Text('${(s.value / total * 100).round()}%', style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
                       Flexible(
                         child: AnimatedContainer(
@@ -47,7 +47,7 @@ class SimpleBarChart extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(s.label, style: TextStyle(fontSize: 9, color: Colors.grey[600]), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(s.label, style: TextStyle(fontSize: 10, color: Colors.grey[600]), maxLines: 1, overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),

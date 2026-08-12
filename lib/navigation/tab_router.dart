@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
@@ -74,8 +74,8 @@ class _MainTabsState extends State<MainTabs> {
           child: BottomNavigationBar(
             currentIndex: _index,
             onTap: (i) => setState(() => _index = i),
-            selectedLabelStyle: const TextStyle(fontSize: 10),
-            unselectedLabelStyle: const TextStyle(fontSize: 10),
+            selectedLabelStyle: const TextStyle(fontSize: 11),
+            unselectedLabelStyle: const TextStyle(fontSize: 11),
             backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor?.withValues(alpha: 0.85) ?? Colors.white.withValues(alpha: 0.85),
             elevation: 0,
             items: List.generate(6, (i) => BottomNavigationBarItem(
@@ -103,14 +103,14 @@ class _MainTabsState extends State<MainTabs> {
               Expanded(
                 child: Text(
                   context.tr('auth.session_expired'),
-                  style: TextStyle(fontSize: 13, color: AppColors.danger),
+                  style: TextStyle(fontSize: 14, color: AppColors.danger),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/oauth'),
                 child: Text(
                   context.tr('auth.sign_in_again'),
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.danger),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.danger),
                 ),
               ),
             ],

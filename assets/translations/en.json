@@ -290,6 +290,13 @@
   "goals.comments": "Comments",
   "goals.goal_completed": "Goal completed",
   "goals.choose_date": "Choose date",
+  "goals.save_goal_amount": "Savings goal amount",
+  "goals.save_initial": "Already saved",
+  "goals.save_monthly": "I will save monthly",
+  "goals.save_monthly_hint": "Average monthly saving amount",
+  "goals.save_first_date": "Savings start date",
+  "goals.save_target_date": "Target date",
+  "goals.save_accounts": "Saving accounts",
 
   "goal_cat.appliances": "Appliances",
   "goal_cat.home": "Home",

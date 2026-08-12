@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 
@@ -94,7 +94,7 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Expanded(child: Text(widget.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textFor(context)))),
+              Expanded(child: Text(widget.title, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: AppColors.textFor(context)))),
               IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
             ],
           ),
@@ -126,7 +126,7 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
                 children: [
                   if (hasHeader) ...[
                     const SizedBox(height: 12),
-                    Text(entry.key, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
+                    Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
                     const SizedBox(height: 4),
                   ],
                   ...entry.value.map((item) {
@@ -144,8 +144,8 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
                         ),
                         child: Icon(icon, size: 18, color: color ?? AppColors.primary),
                       ) : null,
-                      title: Text(widget.labelBuilder(item), style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, color: AppColors.textFor(context))),
-                      subtitle: subtitle != null ? Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))) : null,
+                      title: Text(widget.labelBuilder(item), style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, color: AppColors.textFor(context))),
+                      subtitle: subtitle != null ? Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))) : null,
                       trailing: isSelected ? Icon(Icons.check_circle, color: AppColors.primary, size: 20) : null,
                       onTap: () => widget.onSelected(item),
                     );

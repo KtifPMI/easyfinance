@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -97,7 +97,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),
-                  Text(monthLabel, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(monthLabel, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
                 ],
               ),
@@ -105,7 +105,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [context.tr('calendar.mon'), context.tr('calendar.tue'), context.tr('calendar.wed'), context.tr('calendar.thu'), context.tr('calendar.fri'), context.tr('calendar.sat'), context.tr('calendar.sun')]
-                    .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context)))))
+                    .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))))
                     .toList(),
               ),
               const SizedBox(height: 8),
@@ -152,7 +152,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       children: [
         Padding(
           padding: const EdgeInsets.only(bottom: 4),
-          child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+          child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
         ),
         ...events.map((e) => _plannedPaymentTile(context, store, e)),
       ],
@@ -162,19 +162,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildDayEvents(BuildContext context, FinanceStore store, List<Operation> ops, List<FinancialEvent> planned) {
     return ListView(
       children: [
-        Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         const SizedBox(height: 8),
         if (ops.isEmpty && planned.isEmpty)
           Padding(padding: const EdgeInsets.only(top: 16), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
         if (planned.isNotEmpty) ...[
-          Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
+          Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
           ...planned.map((e) => _plannedPaymentTile(context, store, e)),
         ],
         if (ops.isNotEmpty) ...[
           if (planned.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 8, bottom: 4),
-              child: Text(context.tr('calendar.operations'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+              child: Text(context.tr('calendar.operations'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
             ),
           ...ops.map((op) => _operationTile(context, store, op)),
         ],
@@ -204,13 +204,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                  Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  Text(e.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                 ],
               ),
             ),
             const SizedBox(width: 4),
-            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: iconColor)),
+            Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: iconColor)),
             PopupMenuButton<String>(
               icon: Icon(Icons.more_vert, size: 20, color: AppColors.textSecondaryFor(context)),
               onSelected: (v) {
@@ -258,13 +258,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                    Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
+              Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
             ],
           ),
         ),
@@ -321,9 +321,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              store.deleteOperation(op.id);
+              await store.deleteOperation(op.id);
+              if (!context.mounted) return;
+              if (store.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
+              }
             },
             child: Text(context.tr('calendar.delete'), style: TextStyle(color: AppColors.expense)),
           ),
@@ -400,7 +404,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   color: isToday ? AppColors.primary : null,
                   shape: BoxShape.circle,
                 ),
-                child: Center(child: Text('$day', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isToday ? Colors.white : AppColors.textFor(context)))),
+                child: Center(child: Text('$day', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isToday ? Colors.white : AppColors.textFor(context)))),
               ),
               if (hasOps || hasPlanned)
                 Row(

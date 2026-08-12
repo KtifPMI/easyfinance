@@ -105,16 +105,16 @@ class Goal {
     currencyId: json['currencyId'] as String?,
   );
 
-  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount}) =>
+  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId}) =>
       Goal(
         id: id, title: title ?? this.title, targetAmount: targetAmount ?? this.targetAmount,
         currentAmount: currentAmount ?? this.currentAmount,
-        startDate: startDate,
-        deadline: deadline, icon: icon, color: color,
+        startDate: startDate ?? this.startDate,
+        deadline: deadline ?? this.deadline, icon: icon, color: color,
         monthlyRecommendation: monthlyRecommendation,
         isCompleted: isCompleted ?? this.isCompleted,
-        accountId: accountId, transferAccountId: transferAccountId,
-        currencyId: currencyId,
+        accountId: accountId ?? this.accountId, transferAccountId: transferAccountId,
+        currencyId: currencyId ?? this.currencyId,
       );
 
   static String _normalizeDate(dynamic value) {

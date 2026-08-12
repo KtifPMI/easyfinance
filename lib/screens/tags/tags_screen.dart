@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
@@ -74,7 +74,7 @@ class _TagsScreenState extends State<TagsScreen> {
                                 backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                                 child: Icon(Icons.label, color: AppColors.primary, size: 20),
                               ),
-                              title: Text('#${t.name}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                              title: Text('#${t.name}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
                               onTap: () => _showEditSheet(context, store, t),
                               trailing: IconButton(
                                 icon: Icon(Icons.delete_outline, color: AppColors.textSecondaryFor(context), size: 20),
@@ -107,7 +107,7 @@ class _TagsScreenState extends State<TagsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(context.tr('tags.name'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('tags.name'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               const SizedBox(height: 16),
               AppInput(label: context.tr('tags.name'), controller: nameCtrl, hint: context.tr('tags.name_hint')),
               const SizedBox(height: 16),
@@ -164,7 +164,7 @@ class _TagsScreenState extends State<TagsScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(context.tr('tags.new'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('tags.new'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               const SizedBox(height: 16),
               AppInput(label: context.tr('tags.name'), controller: nameCtrl, hint: context.tr('tags.name_hint')),
               const SizedBox(height: 16),

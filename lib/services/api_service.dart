@@ -125,8 +125,8 @@ class ApiService {
     return json;
   }
 
-  Future<void> setOperation(Map<String, dynamic> body) async {
-    await _client.post('operations.set', params: _writeParams(), body: {'request': {'request_data': body}});
+  Future<void> setOperation(Map<String, dynamic> body, {String? operationId}) async {
+    await _client.post('operations.set', params: _writeParams(operationId != null ? {'operation_id': operationId} : null), body: {'request': {'request_data': body}});
   }
 
   Future<List<Map<String, dynamic>>> getGoals() async {

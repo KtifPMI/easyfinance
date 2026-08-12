@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -123,7 +123,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     children: [
                       Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
                       const SizedBox(width: 8),
-                      Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                      Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -134,6 +134,25 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                       Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
                     ],
                   ),
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+                  const SizedBox(height: 12),
+                  if (incomeBudgets.isNotEmpty) ...[
+                    Text(context.tr('budget.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.income)),
+                    const SizedBox(height: 4),
+                    _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
+                    _summaryRow(context, 'budget.received', store.fmt(incomeSpent), AppColors.success),
+                    if (incomePlanned > incomeSpent)
+                      _summaryRow(context, 'budget.under_received', store.fmt(incomePlanned - incomeSpent), AppColors.warning),
+                    const SizedBox(height: 12),
+                  ],
+                  if (expenseBudgets.isNotEmpty) ...[
+                    Text(context.tr('budget.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
+                    const SizedBox(height: 4),
+                    _summaryRow(context, 'budget.planned', store.fmt(expensePlanned)),
+                    _summaryRow(context, 'budget.spent_total', store.fmt(expenseSpent), expenseSpent > expensePlanned ? AppColors.expense : null),
+                    _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - expenseSpent), (expensePlanned - expenseSpent) >= 0 ? AppColors.success : AppColors.expense),
+                  ],
                 ],
               ),
             ),
@@ -141,23 +160,14 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           ],
 
           if (incomeBudgets.isNotEmpty) ...[
-            Text(context.tr('budget.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.income)),
-            const SizedBox(height: 4),
-            _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
-            _summaryRow(context, 'budget.received', store.fmt(incomeSpent), AppColors.success),
-            if (incomePlanned > incomeSpent)
-              _summaryRow(context, 'budget.under_received', store.fmt(incomePlanned - incomeSpent), AppColors.warning),
+            Text(context.tr('budget.income'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.income)),
             const SizedBox(height: 8),
             ...incomeBudgets.map((b) => _budgetItem(context, b, store)),
             const SizedBox(height: 12),
           ],
 
           if (expenseBudgets.isNotEmpty) ...[
-            Text(context.tr('budget.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
-            const SizedBox(height: 4),
-            _summaryRow(context, 'budget.planned', store.fmt(expensePlanned)),
-            _summaryRow(context, 'budget.spent_total', store.fmt(expenseSpent), expenseSpent > expensePlanned ? AppColors.expense : null),
-            _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - expenseSpent), (expensePlanned - expenseSpent) >= 0 ? AppColors.success : AppColors.expense),
+            Text(context.tr('budget.expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.expense)),
             const SizedBox(height: 8),
             ...expenseBudgets.map((b) => _budgetItem(context, b, store)),
           ],
@@ -173,8 +183,8 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(context.tr(labelKey), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color ?? AppColors.textFor(context))),
+          Text(context.tr(labelKey), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+          Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color ?? AppColors.textFor(context))),
         ],
       ),
     );
@@ -199,10 +209,10 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     const SizedBox(width: 8),
                   ],
                   Expanded(
-                    child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(width: 8),
-                  Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                  Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
@@ -245,8 +255,8 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('budget.forecast'), style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
-                  Text('${forecastPct.round()}%', style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+                  Text(context.tr('budget.forecast'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  Text('${forecastPct.round()}%', style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
                 ],
               ),
             ],
@@ -278,11 +288,11 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                                 if (g.isCompleted)
-                                  Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600))
+                                  Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 13, color: AppColors.success, fontWeight: FontWeight.w600))
                                 else
-                                  Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                  Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                               ],
                             ),
                           ),
@@ -293,7 +303,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-                                child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+                                child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
                               ),
                             ),
                           IconButton(
@@ -307,7 +317,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                       const SizedBox(height: 8),
                       ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
                       const SizedBox(height: 4),
-                      Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 11, color: AppColors.textSecondaryFor(context))),
+                      Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),
@@ -446,7 +456,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(b.name ?? store.getCategory(b.categoryId)?.name ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(b.name ?? store.getCategory(b.categoryId)?.name ?? '', overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             TextField(
               controller: limitCtrl,
@@ -549,9 +559,9 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 4),
-        Text(formattedAmount, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color)),
+        Text(formattedAmount, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: color)),
       ],
     );
   }

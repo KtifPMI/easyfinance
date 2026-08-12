@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
 class AppChip extends StatelessWidget {
@@ -20,7 +20,7 @@ class AppChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: active ? (activeColor ?? AppColors.primary) : AppColors.borderFor(context)),
         ),
-        child: Text(label, style: TextStyle(fontSize: 13, color: active ? Colors.white : AppColors.textFor(context))),
+        child: Text(label, style: TextStyle(fontSize: 14, color: active ? Colors.white : AppColors.textFor(context))),
       ),
     );
   }

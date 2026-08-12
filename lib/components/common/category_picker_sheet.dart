@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -140,7 +140,7 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
                           const SizedBox(width: 4),
                           Text(
                             _typeFilter == 'income' ? context.tr('budget.income') : context.tr('budget.expense'),
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _typeFilter == 'income' ? AppColors.success : AppColors.expense),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: _typeFilter == 'income' ? AppColors.success : AppColors.expense),
                           ),
                         ],
                       ),
@@ -162,7 +162,7 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
                     if (entry.key != '-')
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                        child: Text(entry.key, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+                        child: Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                       ),
                     ...entry.value.map((c) {
                       final catId = c.id as String;
@@ -179,7 +179,7 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
                           ),
                           child: Icon(categoryIconFor(c, allCategories: widget.store.categories), size: 18, color: color),
                         ),
-                        title: Text(tCat(context, catName), style: TextStyle(fontSize: 14, fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
+                        title: Text(tCat(context, catName), style: TextStyle(fontSize: 15, fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
                         trailing: selected ? Icon(Icons.check, color: AppColors.primary, size: 20) : null,
                         onTap: () => Navigator.pop(context, catId),
                         dense: true,

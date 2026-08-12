@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
@@ -43,15 +43,19 @@ class TemplatesScreen extends StatelessWidget {
                         size: 20,
                       ),
                     ),
-                    title: Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    subtitle: Text(typeLabel, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    title: Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    subtitle: Text(
+                      t.amount > 0 ? '$typeLabel · ${store.fmt(t.amount)}' : typeLabel,
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)),
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (t.amount > 0)
                           Text('${t.type == 'income' ? '+' : '-'}${store.fmt(t.amount)}',
                               maxLines: 1, softWrap: false,
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600,
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
                                   color: t.type == 'income' ? AppColors.income : AppColors.expense)),
                         const SizedBox(width: 4),
                         IconButton(
@@ -167,7 +171,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
                 AppInput(label: context.tr('templates.amount'), controller: _amountCtrl, keyboardType: TextInputType.number),
                 const SizedBox(height: 16),
                 if (_type != 'transfer') ...[
-                  Text(context.tr('operations.account'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                  Text(context.tr('operations.account'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _accountId,
@@ -180,7 +184,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
                     onChanged: (v) => setState(() => _accountId = v),
                   ),
                   const SizedBox(height: 16),
-                  Text(context.tr('operations.category'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                  Text(context.tr('operations.category'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _categoryId,
@@ -217,7 +221,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
             border: Border.all(color: active ? AppColors.primary : AppColors.borderFor(context)),
           ),
           child: Text(label, textAlign: TextAlign.center, style: TextStyle(
-            fontSize: 14, fontWeight: FontWeight.w600,
+            fontSize: 15, fontWeight: FontWeight.w600,
             color: active ? Colors.white : AppColors.textFor(context),
           )),
         ),

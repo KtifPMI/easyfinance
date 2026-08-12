@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,12 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 48),
                       const AppLogo.hero(),
                       const SizedBox(height: 20),
-                      Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
+                      Text(context.tr('auth.subtitle'), style: TextStyle(fontSize: 16, color: AppColors.textSecondaryFor(context))),
                       const SizedBox(height: 40),
                       Text(
                         context.tr('auth.description'),
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondaryFor(context), fontSize: 14),
+                        style: TextStyle(color: AppColors.textSecondaryFor(context), fontSize: 15),
                       ),
                       const SizedBox(height: 48),
                       AppButton(

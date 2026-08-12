@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -149,12 +149,12 @@ class _PinScreenState extends State<PinScreen> {
             const SizedBox(height: 24),
             const AppLogo(height: 48),
             const SizedBox(height: 20),
-            Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+            Text(title, style: TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
             const SizedBox(height: 32),
             _buildDots(),
             if (_error.isNotEmpty) ...[
               const SizedBox(height: 12),
-              Text(_error, style: TextStyle(color: AppColors.expense, fontSize: 13)),
+              Text(_error, style: TextStyle(color: AppColors.expense, fontSize: 14)),
             ],
             const SizedBox(height: 48),
             _buildKeypad(),
@@ -166,7 +166,7 @@ class _PinScreenState extends State<PinScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
                     context.tr('auth.forgot_pin'),
-                    style: TextStyle(color: AppColors.primary, fontSize: 13),
+                    style: TextStyle(color: AppColors.primary, fontSize: 14),
                   ),
                 ),
               ),
@@ -230,7 +230,7 @@ class _PinScreenState extends State<PinScreen> {
                 alignment: Alignment.center,
                 child: d == '⌫'
                     ? Icon(Icons.backspace_outlined, color: AppColors.textSecondaryFor(context))
-                    : Text(d, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500)),
+                    : Text(d, style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500)),
               ),
             );
           }).toList(),

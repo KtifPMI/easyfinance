@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -114,9 +114,9 @@ class UpdateService {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('update.new_version', namedArgs: {'version': update.version}), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(context.tr('update.new_version', namedArgs: {'version': update.version}), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text(context.tr('update.whats_new'), style: const TextStyle(fontSize: 13)),
+            Text(context.tr('update.whats_new'), style: const TextStyle(fontSize: 14)),
           ],
         ),
         actions: [
