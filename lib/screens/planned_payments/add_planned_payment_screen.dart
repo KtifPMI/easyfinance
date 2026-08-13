@@ -5,6 +5,8 @@ import '../../models/financial_event.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
+import '../../components/common/app_button.dart';
+import '../../components/common/screen_scaffold.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class AddPlannedPaymentScreen extends StatefulWidget {
@@ -33,10 +35,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   String? _accountId;
   String? _categoryId;
   final List<bool> _weekdays = List.filled(7, false); // Пн..Вс
-
-  final Color _orange = const Color(0xFFFF8A3D);
-  final Color _teal = AppColors.primary;
-  final Color _mutedBrown = const Color(0xFF6B5B4F);
 
   @override
   void initState() {
@@ -126,77 +124,13 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FinanceStore>();
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F3F5),
-      body: SafeArea(
-        child: Center(
-          child: Container(
-            margin: const EdgeInsets.all(16),
-            constraints: BoxConstraints(maxWidth: 560, maxHeight: MediaQuery.of(context).size.height * 0.92),
-            decoration: BoxDecoration(color: const Color(0xFFF2F3F5), borderRadius: BorderRadius.circular(16)),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                _header(),
-                Container(height: 2, color: _orange),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: _body(context, store),
-                  ),
-                ),
-                _footer(context),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _header() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              context.tr('add_planned.title'),
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF3A3A3A), letterSpacing: 0.3),
-            ),
-          ),
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.close, size: 22, color: Color(0xFF3A3A3A)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _footer(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.tr('planned_payments.cancel'), style: TextStyle(color: _mutedBrown, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(width: 12),
-          OutlinedButton(
-            onPressed: _save,
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: _teal),
-              foregroundColor: _teal,
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: Text(context.tr('planned_payments.save'), style: TextStyle(fontWeight: FontWeight.w700)),
-          ),
-        ],
-      ),
+    return ScreenScaffold(
+      title: context.tr('add_planned.title'),
+      showLogo: false,
+      actions: [
+        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+      ],
+      child: _body(context, store),
     );
   }
 
@@ -206,7 +140,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       children: [
         Align(
           alignment: Alignment.topRight,
-          child: Text(context.tr('add_planned.open_hint'), style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+          child: Text(context.tr('add_planned.open_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
         ),
         const SizedBox(height: 12),
         // Верхняя строка: сумма / дата / время
@@ -242,27 +176,51 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           ],
         ),
         const SizedBox(height: 12),
-          _categoryField(context, store),
-          const SizedBox(height: 12),
-          _tagsField(context),
-          const SizedBox(height: 12),
-          _commentField(context),
-          const SizedBox(height: 12),
-          _repeatField(context),
+        _categoryField(context, store),
+        const SizedBox(height: 12),
+        _tagsField(context),
+        const SizedBox(height: 12),
+        _commentField(context),
+        const SizedBox(height: 12),
+        _repeatField(context),
         const SizedBox(height: 8),
         _repeatBlock(context),
+        const SizedBox(height: 24),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  side: BorderSide(color: AppColors.border),
+                  foregroundColor: AppColors.textSecondary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(context.tr('planned_payments.cancel')),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: AppButton(
+                title: context.tr('planned_payments.save'),
+                onPressed: _save,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
   Widget _hint(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 2),
-        child: Text(text, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+        child: Text(text, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
       );
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 4),
-        child: Text(text, style: const TextStyle(fontSize: 12, color: Color(0xFF3A3A3A))),
+        child: Text(text, style: TextStyle(fontSize: 13, color: AppColors.textFor(context))),
       );
 
   Widget _amountField(BuildContext context) => Column(
@@ -270,7 +228,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         children: [
           _label(context.tr('planned_payments.amount') + ':'),
           Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+            decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
             child: Row(
               children: [
                 Expanded(
@@ -283,7 +241,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.calculate_outlined, size: 20, color: Colors.grey),
+                  icon: Icon(Icons.calculate_outlined, size: 20, color: AppColors.textSecondaryFor(context)),
                   onPressed: _evalAmount,
                   tooltip: context.tr('add_planned.calculator'),
                 ),
@@ -309,8 +267,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
-              child: Text(_date != null ? _fmt(_date!) : '—', style: const TextStyle(fontSize: 15)),
+              decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
+              child: Text(_date != null ? _fmt(_date!) : '—', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
             ),
           ),
         ],
@@ -325,7 +283,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+                  decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
                   child: TextField(
                     controller: _hourCtrl,
                     keyboardType: TextInputType.number,
@@ -339,7 +297,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+                  decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
                   child: TextField(
                     controller: _minuteCtrl,
                     keyboardType: TextInputType.number,
@@ -413,7 +371,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         children: [
           _label(context.tr('planned_payments.tags') + ':'),
           Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
+            decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
             child: Row(
               children: [
                 Expanded(
@@ -422,11 +380,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
                     decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
                   ),
                 ),
-                const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.chat_bubble_outline, size: 20, color: Colors.grey)),
+                Padding(padding: const EdgeInsets.only(right: 12), child: Icon(Icons.chat_bubble_outline, size: 20, color: AppColors.textSecondaryFor(context))),
               ],
             ),
           ),
-            _hint(context.tr('add_planned.name_example')),
+          _hint(context.tr('add_planned.name_example')),
         ],
       );
 
@@ -436,9 +394,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           _label(context.tr('planned_payments.name') + ' ' + context.tr('add_planned.name_required') + ':'),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.cardFor(context),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _commentError ? Colors.red : Colors.grey.shade300),
+              border: Border.all(color: _commentError ? AppColors.danger : AppColors.borderFor(context)),
             ),
             child: TextField(
               controller: _commentCtrl,
@@ -451,16 +409,16 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           if (_commentError)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 4),
-              child: Text(context.tr('add_planned.name_required_error'), style: TextStyle(fontSize: 12, color: Colors.red)),
+              child: Text(context.tr('add_planned.name_required_error'), style: TextStyle(fontSize: 12, color: AppColors.danger)),
             ),
         ],
       );
 
   InputDecoration _dropdownDecoration() => InputDecoration(
         filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade300)),
+        fillColor: AppColors.cardFor(context),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.borderFor(context))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.borderFor(context))),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       );
 
@@ -514,12 +472,12 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             children: [
               Checkbox(
                 value: _weekdays[i],
-                activeColor: Colors.red,
+                activeColor: AppColors.primary,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
                 onChanged: (v) => setState(() => _weekdays[i] = v!),
               ),
-              Text(labels[i], style: const TextStyle(fontSize: 13)),
+              Text(labels[i], style: TextStyle(fontSize: 13, color: AppColors.textFor(context))),
             ],
           );
         }),
@@ -541,7 +499,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           Radio<String>(
             value: mode,
             groupValue: _limitMode,
-            activeColor: Colors.red,
+            activeColor: AppColors.primary,
             onChanged: (v) => setState(() => _limitMode = v!),
           ),
           Expanded(child: Text(title, style: const TextStyle(fontSize: 13))),
@@ -554,7 +512,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         child: Container(
           margin: const EdgeInsets.only(left: 8),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
+          decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.borderFor(context))),
           child: TextField(
             controller: _repeatCountCtrl(),
             keyboardType: TextInputType.number,
@@ -578,8 +536,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         child: Container(
           margin: const EdgeInsets.only(left: 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade300)),
-          child: Text(_untilDate != null ? _fmt(_untilDate!) : '', style: const TextStyle(fontSize: 14)),
+          decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.borderFor(context))),
+          child: Text(_untilDate != null ? _fmt(_untilDate!) : '', style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
         ),
       );
 
