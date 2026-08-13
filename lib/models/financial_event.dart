@@ -19,6 +19,7 @@ class FinancialEvent {
   final String? weekDays; // 7 chars, Mon..Sun, '1'/'0'
   final String? dateStart;
   final String? dateEnd;
+  final String? time; // 'HH:MM:SS' from the server, if any
   final List<String> acceptedDates; // 'YYYY-MM-DD' occurrences already confirmed
 
   FinancialEvent({
@@ -42,6 +43,7 @@ class FinancialEvent {
     this.weekDays,
     this.dateStart,
     this.dateEnd,
+    this.time,
     this.acceptedDates = const [],
   });
 
@@ -145,6 +147,7 @@ class FinancialEvent {
     if (weekDays != null) 'weekDays': weekDays,
     if (dateStart != null) 'dateStart': dateStart,
     if (dateEnd != null) 'dateEnd': dateEnd,
+    if (time != null) 'time': time,
     'acceptedDates': acceptedDates,
   };
 
@@ -169,6 +172,7 @@ class FinancialEvent {
     weekDays: json['weekDays'] as String?,
     dateStart: json['dateStart'] as String?,
     dateEnd: json['dateEnd'] as String?,
+    time: json['time'] as String?,
     acceptedDates: (json['acceptedDates'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
   );
 }

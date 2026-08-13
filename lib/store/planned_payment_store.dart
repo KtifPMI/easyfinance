@@ -150,6 +150,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       weekDays: first['week_days']?.toString(),
       dateStart: earliestStartStr,
       dateEnd: dateEnd,
+      time: first['time']?.toString(),
       acceptedDates: acceptedDates,
     );
   }
@@ -342,7 +343,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       'category_id': e.categoryId ?? '',
       'amount': e.amount > 0 ? e.amount.toStringAsFixed(0) : '0',
       'date': date,
-      'time': '00:00:00',
+      'time': e.time ?? '00:00:00',
       'comment': e.comment ?? e.title,
       'type': e.type == 'income' ? '1' : e.type == 'transfer' ? '2' : '0',
       if (e.toAccountId != null) 'transfer_account_id': e.toAccountId,
