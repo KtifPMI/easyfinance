@@ -1,4 +1,4 @@
-{
+﻿{
   "app.title": "EasyFinance",
 
   "tab.home": "Início",
@@ -694,5 +694,8 @@
   "add_planned.repeat": "Repetir",
   "add_planned.calculator": "Calculadora",
   "add_planned.repeat_count": "Repetir várias vezes",
-  "add_planned.repeat_until": "Repetir até uma data"
+  "add_planned.repeat_until": "Repetir até uma data",
+  "add_planned.section_main": "Principal",
+  "add_planned.section_schedule": "Agendamento",
+  "add_planned.section_extra": "Adicional"
 }

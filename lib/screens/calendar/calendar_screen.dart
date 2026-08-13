@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_hint.dart';
-import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
@@ -85,8 +84,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final selectedPlanned = _selectedDate != null ? (plannedByDate[_selectedDate] ?? <FinancialEvent>[]) : <FinancialEvent>[];
         final upcomingPlanned = _selectedDate == null ? _allUpcoming(plannedStore) : <FinancialEvent>[];
 
-        return ScreenScaffold(
-          title: context.tr('calendar.title'),
+        return Scaffold(
+          backgroundColor: AppColors.backgroundFor(context),
+          appBar: AppBar(
+            title: Text(context.tr('calendar.title')),
+            centerTitle: true,
+          ),
           floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: _selectedDate != null
                 ? {'date': _selectedDate!.toIso8601String().substring(0, 10)}
@@ -197,8 +200,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final statusColor = accepted ? AppColors.success : AppColors.expense;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: AppCard(
-        child: Row(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: e),
+        child: AppCard(
+          child: Row(
           children: [
             Container(
               width: 40, height: 40,
@@ -272,7 +278,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
+          body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),

@@ -1,4 +1,4 @@
-{
+﻿{
   "app.title": "EasyFinance",
 
   "tab.home": "Ana Sayfa",
@@ -694,5 +694,8 @@
   "add_planned.repeat": "Tekrarla",
   "add_planned.calculator": "Hesap makinesi",
   "add_planned.repeat_count": "Birden fazla kez tekrarla",
-  "add_planned.repeat_until": "Bir tarihe kadar tekrarla"
+  "add_planned.repeat_until": "Bir tarihe kadar tekrarla",
+  "add_planned.section_main": "Temel",
+  "add_planned.section_schedule": "Zamanlama",
+  "add_planned.section_extra": "Ek"
 }

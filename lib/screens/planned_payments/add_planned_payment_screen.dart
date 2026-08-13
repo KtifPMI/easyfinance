@@ -6,6 +6,7 @@ import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
 import '../../components/common/app_button.dart';
+import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -39,6 +40,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   @override
   void initState() {
     super.initState();
+    _hourCtrl.text = '21';
+    _minuteCtrl.text = '56';
     final e = widget.existing;
     if (e != null) {
       _amountCtrl.text = e.amount > 0 ? e.amount.toStringAsFixed(2) : '';
@@ -51,8 +54,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           ? DateTime.tryParse(e.dateStart!)
           : (e.date.isNotEmpty ? DateTime.tryParse(e.date) : null);
       _date ??= DateTime.now();
-      _hourCtrl.text = '21';
-      _minuteCtrl.text = '56';
+      if (e.time != null && e.time!.length >= 5) {
+        _hourCtrl.text = e.time!.substring(0, 2);
+        _minuteCtrl.text = e.time!.substring(3, 5);
+      }
       _repeatOption = _optionFromPeriod(e.repeatMode);
       if (e.repeatMode > 0) {
         if (e.dateEnd != null && e.dateEnd!.isNotEmpty) {
@@ -68,8 +73,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       }
     } else {
       _date = widget.presetDate != null ? DateTime.tryParse(widget.presetDate!) : DateTime.now();
-      _hourCtrl.text = '21';
-      _minuteCtrl.text = '56';
       _weekdays[2] = true; // Ср по умолчанию
     }
   }
@@ -143,48 +146,50 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           child: Text(context.tr('add_planned.open_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
         ),
         const SizedBox(height: 12),
-        // Верхняя строка: сумма / дата / время
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 3,
-              child: _amountField(context),
+        _section(
+          context.tr('add_planned.section_main'),
+          [
+            _amountField(context),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _typeField(context)),
+                const SizedBox(width: 8),
+                Expanded(flex: 2, child: _accountField(context, store)),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 3,
-              child: _dateField(context),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              flex: 2,
-              child: _timeField(context),
-            ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        _hint(context.tr('add_planned.amount_example')),
-        _hint(context.tr('add_planned.time_hint')),
-        const SizedBox(height: 12),
-        // Счёт + тип операции
-        Row(
-          children: [
-            Expanded(child: _accountField(context, store)),
-            const SizedBox(width: 8),
-            Expanded(child: _typeField(context)),
+            const SizedBox(height: 12),
+            _categoryField(context, store),
           ],
         ),
         const SizedBox(height: 12),
-        _categoryField(context, store),
+        _section(
+          context.tr('add_planned.section_schedule'),
+          [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 3, child: _dateField(context)),
+                const SizedBox(width: 8),
+                Expanded(flex: 2, child: _timeField(context)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _repeatField(context),
+            const SizedBox(height: 8),
+            _repeatBlock(context),
+          ],
+        ),
         const SizedBox(height: 12),
-        _tagsField(context),
-        const SizedBox(height: 12),
-        _commentField(context),
-        const SizedBox(height: 12),
-        _repeatField(context),
-        const SizedBox(height: 8),
-        _repeatBlock(context),
+        _section(
+          context.tr('add_planned.section_extra'),
+          [
+            _tagsField(context),
+            const SizedBox(height: 12),
+            _commentField(context),
+          ],
+        ),
         const SizedBox(height: 24),
         Row(
           children: [
@@ -212,6 +217,17 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       ],
     );
   }
+
+  Widget _section(String title, List<Widget> children) => AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+            const SizedBox(height: 12),
+            ...children,
+          ],
+        ),
+      );
 
   Widget _hint(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 2),
@@ -614,6 +630,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     final weekDays = _buildWeekDays();
     final dayOfMonth = period == 30 ? (_date?.day) : null;
 
+    final hh = _hourCtrl.text.trim().padLeft(2, '0');
+    final mm = _minuteCtrl.text.trim().padLeft(2, '0');
+    final timeStr = '$hh:$mm:00';
+
     final event = FinancialEvent(
       id: widget.existing?.id ?? const Uuid().v4(),
       title: comment.isNotEmpty ? comment : (widget.existing?.title ?? ''),
@@ -631,6 +651,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       weekDays: weekDays,
       dateStart: dateStart,
       dateEnd: dateEnd,
+      time: timeStr,
       enabled: widget.existing?.enabled ?? true,
     );
 

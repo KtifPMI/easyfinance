@@ -789,5 +789,8 @@
   "add_planned.repeat": "Повторить",
   "add_planned.calculator": "Калькулятор",
   "add_planned.repeat_count": "Повторить несколько раз",
-  "add_planned.repeat_until": "Повторить до даты"
+  "add_planned.repeat_until": "Повторить до даты",
+  "add_planned.section_main": "Основное",
+  "add_planned.section_schedule": "Расписание",
+  "add_planned.section_extra": "Дополнительно"
 }
