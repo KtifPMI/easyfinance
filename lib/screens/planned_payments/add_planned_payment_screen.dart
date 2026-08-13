@@ -5,6 +5,7 @@ import '../../models/financial_event.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AddPlannedPaymentScreen extends StatefulWidget {
   final FinancialEvent? existing;
@@ -160,7 +161,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         children: [
           Expanded(
             child: Text(
-              'ДОБАВИТЬ СЕРИЮ ОПЕРАЦИЙ',
+              context.tr('add_planned.title'),
               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF3A3A3A), letterSpacing: 0.3),
             ),
           ),
@@ -181,7 +182,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         children: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Отмена', style: TextStyle(color: _mutedBrown, fontWeight: FontWeight.w600)),
+            child: Text(context.tr('planned_payments.cancel'), style: TextStyle(color: _mutedBrown, fontWeight: FontWeight.w600)),
           ),
           const SizedBox(width: 12),
           OutlinedButton(
@@ -192,7 +193,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: const Text('Сохранить', style: TextStyle(fontWeight: FontWeight.w700)),
+            child: Text(context.tr('planned_payments.save'), style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -205,7 +206,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       children: [
         Align(
           alignment: Alignment.topRight,
-          child: Text('Открывается в новом окне', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+          child: Text(context.tr('add_planned.open_hint'), style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
         ),
         const SizedBox(height: 12),
         // Верхняя строка: сумма / дата / время
@@ -214,7 +215,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           children: [
             Expanded(
               flex: 3,
-              child: _amountField(),
+              child: _amountField(context),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -224,30 +225,30 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             const SizedBox(width: 8),
             Expanded(
               flex: 2,
-              child: _timeField(),
+              child: _timeField(context),
             ),
           ],
         ),
         const SizedBox(height: 6),
-        _hint('Пример: 12 + 33 * 45 <Enter>'),
-        _hint('Если не указывать время операции, то в операцию запишется время момента ее сохранения.'),
+        _hint(context.tr('add_planned.amount_example')),
+        _hint(context.tr('add_planned.time_hint')),
         const SizedBox(height: 12),
         // Счёт + тип операции
         Row(
           children: [
-            Expanded(child: _accountField(store)),
+            Expanded(child: _accountField(context, store)),
             const SizedBox(width: 8),
-            Expanded(child: _typeField()),
+            Expanded(child: _typeField(context)),
           ],
         ),
         const SizedBox(height: 12),
-        _categoryField(store),
-        const SizedBox(height: 12),
-        _tagsField(),
-        const SizedBox(height: 12),
-        _commentField(),
-        const SizedBox(height: 12),
-        _repeatField(),
+          _categoryField(context, store),
+          const SizedBox(height: 12),
+          _tagsField(context),
+          const SizedBox(height: 12),
+          _commentField(context),
+          const SizedBox(height: 12),
+          _repeatField(context),
         const SizedBox(height: 8),
         _repeatBlock(context),
       ],
@@ -264,10 +265,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         child: Text(text, style: const TextStyle(fontSize: 12, color: Color(0xFF3A3A3A))),
       );
 
-  Widget _amountField() => Column(
+  Widget _amountField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Сумма:'),
+          _label(context.tr('planned_payments.amount') + ':'),
           Container(
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
             child: Row(
@@ -284,7 +285,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
                 IconButton(
                   icon: const Icon(Icons.calculate_outlined, size: 20, color: Colors.grey),
                   onPressed: _evalAmount,
-                  tooltip: 'Калькулятор',
+                  tooltip: context.tr('add_planned.calculator'),
                 ),
               ],
             ),
@@ -295,7 +296,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   Widget _dateField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Дата:'),
+          _label(context.tr('planned_payments.date') + ':'),
           InkWell(
             onTap: () async {
               final picked = await showDatePicker(
@@ -315,10 +316,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         ],
       );
 
-  Widget _timeField() => Column(
+  Widget _timeField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Время:'),
+          _label(context.tr('add_planned.time') + ':'),
           Row(
             children: [
               Expanded(
@@ -353,17 +354,17 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         ],
       );
 
-  Widget _accountField(FinanceStore store) {
+  Widget _accountField(BuildContext context, FinanceStore store) {
     final accounts = store.accounts.where((a) => !a.isArchived).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label('Счет:'),
+        _label(context.tr('planned_payments.account') + ':'),
         DropdownButtonFormField<String>(
           value: _accountId,
           isExpanded: true,
           decoration: _dropdownDecoration(),
-          hint: const Text('кошелек (₽)'),
+          hint: Text(context.tr('add_planned.account_hint')),
           items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
           onChanged: (v) => setState(() => _accountId = v),
         ),
@@ -371,35 +372,35 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     );
   }
 
-  Widget _typeField() => Column(
+  Widget _typeField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Тип операции:'),
+          _label(context.tr('add_planned.type') + ':'),
           DropdownButtonFormField<String>(
             value: _type,
             isExpanded: true,
             decoration: _dropdownDecoration(),
-            items: const [
-              DropdownMenuItem(value: 'expense', child: Text('Расход')),
-              DropdownMenuItem(value: 'income', child: Text('Доход')),
-              DropdownMenuItem(value: 'transfer', child: Text('Перевод')),
+            items: [
+              DropdownMenuItem(value: 'expense', child: Text(context.tr('planned_payments.expense'))),
+              DropdownMenuItem(value: 'income', child: Text(context.tr('planned_payments.income'))),
+              DropdownMenuItem(value: 'transfer', child: Text(context.tr('planned_payments.transfer'))),
             ],
             onChanged: (v) => setState(() => _type = v!),
           ),
         ],
       );
 
-  Widget _categoryField(FinanceStore store) {
+  Widget _categoryField(BuildContext context, FinanceStore store) {
     final cats = store.categories.where((c) => c.type == _type).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label('Категория:'),
+        _label(context.tr('planned_payments.category') + ':'),
         DropdownButtonFormField<String>(
           value: _categoryId,
           isExpanded: true,
           decoration: _dropdownDecoration(),
-          hint: const Text('Часто используемые категории', style: TextStyle(fontWeight: FontWeight.w700)),
+          hint: Text(context.tr('planned_payments.category_hint'), style: const TextStyle(fontWeight: FontWeight.w700)),
           items: cats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, overflow: TextOverflow.ellipsis))).toList(),
           onChanged: (v) => setState(() => _categoryId = v),
         ),
@@ -407,10 +408,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     );
   }
 
-  Widget _tagsField() => Column(
+  Widget _tagsField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Метки:'),
+          _label(context.tr('planned_payments.tags') + ':'),
           Container(
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade300)),
             child: Row(
@@ -425,14 +426,14 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
               ],
             ),
           ),
-            _hint('Например: Аренда, Подписка, Аванс'),
+            _hint(context.tr('add_planned.name_example')),
         ],
       );
 
-  Widget _commentField() => Column(
+  Widget _commentField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Название (обязательно):'),
+          _label(context.tr('planned_payments.name') + ' ' + context.tr('add_planned.name_required') + ':'),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -450,7 +451,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           if (_commentError)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 4),
-              child: Text('Название обязательно для заполнения', style: TextStyle(fontSize: 12, color: Colors.red)),
+              child: Text(context.tr('add_planned.name_required_error'), style: TextStyle(fontSize: 12, color: Colors.red)),
             ),
         ],
       );
@@ -463,21 +464,21 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       );
 
-  Widget _repeatField() => Column(
+  Widget _repeatField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('Повторить:'),
+          _label(context.tr('add_planned.repeat') + ':'),
           DropdownButtonFormField<String>(
             value: _repeatOption,
             isExpanded: true,
             decoration: _dropdownDecoration(),
-            items: const [
-              DropdownMenuItem(value: 'none', child: Text('Без повторения')),
-              DropdownMenuItem(value: 'day', child: Text('Каждый день')),
-              DropdownMenuItem(value: 'week', child: Text('Каждую неделю')),
-              DropdownMenuItem(value: 'month', child: Text('Каждый месяц')),
-              DropdownMenuItem(value: 'quarter', child: Text('Каждый квартал')),
-              DropdownMenuItem(value: 'year', child: Text('Каждый год')),
+            items: [
+              DropdownMenuItem(value: 'none', child: Text(context.tr('planned_payments.repeat_none'))),
+              DropdownMenuItem(value: 'day', child: Text(context.tr('planned_payments.repeat_daily'))),
+              DropdownMenuItem(value: 'week', child: Text(context.tr('planned_payments.repeat_weekly'))),
+              DropdownMenuItem(value: 'month', child: Text(context.tr('planned_payments.repeat_monthly'))),
+              DropdownMenuItem(value: 'quarter', child: Text(context.tr('planned_payments.repeat_quarterly'))),
+              DropdownMenuItem(value: 'year', child: Text(context.tr('planned_payments.repeat_yearly'))),
             ],
             onChanged: (v) => setState(() => _repeatOption = v!),
           ),
@@ -487,14 +488,22 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   Widget _repeatBlock(BuildContext context) {
     if (_repeatOption == 'none') return const SizedBox.shrink();
     final children = <Widget>[
-      if (_repeatOption == 'week') _weekdaySelector(),
-      _limitBlock(),
+      if (_repeatOption == 'week') _weekdaySelector(context),
+      _limitBlock(context),
     ];
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: children);
   }
 
-  Widget _weekdaySelector() {
-    const labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  Widget _weekdaySelector(BuildContext context) {
+    final labels = [
+      context.tr('calendar.mon'),
+      context.tr('calendar.tue'),
+      context.tr('calendar.wed'),
+      context.tr('calendar.thu'),
+      context.tr('calendar.fri'),
+      context.tr('calendar.sat'),
+      context.tr('calendar.sun'),
+    ];
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Wrap(
@@ -519,11 +528,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     );
   }
 
-  Widget _limitBlock() => Column(
+  Widget _limitBlock(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _radio('count', 'Повторить несколько раз', _countField()),
-          _radio('until', 'Повторить до даты', _untilField()),
+          _radio('count', context.tr('add_planned.repeat_count'), _countField()),
+          _radio('until', context.tr('add_planned.repeat_until'), _untilField()),
         ],
       );
 
@@ -600,7 +609,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             return v;
           }
           final start = pos;
-          while (pos < s.length && (s[pos].isDigit || s[pos] == '.')) pos++;
+          while (pos < s.length && (s.codeUnitAt(pos) >= 0x30 && s.codeUnitAt(pos) <= 0x39 || s[pos] == '.')) pos++;
           return double.parse(s.substring(start, pos));
         }
 

@@ -754,5 +754,19 @@
   "health.detail": "",
   "health.money": "Money",
   "budget.warning_fmt": "«{name}»: forecast {pct}% of budget. Reduce spending in this category.",
-  "filters.recent": "Recent"
+  "filters.recent": "Recent",
+  "add_planned.title": "ADD OPERATION SERIES",
+  "add_planned.open_hint": "Opens in a new window",
+  "add_planned.amount_example": "Example: 12 + 33 * 45 <Enter>",
+  "add_planned.time_hint": "If you don't specify a time, the operation will use the time it was saved.",
+  "add_planned.time": "Time",
+  "add_planned.type": "Operation type",
+  "add_planned.account_hint": "wallet (₽)",
+  "add_planned.name_example": "Example: Rent, Subscription, Advance",
+  "add_planned.name_required": "(required)",
+  "add_planned.name_required_error": "Name is required",
+  "add_planned.repeat": "Repeat",
+  "add_planned.calculator": "Calculator",
+  "add_planned.repeat_count": "Repeat several times",
+  "add_planned.repeat_until": "Repeat until a date"
 }

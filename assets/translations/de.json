@@ -708,5 +708,19 @@
   "health.detail": "",
   "health.money": "Geld",
   "budget.warning_fmt": "„{name}“: Prognose {pct}% des Budgets. Reduzieren Sie die Ausgaben.",
-  "filters.recent": "Zuletzt"
+  "filters.recent": "Zuletzt",
+  "add_planned.title": "OPERATIONSREIHE HINZUFÜGEN",
+  "add_planned.open_hint": "Öffnet in einem neuen Fenster",
+  "add_planned.amount_example": "Beispiel: 12 + 33 * 45 <Enter>",
+  "add_planned.time_hint": "Wenn keine Zeit angegeben wird, erhält der Vorgang die Zeit des Speicherns.",
+  "add_planned.time": "Zeit",
+  "add_planned.type": "Vorgangstyp",
+  "add_planned.account_hint": "Geldbörse (₽)",
+  "add_planned.name_example": "Beispiel: Miete, Abo, Vorschuss",
+  "add_planned.name_required": "(erforderlich)",
+  "add_planned.name_required_error": "Name ist erforderlich",
+  "add_planned.repeat": "Wiederholen",
+  "add_planned.calculator": "Rechner",
+  "add_planned.repeat_count": "Mehrmals wiederholen",
+  "add_planned.repeat_until": "Wiederholen bis zu einem Datum"
 }

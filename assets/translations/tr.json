@@ -680,5 +680,19 @@
   "health.detail": "",
   "health.money": "Nakit",
   "budget.warning_fmt": "«{name}»: bütçe tahmini %{pct}. Harcamaları azaltın.",
-  "filters.recent": "Son işlemler"
+  "filters.recent": "Son işlemler",
+  "add_planned.title": "İŞLEM SERİSİ EKLE",
+  "add_planned.open_hint": "Yeni pencerede açılır",
+  "add_planned.amount_example": "Örnek: 12 + 33 * 45 <Enter>",
+  "add_planned.time_hint": "Saat belirtmezseniz, işlem kaydedildiği anın saatini kullanır.",
+  "add_planned.time": "Saat",
+  "add_planned.type": "İşlem türü",
+  "add_planned.account_hint": "cüzdan (₽)",
+  "add_planned.name_example": "Örnek: Kira, Abonelik, Avans",
+  "add_planned.name_required": "(zorunlu)",
+  "add_planned.name_required_error": "Ad zorunludur",
+  "add_planned.repeat": "Tekrarla",
+  "add_planned.calculator": "Hesap makinesi",
+  "add_planned.repeat_count": "Birden fazla kez tekrarla",
+  "add_planned.repeat_until": "Bir tarihe kadar tekrarla"
 }

@@ -705,5 +705,19 @@
   "health.detail": "",
   "health.money": "Dinero",
   "budget.warning_fmt": "«{name}»: pronóstico {pct}% del presupuesto. Reduzca los gastos.",
-  "filters.recent": "Recientes"
+  "filters.recent": "Recientes",
+  "add_planned.title": "AÑADIR SERIE DE OPERACIONES",
+  "add_planned.open_hint": "Se abre en una nueva ventana",
+  "add_planned.amount_example": "Ejemplo: 12 + 33 * 45 <Enter>",
+  "add_planned.time_hint": "Si no especifica la hora, la operación usará la hora en que se guardó.",
+  "add_planned.time": "Hora",
+  "add_planned.type": "Tipo de operación",
+  "add_planned.account_hint": "cartera (₽)",
+  "add_planned.name_example": "Ejemplo: Alquiler, Suscripción, Anticipo",
+  "add_planned.name_required": "(obligatorio)",
+  "add_planned.name_required_error": "El nombre es obligatorio",
+  "add_planned.repeat": "Repetir",
+  "add_planned.calculator": "Calculadora",
+  "add_planned.repeat_count": "Repetir varias veces",
+  "add_planned.repeat_until": "Repetir hasta una fecha"
 }

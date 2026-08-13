@@ -771,5 +771,19 @@
   "profile.name": "Имя",
   "auth.register": "Регистрация",
   "goals.no_deadline": "Без срока",
-  "more.debug": "Debug API"
+  "more.debug": "Debug API",
+  "add_planned.title": "ДОБАВИТЬ СЕРИЮ ОПЕРАЦИЙ",
+  "add_planned.open_hint": "Открывается в новом окне",
+  "add_planned.amount_example": "Пример: 12 + 33 * 45 <Enter>",
+  "add_planned.time_hint": "Если не указывать время операции, то в операцию запишется время момента ее сохранения.",
+  "add_planned.time": "Время",
+  "add_planned.type": "Тип операции",
+  "add_planned.account_hint": "кошелек (₽)",
+  "add_planned.name_example": "Например: Аренда, Подписка, Аванс",
+  "add_planned.name_required": "(обязательно)",
+  "add_planned.name_required_error": "Название обязательно для заполнения",
+  "add_planned.repeat": "Повторить",
+  "add_planned.calculator": "Калькулятор",
+  "add_planned.repeat_count": "Повторить несколько раз",
+  "add_planned.repeat_until": "Повторить до даты"
 }
