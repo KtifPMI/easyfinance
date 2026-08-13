@@ -43,37 +43,109 @@ class PlannedPaymentStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Fetches planned payments from the API v2 and merges with local data.
-  /// Server events are keyed by their operation id (serverId field).
+  /// Fetches planned payments from the API v2 and rebuilds server-backed events.
+  ///
+  /// The server returns every repeat occurrence as a separate entry (sharing a
+  /// `chain_id`). We collapse them into ONE recurring [FinancialEvent] per
+  /// chain so we don't create duplicate monthly series and so the chain's
+  /// `date_end`/`acceptedDates` are preserved on the single event.
   /// Local-only events (no serverId) are always preserved.
   Future<void> syncFromServer() async {
     if (_apiClient.accessToken == null) return;
     try {
       final data = await _apiClient.getCalendarEventsV2();
-      final serverIds = <String>{};
-      for (final raw in data) {
-        final serverId = raw['id']?.toString();
-        if (serverId == null) continue;
-        serverIds.add(serverId);
+      final collapsed = _collapseServerEvents(data);
+      final localOnly = _events.where((e) => e.serverId == null).toList();
 
-        final existing = _events.where((e) => e.serverId == serverId).firstOrNull;
-        final event = _fromCalendarJson(raw, serverId: serverId);
-        if (existing == null) {
-          _events.add(event);
-        } else {
-          final idx = _events.indexOf(existing);
-          _events[idx] = event;
-        }
-      }
-
-      // Remove only server-backed events that no longer exist on the server.
-      _events.removeWhere((e) => e.serverId != null && !serverIds.contains(e.serverId));
+      // Replace all server-backed events with the freshly collapsed set,
+      // keeping any local-only (never-synced) events untouched.
+      _events = [...localOnly, ...collapsed];
       _recalcDates();
       await save();
       notifyListeners();
     } catch (e) {
       debugPrint('syncFromServer error: $e');
     }
+  }
+
+  /// Groups expanded server occurrences by `chain_id` (or by `id` when there is
+  /// no chain) and returns a single [FinancialEvent] per group.
+  List<FinancialEvent> _collapseServerEvents(List<Map<String, dynamic>> data) {
+    final groups = <String, List<Map<String, dynamic>>>{};
+    for (final raw in data) {
+      final id = raw['id']?.toString();
+      if (id == null) continue;
+      final chain = raw['chain_id']?.toString();
+      final key = (chain != null && chain.isNotEmpty && chain != '0') ? 'chain:$chain' : 'op:$id';
+      (groups[key] ??= []).add(raw);
+    }
+    return groups.entries.map((e) => _eventFromGroup(e.key, e.value)).toList();
+  }
+
+  FinancialEvent _eventFromGroup(String key, List<Map<String, dynamic>> entries) {
+    final first = entries.first;
+    final acceptedDates = <String>[];
+    DateTime? earliestStart;
+    String? earliestStartStr;
+    String? dateEnd;
+    int? everyDay;
+
+    for (final e in entries) {
+      final ds = e['date_start']?.toString() ?? e['date']?.toString();
+      final d = _parseDate(ds).isNotEmpty ? DateTime.tryParse(_parseDate(ds)) : null;
+      if (d != null && (earliestStart == null || d.isBefore(earliestStart!))) {
+        earliestStart = d;
+        earliestStartStr = _parseDate(ds);
+      }
+
+      final de = e['date_end']?.toString();
+      if (de != null && de.isNotEmpty && de != '0000-00-00') {
+        final parsed = DateTime.tryParse(_parseDate(de));
+        if (parsed != null && (dateEnd == null || parsed.isAfter(DateTime.tryParse(dateEnd!)!))) {
+          dateEnd = _parseDate(de);
+        }
+      }
+
+      final ed = int.tryParse(e['every_day']?.toString() ?? e['every']?.toString() ?? '0') ?? 0;
+      if (ed > 0) everyDay ??= ed;
+
+      final acceptedRaw = e['accepted'];
+      final accepted = acceptedRaw == 1 || acceptedRaw == '1' || acceptedRaw == true;
+      if (accepted) {
+        final ad = _parseDate(e['date']?.toString());
+        if (ad.isNotEmpty) acceptedDates.add(ad);
+      }
+    }
+
+    final typeRaw = first['type']?.toString();
+    final type = typeRaw == '1' ? 'income' : typeRaw == '2' ? 'transfer' : 'expense';
+    final startDay = earliestStart?.day;
+    final chain = key.startsWith('chain:') ? key.substring(6) : null;
+    final serverId = first['id']?.toString();
+
+    return FinancialEvent(
+      id: key,
+      title: first['comment']?.toString() ?? '',
+      date: earliestStartStr ?? _parseDate(first['date']?.toString()),
+      amount: (double.tryParse(first['amount']?.toString() ?? '0') ?? 0).abs(),
+      type: type,
+      comment: first['comment']?.toString(),
+      isRecurring: (everyDay ?? 0) > 0,
+      dayOfMonth: startDay,
+      specificDate: null,
+      enabled: true,
+      accountId: first['account_id']?.toString(),
+      toAccountId: first['transfer_account_id']?.toString(),
+      categoryId: first['category_id']?.toString(),
+      tags: first['tags']?.toString(),
+      repeatMode: everyDay ?? 0,
+      serverId: serverId,
+      chain: chain,
+      weekDays: first['week_days']?.toString(),
+      dateStart: earliestStartStr,
+      dateEnd: dateEnd,
+      acceptedDates: acceptedDates,
+    );
   }
 
   Future<void> save() async {
@@ -239,48 +311,9 @@ class PlannedPaymentStore extends ChangeNotifier {
     acceptedDates: e.acceptedDates,
   );
 
-  FinancialEvent _fromCalendarJson(Map<String, dynamic> json, {String? serverId}) {
-    final acceptedRaw = json['accepted'];
-    final accepted = acceptedRaw == 1 || acceptedRaw == '1' || acceptedRaw == true;
-    final typeRaw = json['type']?.toString();
-    final type = typeRaw == '1' ? 'income' : typeRaw == '2' ? 'transfer' : 'expense';
-    final everyDay = int.tryParse(json['every_day']?.toString() ?? json['every']?.toString() ?? '0') ?? 0;
-    final startStr = json['date_start']?.toString() ?? json['date']?.toString() ?? '';
-    final startDay = _parseDay(startStr);
-    return FinancialEvent(
-      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-      title: json['comment']?.toString() ?? '',
-      date: _parseDate(json['date']?.toString()),
-      amount: (double.tryParse(json['amount']?.toString() ?? '0') ?? 0).abs(),
-      type: type,
-      comment: json['comment']?.toString(),
-      isRecurring: everyDay > 0,
-      dayOfMonth: startDay,
-      specificDate: null,
-      enabled: true,
-      accountId: json['account_id']?.toString(),
-      toAccountId: json['transfer_account_id']?.toString(),
-      categoryId: json['category_id']?.toString(),
-      tags: json['tags']?.toString(),
-      repeatMode: everyDay,
-      serverId: serverId ?? json['id']?.toString(),
-      chain: json['chain_id']?.toString(),
-      weekDays: json['week_days']?.toString(),
-      dateStart: json['date_start']?.toString(),
-      dateEnd: json['date_end']?.toString(),
-      acceptedDates: accepted ? [_parseDate(json['date']?.toString())] : const [],
-    );
-  }
-
   String _parseDate(String? d) {
     if (d == null || d.isEmpty) return '';
     return d.length >= 10 ? d.substring(0, 10) : d;
-  }
-
-  int? _parseDay(String? d) {
-    final s = _parseDate(d);
-    if (s.length < 10) return null;
-    return int.tryParse(s.substring(8, 10));
   }
 
   DateTime? _dateOnly(String? d) {
