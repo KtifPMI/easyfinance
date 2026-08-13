@@ -8,6 +8,9 @@ import '../../theme/theme.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../components/common/grouped_picker_sheet.dart';
+import '../../utils/category_icons.dart';
+import '../../utils/translate_category.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class AddPlannedPaymentScreen extends StatefulWidget {
@@ -151,16 +154,13 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           [
             _amountField(context),
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _typeField(context)),
-                const SizedBox(width: 8),
-                Expanded(flex: 2, child: _accountField(context, store)),
-              ],
-            ),
+            _typeButtons(context),
             const SizedBox(height: 12),
-            _categoryField(context, store),
+            _accountField(context, store),
+            if (_type != 'transfer') ...[
+              const SizedBox(height: 12),
+              _categoryField(context, store),
+            ],
           ],
         ),
         const SizedBox(height: 12),
@@ -294,92 +294,211 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _label(context.tr('add_planned.time') + ':'),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                  decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
-                  child: TextField(
-                    controller: _hourCtrl,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 2,
-                    decoration: const InputDecoration(border: InputBorder.none, counterText: ''),
+          InkWell(
+            onTap: () => _showTimePicker(context),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${_hourCtrl.text.padLeft(2, '0')}:${_minuteCtrl.text.padLeft(2, '0')}',
+                      style: TextStyle(fontSize: 16, color: AppColors.textFor(context)),
+                    ),
                   ),
-                ),
+                  Icon(Icons.access_time, size: 20, color: AppColors.textSecondaryFor(context)),
+                ],
               ),
-              const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text(':', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                  decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
-                  child: TextField(
-                    controller: _minuteCtrl,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 2,
-                    decoration: const InputDecoration(border: InputBorder.none, counterText: ''),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       );
 
-  Widget _accountField(BuildContext context, FinanceStore store) {
-    final accounts = store.accounts.where((a) => !a.isArchived).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _label(context.tr('planned_payments.account') + ':'),
-        DropdownButtonFormField<String>(
-          value: _accountId,
-          isExpanded: true,
-          decoration: _dropdownDecoration(),
-          hint: Text(context.tr('add_planned.account_hint')),
-          items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name, overflow: TextOverflow.ellipsis))).toList(),
-          onChanged: (v) => setState(() => _accountId = v),
+  void _showTimePicker(BuildContext context) async {
+    int hour = int.tryParse(_hourCtrl.text) ?? 0;
+    int minute = int.tryParse(_minuteCtrl.text) ?? 0;
+    await showModalBottomSheet(
+      context: context,
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: StatefulBuilder(
+          builder: (ctx, setSheetState) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(context.tr('add_planned.time'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _TimeWheel(value: hour, onChanged: (v) => setSheetState(() => hour = v), isHour: true),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Text(':', style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: AppColors.textFor(context))),
+                  ),
+                  _TimeWheel(value: minute, onChanged: (v) => setSheetState(() => minute = v), isHour: false),
+                ],
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _hourCtrl.text = hour.toString();
+                      _minuteCtrl.text = minute.toString();
+                    });
+                    Navigator.pop(ctx);
+                  },
+                  child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 
-  Widget _typeField(BuildContext context) => Column(
+  Widget _accountField(BuildContext context, FinanceStore store) {
+    final accounts = store.accounts.where((a) => !a.isArchived).toList();
+    final selected = accounts.where((a) => a.id == _accountId).firstOrNull;
+    return _buildPicker(
+      label: context.tr('planned_payments.account'),
+      value: selected?.name,
+      onTap: () async {
+        final result = await GroupedPickerSheet.show<String>(
+          context: context,
+          title: context.tr('planned_payments.account'),
+          items: accounts.map((a) => a.id).toList(),
+          labelBuilder: (id) => accounts.firstWhere((a) => a.id == id).name,
+          groupBuilder: (id) => accounts.firstWhere((a) => a.id == id).currency,
+          subtitleBuilder: (id) {
+            final a = accounts.firstWhere((a) => a.id == id);
+            return '${a.balance.toStringAsFixed(2)} ${a.currency}';
+          },
+          iconBuilder: (id) => _accountIcon(accounts.firstWhere((a) => a.id == id).icon),
+          colorBuilder: (id) => _hexToColor(accounts.firstWhere((a) => a.id == id).color),
+          selectedId: _accountId,
+        );
+        if (result != null) setState(() => _accountId = result);
+      },
+    );
+  }
+
+  Widget _typeButtons(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label(context.tr('add_planned.type') + ':'),
-          DropdownButtonFormField<String>(
-            value: _type,
-            isExpanded: true,
-            decoration: _dropdownDecoration(),
-            items: [
-              DropdownMenuItem(value: 'expense', child: Text(context.tr('planned_payments.expense'))),
-              DropdownMenuItem(value: 'income', child: Text(context.tr('planned_payments.income'))),
-              DropdownMenuItem(value: 'transfer', child: Text(context.tr('planned_payments.transfer'))),
+          _label(context.tr('add_planned.type')),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _typeBtn('expense', Icons.trending_down, AppColors.expense, context.tr('planned_payments.expense')),
+              const SizedBox(width: 8),
+              _typeBtn('income', Icons.trending_up, AppColors.success, context.tr('planned_payments.income')),
+              const SizedBox(width: 8),
+              _typeBtn('transfer', Icons.swap_horiz, AppColors.transfer, context.tr('planned_payments.transfer')),
             ],
-            onChanged: (v) => setState(() => _type = v!),
           ),
         ],
       );
 
+  Widget _typeBtn(String type, IconData icon, Color color, String label) {
+    final active = _type == type;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() {
+          _type = type;
+          _categoryId = null;
+        }),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: active ? color : AppColors.cardFor(context),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: active ? color : AppColors.borderFor(context)),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, size: 22, color: active ? Colors.white : color),
+              const SizedBox(height: 2),
+              Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textFor(context))),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _categoryField(BuildContext context, FinanceStore store) {
     final cats = store.categories.where((c) => c.type == _type).toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _label(context.tr('planned_payments.category') + ':'),
-        DropdownButtonFormField<String>(
-          value: _categoryId,
-          isExpanded: true,
-          decoration: _dropdownDecoration(),
-          hint: Text(context.tr('planned_payments.category_hint'), style: const TextStyle(fontWeight: FontWeight.w700)),
-          items: cats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name, overflow: TextOverflow.ellipsis))).toList(),
-          onChanged: (v) => setState(() => _categoryId = v),
-        ),
-      ],
+    final selected = cats.where((c) => c.id == _categoryId).firstOrNull;
+    return _buildPicker(
+      label: context.tr('planned_payments.category'),
+      value: selected != null ? tCat(context, selected.name) : null,
+      onTap: () async {
+        final result = await GroupedPickerSheet.show<String>(
+          context: context,
+          title: context.tr('planned_payments.category'),
+          items: cats.map((c) => c.id).toList(),
+          labelBuilder: (id) => tCat(context, cats.firstWhere((c) => c.id == id).name),
+          groupBuilder: (id) {
+            final c = cats.firstWhere((c) => c.id == id);
+            if (c.parentId == null || c.parentId!.isEmpty) return '';
+            final parent = store.categories.where((p) => p.id == c.parentId);
+            return parent.isNotEmpty ? tCat(context, parent.first.name) : '';
+          },
+          iconBuilder: (id) => categoryIconFor(cats.firstWhere((c) => c.id == id), allCategories: store.categories),
+          colorBuilder: (id) => _type == 'income' ? AppColors.income : AppColors.expense,
+          selectedId: _categoryId,
+        );
+        if (result != null) setState(() => _categoryId = result);
+      },
     );
+  }
+
+  Widget _buildPicker({required String label, required String? value, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _label(label + ':'),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
+            child: Row(
+              children: [
+                Expanded(child: Text(value ?? '', style: TextStyle(fontSize: 16, color: value != null ? AppColors.textFor(context) : AppColors.textSecondaryFor(context)))),
+                Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondaryFor(context)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _accountIcon(String icon) {
+    const map = {
+      'cash': Icons.money, 'credit_card': Icons.credit_card,
+      'savings': Icons.savings, 'account_balance': Icons.account_balance,
+      'wallet': Icons.account_balance_wallet, 'payments': Icons.payments,
+      'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard,
+    };
+    return map[icon] ?? Icons.account_balance_wallet;
+  }
+
+  Color _hexToColor(String hex) {
+    final cleaned = hex.replaceAll('#', '');
+    return Color(int.parse('FF$cleaned', radix: 16));
   }
 
   Widget _tagsField(BuildContext context) => Column(
@@ -662,5 +781,82 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       store.add(event);
     }
     Navigator.pop(context);
+  }
+}
+
+class _TimeWheel extends StatefulWidget {
+  final int value;
+  final ValueChanged<int> onChanged;
+  final bool isHour;
+
+  const _TimeWheel({required this.value, required this.onChanged, required this.isHour});
+
+  @override
+  State<_TimeWheel> createState() => _TimeWheelState();
+}
+
+class _TimeWheelState extends State<_TimeWheel> {
+  late final FixedExtentScrollController _controller;
+  int _lastValue = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastValue = widget.value;
+    _controller = FixedExtentScrollController(initialItem: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant _TimeWheel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != _lastValue && _controller.hasClients) {
+      _lastValue = widget.value;
+      _controller.animateToItem(
+        widget.value,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final count = widget.isHour ? 24 : 60;
+    return SizedBox(
+      width: 64,
+      height: 140,
+      child: ListWheelScrollView.useDelegate(
+        controller: _controller,
+        itemExtent: 36,
+        diameterRatio: 1.8,
+        physics: const FixedExtentScrollPhysics(),
+        onSelectedItemChanged: (index) {
+          _lastValue = index;
+          widget.onChanged(index);
+        },
+        childDelegate: ListWheelChildBuilderDelegate(
+          childCount: count,
+          builder: (context, index) {
+            final selected = index == widget.value;
+            return Center(
+              child: Text(
+                index.toString().padLeft(2, '0'),
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                  color: selected ? AppColors.primary : AppColors.textSecondaryFor(context),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }

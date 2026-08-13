@@ -73,8 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _langItem(context),
           _darkModeItem(context),
           _pinItem(context),
-          _kopeksItem(context),
-          _kopeksInOpsItem(context),
+          _amountFormatItem(context),
           _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           _exportItem(context),
@@ -213,49 +212,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _kopeksItem(BuildContext context) {
+  Widget _amountFormatItem(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: AppCard(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('settings.show_kopeks'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
-            Switch(
-              value: _kopeksEnabled,
-              onChanged: (v) async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('easyfinance_show_kopeks', v);
-                showKopeks = v;
-                if (mounted) setState(() => _kopeksEnabled = v);
-              },
-              activeThumbColor: AppColors.primary,
+            Text(context.tr('settings.amount_format'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(context.tr('settings.show_kopeks'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                Switch(
+                  value: _kopeksEnabled,
+                  onChanged: (v) async {
+                    final prefs = await SharedPreferences.getInstance();
+                    if (v) {
+                      await prefs.setBool('easyfinance_show_kopeks', true);
+                      await prefs.setBool('easyfinance_show_kopeks_ops', true);
+                      showKopeks = true;
+                      showKopeksInOps = true;
+                      if (mounted) setState(() { _kopeksEnabled = true; _kopeksInOpsEnabled = false; });
+                    } else {
+                      await prefs.setBool('easyfinance_show_kopeks', false);
+                      showKopeks = false;
+                      if (mounted) setState(() => _kopeksEnabled = false);
+                    }
+                  },
+                  activeThumbColor: AppColors.primary,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _kopeksInOpsItem(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: AppCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(context.tr('settings.show_kopeks_ops'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
-            Switch(
-              value: _kopeksInOpsEnabled,
-              onChanged: (v) async {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('easyfinance_show_kopeks_ops', v);
-                showKopeksInOps = v;
-                if (mounted) setState(() => _kopeksInOpsEnabled = v);
-              },
-              activeThumbColor: AppColors.primary,
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(context.tr('settings.show_kopeks_ops'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                Switch(
+                  value: _kopeksInOpsEnabled,
+                  onChanged: (v) async {
+                    final prefs = await SharedPreferences.getInstance();
+                    if (v) {
+                      await prefs.setBool('easyfinance_show_kopeks_ops', true);
+                      await prefs.setBool('easyfinance_show_kopeks', false);
+                      showKopeksInOps = true;
+                      showKopeks = false;
+                      if (mounted) setState(() { _kopeksInOpsEnabled = true; _kopeksEnabled = false; });
+                    } else {
+                      await prefs.setBool('easyfinance_show_kopeks_ops', false);
+                      showKopeksInOps = false;
+                      if (mounted) setState(() => _kopeksInOpsEnabled = false);
+                    }
+                  },
+                  activeThumbColor: AppColors.primary,
+                ),
+              ],
             ),
           ],
         ),

@@ -26,6 +26,20 @@ class PlannedPaymentStore extends ChangeNotifier {
     return result;
   }
 
+  /// Enabled events with an overdue (past, unconfirmed) occurrence, most overdue first.
+  List<FinancialEvent> get overdueEvents {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final result = _events.where((e) {
+      if (!e.enabled) return false;
+      final occ = e.lastOccurrence(before: today) ?? _dateOnly(e.date);
+      if (occ == null || !occ.isBefore(today)) return false;
+      return !e.isAcceptedOn(_ymd(occ));
+    }).toList();
+    result.sort((a, b) => (a.lastOccurrence(before: today) ?? today).compareTo(b.lastOccurrence(before: today) ?? today));
+    return result;
+  }
+
   List<FinancialEvent> get upcomingIncomes =>
       upcomingEvents.where((e) => e.type == 'income').toList();
 
@@ -328,6 +342,8 @@ class PlannedPaymentStore extends ChangeNotifier {
     if (s.length < 10) return null;
     return DateTime.tryParse(s);
   }
+
+  String _ymd(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   Map<String, dynamic> _toCalendarBody(FinancialEvent e) {
     String formatDate(String iso) {

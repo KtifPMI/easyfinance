@@ -614,7 +614,11 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildUpcomingPaymentsSection(BuildContext context, PlannedPaymentStore plannedPayments, FinanceStore store) {
     if (plannedPayments.events.isEmpty) return const SizedBox.shrink();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final overdue = plannedPayments.overdueEvents;
     final upcoming = plannedPayments.upcomingEvents;
+    final combined = <FinancialEvent>[...overdue, ...upcoming];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -629,55 +633,81 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        if (upcoming.isEmpty)
+        if (combined.isEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(context.tr('calendar.empty'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           )
         else
-          ...upcoming.take(3).map((e) => GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/planned-payments'),
-          child: _upcomingTile(context, e, store),
-        )),
+          ...combined.take(4).map((e) {
+            final isOverdue = overdue.contains(e);
+            final displayDate = isOverdue ? (e.lastOccurrence(before: today) ?? today) : (e.nextOccurrence() ?? today);
+            return GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/planned-payments'),
+              child: _upcomingTile(context, e, store, displayDate: displayDate, isOverdue: isOverdue),
+            );
+          }),
         const SizedBox(height: 16),
       ],
     );
   }
 
-  Widget _upcomingTile(BuildContext context, FinancialEvent e, FinanceStore store) {
+  Widget _upcomingTile(BuildContext context, FinancialEvent e, FinanceStore store, {required DateTime displayDate, bool isOverdue = false}) {
     final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
     final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
     final iconColor = e.type == 'income' ? AppColors.success : AppColors.expense;
+    final amountColor = isOverdue ? AppColors.danger : iconColor;
     return Padding(
-    padding: const EdgeInsets.only(bottom: 6),
-    child: AppCard(
-      child: Row(
-        children: [
-          Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(iconData, size: 20, color: iconColor),
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isOverdue ? AppColors.danger.withValues(alpha: 0.08) : null,
+          borderRadius: BorderRadius.circular(16),
+          border: isOverdue ? Border.all(color: AppColors.danger.withValues(alpha: 0.3), width: 1.5) : null,
+        ),
+        child: AppCard(
+          child: Row(
+            children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: (isOverdue ? AppColors.danger : iconColor).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(isOverdue ? Icons.warning_amber_rounded : iconData, size: 20, color: isOverdue ? AppColors.danger : iconColor),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Row(
+                      children: [
+                        Text(formatDate(_fmtDate(displayDate)), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                        if (isOverdue) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(6)),
+                            child: Text(context.tr('calendar.overdue'), style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: amountColor)),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: e.type == 'income' ? AppColors.success : AppColors.expense)),
-        ],
+        ),
       ),
-    ),
-  );
+    );
   }
+
+  String _fmtDate(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   Widget _buildReportsSection(BuildContext context, FinanceStore store) {
     final now = DateTime.now();

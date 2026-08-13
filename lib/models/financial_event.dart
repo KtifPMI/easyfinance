@@ -121,6 +121,21 @@ class FinancialEvent {
     return null;
   }
 
+  /// Most recent occurrence on or before [before] (inclusive), within 3 years back.
+  DateTime? lastOccurrence({DateTime? before}) {
+    final today = before ?? DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    for (int i = 0; i < 36; i++) {
+      final m = DateTime(today.year, today.month - i, 1);
+      final occ = occurrencesInMonth(m);
+      DateTime? best;
+      for (final d in occ) {
+        if (!d.isAfter(today) && (best == null || d.isAfter(best))) best = d;
+      }
+      if (best != null) return best;
+    }
+    return null;
+  }
+
   DateTime? _parseDate(String? s) {
     if (s == null || s.isEmpty) return null;
     return DateTime.tryParse(s.length >= 10 ? s.substring(0, 10) : s);

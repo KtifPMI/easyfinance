@@ -33,8 +33,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
-  void _prevMonth() => setState(() => _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1));
-  void _nextMonth() => setState(() => _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1));
+  void _prevMonth() => setState(() {
+        _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
+        if (_selectedDate != null) _selectedDate = _shiftDay(_selectedDate!, _currentMonth);
+      });
+  void _nextMonth() => setState(() {
+        _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
+        if (_selectedDate != null) _selectedDate = _shiftDay(_selectedDate!, _currentMonth);
+      });
+
+  DateTime _shiftDay(DateTime date, DateTime month) {
+    final days = DateTime(month.year, month.month + 1, 0).day;
+    final d = date.day > days ? days : date.day;
+    return DateTime(month.year, month.month, d);
+  }
 
   @override
   Widget build(BuildContext context) {

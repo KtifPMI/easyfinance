@@ -1,4 +1,4 @@
-{
+﻿{
   "app.title": "EasyFinance",
 
   "tab.home": "Главная",
@@ -332,8 +332,9 @@
   "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Тёмная тема",
   "settings.pin_code": "PIN-код",
-  "settings.show_kopeks": "Формат отображения 0.00",
-  "settings.show_kopeks_ops": "Формат отображения 0.00 в операциях",
+  "settings.show_kopeks": "Везде",
+  "settings.amount_format": "Отображать сумму в формате 0,00",
+  "settings.show_kopeks_ops": "Только в операциях",
   "settings.tariff": "Тарифный план",
   "settings.tariff_free": "Бесплатный",
   "settings.notifications": "Уведомления",
@@ -776,7 +777,7 @@
   "auth.register": "Регистрация",
   "goals.no_deadline": "Без срока",
   "more.debug": "Debug API",
-  "add_planned.title": "ДОБАВИТЬ СЕРИЮ ОПЕРАЦИЙ",
+  "add_planned.title": "Планируемая операция",
   "add_planned.open_hint": "Открывается в новом окне",
   "add_planned.amount_example": "Пример: 12 + 33 * 45 <Enter>",
   "add_planned.time_hint": "Если не указывать время операции, то в операцию запишется время момента ее сохранения.",
