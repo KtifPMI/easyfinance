@@ -99,10 +99,48 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       return cat == null || cat.type != 'income';
     }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
 
+    final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
+    final incomeSpent = incomeBudgets.fold(0.0, (s, b) => s + b.spent);
+    final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
+    final expenseSpent = expenseBudgets.fold(0.0, (s, b) => s + b.spent);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (incomeBudgets.isNotEmpty || expenseBudgets.isNotEmpty) ...[
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (expenseBudgets.isNotEmpty) ...[
+                    Text(context.tr('budget.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
+                    const SizedBox(height: 4),
+                    _summaryRow(context, 'budget.planned', store.fmt(expensePlanned)),
+                    _summaryRow(context, 'budget.spent_total', store.fmt(expenseSpent), expenseSpent > expensePlanned ? AppColors.expense : null),
+                    _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - expenseSpent), (expensePlanned - expenseSpent) >= 0 ? AppColors.success : AppColors.expense),
+                    const SizedBox(height: 12),
+                  ],
+                  if (incomeBudgets.isNotEmpty) ...[
+                    Text(context.tr('budget.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.income)),
+                    const SizedBox(height: 4),
+                    _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
+                    _summaryRow(context, 'budget.received', store.fmt(incomeSpent), AppColors.success),
+                    _summaryRow(context, 'budget.remaining', store.fmt(incomePlanned - incomeSpent), (incomePlanned - incomeSpent) >= 0 ? AppColors.success : AppColors.expense),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           if (incomeBudgets.isNotEmpty) ...[
             Text(context.tr('budget.income'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.income)),
             const SizedBox(height: 8),
