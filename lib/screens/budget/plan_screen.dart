@@ -100,9 +100,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
 
     final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
-    final incomeSpent = incomeBudgets.fold(0.0, (s, b) => s + b.spent);
     final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
-    final expenseSpent = expenseBudgets.fold(0.0, (s, b) => s + b.spent);
 
     return SingleChildScrollView(
       child: Column(
@@ -125,16 +123,16 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     Text(context.tr('budget.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
                     const SizedBox(height: 4),
                     _summaryRow(context, 'budget.planned', store.fmt(expensePlanned)),
-                    _summaryRow(context, 'budget.spent_total', store.fmt(expenseSpent), expenseSpent > expensePlanned ? AppColors.expense : null),
-                    _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - expenseSpent), (expensePlanned - expenseSpent) >= 0 ? AppColors.success : AppColors.expense),
+                    _summaryRow(context, 'budget.spent_total', store.fmt(store.monthExpense), store.monthExpense > expensePlanned ? AppColors.expense : null),
+                    _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - store.monthExpense), (expensePlanned - store.monthExpense) >= 0 ? AppColors.success : AppColors.expense),
                     const SizedBox(height: 12),
                   ],
                   if (incomeBudgets.isNotEmpty) ...[
                     Text(context.tr('budget.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.income)),
                     const SizedBox(height: 4),
                     _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
-                    _summaryRow(context, 'budget.received', store.fmt(incomeSpent), AppColors.success),
-                    _summaryRow(context, 'budget.remaining', store.fmt(incomePlanned - incomeSpent), (incomePlanned - incomeSpent) >= 0 ? AppColors.success : AppColors.expense),
+                    _summaryRow(context, 'budget.received', store.fmt(store.monthIncome), AppColors.success),
+                    _summaryRow(context, 'budget.remaining', store.fmt(incomePlanned - store.monthIncome), (incomePlanned - store.monthIncome) >= 0 ? AppColors.success : AppColors.expense),
                   ],
                 ],
               ),
@@ -153,8 +151,6 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
             const SizedBox(height: 8),
             ...expenseBudgets.map((b) => _budgetItem(context, b, store)),
           ],
-          const SizedBox(height: 20),
-          _buildActualSection(context, store),
           const SizedBox(height: 24),
         ],
       ),
@@ -537,63 +533,5 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
   Color _parseColor(String hex) {
     hex = hex.replaceAll('#', '');
     return Color(int.parse('FF$hex', radix: 16));
-  }
-
-  Widget _buildActualSection(BuildContext context, FinanceStore store) {
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    final monthOps = store.operations.where((o) => !o.isDeleted && isInPeriod(o.date, startOfMonth, endOfMonth)).toList();
-
-    final expenseActual = <String, double>{};
-    final incomeActual = <String, double>{};
-    for (final o in monthOps) {
-      if (o.type == 'expense') {
-        expenseActual[o.categoryId ?? ''] = (expenseActual[o.categoryId ?? ''] ?? 0) + o.amount;
-      } else if (o.type == 'income') {
-        incomeActual[o.categoryId ?? ''] = (incomeActual[o.categoryId ?? ''] ?? 0) + o.amount;
-      }
-    }
-
-    Widget row(String categoryId, double amount, bool isIncome) {
-      final cat = store.getCategory(categoryId);
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Row(
-          children: [
-            if (cat != null) Icon(categoryIconFor(cat, allCategories: store.categories), size: 16, color: isIncome ? AppColors.income : AppColors.expense),
-            if (cat != null) const SizedBox(width: 8),
-            Expanded(child: Text(tCat(context, cat?.name ?? categoryId), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14))),
-            Text(store.fmt(amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isIncome ? AppColors.income : AppColors.expense)),
-          ],
-        ),
-      );
-    }
-
-    final expenseCats = expenseActual.keys.where((k) => (expenseActual[k] ?? 0) > 0).toList();
-    final incomeCats = incomeActual.keys.where((k) => (incomeActual[k] ?? 0) > 0).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(context.tr('budget.actual_title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-        const SizedBox(height: 8),
-        if (expenseCats.isEmpty && incomeCats.isEmpty)
-          Text(context.tr('budget.actual_empty'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))
-        else ...[
-          if (expenseCats.isNotEmpty) ...[
-            Text(context.tr('budget.expense'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.expense)),
-            const SizedBox(height: 4),
-            ...expenseCats.map((k) => row(k, expenseActual[k]!, false)),
-            const SizedBox(height: 8),
-          ],
-          if (incomeCats.isNotEmpty) ...[
-            Text(context.tr('budget.income'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.income)),
-            const SizedBox(height: 4),
-            ...incomeCats.map((k) => row(k, incomeActual[k]!, true)),
-          ],
-        ],
-      ],
-    );
   }
 }
