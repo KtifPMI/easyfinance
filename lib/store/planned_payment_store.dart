@@ -346,30 +346,30 @@ class PlannedPaymentStore extends ChangeNotifier {
   String _ymd(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   Map<String, dynamic> _toCalendarBody(FinancialEvent e) {
-    String formatDate(String iso) {
-      if (iso.length < 10) return iso;
-      final p = iso.substring(0, 10).split('-');
-      if (p.length == 3) return '${p[2]}.${p[1]}.${p[0]}';
-      return iso;
-    }
-
-    final date = formatDate(e.date);
+    // We keep dates internally in ISO format (yyyy-mm-dd), which is exactly what
+    // the server expects — so no russian-style (dd.mm.yyyy) conversion here.
+    // For recurring events the anchor date is `dateStart`; one-time events have
+    // no `dateStart`, so fall back to `date`.
+    final date = e.dateStart ?? e.date;
+    final recurring = e.repeatMode > 0;
     return <String, dynamic>{
       'account_id': e.accountId ?? '',
       'category_id': e.categoryId ?? '',
-      'amount': e.amount > 0 ? e.amount.toStringAsFixed(0) : '0',
+      'amount': e.amount > 0 ? e.amount.toStringAsFixed(2) : '0',
       'date': date,
       'time': e.time ?? '00:00:00',
       'comment': e.comment ?? e.title,
       'type': e.type == 'income' ? '1' : e.type == 'transfer' ? '2' : '0',
       if (e.toAccountId != null) 'transfer_account_id': e.toAccountId,
-      if (e.toAccountId != null) 'transfer_amount': e.amount > 0 ? e.amount.toStringAsFixed(0) : '0',
+      if (e.toAccountId != null) 'transfer_amount': e.amount > 0 ? e.amount.toStringAsFixed(2) : '0',
       'accepted': 0,
-      if (e.dayOfMonth != null) 'every_day': e.dayOfMonth,
-      'date_start': e.dateStart != null ? formatDate(e.dateStart!) : date,
-      if (e.dateEnd != null && e.dateEnd!.isNotEmpty && e.dateEnd != '0000-00-00') 'date_end': formatDate(e.dateEnd!),
-      // Server `repeat`: "1" = one-time, otherwise the interval (e.g. 30 = monthly).
-      'repeat': e.repeatMode == 0 ? '1' : e.repeatMode,
+      // Server `every_day` is the recurrence INTERVAL in days (1/7/30/90/365),
+      // not the day-of-month.
+      if (recurring) 'every_day': e.repeatMode,
+      'date_start': e.dateStart ?? date,
+      if (e.dateEnd != null && e.dateEnd!.isNotEmpty && e.dateEnd != '0000-00-00') 'date_end': e.dateEnd,
+      // Server `repeat`: "1" = one-time; "0" = interval-based (interval lives in `every_day`).
+      'repeat': recurring ? '0' : '1',
       if (e.weekDays != null) 'week_days': e.weekDays,
     };
   }
