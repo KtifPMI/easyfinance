@@ -123,6 +123,12 @@ class PlannedPaymentStore extends ChangeNotifier {
     final chain = key.startsWith('chain:') ? key.substring(6) : null;
     final serverId = first['id']?.toString();
 
+    // Server `repeat` field is the recurrence type: "1" means a single,
+    // non-recurring occurrence; everything else is an interval-based series
+    // (the interval comes from `every_day`).
+    final repeatRaw = first['repeat']?.toString();
+    final period = repeatRaw == '1' ? 0 : (everyDay ?? 0);
+
     return FinancialEvent(
       id: key,
       title: first['comment']?.toString() ?? '',
@@ -130,7 +136,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       amount: (double.tryParse(first['amount']?.toString() ?? '0') ?? 0).abs(),
       type: type,
       comment: first['comment']?.toString(),
-      isRecurring: (everyDay ?? 0) > 0,
+      isRecurring: period > 0,
       dayOfMonth: startDay,
       specificDate: null,
       enabled: true,
@@ -138,7 +144,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       toAccountId: first['transfer_account_id']?.toString(),
       categoryId: first['category_id']?.toString(),
       tags: first['tags']?.toString(),
-      repeatMode: everyDay ?? 0,
+      repeatMode: period,
       serverId: serverId,
       chain: chain,
       weekDays: first['week_days']?.toString(),
@@ -344,8 +350,9 @@ class PlannedPaymentStore extends ChangeNotifier {
       'accepted': 0,
       if (e.dayOfMonth != null) 'every_day': e.dayOfMonth,
       'date_start': e.dateStart != null ? formatDate(e.dateStart!) : date,
-      if (e.dateEnd != null && e.dateEnd!.isNotEmpty) 'date_end': formatDate(e.dateEnd!),
-      'repeat': e.repeatMode,
+      if (e.dateEnd != null && e.dateEnd!.isNotEmpty && e.dateEnd != '0000-00-00') 'date_end': formatDate(e.dateEnd!),
+      // Server `repeat`: "1" = one-time, otherwise the interval (e.g. 30 = monthly).
+      'repeat': e.repeatMode == 0 ? '1' : e.repeatMode,
       if (e.weekDays != null) 'week_days': e.weekDays,
     };
   }
