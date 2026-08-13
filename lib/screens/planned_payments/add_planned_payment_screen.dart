@@ -486,7 +486,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       );
 
   Widget _repeatBlock(BuildContext context) {
-    if (_repeatOption == 'none') return const SizedBox.shrink();
     final children = <Widget>[
       if (_repeatOption == 'week') _weekdaySelector(context),
       _limitBlock(context),

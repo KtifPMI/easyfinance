@@ -78,8 +78,8 @@ class FinancialEvent {
       case 1: // daily
         for (int d = 1; d <= daysInMonth; d++) add(d);
         break;
-      case 7: // weekly — same weekday as the anchor date
-        final anchor = _parseDate(date);
+      case 7: // weekly — same weekday as the original anchor date
+        final anchor = _parseDate(dateStart) ?? _parseDate(date);
         if (anchor != null) {
           final wd = anchor.weekday;
           for (int d = 1; d <= daysInMonth; d++) {
@@ -88,20 +88,20 @@ class FinancialEvent {
         }
         break;
       case 30: // monthly by day of month
-        add(dayOfMonth ?? _parseDate(date)?.day ?? 1);
+        add(dayOfMonth ?? _parseDate(dateStart)?.day ?? _parseDate(date)?.day ?? 1);
         break;
       case 90: // quarterly
-        final anchor = _parseDate(date);
+        final anchor = _parseDate(dateStart) ?? _parseDate(date);
         if (anchor != null && ((mon - anchor.month) % 3 + 12) % 12 == 0) {
           add(anchor.day > daysInMonth ? daysInMonth : anchor.day);
         }
         break;
       case 365: // yearly
-        final anchor = _parseDate(date);
+        final anchor = _parseDate(dateStart) ?? _parseDate(date);
         if (anchor != null && anchor.month == mon) add(anchor.day > daysInMonth ? daysInMonth : anchor.day);
         break;
       default:
-        add(dayOfMonth ?? _parseDate(date)?.day ?? 1);
+        add(dayOfMonth ?? _parseDate(dateStart)?.day ?? _parseDate(date)?.day ?? 1);
     }
     return result;
   }

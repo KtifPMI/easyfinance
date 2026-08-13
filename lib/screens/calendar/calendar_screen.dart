@@ -139,11 +139,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final result = plannedStore.events.where((e) {
       if (!e.enabled) return false;
-      if (e.date.isEmpty) return false;
-      final d = DateTime.tryParse(e.date);
-      return d != null && !d.isBefore(today);
+      final next = e.nextOccurrence() ?? DateTime.tryParse(e.date);
+      return next != null && !next.isBefore(today);
     }).toList();
-    result.sort((a, b) => a.date.compareTo(b.date));
+    result.sort((a, b) => (a.nextOccurrence() ?? today).compareTo(b.nextOccurrence() ?? today));
     return result;
   }
 

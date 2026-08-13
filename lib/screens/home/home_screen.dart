@@ -628,7 +628,7 @@ class HomeScreen extends StatelessWidget {
             child: Text(context.tr('calendar.empty'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           )
         else
-          ...upcoming.take(5).map((e) => GestureDetector(
+          ...upcoming.take(3).map((e) => GestureDetector(
           onTap: () => Navigator.pushNamed(context, '/planned-payments'),
           child: _upcomingTile(context, e, store),
         )),
