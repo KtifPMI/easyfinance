@@ -44,12 +44,6 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final totalPlanned = store.budgets.fold(0.0, (sum, b) => sum + b.limit);
-        final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
-        final budgetPercent = totalPlanned > 0 ? (totalSpent / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
-        final monthIncome = store.monthIncome;
-        final monthExpense = store.monthExpense;
-
         return ScreenScaffold(
           title: context.tr('budget.title'),
           forceLogo: true,
@@ -82,7 +76,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                 child: TabBarView(
                   controller: _tabCtrl,
                   children: [
-                    _buildBudgetsTab(context, store, totalPlanned, totalSpent, budgetPercent, monthIncome, monthExpense),
+                    _buildBudgetsTab(context, store),
                     _buildGoalsTab(context, store),
                   ],
                 ),
@@ -94,7 +88,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildBudgetsTab(BuildContext context, FinanceStore store, double totalPlanned, double totalSpent, double budgetPercent, double monthIncome, double monthExpense) {
+  Widget _buildBudgetsTab(BuildContext context, FinanceStore store) {
     final incomeBudgets = store.budgets.where((b) {
       final cat = store.getCategory(b.categoryId);
       return cat != null && cat.type == 'income';
@@ -105,60 +99,10 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       return cat == null || cat.type != 'income';
     }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
 
-    final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
-    final incomeSpent = incomeBudgets.fold(0.0, (s, b) => s + b.spent);
-    final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
-    final expenseSpent = expenseBudgets.fold(0.0, (s, b) => s + b.spent);
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (monthIncome > 0 || monthExpense > 0) ...[
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.account_balance_wallet, color: AppColors.primary, size: 20),
-                      const SizedBox(width: 8),
-                      Text(context.tr('budget.monthly_summary'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(child: _statBlock(context, context.tr('budget.income'), store.fmt(monthIncome), AppColors.income)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _statBlock(context, context.tr('budget.expense'), store.fmt(monthExpense), AppColors.expense)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Divider(height: 1),
-                  const SizedBox(height: 12),
-                  if (incomeBudgets.isNotEmpty) ...[
-                    Text(context.tr('budget.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.income)),
-                    const SizedBox(height: 4),
-                    _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
-                    _summaryRow(context, 'budget.received', store.fmt(incomeSpent), AppColors.success),
-                    if (incomePlanned > incomeSpent)
-                      _summaryRow(context, 'budget.under_received', store.fmt(incomePlanned - incomeSpent), AppColors.warning),
-                    const SizedBox(height: 12),
-                  ],
-                  if (expenseBudgets.isNotEmpty) ...[
-                    Text(context.tr('budget.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
-                    const SizedBox(height: 4),
-                    _summaryRow(context, 'budget.planned', store.fmt(expensePlanned)),
-                    _summaryRow(context, 'budget.spent_total', store.fmt(expenseSpent), expenseSpent > expensePlanned ? AppColors.expense : null),
-                    _summaryRow(context, 'budget.remaining', store.fmt(expensePlanned - expenseSpent), (expensePlanned - expenseSpent) >= 0 ? AppColors.success : AppColors.expense),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
           if (incomeBudgets.isNotEmpty) ...[
             Text(context.tr('budget.income'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.income)),
             const SizedBox(height: 8),
@@ -171,6 +115,8 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
             const SizedBox(height: 8),
             ...expenseBudgets.map((b) => _budgetItem(context, b, store)),
           ],
+          const SizedBox(height: 20),
+          _buildActualSection(context, store),
           const SizedBox(height: 24),
         ],
       ),
@@ -555,13 +501,60 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     return Color(int.parse('FF$hex', radix: 16));
   }
 
-  Widget _statBlock(BuildContext context, String label, String formattedAmount, Color color) {
+  Widget _buildActualSection(BuildContext context, FinanceStore store) {
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final monthOps = store.operations.where((o) => !o.isDeleted && isInPeriod(o.date, startOfMonth, endOfMonth)).toList();
+
+    final expenseActual = <String, double>{};
+    final incomeActual = <String, double>{};
+    for (final o in monthOps) {
+      if (o.type == 'expense') {
+        expenseActual[o.categoryId ?? ''] = (expenseActual[o.categoryId ?? ''] ?? 0) + o.amount;
+      } else if (o.type == 'income') {
+        incomeActual[o.categoryId ?? ''] = (incomeActual[o.categoryId ?? ''] ?? 0) + o.amount;
+      }
+    }
+
+    Widget row(String categoryId, double amount, bool isIncome) {
+      final cat = store.getCategory(categoryId);
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          children: [
+            if (cat != null) Icon(categoryIconFor(cat, allCategories: store.categories), size: 16, color: isIncome ? AppColors.income : AppColors.expense),
+            if (cat != null) const SizedBox(width: 8),
+            Expanded(child: Text(tCat(context, cat?.name ?? categoryId), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14))),
+            Text(store.fmt(amount), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isIncome ? AppColors.income : AppColors.expense)),
+          ],
+        ),
+      );
+    }
+
+    final expenseCats = expenseActual.keys.where((k) => (expenseActual[k] ?? 0) > 0).toList();
+    final incomeCats = incomeActual.keys.where((k) => (incomeActual[k] ?? 0) > 0).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(height: 4),
-        Text(formattedAmount, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: color)),
+        Text(context.tr('budget.actual_title'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        const SizedBox(height: 8),
+        if (expenseCats.isEmpty && incomeCats.isEmpty)
+          Text(context.tr('budget.actual_empty'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))
+        else ...[
+          if (expenseCats.isNotEmpty) ...[
+            Text(context.tr('budget.expense'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.expense)),
+            const SizedBox(height: 4),
+            ...expenseCats.map((k) => row(k, expenseActual[k]!, false)),
+            const SizedBox(height: 8),
+          ],
+          if (incomeCats.isNotEmpty) ...[
+            Text(context.tr('budget.income'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.income)),
+            const SizedBox(height: 4),
+            ...incomeCats.map((k) => row(k, incomeActual[k]!, true)),
+          ],
+        ],
       ],
     );
   }

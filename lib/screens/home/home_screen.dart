@@ -28,6 +28,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   static bool _plannedSynced = false;
+  static bool _goalsSynced = false;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +38,12 @@ class HomeScreen extends StatelessWidget {
           _plannedSynced = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             plannedPayments.syncFromServer();
+          });
+        }
+        if (!_goalsSynced) {
+          _goalsSynced = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            store.refreshGoals();
           });
         }
         final indicators = calcFinHealth(store.accounts, store.operations, store.budgets, store.rates);

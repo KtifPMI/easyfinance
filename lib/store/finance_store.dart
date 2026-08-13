@@ -493,6 +493,32 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Refreshes only the goals list from the server (targets + templates).
+  Future<void> refreshGoals() async {
+    if (!authService.isAuthenticated) return;
+    final api = authService.apiService;
+    try {
+      final targets = await api.getTargets();
+      final targetIds = targets.map((t) => t['id']?.toString()).whereType<String>().toSet();
+      _goals.removeWhere((g) => targetIds.contains(g.id));
+      for (final g in targets.where((t) => t['visible']?.toString() != '0').map((g) => Goal.fromJson(g))) {
+        _goals.add(g);
+      }
+    } catch (_) {}
+    try {
+      final templateGoals = await api.getGoalTemplates();
+      final ids = _goals.map((g) => g.id).toSet();
+      for (final g in templateGoals.map((g) => Goal.fromOpPattern(g))) {
+        if (ids.contains(g.id)) continue;
+        _goals.add(g);
+        ids.add(g.id);
+      }
+    } catch (e) {
+      debugPrint('getGoalTemplates error: $e');
+    }
+    notifyListeners();
+  }
+
   void _generateRecommendations() {
     _recommendations = [];
     final now = DateTime.now();

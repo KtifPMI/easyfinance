@@ -50,8 +50,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
           _customFrom = DateTime(today.year, today.month, today.day - 29);
           _customTo = today;
         case 'year':
-          _customFrom = DateTime(today.year - 1, today.month, today.day);
-          _customTo = today;
+          _customFrom = DateTime(today.year, 1, 1);
+          _customTo = DateTime(today.year, 12, 31);
       }
     });
   }
@@ -140,11 +140,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
                   Expanded(child: Text(_periodLabel(), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context)), textAlign: TextAlign.center)),
                   if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
-                  IconButton(
-                    icon: Icon(_isCustomPeriod ? Icons.clear : Icons.date_range, size: 20, color: _isCustomPeriod ? AppColors.danger : AppColors.textSecondaryFor(context)),
+                  TextButton.icon(
+                    icon: Icon(_isCustomPeriod ? Icons.clear : Icons.date_range, size: 20, color: _isCustomPeriod ? AppColors.danger : AppColors.primary),
+                    label: Text(_isCustomPeriod ? context.tr('reports.clear_period') : context.tr('reports.choose_period'), style: TextStyle(fontSize: 13, color: _isCustomPeriod ? AppColors.danger : AppColors.primary)),
                     onPressed: _isCustomPeriod ? () => setState(() { _customFrom = null; _customTo = null; _preset = null; }) : _pickPeriod,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                   ),
                 ],
               ),
@@ -192,7 +192,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('reports.by_category'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(context.tr('reports.expense'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   Row(
                     children: [
                       IconButton(
@@ -236,7 +236,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(context.tr('reports.by_category_income'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  Text(context.tr('reports.income'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   Row(
                     children: [
                       IconButton(

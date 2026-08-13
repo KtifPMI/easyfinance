@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/goal.dart';
@@ -99,6 +100,15 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           if (cats.isNotEmpty) {
             _categoryId = cats.keys.first;
             _categoryName = cats[_categoryId]!;
+            SharedPreferences.getInstance().then((p) {
+              final saved = p.getString('goal_cat_${widget.goalId}');
+              if (saved != null && cats.containsKey(saved) && mounted) {
+                setState(() {
+                  _categoryId = saved;
+                  _categoryName = cats[saved]!;
+                });
+              }
+            });
           }
         }
       }
@@ -259,8 +269,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         currencyId: _currencyId,
       );
     } else {
+      final newId = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
       await store.addGoal(Goal(
-        id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+        id: newId,
         title: _titleCtrl.text.trim(),
         targetAmount: total,
         currentAmount: current,
@@ -270,6 +281,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
         currencyId: _currencyId,
       ));
+      if (_categoryId != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('goal_cat_$newId', _categoryId!);
+      }
     }
     if (!mounted) return;
     if (store.error != null) {
@@ -417,21 +432,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               onChanged: (_) => setState(() {}),
             ),
             Text(context.tr('goals.calc_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-            const SizedBox(height: 12),
-
-            _label(_flabel(context, 'goals.initial_payment', 'goals.save_initial')),
-            TextFormField(
-              controller: _initialCtrl,
-              decoration: _decoration(),
-              keyboardType: TextInputType.number,
-              onChanged: (_) {
-                if (_targetDate != null && _targetDate!.isAfter(_firstPaymentDate ?? DateTime.now())) {
-                  _recalcFromDate();
-                } else {
-                  _recalcFromMonthly();
-                }
-              },
-            ),
             const SizedBox(height: 12),
 
             _label(_flabel(context, 'goals.first_payment_date', 'goals.save_first_date')),

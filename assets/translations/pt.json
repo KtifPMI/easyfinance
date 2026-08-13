@@ -278,7 +278,7 @@
   "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Modo Escuro",
   "settings.pin_code": "Código PIN",
-  "settings.show_kopeks": "Mostrar kopeks",
+  "settings.show_kopeks": "Formato de exibição 0.00",
   "settings.tariff": "Tarifa",
   "settings.tariff_free": "Grátis",
   "settings.notifications": "Notificações",
