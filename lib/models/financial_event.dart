@@ -19,6 +19,7 @@ class FinancialEvent {
   final String? weekDays; // 7 chars, Mon..Sun, '1'/'0'
   final String? dateStart;
   final String? dateEnd;
+  final int? repeatCount; // fixed number of occurrences (count mode); null = unlimited
   final String? time; // 'HH:MM:SS' from the server, if any
   final List<String> acceptedDates; // 'YYYY-MM-DD' occurrences already confirmed
 
@@ -43,6 +44,7 @@ class FinancialEvent {
     this.weekDays,
     this.dateStart,
     this.dateEnd,
+    this.repeatCount,
     this.time,
     this.acceptedDates = const [],
   });
@@ -58,25 +60,24 @@ class FinancialEvent {
     final daysInMonth = DateTime(year, mon + 1, 0).day;
     final List<DateTime> result = [];
 
-    if (dateEnd != null) {
-      final end = _parseDate(dateEnd);
-      if (end != null && DateTime(year, mon).isAfter(DateTime(end.year, end.month))) {
-        return result;
-      }
-    }
+    final start = dateStart != null ? _parseDate(dateStart) : null;
+    final upper = effectiveEndDate();
 
-    // Lower bound: never show occurrences in months strictly before the
-    // chain's start date (e.g. a chain created in August must not appear in
-    // June/July). The start month itself is allowed.
-    if (dateStart != null) {
-      final start = _parseDate(dateStart);
-      if (start != null && DateTime(year, mon).isBefore(DateTime(start.year, start.month))) {
-        return result;
-      }
+    // Skip whole months outside the [start, upper] window.
+    if (upper != null && DateTime(year, mon).isAfter(DateTime(upper.year, upper.month))) {
+      return result;
+    }
+    if (start != null && DateTime(year, mon).isBefore(DateTime(start.year, start.month))) {
+      return result;
     }
 
     void add(int d) {
-      if (d >= 1 && d <= daysInMonth) result.add(DateTime(year, mon, d));
+      if (d >= 1 && d <= daysInMonth) {
+        final dt = DateTime(year, mon, d);
+        if (start != null && dt.isBefore(start)) return;
+        if (upper != null && dt.isAfter(upper)) return;
+        result.add(dt);
+      }
     }
 
     if (repeatMode == 0) {
@@ -90,12 +91,18 @@ class FinancialEvent {
       case 1: // daily
         for (int d = 1; d <= daysInMonth; d++) add(d);
         break;
-      case 7: // weekly — same weekday as the original anchor date
-        final anchor = _parseDate(dateStart) ?? _parseDate(date);
-        if (anchor != null) {
-          final wd = anchor.weekday;
+      case 7: // weekly — use the selected weekdays bitmask when present
+        if (weekDays != null && weekDays!.length == 7) {
           for (int d = 1; d <= daysInMonth; d++) {
-            if (DateTime(year, mon, d).weekday == wd) add(d);
+            if (weekDays![DateTime(year, mon, d).weekday - 1] == '1') add(d);
+          }
+        } else {
+          final anchor = _parseDate(dateStart) ?? _parseDate(date);
+          if (anchor != null) {
+            final wd = anchor.weekday;
+            for (int d = 1; d <= daysInMonth; d++) {
+              if (DateTime(year, mon, d).weekday == wd) add(d);
+            }
           }
         }
         break;
@@ -116,6 +123,39 @@ class FinancialEvent {
         add(dayOfMonth ?? _parseDate(dateStart)?.day ?? _parseDate(date)?.day ?? 1);
     }
     return result;
+  }
+
+  /// Upper bound for occurrences: explicit `dateEnd`, or the last occurrence
+  /// date derived from a fixed `repeatCount` (count mode).
+  DateTime? effectiveEndDate() {
+    if (dateEnd != null && dateEnd!.isNotEmpty && dateEnd != '0000-00-00') {
+      return _parseDate(dateEnd);
+    }
+    if (repeatCount == null || repeatCount! <= 0) return null;
+    final start = _parseDate(dateStart) ?? _parseDate(date);
+    if (start == null) return null;
+    DateTime first = start;
+    if (repeatMode == 7 && weekDays != null && weekDays!.length == 7) {
+      int guard = 0;
+      while (guard < 8 && weekDays![first.weekday - 1] != '1') {
+        first = first.add(const Duration(days: 1));
+        guard++;
+      }
+    }
+    switch (repeatMode) {
+      case 1:
+        return first.add(Duration(days: repeatCount! - 1));
+      case 7:
+        return first.add(Duration(days: 7 * (repeatCount! - 1)));
+      case 30:
+        return DateTime(first.year, first.month + (repeatCount! - 1), first.day);
+      case 90:
+        return DateTime(first.year, first.month + 3 * (repeatCount! - 1), first.day);
+      case 365:
+        return DateTime(first.year + (repeatCount! - 1), first.month, first.day);
+      default:
+        return first;
+    }
   }
 
   /// Next future occurrence on or after [from] (inclusive), within 3 years.
@@ -172,6 +212,7 @@ class FinancialEvent {
     if (weekDays != null) 'weekDays': weekDays,
     if (dateStart != null) 'dateStart': dateStart,
     if (dateEnd != null) 'dateEnd': dateEnd,
+    if (repeatCount != null) 'repeatCount': repeatCount,
     if (time != null) 'time': time,
     'acceptedDates': acceptedDates,
   };
@@ -197,6 +238,7 @@ class FinancialEvent {
     weekDays: json['weekDays'] as String?,
     dateStart: json['dateStart'] as String?,
     dateEnd: json['dateEnd'] as String?,
+    repeatCount: json['repeatCount'] as int?,
     time: json['time'] as String?,
     acceptedDates: (json['acceptedDates'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
   );

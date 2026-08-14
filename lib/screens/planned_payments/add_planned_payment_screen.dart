@@ -770,6 +770,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       weekDays: weekDays,
       dateStart: dateStart,
       dateEnd: dateEnd,
+      repeatCount: _limitMode == 'count' ? int.tryParse(_repeatCountCtrl().text.trim()) : null,
       time: timeStr,
       enabled: widget.existing?.enabled ?? true,
     );

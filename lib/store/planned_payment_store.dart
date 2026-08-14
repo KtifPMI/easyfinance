@@ -196,6 +196,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       weekDays: first['week_days']?.toString(),
       dateStart: earliestStartStr,
       dateEnd: dateEnd,
+      repeatCount: int.tryParse(first['count']?.toString() ?? first['repeat_count']?.toString() ?? ''),
       time: first['time']?.toString(),
       acceptedDates: acceptedDates,
     );
@@ -337,6 +338,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     weekDays: e.weekDays,
     dateStart: e.dateStart,
     dateEnd: e.dateEnd,
+    repeatCount: e.repeatCount,
     acceptedDates: acceptedDates ?? e.acceptedDates,
   );
 
@@ -361,6 +363,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     weekDays: e.weekDays,
     dateStart: e.dateStart,
     dateEnd: e.dateEnd,
+    repeatCount: e.repeatCount,
     acceptedDates: e.acceptedDates,
   );
 
@@ -399,6 +402,9 @@ class PlannedPaymentStore extends ChangeNotifier {
       // not the day-of-month.
       if (recurring) 'every_day': e.repeatMode,
       'date_start': e.dateStart ?? date,
+      if (e.repeatCount != null) 'count': e.repeatCount,
+      if (e.repeatCount != null && (e.dateEnd == null || e.dateEnd!.isEmpty || e.dateEnd == '0000-00-00') && e.effectiveEndDate() != null)
+        'date_end': _ymd(e.effectiveEndDate()!),
       if (e.dateEnd != null && e.dateEnd!.isNotEmpty && e.dateEnd != '0000-00-00') 'date_end': e.dateEnd,
       // Server `repeat`: "1" = one-time; "0" = interval-based (interval lives in `every_day`).
       'repeat': recurring ? '0' : '1',
