@@ -351,9 +351,9 @@ final List<CategoryIconOption> kDefaultCategoryIcons = () {
   final opts = <CategoryIconOption>[];
   for (var n = 1; n <= 26; n++) {
     final catimg = 'catimg$n';
-    final logical = _catIconMap[catimg];
+    final logical = catIconMap[catimg];
     if (logical == null) continue;
-    final color = _catIconColor[catimg] ?? '#6B7280';
+    final color = catIconColor[catimg] ?? '#6B7280';
     final icon = _rootIcons[logical] ?? Icons.circle;
     opts.add(CategoryIconOption(logical: logical, catimg: catimg, icon: icon, color: color));
   }

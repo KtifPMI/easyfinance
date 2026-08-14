@@ -1,4 +1,4 @@
-const Map<String, String> _catIconMap = {
+const Map<String, String> catIconMap = {
   'catimg1': 'food', 'catimg2': 'transport', 'catimg3': 'housing',
   'catimg4': 'shopping', 'catimg5': 'health', 'catimg6': 'entertainment',
   'catimg7': 'education', 'catimg8': 'travel', 'catimg9': 'salary',
@@ -13,7 +13,7 @@ const Map<String, String> _catIconMap = {
   'catimg33': 'entertainment',
 };
 
-const Map<String, String> _catIconColor = {
+const Map<String, String> catIconColor = {
   'catimg1': '#F59E0B', 'catimg2': '#3B82F6', 'catimg3': '#8B5CF6',
   'catimg4': '#EF4444', 'catimg5': '#14B8A6', 'catimg6': '#EC4899',
   'catimg7': '#0EA5E9', 'catimg8': '#A855F7', 'catimg9': '#16A34A',
@@ -53,8 +53,8 @@ class Category {
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
       type: _parseType(json['type']),
-      icon: _catIconMap[iconKey] ?? iconKey,
-      color: _catIconColor[iconKey] ?? '#6B7280',
+      icon: catIconMap[iconKey] ?? iconKey,
+      color: catIconColor[iconKey] ?? '#6B7280',
       parentId: json['parent_id']?.toString(),
       isDefault: custom == '0',
       systemId: json['system_id']?.toString(),
