@@ -298,6 +298,7 @@
   "reports.by_category_income": "Доходы по категориям",
   "reports.preset.week": "За неделю",
   "reports.preset.month": "За месяц",
+  "reports.preset.3months": "3 месяца",
   "reports.preset.year": "За год",
   "reports.choose_period": "Выбрать период",
   "reports.clear_period": "Сбросить период",

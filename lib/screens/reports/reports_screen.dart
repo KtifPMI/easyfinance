@@ -46,8 +46,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         case 'week':
           _customFrom = today.subtract(const Duration(days: 6));
           _customTo = today;
-        case 'month':
-          _customFrom = DateTime(today.year, today.month, today.day - 29);
+        case '3months':
+          _customFrom = DateTime(today.year, today.month - 2, 1);
           _customTo = today;
         case 'year':
           _customFrom = DateTime(today.year, 1, 1);
@@ -153,8 +153,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _presetChip(context, 'week', context.tr('reports.preset.week')),
-                  _presetChip(context, 'month', context.tr('reports.preset.month')),
+                  _presetChip(context, '3months', context.tr('reports.preset.3months')),
                   _presetChip(context, 'year', context.tr('reports.preset.year')),
                 ],
               ),

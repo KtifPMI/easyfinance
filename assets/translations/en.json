@@ -342,6 +342,7 @@
   "reports.by_category_income": "Income by Category",
   "reports.preset.week": "Last week",
   "reports.preset.month": "Last month",
+  "reports.preset.3months": "3 months",
   "reports.preset.year": "This year",
   "reports.choose_period": "Choose period",
   "reports.clear_period": "Clear period",
