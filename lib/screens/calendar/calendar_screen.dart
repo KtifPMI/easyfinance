@@ -219,7 +219,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Expanded(
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: e),
+                onTap: () => _showPlannedActionDialog(context, store, e),
                 child: Row(
                   children: [
                     Container(
@@ -253,23 +253,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ],
                 ),
               ),
-            ),
-            PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert, size: 20, color: AppColors.textSecondaryFor(context)),
-              onSelected: (v) {
-                if (v == 'edit') {
-                  Navigator.pushNamed(context, '/add-planned-payment', arguments: e);
-                } else if (v == 'confirm') {
-                  _confirmCreateOp(context, e, store);
-                } else if (v == 'delete') {
-                  _confirmDeletePlanned(context, e, store);
-                }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(value: 'edit', child: Text(context.tr('calendar.edit_payment'))),
-                PopupMenuItem(value: 'confirm', child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary))),
-                PopupMenuItem(value: 'delete', child: Text(context.tr('calendar.delete_payment'), style: TextStyle(color: AppColors.expense))),
-              ],
             ),
           ],
         ),
@@ -329,6 +312,48 @@ class _CalendarScreenState extends State<CalendarScreen> {
               context.read<PlannedPaymentStore>().remove(e.id);
             },
             child: Text(context.tr('calendar.delete'), style: TextStyle(color: AppColors.expense)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPlannedActionDialog(BuildContext context, FinanceStore store, FinancialEvent e) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(plannedEventTitle(e, store)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('${store.fmt(e.amount)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text(formatDate(e.date), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pushNamed(context, '/add-planned-payment', arguments: e);
+            },
+            child: Text(context.tr('calendar.edit_payment')),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _createPlannedOperation(context, e, store);
+            },
+            child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () => _confirmDeletePlanned(context, e, store),
+            child: Text(context.tr('calendar.delete_payment'), style: TextStyle(color: AppColors.expense)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.tr('calendar.cancel')),
           ),
         ],
       ),

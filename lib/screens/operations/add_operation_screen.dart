@@ -300,17 +300,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             child: Text(context.tr('templates.save_as_template')),
           ),
           TextButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(ctx);
-              await store.deleteOperation(op.id);
-              if (!mounted) return;
-              if (store.error != null) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
-                return;
-              }
-              _popAfterSave(context);
+              Navigator.pushNamed(context, '/operations');
             },
-            child: Text(context.tr('operations.delete'), style: TextStyle(color: AppColors.expense)),
+            child: Text(context.tr('tab.operations')),
           ),
         ],
       ),
