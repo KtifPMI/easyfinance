@@ -169,10 +169,11 @@ class PlannedPaymentStore extends ChangeNotifier {
     final chain = key.startsWith('chain:') ? key.substring(6) : null;
     final serverId = first['id']?.toString();
 
-    // Server `repeat` field is the recurrence type: "1" means a single,
-    // non-recurring occurrence; everything else is an interval-based series
-    // (the interval comes from `every_day`).
+    // Server `repeat`: "1" = one-time, "0" = repeat until `date_end`,
+    // otherwise it is the number of occurrences (the series is expanded
+    // server-side into that many discrete calendar entries).
     final repeatRaw = first['repeat']?.toString();
+    final repeatRawNum = int.tryParse(repeatRaw ?? '');
     final period = repeatRaw == '1' ? 0 : (everyDay ?? 0);
 
     return FinancialEvent(
@@ -196,7 +197,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       weekDays: first['week_days']?.toString(),
       dateStart: earliestStartStr,
       dateEnd: dateEnd,
-      repeatCount: int.tryParse(first['count']?.toString() ?? first['repeat_count']?.toString() ?? ''),
+      repeatCount: (period > 0 && repeatRawNum != null && repeatRawNum! > 0) ? repeatRawNum : null,
       time: first['time']?.toString(),
       acceptedDates: acceptedDates,
     );
@@ -402,12 +403,12 @@ class PlannedPaymentStore extends ChangeNotifier {
       // not the day-of-month.
       if (recurring) 'every_day': e.repeatMode,
       'date_start': e.dateStart ?? date,
-      if (e.repeatCount != null) 'count': e.repeatCount,
-      if (e.repeatCount != null && (e.dateEnd == null || e.dateEnd!.isEmpty || e.dateEnd == '0000-00-00') && e.effectiveEndDate() != null)
-        'date_end': _ymd(e.effectiveEndDate()!),
       if (e.dateEnd != null && e.dateEnd!.isNotEmpty && e.dateEnd != '0000-00-00') 'date_end': e.dateEnd,
-      // Server `repeat`: "1" = one-time; "0" = interval-based (interval lives in `every_day`).
-      'repeat': recurring ? '0' : '1',
+      // Server `repeat`: "1" = one-time, "0" = repeat until `date_end`,
+      // otherwise it is the number of occurrences to generate.
+      'repeat': e.repeatMode == 0
+          ? '1'
+          : (e.repeatCount != null && e.repeatCount! > 0 ? e.repeatCount.toString() : '0'),
       if (e.weekDays != null) 'week_days': e.weekDays,
     };
   }
