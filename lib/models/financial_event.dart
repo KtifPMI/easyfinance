@@ -65,6 +65,16 @@ class FinancialEvent {
       }
     }
 
+    // Lower bound: never show occurrences in months strictly before the
+    // chain's start date (e.g. a chain created in August must not appear in
+    // June/July). The start month itself is allowed.
+    if (dateStart != null) {
+      final start = _parseDate(dateStart);
+      if (start != null && DateTime(year, mon).isBefore(DateTime(start.year, start.month))) {
+        return result;
+      }
+    }
+
     void add(int d) {
       if (d >= 1 && d <= daysInMonth) result.add(DateTime(year, mon, d));
     }

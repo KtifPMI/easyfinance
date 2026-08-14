@@ -379,6 +379,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  Future<void> _createPlannedOperation(BuildContext context, FinancialEvent e, FinanceStore store) async {
+    final planned = context.read<PlannedPaymentStore>();
+    if (e.serverId == null) {
+      // Local-only planned payment (never synced): create a real operation
+      // directly. Server-backed ones are handled by `accept`, which marks the
+      // existing planned operation as accepted — creating it here too would
+      // duplicate it.
+      final now = DateTime.now();
+      final op = Operation(
+        id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+        type: e.type,
+        amount: e.amount,
+        date: e.date.isNotEmpty ? e.date : now.toIso8601String(),
+        accountId: e.accountId ?? store.accounts.firstOrNull?.id ?? '',
+        toAccountId: e.toAccountId,
+        categoryId: e.categoryId,
+        comment: e.comment ?? e.title,
+        tags: e.tags,
+        isPending: false,
+      );
+      await store.addOperation(op);
+    } else {
+      await planned.accept(e, e.date);
+    }
+    if (context.mounted) await store.reloadOperations();
+  }
+
   void _confirmCreateOp(BuildContext context, FinancialEvent e, FinanceStore store) {
     showDialog(
       context: context,
@@ -387,26 +414,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
         content: Text('${store.fmt(e.amount)}\n${context.tr('calendar.confirm_create_op')}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
+          TextButton.icon(
+            icon: const Icon(Icons.arrow_forward),
+            label: Text(context.tr('tab.operations')),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _createPlannedOperation(context, e, store);
+              if (context.mounted) Navigator.pushNamed(context, '/operations');
+            },
+          ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final now = DateTime.now();
-              final op = Operation(
-                id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-                type: e.type,
-                amount: e.amount,
-                date: e.date.isNotEmpty ? e.date : now.toIso8601String(),
-                accountId: e.accountId ?? store.accounts.firstOrNull?.id ?? '',
-                toAccountId: e.toAccountId,
-                categoryId: e.categoryId,
-                comment: e.comment ?? e.title,
-                tags: e.tags,
-                isPending: false,
-              );
-              await store.addOperation(op);
-              if (context.mounted) {
-                context.read<PlannedPaymentStore>().accept(e, e.date);
-              }
+              await _createPlannedOperation(context, e, store);
             },
             child: Text(context.tr('calendar.create_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),

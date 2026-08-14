@@ -69,6 +69,17 @@ class PlannedPaymentStore extends ChangeNotifier {
     try {
       final data = await _apiClient.getCalendarEventsV2();
       final collapsed = _collapseServerEvents(data);
+
+      // Also fetch already-accepted occurrences so confirmed dates survive a
+      // sync — once accepted, the server stops returning them in the default
+      // (non-accepted) list, which would otherwise wipe the accepted state.
+      try {
+        final accepted = await _apiClient.getCalendarEventsV2(accepted: true);
+        _mergeAcceptedDates(collapsed, accepted);
+      } catch (e) {
+        debugPrint('syncFromServer accepted error: $e');
+      }
+
       final localOnly = _events.where((e) => e.serverId == null).toList();
 
       // Replace all server-backed events with the freshly collapsed set,
@@ -79,6 +90,27 @@ class PlannedPaymentStore extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('syncFromServer error: $e');
+    }
+  }
+
+  /// Merges confirmed occurrence dates (fetched with `options=accepted`) into
+  /// the matching collapsed [events] so acceptance is not lost on re-sync.
+  void _mergeAcceptedDates(List<FinancialEvent> events, List<Map<String, dynamic>> accepted) {
+    final byKey = <String, List<String>>{};
+    for (final raw in accepted) {
+      final id = raw['id']?.toString();
+      if (id == null) continue;
+      final chain = raw['chain_id']?.toString();
+      final key = (chain != null && chain.isNotEmpty && chain != '0') ? 'chain:$chain' : 'op:$id';
+      final ad = _parseDate(raw['date']?.toString());
+      if (ad.isNotEmpty) (byKey[key] ??= []).add(ad);
+    }
+    for (int i = 0; i < events.length; i++) {
+      final dates = byKey[events[i].id];
+      if (dates != null && dates.isNotEmpty) {
+        final merged = <String>{...events[i].acceptedDates, ...dates}.toList();
+        events[i] = _copyEvent(events[i], acceptedDates: merged);
+      }
     }
   }
 

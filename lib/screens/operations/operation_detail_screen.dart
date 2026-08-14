@@ -156,10 +156,10 @@ class OperationDetailScreen extends StatelessWidget {
             tooltip: context.tr('operations.edit'),
             onPressed: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': op.type, 'operationId': op.id}),
           ),
-          TextButton.icon(
-            icon: const Icon(Icons.arrow_back),
-            label: Text(context.tr('tab.operations')),
-            onPressed: () => Navigator.pop(context),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, size: 24),
+            tooltip: context.tr('operations.delete'),
+            onPressed: () => _confirmDelete(context, store, op),
           ),
         ],
       ),

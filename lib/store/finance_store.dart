@@ -1060,6 +1060,26 @@ class FinanceStore extends ChangeNotifier {
     return _categories.cast<cat.Category?>().firstWhere((c) => c!.type == '0' && (c.name == 'Перевод' || c.name.contains('еревод')), orElse: () => null)?.id;
   }
 
+  /// Re-fetches the operation list from the server. Used after an operation is
+  /// created or accepted elsewhere (e.g. confirming a planned payment) so the
+  /// ledger reflects it immediately without a manual pull-to-refresh.
+  Future<void> reloadOperations() async {
+    if (!authService.isAuthenticated) return;
+    final pending = _operations.where((op) => op.isPending).toList();
+    try {
+      _operations = await authService.apiService.getOperations();
+    } on ApiException catch (e) {
+      _error = e.message;
+    } catch (e) {
+      _error ??= 'Ошибка загрузки операций: $e';
+    }
+    final serverIds = _operations.map((o) => o.id).toSet();
+    for (final p in pending) {
+      if (!serverIds.contains(p.id)) _operations.insert(0, p);
+    }
+    notifyListeners();
+  }
+
   Future<void> syncPendingOperations() async {
     if (!authService.isAuthenticated) return;
     final pending = _operations.where((op) => op.isPending).toList();
