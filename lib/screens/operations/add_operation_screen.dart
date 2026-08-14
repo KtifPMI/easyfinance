@@ -681,7 +681,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   }
 
   Widget _buildTagSelector(BuildContext context, FinanceStore store) {
-    final availableTags = store.tags.map((t) => t.name).toList();
+    final availableTags = <String>{
+      ...store.tags.map((t) => t.name),
+      for (final op in store.operations) ...store.getTagsForOperation(op),
+    }.toList();
     final customTags = _tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
     final allTags = <String>{
       ..._selectedTags,

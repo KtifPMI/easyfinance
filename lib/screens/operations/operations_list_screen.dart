@@ -539,37 +539,35 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         onChanged: (v) => _advComment = v,
                       ),
 
-                      if (tags.isNotEmpty) ...[
-                        const SizedBox(height: 20),
-                        Text(context.tr('filters.tag'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                        const SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () => _showTagPicker(context, tags, setSheetState),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: AppColors.cardFor(context),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: _advTagName == null ? AppColors.borderFor(context) : AppColors.primary),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.label_outline, size: 18, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.primary),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _advTagName ?? context.tr('filters.all_tags'),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 15, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
-                                  ),
+                      const SizedBox(height: 20),
+                      Text(context.tr('filters.tag'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () => _showTagPicker(context, tags, setSheetState),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardFor(context),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _advTagName == null ? AppColors.borderFor(context) : AppColors.primary),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.label_outline, size: 18, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.primary),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _advTagName ?? context.tr('filters.all_tags'),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 15, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
                                 ),
-                                Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
-                              ],
-                            ),
+                              ),
+                              Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                       const SizedBox(height: 24),
                       SizedBox(
                         width: double.infinity,
