@@ -450,6 +450,54 @@ class ApiClient {
     return post('calendar.accept', params: {'transact_key': _transactKey(), 'operation_id': operationId, 'chain_id': chainId}, body: {'request': {'request_data': {'date': date, 'accepted': 1}}});
   }
 
+  // --- Categories (API v2) ---
+
+  String _isoNow() {
+    final now = DateTime.now();
+    final tz = now.timeZoneOffset;
+    final sign = tz.isNegative ? '-' : '+';
+    final h = tz.inHours.abs().toString().padLeft(2, '0');
+    final m = (tz.inMinutes.abs() % 60).toString().padLeft(2, '0');
+    final p = (int n) => n.toString().padLeft(2, '0');
+    return '${now.year}-${p(now.month)}-${p(now.day)}T${p(now.hour)}:${p(now.minute)}:${p(now.second)}$sign$h:$m';
+  }
+
+  /// Fetches all categories via API v2 `categories.get`.
+  Future<List<Map<String, dynamic>>> getCategoriesV2() async {
+    final data = await get('categories.get');
+    final list = data['categories'] as List<dynamic>? ?? data['data'] as List<dynamic>?;
+    if (list == null) return [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  /// Creates a custom category via API v2 `categories.post`.
+  /// [record] must contain the full category fields (name, type, icon, system_id, ...).
+  Future<Map<String, dynamic>> postCategoryV2(Map<String, dynamic> record) async {
+    return post(
+      'categories.post',
+      params: {'transact_key': _transactKey(), 'options': 'client'},
+      body: {'request': {'request_data': {'categories': [record]}}},
+    );
+  }
+
+  /// Updates a category via API v2 `categories.set`.
+  Future<Map<String, dynamic>> setCategoryV2(String categoryId, Map<String, dynamic> record) async {
+    return post(
+      'categories.set',
+      params: {'transact_key': _transactKey(), 'category_id': categoryId},
+      body: {'request': {'request_data': {'categories': [record]}}},
+    );
+  }
+
+  /// Deletes a category via API v2 `categories.set` (sets `deleted_at`).
+  Future<Map<String, dynamic>> deleteCategoryV2(String categoryId) async {
+    return post(
+      'categories.set',
+      params: {'transact_key': _transactKey(), 'category_id': categoryId},
+      body: {'request': {'request_data': {'categories': [{'id': categoryId, 'deleted_at': _isoNow()}]}}},
+    );
+  }
+
   Future<DebugResponse> getRaw(String method, {Map<String, String>? params}) async {
     final uri = _buildUri(method, params ?? {});
     final response = await _httpClient.get(uri).timeout(_timeout);

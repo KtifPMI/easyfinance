@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title": "EasyFinance",
 
   "tab.home": "Главная",
@@ -213,6 +213,7 @@
   "categories.type": "Тип",
   "categories.type_income": "Доход",
   "categories.type_expense": "Расход",
+  "categories.icon": "Иконка",
   "categories.save": "Сохранить",
   "categories.delete": "Удалить",
   "categories.cancel": "Отмена",

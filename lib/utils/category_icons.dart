@@ -319,6 +319,12 @@ const List<(String, IconData)> _keywordIcons = [
 /// The icon is derived from the top-level parent category (system categories),
 /// so every subcategory (e.g. all automotive ones) shares the same icon.
 IconData categoryIconFor(Category category, {List<Category>? allCategories}) {
+  final own = category.icon.trim().toLowerCase();
+  if (own.isNotEmpty) {
+    final byOwn = _rootIcons[own] ?? _rootIcons[own.replaceAll('_', ' ')];
+    if (byOwn != null) return byOwn;
+  }
+
   final root = _rootCategory(category, allCategories ?? const <Category>[]);
   final byRoot = _rootIcons[root.name.trim().toLowerCase()];
   if (byRoot != null) return byRoot;
@@ -329,6 +335,30 @@ IconData categoryIconFor(Category category, {List<Category>? allCategories}) {
   }
   return Icons.category;
 }
+
+/// A single selectable category icon backed by one of the existing `catimgN` icons.
+class CategoryIconOption {
+  final String logical;
+  final String catimg;
+  final IconData icon;
+  final String color;
+  const CategoryIconOption({required this.logical, required this.catimg, required this.icon, required this.color});
+}
+
+/// Selectable icons offered in the create/edit category UI, derived from the
+/// system `catimg1`..`catimg26` set (each maps to a logical name + Material icon).
+final List<CategoryIconOption> kDefaultCategoryIcons = () {
+  final opts = <CategoryIconOption>[];
+  for (var n = 1; n <= 26; n++) {
+    final catimg = 'catimg$n';
+    final logical = _catIconMap[catimg];
+    if (logical == null) continue;
+    final color = _catIconColor[catimg] ?? '#6B7280';
+    final icon = _rootIcons[logical] ?? Icons.circle;
+    opts.add(CategoryIconOption(logical: logical, catimg: catimg, icon: icon, color: color));
+  }
+  return opts;
+}();
 
 Category _rootCategory(Category category, List<Category> all) {
   var current = category;

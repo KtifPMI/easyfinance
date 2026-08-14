@@ -384,7 +384,9 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      _categories = await api.getCategories();
+      final rawCats = await apiClient.getCategoriesV2();
+      _buildSystemIconMap(rawCats);
+      _categories = rawCats.map((j) => cat.Category.fromJson(j)).toList();
       if (_categories.isEmpty) {
         _categories = [...mockCategories];
       }
@@ -1349,30 +1351,53 @@ class FinanceStore extends ChangeNotifier {
 
   // --- Categories ---
 
+  /// Maps a category's `catimgN` icon to its server `system_id`, built from
+  /// the system categories returned by `categories.get`.
+  Map<String, String> _systemIconToId = {};
+
+  void _buildSystemIconMap(List<Map<String, dynamic>> rawCats) {
+    final map = <String, String>{};
+    for (final j in rawCats) {
+      final sid = j['system_id']?.toString();
+      final iconKey = j['icon']?.toString() ?? '';
+      if (sid != null && sid.isNotEmpty && iconKey.startsWith('catimg')) {
+        map.putIfAbsent(iconKey, () => sid);
+      }
+    }
+    _systemIconToId = map;
+  }
+
+  String _systemIdForLogical(String logical) {
+    final catimg = _categoryIconToApi(logical);
+    return _systemIconToId[catimg]
+        ?? (logical == 'income' || logical == 'other_income' ? '9' : '1');
+  }
+
   Future<void> addCategory(cat.Category c) async {
     _error = null;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
         final typeCode = c.type == 'expense' ? '-1' : '1';
-        final resp = await authService.apiService.addCategory({
-          'categories': [{
-            'name': c.name,
-            'type': typeCode,
-            'icon': _categoryIconToApi(c.icon),
-            'system_id': '0',
-            'custom': '1',
-            if (c.parentId != null) 'parent_id': c.parentId,
-            'created_at': now,
-            'updated_at': now,
-          }]
-        }, options: 'client');
-        final categories = resp['categories'] as List<dynamic>?;
+        final record = {
+          'name': c.name,
+          'type': typeCode,
+          'icon': _categoryIconToApi(c.icon),
+          'system_id': _systemIdForLogical(c.icon),
+          'custom': '1',
+          'parent_id': c.parentId ?? '0',
+          'is_hidden': '0',
+          'created_at': now,
+          'updated_at': now,
+        };
+        final data = await apiClient.postCategoryV2(record);
+        final categories = data['categories'] as List<dynamic>?;
         if (categories != null && categories.isNotEmpty) {
           final serverId = categories[0]['id']?.toString();
           if (serverId != null && serverId.isNotEmpty) {
             _categories.add(cat.Category(
-              id: serverId, name: c.name, type: c.type, icon: c.icon, parentId: c.parentId, isDefault: false,
+              id: serverId, name: c.name, type: c.type, icon: c.icon, color: c.color,
+              parentId: c.parentId, isDefault: false, systemId: _systemIdForLogical(c.icon),
             ));
             await _saveCache();
             notifyListeners();
@@ -1399,16 +1424,24 @@ class FinanceStore extends ChangeNotifier {
       try {
         final now = formatApiDateTime();
         final typeCode = c.type == 'expense' ? '-1' : '1';
-        await authService.apiService.setCategory({
-          'categories': [{
-            'id': c.id,
-            'name': c.name,
-            'type': typeCode,
-            'icon': _categoryIconToApi(c.icon),
-            'parent_id': c.parentId,
-            'updated_at': now,
-          }]
-        }, categoryId: c.id);
+        final record = {
+          'id': c.id,
+          'name': c.name,
+          'type': typeCode,
+          'icon': _categoryIconToApi(c.icon),
+          'system_id': _systemIdForLogical(c.icon),
+          'custom': '1',
+          'parent_id': c.parentId ?? '0',
+          'is_hidden': '0',
+          'created_at': now,
+          'updated_at': now,
+        };
+        await apiClient.setCategoryV2(c.id, record);
+        final idx = _categories.indexWhere((x) => x.id == c.id);
+        if (idx >= 0) _categories[idx] = c;
+        await _saveCache();
+        notifyListeners();
+        return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -1427,10 +1460,11 @@ class FinanceStore extends ChangeNotifier {
     _error = null;
     if (authService.isAuthenticated) {
       try {
-        final now = formatApiDateTime();
-        await authService.apiService.setCategory({
-          'categories': [{'id': id, 'deleted_at': now}]
-        }, categoryId: id);
+        await apiClient.deleteCategoryV2(id);
+        _categories.removeWhere((x) => x.id == id);
+        await _saveCache();
+        notifyListeners();
+        return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;

@@ -33,6 +33,7 @@ class Category {
   final String color;
   final String? parentId;
   final bool isDefault;
+  final String? systemId;
 
   Category({
     required this.id,
@@ -42,6 +43,7 @@ class Category {
     this.color = '#6B7280',
     this.parentId,
     this.isDefault = true,
+    this.systemId,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class Category {
       color: _catIconColor[iconKey] ?? '#6B7280',
       parentId: json['parent_id']?.toString(),
       isDefault: custom == '0',
+      systemId: json['system_id']?.toString(),
     );
   }
 
@@ -62,16 +65,18 @@ class Category {
     'id': id, 'name': name, 'type': type,
     'icon': icon, 'color': color,
     'parent_id': parentId, 'is_default': isDefault,
+    'system_id': systemId,
   };
 
   factory Category.fromLocalJson(Map<String, dynamic> json) => Category(
-    id: json['id']?.toString() ?? '',
+    id: json['id'] is int ? json['id'].toString() : json['id']?.toString() ?? '',
     name: json['name']?.toString() ?? '',
     type: _parseType(json['type']),
     icon: json['icon']?.toString() ?? 'help',
     color: json['color']?.toString() ?? '#6B7280',
     parentId: json['parent_id']?.toString(),
     isDefault: json['is_default'] == true,
+    systemId: json['system_id']?.toString(),
   );
 
   static String _parseType(dynamic type) {

@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title": "EasyFinance",
 
   "tab.home": "Ana Sayfa",
@@ -176,6 +176,7 @@
   "categories.type": "Tür",
   "categories.type_income": "Gelir",
   "categories.type_expense": "Gider",
+  "categories.icon": "Simge",
   "categories.save": "Kaydet",
   "categories.delete": "Sil",
   "categories.cancel": "İptal",

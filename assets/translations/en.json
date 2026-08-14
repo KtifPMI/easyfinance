@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title": "EasyFinance",
 
   "tab.home": "Home",
@@ -201,6 +201,7 @@
   "categories.type": "Type",
   "categories.type_income": "Income",
   "categories.type_expense": "Expense",
+  "categories.icon": "Icon",
   "categories.save": "Save",
   "categories.delete": "Delete",
   "categories.cancel": "Cancel",

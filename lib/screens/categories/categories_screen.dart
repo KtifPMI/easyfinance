@@ -266,6 +266,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     final nameCtrl = TextEditingController();
     var type = 'expense';
     String? parentId;
+    CategoryIconOption? selectedIcon;
 
     showModalBottomSheet(
       context: context,
@@ -273,74 +274,87 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       useSafeArea: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setInner) => Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(context.tr('categories.new'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 16),
-                AppInput(label: context.tr('categories.name'), controller: nameCtrl),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: type,
-                  decoration: InputDecoration(
-                    labelText: context.tr('categories.type'),
-                    filled: true, fillColor: AppColors.cardFor(context),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        builder: (ctx, setInner) {
+          selectedIcon ??= kDefaultCategoryIcons.firstWhere(
+            (o) => o.logical == (type == 'income' ? 'other_income' : 'other_expense'),
+            orElse: () => kDefaultCategoryIcons.first,
+          );
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(context.tr('categories.new'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  const SizedBox(height: 16),
+                  AppInput(label: context.tr('categories.name'), controller: nameCtrl),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: type,
+                    decoration: InputDecoration(
+                      labelText: context.tr('categories.type'),
+                      filled: true, fillColor: AppColors.cardFor(context),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    items: [
+                      DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
+                      DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
+                    ],
+                    onChanged: (v) => setInner(() {
+                      type = v!;
+                      selectedIcon = kDefaultCategoryIcons.firstWhere(
+                        (o) => o.logical == (type == 'income' ? 'other_income' : 'other_expense'),
+                        orElse: () => kDefaultCategoryIcons.first,
+                      );
+                    }),
                   ),
-                  items: [
-                    DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
-                    DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
-                  ],
-                  onChanged: (v) => setInner(() => type = v!),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String?>(
-                  initialValue: parentId,
-                  decoration: InputDecoration(
-                    labelText: context.tr('categories.parent'),
-                    filled: true, fillColor: AppColors.cardFor(context),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    initialValue: parentId,
+                    decoration: InputDecoration(
+                      labelText: context.tr('categories.parent'),
+                      filled: true, fillColor: AppColors.cardFor(context),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    items: [
+                      DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.no_parent'))),
+                      ...store.categories.where((c) => c.type == type && c.isDefault).map((c) => DropdownMenuItem<String?>(
+                        value: c.id,
+                        child: Text(tCat(context, c.name), overflow: TextOverflow.ellipsis),
+                      )),
+                    ],
+                    onChanged: (v) => setInner(() => parentId = v),
                   ),
-                  items: [
-                    DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.no_parent'))),
-                    ...store.categories.where((c) => c.type == type && c.isDefault).map((c) => DropdownMenuItem<String?>(
-                      value: c.id,
-                      child: Text(tCat(context, c.name), overflow: TextOverflow.ellipsis),
-                    )),
-                  ],
-                  onChanged: (v) => setInner(() => parentId = v),
-                ),
-                const SizedBox(height: 16),
-                AppButton(
-                  title: context.tr('categories.save'),
-                  onPressed: () {
-                    final name = nameCtrl.text.trim();
-                    if (name.isEmpty) return;
-                    final icon = type == 'income' ? 'income' : 'other';
-                    store.addCategory(cat.Category(
-                      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
-                      name: name,
-                      type: type,
-                      icon: icon,
-                      color: type == 'income' ? '#16A34A' : '#6B7280',
-                      parentId: parentId,
-                      isDefault: false,
-                    ));
-                    Navigator.pop(ctx);
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
+                  const SizedBox(height: 16),
+                  _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
+                  const SizedBox(height: 16),
+                  AppButton(
+                    title: context.tr('categories.save'),
+                    onPressed: () {
+                      final name = nameCtrl.text.trim();
+                      if (name.isEmpty || selectedIcon == null) return;
+                      store.addCategory(cat.Category(
+                        id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+                        name: name,
+                        type: type,
+                        icon: selectedIcon!.logical,
+                        color: selectedIcon!.color,
+                        parentId: parentId,
+                        isDefault: false,
+                      ));
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -348,6 +362,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
   void _showEditSheet(BuildContext context, FinanceStore store, cat.Category c) {
     final nameCtrl = TextEditingController(text: c.name);
     var type = c.type;
+    String? parentId = c.parentId;
+    final initial = kDefaultCategoryIcons.where((o) => o.logical == c.icon).firstOrNull
+        ?? kDefaultCategoryIcons.where((o) => o.catimg == _storeIconToCatimg(c.icon)).firstOrNull
+        ?? kDefaultCategoryIcons.first;
+    var selectedIcon = initial;
 
     showModalBottomSheet(
       context: context,
@@ -355,56 +374,136 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       useSafeArea: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setInner) => Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(context.tr('categories.edit'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                const SizedBox(height: 16),
-                AppInput(label: context.tr('categories.name'), controller: nameCtrl),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: type,
-                  decoration: InputDecoration(
-                    labelText: context.tr('categories.type'),
-                    filled: true, fillColor: AppColors.cardFor(context),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  ),
+        builder: (ctx, setInner) {
+          final parentCats = store.categories.where((c2) => c2.type == type && c2.isDefault).toList();
+          if (parentId != null && !parentCats.any((x) => x.id == parentId)) {
+            final cur = store.categories.where((x) => x.id == parentId).firstOrNull;
+            if (cur != null) parentCats.add(cur);
+          }
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(context.tr('categories.edit'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                  const SizedBox(height: 16),
+                  AppInput(label: context.tr('categories.name'), controller: nameCtrl),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: type,
+                    decoration: InputDecoration(
+                      labelText: context.tr('categories.type'),
+                      filled: true, fillColor: AppColors.cardFor(context),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
                   items: [
                     DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
                     DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
                   ],
-                  onChanged: (v) => setInner(() => type = v!),
+                  onChanged: (v) => setInner(() {
+                    type = v!;
+                    parentId = null;
+                  }),
                 ),
-                const SizedBox(height: 16),
-                AppButton(
-                  title: context.tr('categories.save'),
-                  onPressed: () {
-                    final name = nameCtrl.text.trim();
-                    if (name.isEmpty) return;
-                    store.updateCategory(cat.Category(
-                      id: c.id,
-                      name: name,
-                      type: type,
-                      icon: c.icon,
-                      color: c.color,
-                      parentId: c.parentId,
-                      isDefault: false,
-                    ));
-                    Navigator.pop(ctx);
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String?>(
+                  initialValue: parentId,
+                    decoration: InputDecoration(
+                      labelText: context.tr('categories.parent'),
+                      filled: true, fillColor: AppColors.cardFor(context),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    ),
+                    items: [
+                      DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.no_parent'))),
+                      ...parentCats.map((c2) => DropdownMenuItem<String?>(
+                        value: c2.id,
+                        child: Text(tCat(context, c2.name), overflow: TextOverflow.ellipsis),
+                      )),
+                    ],
+                    onChanged: (v) => setInner(() => parentId = v),
+                  ),
+                  const SizedBox(height: 16),
+                  _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
+                  const SizedBox(height: 16),
+                  AppButton(
+                    title: context.tr('categories.save'),
+                    onPressed: () {
+                      final name = nameCtrl.text.trim();
+                      if (name.isEmpty) return;
+                      store.updateCategory(cat.Category(
+                        id: c.id,
+                        name: name,
+                        type: type,
+                        icon: selectedIcon.logical,
+                        color: selectedIcon.color,
+                        parentId: parentId,
+                        isDefault: false,
+                      ));
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
+  }
+
+  String _storeIconToCatimg(String logical) {
+    const map = <String, String>{
+      'food': 'catimg1', 'transport': 'catimg2', 'housing': 'catimg3', 'shopping': 'catimg4',
+      'health': 'catimg5', 'entertainment': 'catimg6', 'education': 'catimg7', 'travel': 'catimg8',
+      'salary': 'catimg9', 'freelance': 'catimg10', 'business': 'catimg11', 'gift': 'catimg12',
+      'car': 'catimg13', 'sports': 'catimg14', 'dining': 'catimg15', 'utilities': 'catimg16',
+      'internet': 'catimg17', 'clothing': 'catimg18', 'children': 'catimg19', 'pets': 'catimg20',
+      'taxes': 'catimg21', 'insurance': 'catimg22', 'invest': 'catimg23', 'rent': 'catimg24',
+      'other_income': 'catimg25', 'other_expense': 'catimg26',
+    };
+    return map[logical] ?? 'catimg26';
+  }
+
+  Widget _iconPicker(BuildContext context, CategoryIconOption? selected, ValueChanged<CategoryIconOption> onPick) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(context.tr('categories.icon'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: kDefaultCategoryIcons.map((o) {
+            final isSel = selected?.catimg == o.catimg;
+            final color = _colorFromHex(o.color);
+            return GestureDetector(
+              onTap: () => onPick(o),
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isSel ? color.withValues(alpha: 0.18) : AppColors.cardFor(context),
+                  border: isSel ? Border.all(color: color, width: 2) : Border.all(color: AppColors.textSecondaryFor(context).withValues(alpha: 0.2)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(o.icon, size: 22, color: color),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Color _colorFromHex(String hex) {
+    final h = hex.replaceFirst('#', '');
+    final v = int.tryParse(h.length == 6 ? 'FF$h' : h, radix: 16);
+    return v != null ? Color(v) : AppColors.textSecondaryFor(context);
   }
 }
