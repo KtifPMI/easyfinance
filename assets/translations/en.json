@@ -56,6 +56,8 @@
   "planned_payments.repeat_monthly": "Monthly",
   "planned_payments.repeat_quarterly": "Quarterly",
   "planned_payments.repeat_yearly": "Yearly",
+  "planned_payments.rec_from": "from",
+  "planned_payments.rec_until": "until",
 
   "health.title": "Financial Health",
   "health.status": "Status",

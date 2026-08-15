@@ -80,7 +80,7 @@ class PlannedPaymentsScreen extends StatelessWidget {
           title: Text(plannedEventTitle(e, Provider.of<FinanceStore>(context, listen: false)), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
               color: e.enabled ? AppColors.textFor(context) : AppColors.textSecondaryFor(context))),
           subtitle: Text(
-            e.isRecurring ? '${context.tr('planned_payments.day')} ${e.dayOfMonth}' : formatDate(e.date),
+            recurrenceSummary(context, e),
             maxLines: 1, overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)),
           ),

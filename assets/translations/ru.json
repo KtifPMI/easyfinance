@@ -61,6 +61,8 @@
   "planned_payments.repeat_monthly": "Каждый месяц",
   "planned_payments.repeat_quarterly": "Каждый квартал",
   "planned_payments.repeat_yearly": "Каждый год",
+  "planned_payments.rec_from": "с",
+  "planned_payments.rec_until": "до",
 
   "health.title": "Финансовое состояние",
   "health.status": "Общее",

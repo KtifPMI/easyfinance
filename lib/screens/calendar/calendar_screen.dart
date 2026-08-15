@@ -210,6 +210,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final iconColor = isOverdue ? AppColors.expense : (e.type == 'income' ? AppColors.success : AppColors.expense);
     final statusLabel = accepted ? context.tr('calendar.completed') : isOverdue ? context.tr('calendar.overdue') : null;
     final statusColor = accepted ? AppColors.success : AppColors.expense;
+    final displayDate = occurrenceDate
+        ?? (e.dateStart != null ? DateTime.tryParse(e.dateStart!) : null)
+        ?? (e.date.isNotEmpty ? DateTime.tryParse(e.date) : null);
+    final displayDateStr = displayDate != null
+        ? '${displayDate.year}-${displayDate.month.toString().padLeft(2, '0')}-${displayDate.day.toString().padLeft(2, '0')}'
+        : e.date;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: AppCard(
@@ -238,7 +244,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                           Row(
                             children: [
-                              Text(formatDate(e.date), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                              Text(formatDate(displayDateStr), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                               if (statusLabel != null) ...[
                                 const SizedBox(width: 6),
                                 Text('• $statusLabel', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: statusColor)),
