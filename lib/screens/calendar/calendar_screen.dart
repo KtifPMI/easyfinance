@@ -225,7 +225,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Expanded(
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap: () => _showPlannedActionDialog(context, store, e),
+                onTap: () => _showPlannedActionDialog(context, store, e, occurrenceDate),
                 child: Row(
                   children: [
                     Container(
@@ -324,7 +324,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  void _showPlannedActionDialog(BuildContext context, FinanceStore store, FinancialEvent e) {
+  void _showPlannedActionDialog(BuildContext context, FinanceStore store, FinancialEvent e, [DateTime? occurrenceDate]) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -349,7 +349,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await _createPlannedOperation(context, e, store);
+              await _createPlannedOperation(context, e, store, occurrenceDate);
             },
             child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),
@@ -410,7 +410,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Future<void> _createPlannedOperation(BuildContext context, FinancialEvent e, FinanceStore store) async {
+  Future<void> _createPlannedOperation(BuildContext context, FinancialEvent e, FinanceStore store, [DateTime? occurrenceDate]) async {
     final planned = context.read<PlannedPaymentStore>();
     if (e.serverId == null) {
       // Local-only planned payment (never synced): create a real operation
@@ -432,12 +432,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
       );
       await store.addOperation(op);
     } else {
-      await planned.accept(e, e.date);
+      final ymd = occurrenceDate != null
+          ? '${occurrenceDate.year}-${occurrenceDate.month.toString().padLeft(2, '0')}-${occurrenceDate.day.toString().padLeft(2, '0')}'
+          : e.date;
+      await planned.accept(e, ymd);
     }
     if (context.mounted) await store.reloadOperations();
   }
 
-  void _confirmCreateOp(BuildContext context, FinancialEvent e, FinanceStore store) {
+  void _confirmCreateOp(BuildContext context, FinancialEvent e, FinanceStore store, [DateTime? occurrenceDate]) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -450,14 +453,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
             label: Text(context.tr('tab.operations')),
             onPressed: () async {
               Navigator.pop(ctx);
-              await _createPlannedOperation(context, e, store);
+              await _createPlannedOperation(context, e, store, occurrenceDate);
               if (context.mounted) Navigator.pushNamed(context, '/operations');
             },
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await _createPlannedOperation(context, e, store);
+              await _createPlannedOperation(context, e, store, occurrenceDate);
             },
             child: Text(context.tr('calendar.create_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),
