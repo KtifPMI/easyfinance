@@ -41,31 +41,31 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionHeader(context.tr('rec_settings.food')),
-          _slider('rec_settings.food_high', _prefs.foodHighPct, 10, 80, (v) { setState(() { _prefs.foodHighPct = v; }); _save(); }),
-          _slider('rec_settings.food_medium', _prefs.foodMediumPct, 10, 60, (v) { setState(() { _prefs.foodMediumPct = v; }); _save(); }),
-          _slider('rec_settings.dining_freq', _prefs.diningFrequency.toDouble(), 2, 20, (v) { setState(() { _prefs.diningFrequency = v.round(); }); _save(); }, divisions: 18, suffix: context.tr('rec_settings.times')),
+          _slider('rec_settings.food_high', _prefs.foodHighPct, 10, 80, (v) { setState(() { _prefs.foodHighPct = v; }); _save(); }, hint: 'Доля расходов на продукты и кафе в доходе выше этого порога — совет сократить траты на еду.'),
+          _slider('rec_settings.food_medium', _prefs.foodMediumPct, 10, 60, (v) { setState(() { _prefs.foodMediumPct = v; }); _save(); }, hint: 'Более мягкий порог доли расходов на еду в доходе для менее строгого совета.'),
+          _slider('rec_settings.dining_freq', _prefs.diningFrequency.toDouble(), 2, 20, (v) { setState(() { _prefs.diningFrequency = v.round(); }); _save(); }, divisions: 18, suffix: context.tr('rec_settings.times'), hint: 'Число походов в кафе или рестораны за месяц, начиная с которого появляется совет об общепите.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.budgets')),
-          _slider('rec_settings.budget_near', _prefs.budgetNearPct, 50, 95, (v) { setState(() { _prefs.budgetNearPct = v; }); _save(); }),
-          _slider('rec_settings.no_budget_min', _prefs.noBudgetMinSpend.toDouble(), 100, 10000, (v) { setState(() { _prefs.noBudgetMinSpend = v.round(); }); _save(); }, divisions: 99, suffix: '₽'),
+          _slider('rec_settings.budget_near', _prefs.budgetNearPct, 50, 95, (v) { setState(() { _prefs.budgetNearPct = v; }); _save(); }, hint: 'Если по бюджету потрачено больше этого процента от лимита — совет, что лимит скоро закончится.'),
+          _slider('rec_settings.no_budget_min', _prefs.noBudgetMinSpend.toDouble(), 100, 10000, (v) { setState(() { _prefs.noBudgetMinSpend = v.round(); }); _save(); }, divisions: 99, suffix: '₽', hint: 'Категории без бюджета, по которым потрачено больше этой суммы — предлагаем завести бюджет.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.savings')),
-          _slider('rec_settings.savings_low', _prefs.savingsLowPct, 0, 30, (v) { setState(() { _prefs.savingsLowPct = v; }); _save(); }),
-          _slider('rec_settings.savings_good', _prefs.savingsGoodPct, 10, 50, (v) { setState(() { _prefs.savingsGoodPct = v; }); _save(); }),
-          _slider('rec_settings.housing', _prefs.housingPct, 10, 60, (v) { setState(() { _prefs.housingPct = v; }); _save(); }),
-          _slider('rec_settings.emergency', _prefs.emergencyMonths, 1, 12, (v) { setState(() { _prefs.emergencyMonths = v; }); _save(); }, divisions: 11, suffix: context.tr('rec_settings.months')),
+          _slider('rec_settings.savings_low', _prefs.savingsLowPct, 0, 30, (v) { setState(() { _prefs.savingsLowPct = v; }); _save(); }, hint: 'Если доля сбережений в доходе ниже порога — совет начать откладывать.'),
+          _slider('rec_settings.savings_good', _prefs.savingsGoodPct, 10, 50, (v) { setState(() { _prefs.savingsGoodPct = v; }); _save(); }, hint: 'Целевая доля сбережений в доходе, при достижении которой даём поздравление.'),
+          _slider('rec_settings.housing', _prefs.housingPct, 10, 60, (v) { setState(() { _prefs.housingPct = v; }); _save(); }, hint: 'Доля расходов на жильё в доходе выше порога — совет пересмотреть траты.'),
+          _slider('rec_settings.emergency', _prefs.emergencyMonths, 1, 12, (v) { setState(() { _prefs.emergencyMonths = v; }); _save(); }, divisions: 11, suffix: context.tr('rec_settings.months'), hint: 'Рекомендуемый размер резервного фонда в месяцах расходов.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.cash')),
-          _slider('rec_settings.idle_cash', _prefs.idleCashMin, 10000, 200000, (v) { setState(() { _prefs.idleCashMin = v; }); _save(); }, divisions: 19, suffix: '₽'),
-          _slider('rec_settings.large_cash', _prefs.largeCashMin, 5000, 100000, (v) { setState(() { _prefs.largeCashMin = v; }); _save(); }, divisions: 19, suffix: '₽'),
+          _slider('rec_settings.idle_cash', _prefs.idleCashMin, 10000, 200000, (v) { setState(() { _prefs.idleCashMin = v; }); _save(); }, divisions: 19, suffix: '₽', hint: 'Свободные наличные и остатки на счетах больше этой суммы — совет вложить, чтобы деньги не лежали мёртвым грузом.'),
+          _slider('rec_settings.large_cash', _prefs.largeCashMin, 5000, 100000, (v) { setState(() { _prefs.largeCashMin = v; }); _save(); }, divisions: 19, suffix: '₽', hint: 'Отдельная трата больше этой суммы — совет проверить крупную покупку.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.trends')),
-          _slider('rec_settings.trend_up', _prefs.trendUpPct, 5, 50, (v) { setState(() { _prefs.trendUpPct = v; }); _save(); }),
-          _slider('rec_settings.spike', _prefs.spikePct, 20, 200, (v) { setState(() { _prefs.spikePct = v; }); _save(); }),
-          _slider('rec_settings.recurring', _prefs.recurringMonths.toDouble(), 2, 12, (v) { setState(() { _prefs.recurringMonths = v.round(); }); _save(); }, divisions: 10, suffix: context.tr('rec_settings.months')),
-          _slider('rec_settings.single_cat', _prefs.singleCatDominancePct, 20, 80, (v) { setState(() { _prefs.singleCatDominancePct = v; }); _save(); }),
-          _slider('rec_settings.weekend', _prefs.weekendRatioPct, 30, 90, (v) { setState(() { _prefs.weekendRatioPct = v; }); _save(); }),
-          _slider('rec_settings.top_cat', _prefs.topCatMinPct, 5, 40, (v) { setState(() { _prefs.topCatMinPct = v; }); _save(); }),
+          _slider('rec_settings.trend_up', _prefs.trendUpPct, 5, 50, (v) { setState(() { _prefs.trendUpPct = v; }); _save(); }, hint: 'Рост расходов по сравнению с прошлым месяцем больше порога — совет про тренд вверх.'),
+          _slider('rec_settings.spike', _prefs.spikePct, 20, 200, (v) { setState(() { _prefs.spikePct = v; }); _save(); }, hint: 'Всплеск по категории выше среднего на этот процент — совет о разовом скачке.'),
+          _slider('rec_settings.recurring', _prefs.recurringMonths.toDouble(), 2, 12, (v) { setState(() { _prefs.recurringMonths = v.round(); }); _save(); }, divisions: 10, suffix: context.tr('rec_settings.months'), hint: 'Число месяцев подряд с одним и тем же магазином или платежом — помечаем как регулярный платёж.'),
+          _slider('rec_settings.single_cat', _prefs.singleCatDominancePct, 20, 80, (v) { setState(() { _prefs.singleCatDominancePct = v; }); _save(); }, hint: 'Если одна категория занимает больше этого процента всех расходов — совет о сильной зависимости.'),
+          _slider('rec_settings.weekend', _prefs.weekendRatioPct, 30, 90, (v) { setState(() { _prefs.weekendRatioPct = v; }); _save(); }, hint: 'Доля трат в выходные выше порога — совет обратить внимание на weekend-траты.'),
+          _slider('rec_settings.top_cat', _prefs.topCatMinPct, 5, 40, (v) { setState(() { _prefs.topCatMinPct = v; }); _save(); }, hint: 'Категория, превышающая этот процент расходов — попадает в топ-категории.'),
           const SizedBox(height: 32),
         ],
       ),
@@ -79,7 +79,7 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
     );
   }
 
-  Widget _slider(String label, double value, double min, double max, ValueChanged<double> onChanged, {int? divisions, String? suffix}) {
+  Widget _slider(String label, double value, double min, double max, ValueChanged<double> onChanged, {int? divisions, String? suffix, String? hint}) {
     final displayVal = value == value.roundToDouble() && value < 1000 ? value.round().toString() : value.toStringAsFixed(value < 100 ? 1 : 0);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -95,6 +95,11 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
                 Text('$displayVal${suffix != null ? ' $suffix' : '%'}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary)),
               ],
             ),
+            if (hint != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 6),
+                child: Text(hint, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+              ),
             SliderTheme(
               data: SliderThemeData(
                 activeTrackColor: AppColors.primary,
