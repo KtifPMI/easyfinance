@@ -2155,7 +2155,7 @@ class FinanceStore extends ChangeNotifier {
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
-        await authService.apiService.setTag({'name': tag.name, 'deleted_at': now}, tagId: id);
+        await authService.apiService.setTag({'id': id, 'name': tag.name, 'deleted_at': now}, tagId: id);
       } catch (e) {
         debugPrint('deleteTag error: $e');
       }
