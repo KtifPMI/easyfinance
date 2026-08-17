@@ -35,11 +35,13 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
 
   final moneyMonths = _calcMoneyMonths(accounts, operations, now, rates);
   final moneyVal = (moneyMonths / 6.0 * 100).clamp(0.0, 100.0);
-  final budgetVal = _calcBudget(budgets);
-  final debtVal = _calcDebt(accounts, operations, now, rates);
+  final budgetRaw = _calcBudget(budgets);
+  final budgetVal = (100 - budgetRaw).clamp(0.0, 100.0);
+  final debtRaw = _calcDebt(accounts, operations, now, rates);
+  final debtVal = (100 - debtRaw).clamp(0.0, 100.0);
   final incomeRaw = _calcIncomeRaw(operations, accounts, now, rates);
   final incomeVal = (incomeRaw / 20.0 * 100).clamp(0.0, 100.0);
-  final finStateVal = _calcFinState(moneyMonths, budgetVal, debtVal, incomeRaw);
+  final finStateVal = _calcFinState(moneyMonths, budgetRaw, debtRaw, incomeRaw);
 
   return FinHealthIndicators(
     finState: finStateVal,
@@ -48,8 +50,8 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
     debt: debtVal,
     income: incomeVal,
     moneyTip: _moneyTip(moneyMonths),
-    budgetTip: _budgetTip(budgetVal),
-    debtTip: _debtTip(debtVal),
+    budgetTip: _budgetTip(budgetRaw),
+    debtTip: _debtTip(debtRaw),
     incomeTip: _incomeTip(incomeRaw),
     finStateTip: _finStateTip(finStateVal),
   );
@@ -110,8 +112,7 @@ double _calcBudget(List<Budget> budgets) {
   final active = budgets.where((b) => !b.isDeleted).toList();
   final totalPlanned = active.fold<double>(0, (s, b) => s + b.limit);
   final totalSpent = active.fold<double>(0, (s, b) => s + b.spent);
-  if (totalSpent == 0) return 100;
-  if (totalPlanned == 0) return 0;
+  if (totalPlanned == 0 || totalSpent == 0) return 0;
   return ((1 - totalSpent / totalPlanned) * 100).clamp(0.0, 100.0);
 }
 
@@ -126,8 +127,6 @@ double _calcDebt(List<Account> accounts, List<Operation> operations, DateTime no
   }).toList();
 
   final creditPayments = _calcCreditPayments(monthOps, accounts, rates);
-  if (creditPayments == 0) return 100;
-
   final income = monthOps
       .where((o) => o.type == 'income')
       .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
@@ -158,7 +157,7 @@ double _calcIncomeRaw(List<Operation> operations, List<Account> accounts, DateTi
   final totalExp = expenses3m + creditPayments;
   if (totalExp == 0) return 20;
 
-  return (((income3m / totalExp) - 1) * 500).clamp(0.0, 20.0);
+  return (((income3m / totalExp) - 1) * 100).clamp(0.0, 20.0);
 }
 
 double _calcFinState(double moneyMonths, double budget, double debt, double incomeRaw) {
@@ -167,7 +166,7 @@ double _calcFinState(double moneyMonths, double budget, double debt, double inco
       if (value <= ranges[i + 1]) {
         final span = ranges[i + 1] - ranges[i];
         final normalized = span > 0 ? ((value - ranges[i]) / span).clamp(0.0, 1.0) : 0.0;
-        return (i + 1 + normalized).clamp(1.0, 3.0);
+        return (i + normalized).clamp(0.0, 3.0);
       }
     }
     return 3.0;
