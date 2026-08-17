@@ -182,7 +182,6 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     final forecastPct = getBudgetForecastPercent(b);
     final color = budgetForecastColor(forecastPct);
     final spentPct = b.limit > 0 ? (b.spent / b.limit * 100) : 0.0;
-    final spentColor = spentPct >= 100 ? AppColors.danger : spentPct >= 80 ? AppColors.warning : AppColors.success;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
@@ -229,38 +228,8 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                 ],
               ),
               const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  height: 4,
-                  color: AppColors.borderFor(context),
-                  child: FractionallySizedBox(
-                    widthFactor: (spentPct / 100).clamp(0.0, 1.0),
-                    child: Container(color: spentColor),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                  Text('${spentPct.round()}%', style: TextStyle(fontSize: 12, color: spentColor, fontWeight: FontWeight.w600)),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Container(
-                  height: 4,
-                  color: AppColors.borderFor(context),
-                  child: FractionallySizedBox(
-                    widthFactor: (forecastPct / 100).clamp(0.0, 1.0),
-                    child: Container(color: color),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
+              ProgressBar(percent: spentPct, color: color),
+              const SizedBox(height: 6),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

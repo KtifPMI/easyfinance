@@ -123,8 +123,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
   List<Widget> _buildGrouped(BuildContext context, FinanceStore store, List<cat.Category> cats) {
     final grouped = <String?, List<cat.Category>>{};
     for (final c in cats) {
-      final root = _rootName(c, store.categories);
-      (grouped[root] ??= []).add(c);
+      final parent = (c.parentId != null && c.parentId!.isNotEmpty)
+          ? store.categories.where((p) => p.id == c.parentId).firstOrNull
+          : null;
+      (grouped[parent?.name] ??= []).add(c);
     }
     // Sort groups: system categories first, then custom
     final entries = grouped.entries.toList();
@@ -178,16 +180,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     ];
   }
 
-  String? _rootName(cat.Category c, List<cat.Category> all) {
-    cat.Category? current = c;
-    final seen = <String>{};
-    while (current?.parentId != null && current!.parentId!.isNotEmpty) {
-      if (!seen.add(current.id)) break;
-      current = all.where((p) => p.id == current!.parentId).firstOrNull;
-    }
-    return current != null && current.parentId == null ? current.name : null;
-  }
-
   Widget _groupLabel(BuildContext context, String name) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 4, left: 4),
@@ -231,26 +223,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   ],
                 ),
               ),
-              if (isSystem)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: Icon(Icons.lock_outline, size: 16, color: AppColors.textSecondaryFor(context)),
-                )
-              else
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () => _showEditSheet(context, store, c),
-                      child: Icon(Icons.edit_outlined, size: 18, color: AppColors.textSecondaryFor(context)),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => _confirmDelete(context, store, c),
-                      child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
-                    ),
-                  ],
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => _showEditSheet(context, store, c),
+                    child: Icon(Icons.edit_outlined, size: 18, color: AppColors.textSecondaryFor(context)),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _confirmDelete(context, store, c),
+                    child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

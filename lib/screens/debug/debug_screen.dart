@@ -59,6 +59,8 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('targets.post', 'targets.post'),
     _MethodItem('targets.set', 'targets.set'),
     _MethodItem('tags.get', 'tags.get'),
+    _MethodItem('tags.post', 'tags.post'),
+    _MethodItem('tags.set', 'tags.set'),
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
     _MethodItem('calendar.get', 'calendar.get'),
   ];
@@ -294,6 +296,29 @@ class _DebugScreenState extends State<DebugScreen> {
         {
           "id": "TARGET_ID",
           "amount_done": 50000
+        }
+      ]
+    }
+  }
+}''',
+    'tags.post': '''{
+  "request": {
+    "request_data": {
+      "tags": [
+        {
+          "name": "Test Tag"
+        }
+      ]
+    }
+  }
+}''',
+    'tags.set': '''{
+  "request": {
+    "request_data": {
+      "tags": [
+        {
+          "id": "TAG_ID",
+          "name": "Renamed Tag"
         }
       ]
     }
