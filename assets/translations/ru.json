@@ -208,6 +208,7 @@
 
   "categories.title": "РљР°С‚РµРіРѕСЂРёРё",
   "categories.popular": "РџРѕРїСѓР»СЏСЂРЅС‹Рµ РєР°С‚РµРіРѕСЂРёРё",
+  "categories.parents": "Родительские категории",
   "categories.incomes": "Р”РѕС…РѕРґС‹",
   "categories.expenses": "Р Р°СЃС…РѕРґС‹",
   "categories.edit": "Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ РєР°С‚РµРіРѕСЂРёСЋ",
@@ -805,6 +806,7 @@
   "add_planned.section_schedule": "Р Р°СЃРїРёСЃР°РЅРёРµ",
   "add_planned.section_extra": "Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ"
 }
+
 
 
 

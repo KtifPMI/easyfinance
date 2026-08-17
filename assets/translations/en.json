@@ -753,6 +753,7 @@
   "home.money": "Money",
   "budget.forecast": "Forecast",
   "categories.popular": "Popular categories",
+  "categories.parents": "Parent categories",
   "common.cancel": "Cancel",
   "common.no_results": "Nothing found",
   "common.skip": "Skip",
@@ -788,6 +789,7 @@
   "add_planned.section_schedule": "Schedule",
   "add_planned.section_extra": "Additional"
 }
+
 
 
 

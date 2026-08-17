@@ -682,6 +682,7 @@
   "home.money": "Nakit",
   "budget.forecast": "Tahmin",
   "categories.popular": "PopГјler kategoriler",
+  "categories.parents": "Üst kategoriler",
   "common.cancel": "Д°ptal",
   "common.no_results": "SonuГ§ bulunamadД±",
   "common.skip": "Atla",
@@ -717,6 +718,7 @@
   "add_planned.section_schedule": "Zamanlama",
   "add_planned.section_extra": "Ek"
 }
+
 
 
 

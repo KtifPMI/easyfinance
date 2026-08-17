@@ -682,6 +682,7 @@
   "home.money": "Dinheiro",
   "budget.forecast": "PrevisГЈo",
   "categories.popular": "Categorias populares",
+  "categories.parents": "Categorias principais",
   "common.cancel": "Cancelar",
   "common.no_results": "Nenhum resultado",
   "common.skip": "Pular",
@@ -717,6 +718,7 @@
   "add_planned.section_schedule": "Agendamento",
   "add_planned.section_extra": "Adicional"
 }
+
 
 
 

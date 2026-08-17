@@ -710,6 +710,7 @@
   "home.money": "Geld",
   "budget.forecast": "Prognose",
   "categories.popular": "Beliebte Kategorien",
+  "categories.parents": "Übergeordnete Kategorien",
   "common.cancel": "Abbrechen",
   "common.no_results": "Nichts gefunden",
   "common.skip": "Гњberspringen",
@@ -745,6 +746,7 @@
   "add_planned.section_schedule": "Zeitplan",
   "add_planned.section_extra": "ZusР“В¤tzlich"
 }
+
 
 
 

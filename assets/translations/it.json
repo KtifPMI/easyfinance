@@ -682,6 +682,7 @@
   "home.money": "Denaro",
   "budget.forecast": "Previsione",
   "categories.popular": "Categorie popolari",
+  "categories.parents": "Categorie principali",
   "common.cancel": "Annulla",
   "common.no_results": "Nessun risultato",
   "common.skip": "Salta",
@@ -717,6 +718,7 @@
   "add_planned.section_schedule": "Programmazione",
   "add_planned.section_extra": "Aggiuntivo"
 }
+
 
 
 

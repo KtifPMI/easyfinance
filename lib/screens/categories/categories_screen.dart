@@ -97,8 +97,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         : SingleChildScrollView(child: Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Column(children: [
-                              ..._buildFrequent(context, store, 'income'),
-                              ..._buildGrouped(context, store, incomes),
+                              ..._buildParents(context, store, 'income'),
+                              ..._buildGrouped(context, store, incomes.where((c) => c.parentId != null && c.parentId!.isNotEmpty).toList()),
                             ]),
                           )),
                     expenses.isEmpty
@@ -106,8 +106,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         : SingleChildScrollView(child: Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: Column(children: [
-                              ..._buildFrequent(context, store, 'expense'),
-                              ..._buildGrouped(context, store, expenses),
+                              ..._buildParents(context, store, 'expense'),
+                              ..._buildGrouped(context, store, expenses.where((c) => c.parentId != null && c.parentId!.isNotEmpty).toList()),
                             ]),
                           )),
                   ],
@@ -167,6 +167,17 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     ];
   }
 
+  List<Widget> _buildParents(BuildContext context, FinanceStore store, String type) {
+    final parents = store.categories
+        .where((c) => c.type == type && (c.parentId == null || c.parentId!.isEmpty))
+        .toList();
+    if (parents.isEmpty) return [];
+    return [
+      _groupLabel(context, context.tr('categories.parents')),
+      ...parents.map((c) => _categoryTile(context, store, c)),
+    ];
+  }
+
   String? _rootName(cat.Category c, List<cat.Category> all) {
     cat.Category? current = c;
     final seen = <String>{};
@@ -197,7 +208,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       child: AppCard(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: InkWell(
-          onTap: isSystem ? null : () => _showEditSheet(context, store, c),
+          onTap: () => _showEditSheet(context, store, c),
           borderRadius: BorderRadius.circular(12),
           child: Row(
             children: [
@@ -214,13 +225,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                    Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     if (isSystem)
                       Text(context.tr('categories.system'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
-              if (!isSystem)
+              if (isSystem)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Icon(Icons.lock_outline, size: 16, color: AppColors.textSecondaryFor(context)),
+                )
+              else
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -442,7 +458,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         icon: selectedIcon.logical,
                         color: selectedIcon.color,
                         parentId: parentId,
-                        isDefault: false,
+                        isDefault: c.isDefault,
                       ));
                       Navigator.pop(ctx);
                     },

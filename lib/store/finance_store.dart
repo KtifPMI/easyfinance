@@ -1430,7 +1430,7 @@ class FinanceStore extends ChangeNotifier {
           'type': typeCode,
           'icon': _categoryIconToApi(c.icon),
           'system_id': _systemIdForLogical(c.icon),
-          'custom': '1',
+          'custom': c.isDefault ? '0' : '1',
           'parent_id': c.parentId ?? '0',
           'is_hidden': '0',
           'created_at': now,
