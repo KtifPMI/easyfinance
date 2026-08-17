@@ -12,6 +12,10 @@ class Goal {
   final String? accountId;
   final String? transferAccountId;
   final String? currencyId;
+  final String? comment;
+  final String? category;
+  final int? goalType;
+  final int? goalState;
 
   Goal({
     required this.id,
@@ -27,6 +31,10 @@ class Goal {
     this.accountId,
     this.transferAccountId,
     this.currencyId,
+    this.comment,
+    this.category,
+    this.goalType,
+    this.goalState,
   });
 
   factory Goal.fromJson(Map<String, dynamic> json, {Map<String, double>? accountBalances}) {
@@ -53,6 +61,10 @@ class Goal {
       isCompleted: (json['done']?.toString() == '1') || (amount > 0 && amountDone >= amount),
       accountId: accountId,
       currencyId: json['currency_id']?.toString(),
+      comment: json['comment']?.toString(),
+      category: json['category_id']?.toString(),
+      goalType: int.tryParse(json['type']?.toString() ?? ''),
+      goalState: int.tryParse(json['state']?.toString() ?? ''),
     );
   }
 
@@ -70,6 +82,10 @@ class Goal {
     'accountId': accountId,
     'transferAccountId': transferAccountId,
     'currencyId': currencyId,
+    'comment': comment,
+    'category': category,
+    'goalType': goalType,
+    'goalState': goalState,
   };
 
   factory Goal.fromOpPattern(Map<String, dynamic> json) {
@@ -103,9 +119,13 @@ class Goal {
     accountId: json['accountId'] as String?,
     transferAccountId: json['transferAccountId'] as String?,
     currencyId: json['currencyId'] as String?,
+    comment: json['comment'] as String?,
+    category: json['category'] as String?,
+    goalType: (json['goalType'] as num?)?.toInt(),
+    goalState: (json['goalState'] as num?)?.toInt(),
   );
 
-  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId}) =>
+  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId, String? comment, String? category, int? goalType, int? goalState}) =>
       Goal(
         id: id, title: title ?? this.title, targetAmount: targetAmount ?? this.targetAmount,
         currentAmount: currentAmount ?? this.currentAmount,
@@ -115,6 +135,10 @@ class Goal {
         isCompleted: isCompleted ?? this.isCompleted,
         accountId: accountId ?? this.accountId, transferAccountId: transferAccountId,
         currencyId: currencyId ?? this.currencyId,
+        comment: comment ?? this.comment,
+        category: category ?? this.category,
+        goalType: goalType ?? this.goalType,
+        goalState: goalState ?? this.goalState,
       );
 
   static String _normalizeDate(dynamic value) {

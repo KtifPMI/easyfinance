@@ -86,7 +86,9 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           if (g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) {
             _monthlyCtrl.text = g.monthlyRecommendation!.toStringAsFixed(0);
           }
-          _type = g.accountId != null ? 'save' : 'pay';
+          _type = (g.goalType != null && g.goalType == 2) ? 'pay' : 'save';
+          _status = (g.goalState != null && g.goalState == 1) ? 'favorite' : 'normal';
+          _commentCtrl.text = g.comment ?? '';
           _currencyId = g.currencyId;
           if (g.startDate.isNotEmpty) {
             _firstPaymentDate = DateTime.tryParse(g.startDate);
@@ -98,17 +100,29 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           if (g.accountId != null) _selectedAccountIds = [g.accountId!];
           final cats = _currentCategories(context);
           if (cats.isNotEmpty) {
-            _categoryId = cats.keys.first;
+            if (g.category != null && cats.containsKey(g.category)) {
+              _categoryId = g.category;
+            } else {
+              _categoryId = cats.keys.first;
+            }
             _categoryName = cats[_categoryId]!;
             SharedPreferences.getInstance().then((p) {
               final saved = p.getString('goal_cat_${widget.goalId}');
-              if (saved != null && cats.containsKey(saved) && mounted) {
+              final catId = (g.category != null && cats.containsKey(g.category))
+                  ? g.category
+                  : (saved != null && cats.containsKey(saved) ? saved : null);
+              if (catId != null && catId != _categoryId && mounted) {
                 setState(() {
-                  _categoryId = saved;
-                  _categoryName = cats[saved]!;
+                  _categoryId = catId;
+                  _categoryName = cats[catId]!;
                 });
               }
             });
+          }
+          final _remainingTotal = (g.targetAmount - g.currentAmount).clamp(0, g.targetAmount);
+          if (_remainingTotal > 0 && _firstPaymentDate != null && _targetDate != null && _targetDate!.isAfter(_firstPaymentDate!)) {
+            final months = (_targetDate!.year - _firstPaymentDate!.year) * 12 + (_targetDate!.month - _firstPaymentDate!.month);
+            if (months > 0) _monthlyCtrl.text = (_remainingTotal / months).toStringAsFixed(0);
           }
         }
       }
@@ -267,20 +281,28 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         startDate: startStr,
         accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
         currencyId: _currencyId,
+        comment: _commentCtrl.text.trim(),
+        category: _categoryId,
+        goalType: _type == 'pay' ? 2 : 1,
+        goalState: _status == 'favorite' ? 1 : 0,
       );
     } else {
       final newId = DateTime.now().microsecondsSinceEpoch.toRadixString(36);
-      await store.addGoal(Goal(
-        id: newId,
-        title: _titleCtrl.text.trim(),
-        targetAmount: total,
-        currentAmount: current,
-        startDate: startStr,
-        deadline: endStr,
-        isCompleted: _isCompleted,
-        accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
-        currencyId: _currencyId,
-      ));
+        await store.addGoal(Goal(
+          id: newId,
+          title: _titleCtrl.text.trim(),
+          targetAmount: total,
+          currentAmount: current,
+          startDate: startStr,
+          deadline: endStr,
+          isCompleted: _isCompleted,
+          accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
+          currencyId: _currencyId,
+          comment: _commentCtrl.text.trim(),
+          category: _categoryId,
+          goalType: _type == 'pay' ? 2 : 1,
+          goalState: _status == 'favorite' ? 1 : 0,
+        ));
       if (_categoryId != null) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('goal_cat_$newId', _categoryId!);

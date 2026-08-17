@@ -1765,6 +1765,10 @@ class FinanceStore extends ChangeNotifier {
           'date_begin': g.startDate.isNotEmpty ? g.startDate : _todayDate(),
           if (g.deadline.isNotEmpty) 'date_end': g.deadline,
           if (g.accountId != null) 'account_id': g.accountId,
+          if (g.goalType != null) 'type': g.goalType.toString(),
+          if (g.category != null && int.tryParse(g.category!) != null) 'category_id': g.category,
+          if (g.goalState != null) 'state': g.goalState.toString(),
+          if (g.comment != null && g.comment!.isNotEmpty) 'comment': g.comment,
         });
         final targets = resp['targets'] as List<dynamic>?;
         if (targets != null && targets.isNotEmpty) {
@@ -1829,7 +1833,7 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId}) async {
+  Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId, String? comment, String? category, int? goalType, int? goalState}) async {
     _error = null;
     final idx = _goals.indexWhere((g) => g.id == id);
     if (idx < 0) return;
@@ -1840,6 +1844,10 @@ class FinanceStore extends ChangeNotifier {
     final newStartDate = startDate ?? g.startDate;
     final newAccountId = accountId ?? g.accountId;
     final newCurrencyId = currencyId ?? g.currencyId;
+    final newCategory = category ?? g.category;
+    final newComment = comment ?? g.comment;
+    final newType = goalType ?? g.goalType;
+    final newState = goalState ?? g.goalState;
 
     if (authService.isAuthenticated) {
       try {
@@ -1852,8 +1860,12 @@ class FinanceStore extends ChangeNotifier {
           if (newStartDate.isNotEmpty) 'date_begin': newStartDate,
           if (newDeadline.isNotEmpty) 'date_end': newDeadline,
           if (newAccountId != null) 'account_id': newAccountId,
+          if (newType != null) 'type': newType.toString(),
+          if (newCategory != null && int.tryParse(newCategory) != null) 'category_id': newCategory,
+          if (newState != null) 'state': newState.toString(),
+          if (newComment != null && newComment.isNotEmpty) 'comment': newComment,
         }, targetId: id);
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1879,7 +1891,7 @@ class FinanceStore extends ChangeNotifier {
           }]
         }, id: id);
         _error = null;
-        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId);
+        _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
         await _saveGoals();
         notifyListeners();
         return;
@@ -1891,7 +1903,7 @@ class FinanceStore extends ChangeNotifier {
     }
 
     if (authService.isAuthenticated) return;
-    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId);
+    _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
     await _saveGoals();
     notifyListeners();
   }
