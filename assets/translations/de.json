@@ -208,6 +208,7 @@
   "budget.planned": "Geplant",
   "budget.spent_total": "Ausgegeben",
   "budget.remaining": "Verbleibend",
+  "budget.net_income": "Nettoeinnahmen",
   "budget.add_budget": "Budget hinzufГјgen",
 
   "goals.title": "Ziele",
@@ -744,5 +745,6 @@
   "add_planned.section_schedule": "Zeitplan",
   "add_planned.section_extra": "ZusР“В¤tzlich"
 }
+
 
 

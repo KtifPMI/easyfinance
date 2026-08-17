@@ -234,6 +234,7 @@
   "budget.planned": "Planned",
   "budget.spent_total": "Spent",
   "budget.remaining": "Remaining",
+  "budget.net_income": "Net income",
   "budget.add_budget": "Add budget",
   "budget.copy_month": "Copy budgets",
   "budget.copy_month_confirm": "Copy all budgets to next month?",
@@ -787,5 +788,6 @@
   "add_planned.section_schedule": "Schedule",
   "add_planned.section_extra": "Additional"
 }
+
 
 

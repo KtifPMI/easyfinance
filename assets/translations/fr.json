@@ -208,6 +208,7 @@
   "budget.planned": "PlanifiГ©",
   "budget.spent_total": "DГ©pensГ©",
   "budget.remaining": "Restant",
+  "budget.net_income": "Revenu net",
   "budget.add_budget": "Ajouter un budget",
 
   "goals.title": "Objectifs",
@@ -716,5 +717,6 @@
   "add_planned.section_schedule": "PР“В©riodicitР“В©",
   "add_planned.section_extra": "ComplР“В©mentaire"
 }
+
 
 

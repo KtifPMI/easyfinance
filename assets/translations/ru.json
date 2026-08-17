@@ -250,6 +250,7 @@
   "budget.under_received": "РќРµРґРѕРїРѕР»СѓС‡РµРЅРѕ",
   "budget.spent_total": "РџРѕС‚СЂР°С‡РµРЅРѕ",
   "budget.remaining": "РћСЃС‚Р°С‚РѕРє",
+  "budget.net_income": "Чистый доход",
   "budget.add_budget": "Р”РѕР±Р°РІРёС‚СЊ Р±СЋРґР¶РµС‚",
   "budget.copy_month": "РљРѕРїРёСЂРѕРІР°С‚СЊ Р±СЋРґР¶РµС‚С‹",
   "budget.copy_month_confirm": "РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РІСЃРµ Р±СЋРґР¶РµС‚С‹ РЅР° СЃР»РµРґСѓСЋС‰РёР№ РјРµСЃСЏС†?",
@@ -804,5 +805,6 @@
   "add_planned.section_schedule": "Р Р°СЃРїРёСЃР°РЅРёРµ",
   "add_planned.section_extra": "Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ"
 }
+
 
 

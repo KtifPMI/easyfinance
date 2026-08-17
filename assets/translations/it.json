@@ -208,6 +208,7 @@
   "budget.planned": "Pianificato",
   "budget.spent_total": "Speso",
   "budget.remaining": "Rimanente",
+  "budget.net_income": "Reddito netto",
   "budget.add_budget": "Aggiungi budget",
 
   "goals.title": "Obiettivi",
@@ -716,5 +717,6 @@
   "add_planned.section_schedule": "Programmazione",
   "add_planned.section_extra": "Aggiuntivo"
 }
+
 
 

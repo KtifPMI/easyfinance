@@ -208,6 +208,7 @@
   "budget.planned": "Planeado",
   "budget.spent_total": "Gasto",
   "budget.remaining": "Restante",
+  "budget.net_income": "Receita líquida",
   "budget.add_budget": "Adicionar orГ§amento",
 
   "goals.title": "Metas",
@@ -716,5 +717,6 @@
   "add_planned.section_schedule": "Agendamento",
   "add_planned.section_extra": "Adicional"
 }
+
 
 

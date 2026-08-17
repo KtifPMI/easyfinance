@@ -208,6 +208,7 @@
   "budget.planned": "PlanlanmД±Еџ",
   "budget.spent_total": "Harcanan",
   "budget.remaining": "Kalan",
+  "budget.net_income": "Net gelir",
   "budget.add_budget": "BГјtГ§e ekle",
 
   "goals.title": "Hedefler",
@@ -716,5 +717,6 @@
   "add_planned.section_schedule": "Zamanlama",
   "add_planned.section_extra": "Ek"
 }
+
 
 

@@ -208,6 +208,7 @@
   "budget.planned": "Planificado",
   "budget.spent_total": "Gastado",
   "budget.remaining": "Restante",
+  "budget.net_income": "Ingreso neto",
   "budget.add_budget": "AГ±adir presupuesto",
 
   "goals.title": "Metas",
@@ -741,5 +742,6 @@
   "add_planned.section_schedule": "ProgramaciР“С–n",
   "add_planned.section_extra": "Adicional"
 }
+
 
 
