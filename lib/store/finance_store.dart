@@ -2282,6 +2282,7 @@ class FinanceStore extends ChangeNotifier {
     if (tagsStr == null || tagsStr.isEmpty) return;
     final names = tagsStr.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
     if (names.isEmpty) return;
+    await refreshTags();
     final existing = _tags.map((t) => t.name.toLowerCase()).toSet();
     for (final name in names) {
       if (existing.contains(name.toLowerCase())) continue;
@@ -2296,7 +2297,7 @@ class FinanceStore extends ChangeNotifier {
       try {
         final now = formatApiDateTime();
         final resp = await authService.apiService.addTag({
-          'name': tag.name,
+          'text': tag.name,
           'created_at': now,
           'updated_at': now,
         });
@@ -2326,7 +2327,7 @@ class FinanceStore extends ChangeNotifier {
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
-        await authService.apiService.setTag({'id': id, 'name': tag.name, 'deleted_at': now}, tagId: id);
+        await authService.apiService.setTag({'id': id, 'text': tag.name, 'deleted_at': now}, tagId: id);
       } catch (e) {
         debugPrint('deleteTag error: $e');
       }
@@ -2334,6 +2335,22 @@ class FinanceStore extends ChangeNotifier {
     _tags.removeWhere((t) => t.id == id);
     await _saveCache();
     notifyListeners();
+  }
+
+  Future<void> refreshTags() async {
+    try {
+      final server = await api.getTags();
+      final localOnly = _tags.where((t) => t.id.isEmpty).toList();
+      final merged = <Tag>[...server];
+      for (final l in localOnly) {
+        if (!merged.any((t) => t.name.toLowerCase() == l.name.toLowerCase())) merged.add(l);
+      }
+      _tags = merged;
+      await _saveCache();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('refreshTags error: $e');
+    }
   }
 
   List<String> getTagsForOperation(Operation op) {

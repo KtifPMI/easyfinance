@@ -15,6 +15,14 @@ class TagsScreen extends StatefulWidget {
 class _TagsScreenState extends State<TagsScreen> {
   String _search = '';
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<FinanceStore>().refreshTags();
+    });
+  }
+
   Future<void> _showAddSheet(BuildContext context, FinanceStore store) async {
     final ctrl = TextEditingController();
     final name = await showDialog<String>(

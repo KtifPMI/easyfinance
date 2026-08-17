@@ -20,11 +20,11 @@ GET https://api.easyfinance.ru/v2/?method=tags.get&app_id=...&access_token=...&s
       "tags": [
         {
           "id": "1",
-          "name": "Семья"
+          "text": "Семья"
         },
         {
           "id": "2",
-          "name": "Работа"
+          "text": "Работа"
         }
       ]
     }
@@ -37,6 +37,6 @@ GET https://api.easyfinance.ru/v2/?method=tags.get&app_id=...&access_token=...&s
 | Поле | Тип | Описание |
 |------|-----|----------|
 | `id` | string | ID тега |
-| `name` | string | Название тега |
+| `text` | string | Название тега |
 
-**Примечание:** Теги — простые объекты, не имеют `created_at`/`updated_at` и других служебных полей. В операциях теги передаются как строка через запятую в поле `tags`.
+**Примечание:** В ответе тег содержит поля `text` (название), `user_id`, `operation_id`, `created_at`/`updated_at`/`deleted_at`. При создании/обновлении (`tags.post`/`tags.set`) название передаётся в поле `text` (не `name`). В операциях теги передаются как строка через запятую в поле `tags`.
