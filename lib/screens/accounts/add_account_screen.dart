@@ -51,7 +51,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       final acc = store.accounts.where((a) => a.id == widget.accountId).firstOrNull;
       if (acc != null) {
         _nameCtrl.text = acc.name;
-        _balanceCtrl.text = acc.balance.toStringAsFixed(0);
+        _balanceCtrl.text = acc.initBalance.toStringAsFixed(0);
         _type = acc.type;
         _currencyId = acc.currencyId ?? '1';
         _isFavorite = acc.isFavorite;
@@ -117,7 +117,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             }
           }
         }
-        initBalance = balance - opsDelta;
+        balance = initBalance + opsDelta;
       }
     }
 
