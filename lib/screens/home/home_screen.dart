@@ -486,7 +486,7 @@ class HomeScreen extends StatelessWidget {
     final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
     final totalRemaining = totalPlanned - totalSpent;
     final totalForecast = store.budgets.fold(0.0, (sum, b) => sum + getBudgetForecastPercent(b) * b.limit / 100);
-    final budgetForecastPct = totalPlanned > 0 ? (totalForecast / totalPlanned * 100).clamp(0.0, 100.0) : 0.0;
+    final budgetForecastPct = totalPlanned > 0 ? (totalForecast / totalPlanned * 100) : 0.0;
     final forecastColor = budgetForecastColor(budgetForecastPct);
 
     return Column(

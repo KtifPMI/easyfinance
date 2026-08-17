@@ -239,7 +239,7 @@ double getBudgetForecastPercent(Budget budget) {
   if (daysPassed <= 0 || budget.spent <= 0) return 0;
   final dailyRate = budget.spent / daysPassed;
   final forecast = dailyRate * daysInMonth;
-  return (forecast / budget.limit * 100).clamp(0.0, 300.0);
+  return forecast / budget.limit * 100;
 }
 
 Color budgetForecastColor(double forecastPercent) {
