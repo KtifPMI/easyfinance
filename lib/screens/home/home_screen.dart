@@ -639,7 +639,7 @@ class HomeScreen extends StatelessWidget {
             child: Text(context.tr('calendar.empty'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           )
         else
-          ...combined.take(4).map((e) {
+          ...combined.take(8).map((e) {
             final isOverdue = overdue.contains(e);
             final displayDate = isOverdue ? (e.lastOccurrence(before: today) ?? today) : (e.nextOccurrence() ?? today);
             return GestureDetector(
