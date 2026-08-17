@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../theme/theme.dart';
 
 class AppInput extends StatelessWidget {
@@ -7,6 +8,7 @@ class AppInput extends StatelessWidget {
   final TextEditingController? controller;
   final bool obscureText;
   final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
   final String? error;
   final bool enabled;
   final int? maxLines;
@@ -14,7 +16,7 @@ class AppInput extends StatelessWidget {
   final VoidCallback? onTap;
   final bool readOnly;
 
-  const AppInput({super.key, required this.label, this.hint, this.controller, this.obscureText = false, this.keyboardType, this.error, this.enabled = true, this.maxLines = 1, this.onSubmitted, this.onTap, this.readOnly = false});
+  const AppInput({super.key, required this.label, this.hint, this.controller, this.obscureText = false, this.keyboardType, this.inputFormatters, this.error, this.enabled = true, this.maxLines = 1, this.onSubmitted, this.onTap, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +29,7 @@ class AppInput extends StatelessWidget {
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           enabled: enabled,
           maxLines: maxLines,
           onSubmitted: onSubmitted,
