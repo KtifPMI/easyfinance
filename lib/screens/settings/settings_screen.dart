@@ -241,6 +241,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       showKopeks = false;
                       if (mounted) setState(() => _kopeksEnabled = false);
                     }
+                    if (context.mounted) context.read<FinanceStore>().notifyListeners();
                   },
                   activeThumbColor: AppColors.primary,
                 ),
@@ -266,6 +267,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       showKopeksInOps = false;
                       if (mounted) setState(() => _kopeksInOpsEnabled = false);
                     }
+                    if (context.mounted) context.read<FinanceStore>().notifyListeners();
                   },
                   activeThumbColor: AppColors.primary,
                 ),

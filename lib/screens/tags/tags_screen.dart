@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../models/tag.dart';
 
 class TagsScreen extends StatefulWidget {
   const TagsScreen({super.key});
@@ -14,22 +15,79 @@ class TagsScreen extends StatefulWidget {
 class _TagsScreenState extends State<TagsScreen> {
   String _search = '';
 
+  Future<void> _showAddSheet(BuildContext context, FinanceStore store) async {
+    final ctrl = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('tags.add_title')),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: context.tr('tags.name_hint'),
+            filled: true,
+            fillColor: AppColors.cardFor(context),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+          onSubmitted: (v) => Navigator.pop(ctx, v.trim()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
+          TextButton(onPressed: () => Navigator.pop(ctx, ctrl.text.trim()), child: Text(context.tr('common.add'))),
+        ],
+      ),
+    );
+    if (name != null && name.isNotEmpty && mounted) {
+      await store.addTag(Tag(id: '', name: name));
+    }
+  }
+
+  Future<void> _confirmDelete(BuildContext context, FinanceStore store, Tag tag) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(context.tr('tags.delete_title')),
+        content: Text(context.tr('tags.confirm_delete')),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('budget.cancel'))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(context.tr('common.delete'), style: TextStyle(color: AppColors.expense)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await store.deleteTag(tag.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        // Tags are sourced locally from operations only (no API fetch),
-        // mirroring the behaviour of the operations filter.
-        final tagSet = <String>{};
+        // Catalog tags synced with the server + tag names used on operations.
+        final catalog = store.tags;
+        final catalogLower = catalog.map((t) => t.name.toLowerCase()).toSet();
+        final opNames = <String>{};
         for (final op in store.operations) {
           for (final t in store.getTagsForOperation(op)) {
-            tagSet.add(t);
+            opNames.add(t);
           }
         }
-        final all = tagSet.toList()..sort();
+        final extra = opNames.where((n) => !catalogLower.contains(n.toLowerCase()));
+
+        final items = <Tag>[
+          ...catalog,
+          ...extra.map((n) => Tag(id: '', name: n)),
+        ];
+        items.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
         final tags = _search.isEmpty
-            ? all
-            : all.where((t) => t.toLowerCase().contains(_search.toLowerCase())).toList();
+            ? items
+            : items.where((t) => t.name.toLowerCase().contains(_search.toLowerCase())).toList();
 
         return ScreenScaffold(
           title: context.tr('tags.title'),
@@ -54,7 +112,7 @@ class _TagsScreenState extends State<TagsScreen> {
                 child: tags.isEmpty
                     ? Center(child: Text(context.tr('tags.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
                     : ListView(
-                        children: tags.map((name) => Padding(
+                        children: tags.map((tag) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Container(
                             decoration: BoxDecoration(
@@ -67,13 +125,24 @@ class _TagsScreenState extends State<TagsScreen> {
                                 backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                                 child: Icon(Icons.label, color: AppColors.primary, size: 20),
                               ),
-                              title: Text('#$name', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                              title: Text('#${tag.name}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                              trailing: tag.id.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(Icons.delete_outline, color: AppColors.expense, size: 20),
+                                      onPressed: () => _confirmDelete(context, store, tag),
+                                    )
+                                  : null,
                             ),
                           ),
                         )).toList(),
                       ),
               ),
             ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => _showAddSheet(context, store),
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: Colors.white),
           ),
         );
       },
