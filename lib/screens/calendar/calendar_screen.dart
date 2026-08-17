@@ -94,7 +94,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
         final selectedOps = _selectedDate != null ? (opsByDate[_selectedDate] ?? <Operation>[]) : <Operation>[];
         final selectedPlanned = _selectedDate != null ? (plannedByDate[_selectedDate] ?? <FinancialEvent>[]) : <FinancialEvent>[];
-        final upcomingPlanned = _selectedDate == null ? _allUpcoming(plannedStore) : <FinancialEvent>[];
+        final monthPlanned = _selectedDate == null ? _monthPlannedOccurrences(plannedStore) : <Map<String, dynamic>>[];
 
         return Scaffold(
           backgroundColor: AppColors.backgroundFor(context),
@@ -108,61 +108,64 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 : null),
             child: const Icon(Icons.event),
           ),
-          body: Column(
-            children: [
-              ScreenHint(hintId: 'calendar', text: context.tr('hints.calendar')),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),
-                  Text(monthLabel, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                  IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [context.tr('calendar.mon'), context.tr('calendar.tue'), context.tr('calendar.wed'), context.tr('calendar.thu'), context.tr('calendar.fri'), context.tr('calendar.sat'), context.tr('calendar.sun')]
-                    .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))))
-                    .toList(),
-              ),
-              const SizedBox(height: 8),
-              GridView.count(
-                crossAxisCount: 7,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 0,
-                childAspectRatio: 1,
-                children: dayCells,
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: _selectedDate != null
-                    ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
-                    : _buildAllUpcoming(context, store, plannedStore, upcomingPlanned),
-              ),
-            ],
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                ScreenHint(hintId: 'calendar', text: context.tr('hints.calendar')),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth),
+                    Text(monthLabel, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [context.tr('calendar.mon'), context.tr('calendar.tue'), context.tr('calendar.wed'), context.tr('calendar.thu'), context.tr('calendar.fri'), context.tr('calendar.sat'), context.tr('calendar.sun')]
+                      .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))))
+                      .toList(),
+                ),
+                const SizedBox(height: 8),
+                GridView.count(
+                  crossAxisCount: 7,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 0,
+                  childAspectRatio: 1,
+                  children: dayCells,
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: _selectedDate != null
+                      ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
+                      : _buildMonthPlannedView(context, store, plannedStore, monthPlanned),
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  List<FinancialEvent> _allUpcoming(PlannedPaymentStore plannedStore) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final result = plannedStore.events.where((e) {
-      if (!e.enabled) return false;
-      final next = e.nextOccurrence() ?? DateTime.tryParse(e.date);
-      return next != null && !next.isBefore(today);
-    }).toList();
-    result.sort((a, b) => (a.nextOccurrence() ?? today).compareTo(b.nextOccurrence() ?? today));
-    return result;
+  List<Map<String, dynamic>> _monthPlannedOccurrences(PlannedPaymentStore plannedStore) {
+    final list = <Map<String, dynamic>>[];
+    for (final e in plannedStore.events) {
+      if (!e.enabled) continue;
+      for (final occ in e.occurrencesInMonth(_currentMonth)) {
+        list.add({'event': e, 'date': occ});
+      }
+    }
+    list.sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
+    return list;
   }
 
-  Widget _buildAllUpcoming(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<FinancialEvent> events) {
-    if (events.isEmpty) {
+  Widget _buildMonthPlannedView(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<Map<String, dynamic>> items) {
+    if (items.isEmpty) {
       return Center(child: Text(context.tr('calendar.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))));
     }
     return ListView(
@@ -171,7 +174,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           padding: const EdgeInsets.only(bottom: 4),
           child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
         ),
-        ...events.map((e) => _plannedPaymentTile(context, store, e)),
+        ...items.map((m) => _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime)),
       ],
     );
   }
@@ -208,8 +211,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final cat = e.categoryId != null ? store.getCategory(e.categoryId) : null;
     final iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (e.type == 'income' ? Icons.arrow_downward : Icons.arrow_upward);
     final iconColor = isOverdue ? AppColors.expense : (e.type == 'income' ? AppColors.success : AppColors.expense);
-    final statusLabel = accepted ? context.tr('calendar.completed') : isOverdue ? context.tr('calendar.overdue') : null;
-    final statusColor = accepted ? AppColors.success : AppColors.expense;
+    final isCompleted = accepted;
     final displayDate = occurrenceDate
         ?? (e.dateStart != null ? DateTime.tryParse(e.dateStart!) : null)
         ?? (e.date.isNotEmpty ? DateTime.tryParse(e.date) : null);
@@ -245,9 +247,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           Row(
                             children: [
                               Text(formatDate(displayDateStr), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
-                              if (statusLabel != null) ...[
+                              if (isCompleted) ...[
                                 const SizedBox(width: 6),
-                                Text('• $statusLabel', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: statusColor)),
+                                Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                              ] else if (isOverdue) ...[
+                                const SizedBox(width: 6),
+                                Text('• ${context.tr('calendar.overdue')}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.expense)),
                               ],
                             ],
                           ),
