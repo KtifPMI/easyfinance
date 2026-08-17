@@ -79,6 +79,7 @@ class Account {
   final double? creditLimit;
   final String? description;
   final String? bankId;
+  final bool isPending;
 
   bool get isCredit => type == 'credit' || type == 'credit_card';
 
@@ -107,16 +108,18 @@ class Account {
     this.creditLimit,
     this.description,
     this.bankId,
+    this.isPending = false,
   });
 
-  Account copyWith({String? id, double? balance, String? currencyId, bool? isFavorite, bool? isArchived}) =>
-      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived ?? this.isArchived, isFavorite: isFavorite ?? this.isFavorite, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt, annualRate: annualRate, paymentType: paymentType, openDate: openDate, closeDate: closeDate, commissionOneTime: commissionOneTime, commissionMonthly: commissionMonthly, paymentDay: paymentDay, creditLimit: creditLimit, description: description, bankId: bankId);
+  Account copyWith({String? id, double? balance, String? currencyId, bool? isFavorite, bool? isArchived, bool? isPending}) =>
+      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived ?? this.isArchived, isFavorite: isFavorite ?? this.isFavorite, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt, annualRate: annualRate, paymentType: paymentType, openDate: openDate, closeDate: closeDate, commissionOneTime: commissionOneTime, commissionMonthly: commissionMonthly, paymentDay: paymentDay, creditLimit: creditLimit, description: description, bankId: bankId, isPending: isPending ?? this.isPending);
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'balance': balance, 'currency': currency,
     'currency_id': currencyId, 'icon': icon, 'color': color, 'type': type,
     'include_in_total': includeInTotal, 'is_archived': isArchived,
     'is_favorite': isFavorite,
+    'is_pending': isPending,
     'init_balance': initBalance, 'created_at': createdAt, 'updated_at': updatedAt,
     if (description != null && description!.isNotEmpty) 'description': description,
     if (bankId != null) 'bank_id': bankId,
@@ -142,6 +145,7 @@ class Account {
     includeInTotal: json['include_in_total'] == true,
     isArchived: json['is_archived'] == true,
     isFavorite: json['is_favorite'] == true,
+    isPending: json['is_pending'] == true,
     initBalance: (json['init_balance'] as num?)?.toDouble() ?? 0,
     createdAt: json['created_at']?.toString() ?? '',
     updatedAt: json['updated_at']?.toString() ?? '',
@@ -176,6 +180,7 @@ class Account {
       includeInTotal: !isArchived && json['include_in_total']?.toString() != '0',
       isArchived: isArchived,
       isFavorite: isFavorite,
+      isPending: false,
       initBalance: initBalance,
       createdAt: json['created_at']?.toString() ?? '',
       updatedAt: json['updated_at']?.toString() ?? '',

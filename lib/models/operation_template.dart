@@ -10,6 +10,7 @@ class OperationTemplate {
   final String? tags;
   final String createdAt;
   final String updatedAt;
+  final bool isPending;
 
   OperationTemplate({
     required this.id,
@@ -23,6 +24,7 @@ class OperationTemplate {
     this.tags,
     this.createdAt = '',
     this.updatedAt = '',
+    this.isPending = false,
   });
 
   factory OperationTemplate.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class OperationTemplate {
       tags: json['tags']?.toString(),
       createdAt: json['created_at']?.toString() ?? '',
       updatedAt: json['updated_at']?.toString() ?? '',
+      isPending: false,
     );
   }
 
@@ -82,7 +85,11 @@ class OperationTemplate {
     'tags': tags,
     'createdAt': createdAt,
     'updatedAt': updatedAt,
+    'is_pending': isPending,
   };
+
+  OperationTemplate copyWith({String? id, String? name, String? type, double? amount, String? accountId, String? categoryId, String? toAccountId, String? comment, String? tags, String? createdAt, String? updatedAt, bool? isPending}) =>
+      OperationTemplate(id: id ?? this.id, name: name ?? this.name, type: type ?? this.type, amount: amount ?? this.amount, accountId: accountId ?? this.accountId, categoryId: categoryId ?? this.categoryId, toAccountId: toAccountId ?? this.toAccountId, comment: comment ?? this.comment, tags: tags ?? this.tags, createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt, isPending: isPending ?? this.isPending);
 
   factory OperationTemplate.fromLocalJson(Map<String, dynamic> json) => OperationTemplate(
     id: json['id'] as String? ?? '',
@@ -96,5 +103,6 @@ class OperationTemplate {
     tags: json['tags'] as String?,
     createdAt: json['createdAt'] as String? ?? '',
     updatedAt: json['updatedAt'] as String? ?? '',
+    isPending: json['is_pending'] == true,
   );
 }

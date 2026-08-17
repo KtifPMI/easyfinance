@@ -34,6 +34,7 @@ class Category {
   final String? parentId;
   final bool isDefault;
   final String? systemId;
+  final bool isPending;
 
   Category({
     required this.id,
@@ -44,6 +45,7 @@ class Category {
     this.parentId,
     this.isDefault = true,
     this.systemId,
+    this.isPending = false,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -58,6 +60,7 @@ class Category {
       parentId: json['parent_id']?.toString(),
       isDefault: custom == '0',
       systemId: json['system_id']?.toString(),
+      isPending: false,
     );
   }
 
@@ -66,7 +69,11 @@ class Category {
     'icon': icon, 'color': color,
     'parent_id': parentId, 'is_default': isDefault,
     'system_id': systemId,
+    'is_pending': isPending,
   };
+
+  Category copyWith({String? id, String? name, String? type, String? icon, String? color, String? parentId, bool? isDefault, String? systemId, bool? isPending}) =>
+      Category(id: id ?? this.id, name: name ?? this.name, type: type ?? this.type, icon: icon ?? this.icon, color: color ?? this.color, parentId: parentId ?? this.parentId, isDefault: isDefault ?? this.isDefault, systemId: systemId ?? this.systemId, isPending: isPending ?? this.isPending);
 
   factory Category.fromLocalJson(Map<String, dynamic> json) => Category(
     id: json['id'] is int ? json['id'].toString() : json['id']?.toString() ?? '',
@@ -77,6 +84,7 @@ class Category {
     parentId: json['parent_id']?.toString(),
     isDefault: json['is_default'] == true,
     systemId: json['system_id']?.toString(),
+    isPending: json['is_pending'] == true,
   );
 
   static String _parseType(dynamic type) {

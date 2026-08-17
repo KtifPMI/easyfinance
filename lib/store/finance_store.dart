@@ -344,6 +344,9 @@ class FinanceStore extends ChangeNotifier {
     final api = authService.apiService;
 
     await syncPendingOperations();
+    await syncPendingAccounts();
+    await syncPendingCategories();
+    await syncPendingTemplates();
     final pendingOps = _operations.where((op) => op.isPending).toList();
 
     try {
@@ -360,8 +363,14 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      _accounts = await api.getAccounts();
+      final pendingAcc = _accounts.where((a) => a.isPending).toList();
+      final serverAccounts = await api.getAccounts();
+      _accounts = serverAccounts;
       await _applyFavoriteStates();
+      final accIds = _accounts.map((a) => a.id).toSet();
+      for (final p in pendingAcc) {
+        if (!accIds.contains(p.id)) _accounts.add(p);
+      }
     } on ApiException catch (e) {
       _error = e.message;
     } catch (e) {
@@ -386,9 +395,14 @@ class FinanceStore extends ChangeNotifier {
     try {
       final rawCats = await apiClient.getCategoriesV2();
       _buildSystemIconMap(rawCats);
+      final pendingCats = _categories.where((c) => c.isPending).toList();
       _categories = rawCats.map((j) => cat.Category.fromJson(j)).toList();
       if (_categories.isEmpty) {
         _categories = [...mockCategories];
+      }
+      final catIds = _categories.map((c) => c.id).toSet();
+      for (final p in pendingCats) {
+        if (!catIds.contains(p.id)) _categories.add(p);
       }
     } on ApiException catch (e) {
       _error = e.message;
@@ -409,8 +423,13 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
+      final pendingTpl = _templates.where((t) => t.isPending).toList();
       final apiTemplates = await api.getTemplates();
       _templates = apiTemplates;
+      final tplIds = _templates.map((t) => t.id).toSet();
+      for (final p in pendingTpl) {
+        if (!tplIds.contains(p.id)) _templates.add(p);
+      }
       await _saveTemplates();
     } catch (e) {
       debugPrint('getTemplates error: $e');
@@ -453,6 +472,7 @@ class FinanceStore extends ChangeNotifier {
         limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
         spent: double.tryParse(b['spent']?.toString() ?? '0') ?? 0,
         period: b['period']?.toString() ?? 'monthly',
+        isDeleted: b['deleted_at'] != null && b['deleted_at'].toString().isNotEmpty,
       )).toList();
       _recalcBudgetSpent();
       await _saveBudgets();
@@ -1040,6 +1060,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     _generateRecommendations();
+    await _registerTags(op.tags);
     await _saveCache();
     if (_rates.isNotEmpty) {
       final opDate = DateTime.tryParse(op.date) ?? DateTime.now();
@@ -1112,6 +1133,11 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isNetworkError(ApiException e) {
+    final msg = e.message.toLowerCase();
+    return msg.contains('timeout') || msg.contains('socket') || msg.contains('network') || msg.contains('connection') || e.code == 'TIMEOUT' || e.code == 'NETWORK';
+  }
+
   Future<void> updateOperation(Operation op) async {
     _error = null;
     if (authService.isAuthenticated && !op.isPending) {
@@ -1158,6 +1184,7 @@ class FinanceStore extends ChangeNotifier {
     _recalcAccountBalances();
     _recalcBudgetSpent();
     _generateRecommendations();
+    await _registerTags(op.tags);
     await _saveCache();
     notifyListeners();
   }
@@ -1217,6 +1244,7 @@ class FinanceStore extends ChangeNotifier {
 
    Future<void> addAccount(Account account, {String state = '0'}) async {
     _error = null;
+    Account toAdd = account;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -1247,20 +1275,26 @@ class FinanceStore extends ChangeNotifier {
         }
         throw ApiException('Сервер не вернул ID счёта', 'MISSING_ACCOUNT_ID');
       } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-        return;
+        if (_isNetworkError(e)) {
+          toAdd = account.copyWith(isPending: true);
+        } else {
+          _error = e.message; notifyListeners();
+          return;
+        }
       } catch (e) {
-        _error = 'Ошибка добавления счёта: $e'; notifyListeners();
-        return;
+        toAdd = account.copyWith(isPending: true);
       }
+    } else {
+      toAdd = account;
     }
-    _accounts.add(account);
+    _accounts.add(toAdd);
     await _saveCache();
     notifyListeners();
   }
 
   Future<void> updateAccount(Account account, {String state = '0'}) async {
     _error = null;
+    var acc = account;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -1279,15 +1313,20 @@ class FinanceStore extends ChangeNotifier {
           }]
         }, accountId: account.id);
       } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-        return;
+        if (_isNetworkError(e)) {
+          acc = account.copyWith(isPending: true);
+        } else {
+          _error = e.message; notifyListeners();
+          return;
+        }
       } catch (e) {
-        _error = 'Ошибка обновления счёта: $e'; notifyListeners();
-        return;
+        acc = account.copyWith(isPending: true);
       }
+    } else {
+      acc = account;
     }
-    final idx = _accounts.indexWhere((a) => a.id == account.id);
-    if (idx >= 0) _accounts[idx] = account;
+    final idx = _accounts.indexWhere((a) => a.id == acc.id);
+    if (idx >= 0) _accounts[idx] = acc; else _accounts.add(acc);
     _recalcAccountBalances();
     await _saveCache();
     notifyListeners();
@@ -1375,6 +1414,7 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addCategory(cat.Category c) async {
     _error = null;
+    cat.Category toAdd = c;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -1406,20 +1446,26 @@ class FinanceStore extends ChangeNotifier {
         }
         throw ApiException('Сервер не вернул ID категории', 'MISSING_CATEGORY_ID');
       } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-        return;
+        if (_isNetworkError(e)) {
+          toAdd = c.copyWith(isPending: true);
+        } else {
+          _error = e.message; notifyListeners();
+          return;
+        }
       } catch (e) {
-        _error = 'Ошибка добавления категории: $e'; notifyListeners();
-        return;
+        toAdd = c.copyWith(isPending: true);
       }
+    } else {
+      toAdd = c;
     }
-    _categories.add(c);
+    _categories.add(toAdd);
     await _saveCache();
     notifyListeners();
   }
 
   Future<void> updateCategory(cat.Category c) async {
     _error = null;
+    var catToSave = c;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -1437,21 +1483,21 @@ class FinanceStore extends ChangeNotifier {
           'updated_at': now,
         };
         await apiClient.setCategoryV2(c.id, record);
-        final idx = _categories.indexWhere((x) => x.id == c.id);
-        if (idx >= 0) _categories[idx] = c;
-        await _saveCache();
-        notifyListeners();
-        return;
       } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-        return;
+        if (_isNetworkError(e)) {
+          catToSave = c.copyWith(isPending: true);
+        } else {
+          _error = e.message; notifyListeners();
+          return;
+        }
       } catch (e) {
-        _error = 'Ошибка обновления категории: $e'; notifyListeners();
-        return;
+        catToSave = c.copyWith(isPending: true);
       }
+    } else {
+      catToSave = c;
     }
-    final idx = _categories.indexWhere((x) => x.id == c.id);
-    if (idx >= 0) _categories[idx] = c;
+    final idx = _categories.indexWhere((x) => x.id == catToSave.id);
+    if (idx >= 0) _categories[idx] = catToSave; else _categories.add(catToSave);
     await _saveCache();
     notifyListeners();
   }
@@ -1569,20 +1615,16 @@ class FinanceStore extends ChangeNotifier {
           }]
         });
         final budgets = resp['budgets'] as List<dynamic>?;
-        if (budgets != null && budgets.isNotEmpty) {
-          final serverId = budgets[0]['id']?.toString();
-          if (serverId != null && serverId.isNotEmpty) {
-            _budgets.add(Budget(
-              id: serverId, name: b.name, categoryId: b.categoryId,
-              limit: b.limit, spent: spent, period: b.period,
-            ));
-            await _saveBudgets();
-            _generateRecommendations();
-            notifyListeners();
-            return;
-          }
-        }
-        throw ApiException('Сервер не вернул ID бюджета', 'MISSING_BUDGET_ID');
+        final serverId = budgets != null && budgets.isNotEmpty ? budgets[0]['id']?.toString() : null;
+        _budgets.add(Budget(
+          id: (serverId != null && serverId.isNotEmpty) ? serverId : b.id,
+          name: b.name, categoryId: b.categoryId,
+          limit: b.limit, spent: spent, period: b.period,
+        ));
+        await _saveBudgets();
+        _generateRecommendations();
+        notifyListeners();
+        return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -2039,6 +2081,7 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addTemplate(OperationTemplate t) async {
     _error = null;
+    var toAdd = t;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -2077,14 +2120,19 @@ class FinanceStore extends ChangeNotifier {
         }
         throw ApiException('Сервер не вернул ID шаблона', 'MISSING_TEMPLATE_ID');
       } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-        return;
+        if (_isNetworkError(e)) {
+          toAdd = t.copyWith(isPending: true);
+        } else {
+          _error = e.message; notifyListeners();
+          return;
+        }
       } catch (e) {
-        _error = 'Ошибка добавления шаблона: $e'; notifyListeners();
-        return;
+        toAdd = t.copyWith(isPending: true);
       }
+    } else {
+      toAdd = t;
     }
-    _templates.add(t);
+    _templates.add(toAdd);
     await _saveTemplates();
     notifyListeners();
   }
@@ -2106,6 +2154,104 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     _templates.removeWhere((t) => t.id == id);
+    await _saveTemplates();
+    notifyListeners();
+  }
+
+  Future<void> syncPendingAccounts() async {
+    if (!authService.isAuthenticated) return;
+    final pending = _accounts.where((a) => a.isPending).toList();
+    if (pending.isEmpty) return;
+    for (final a in pending) {
+      try {
+        final now = formatApiDateTime();
+        final resp = await authService.apiService.addAccount({
+          'accounts': [{
+            'name': a.name,
+            'init_balance': (a.initBalance > 0 ? a.initBalance : a.balance).toStringAsFixed(2),
+            'type_id': _accountTypeToApi(a.type),
+            'state': a.isArchived ? '2' : (a.isFavorite ? '1' : '0'),
+            if (a.currencyId != null) 'currency_id': a.currencyId else 'currency_id': '1',
+            'icon': _accountIconToApi(a.icon),
+            'include_in_total': a.includeInTotal ? '1' : '0',
+            'created_at': now,
+            'updated_at': now,
+            ..._creditFields(a),
+          }]
+        });
+        final accounts = resp['accounts'] as List<dynamic>?;
+        final serverId = accounts?.isNotEmpty == true ? (accounts!.first as Map<String, dynamic>)['id']?.toString() : null;
+        final idx = _accounts.indexWhere((x) => x.id == a.id);
+        if (idx >= 0) {
+          _accounts[idx] = _accounts[idx].copyWith(id: (serverId != null && serverId.isNotEmpty) ? serverId : a.id, isPending: false);
+        }
+      } catch (e) {
+        debugPrint('Sync pending account ${a.id} failed: $e');
+      }
+    }
+    await _saveCache();
+    notifyListeners();
+  }
+
+  Future<void> syncPendingCategories() async {
+    if (!authService.isAuthenticated) return;
+    final pending = _categories.where((c) => c.isPending).toList();
+    if (pending.isEmpty) return;
+    for (final c in pending) {
+      try {
+        final now = formatApiDateTime();
+        final typeCode = c.type == 'expense' ? '-1' : '1';
+        final data = await apiClient.postCategoryV2({
+          'name': c.name, 'type': typeCode, 'icon': _categoryIconToApi(c.icon),
+          'system_id': _systemIdForLogical(c.icon), 'custom': c.isDefault ? '0' : '1',
+          'parent_id': c.parentId ?? '0', 'is_hidden': '0', 'created_at': now, 'updated_at': now,
+        });
+        final categories = data['categories'] as List<dynamic>?;
+        final serverId = categories?.isNotEmpty == true ? (categories!.first as Map<String, dynamic>)['id']?.toString() : null;
+        final idx = _categories.indexWhere((x) => x.id == c.id);
+        if (idx >= 0) {
+          _categories[idx] = _categories[idx].copyWith(id: (serverId != null && serverId.isNotEmpty) ? serverId : c.id, isPending: false);
+        }
+      } catch (e) {
+        debugPrint('Sync pending category ${c.id} failed: $e');
+      }
+    }
+    await _saveCache();
+    notifyListeners();
+  }
+
+  Future<void> syncPendingTemplates() async {
+    if (!authService.isAuthenticated) return;
+    final pending = _templates.where((t) => t.isPending).toList();
+    if (pending.isEmpty) return;
+    for (final t in pending) {
+      try {
+        final now = formatApiDateTime();
+        final typeCode = t.type == 'expense' ? 0 : t.type == 'income' ? 1 : 2;
+        final clientId = DateTime.now().millisecondsSinceEpoch.toString();
+        final userId = authService.userId ?? '';
+        final resp = await authService.apiService.addTemplate({
+          'operationPatterns': [{
+            'client_id': clientId, 'user_id': userId, 'name': t.name, 'type': typeCode,
+            'amount': t.amount.toStringAsFixed(2),
+            if (t.accountId != null) 'account_id': t.accountId,
+            if (t.categoryId != null) 'category_id': t.categoryId,
+            if (t.toAccountId != null) 'transfer_account_id': t.toAccountId,
+            if (t.comment != null) 'comment': t.comment,
+            if (t.tags != null) 'tags': t.tags,
+            'created_at': now, 'updated_at': now,
+          }]
+        }, options: 'client');
+        final patterns = resp['operationPatterns'] as List<dynamic>?;
+        final serverId = patterns?.isNotEmpty == true ? (patterns!.first as Map<String, dynamic>)['id']?.toString() : null;
+        final idx = _templates.indexWhere((x) => x.id == t.id);
+        if (idx >= 0) {
+          _templates[idx] = _templates[idx].copyWith(id: (serverId != null && serverId.isNotEmpty) ? serverId : t.id, isPending: false);
+        }
+      } catch (e) {
+        debugPrint('Sync pending template ${t.id} failed: $e');
+      }
+    }
     await _saveTemplates();
     notifyListeners();
   }
@@ -2132,7 +2278,20 @@ class FinanceStore extends ChangeNotifier {
 
   // --- Tags ---
 
+  Future<void> _registerTags(String? tagsStr) async {
+    if (tagsStr == null || tagsStr.isEmpty) return;
+    final names = tagsStr.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    if (names.isEmpty) return;
+    final existing = _tags.map((t) => t.name.toLowerCase()).toSet();
+    for (final name in names) {
+      if (existing.contains(name.toLowerCase())) continue;
+      existing.add(name.toLowerCase());
+      await addTag(Tag(id: DateTime.now().microsecondsSinceEpoch.toRadixString(36), name: name));
+    }
+  }
+
   Future<void> addTag(Tag tag) async {
+    if (_tags.any((t) => t.name.toLowerCase() == tag.name.toLowerCase())) return;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
