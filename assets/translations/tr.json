@@ -131,6 +131,7 @@
   "accounts.credit_limit": "Kredi limiti",
   "accounts.payment_day": "Г–deme gГјnГј",
   "accounts.open_date": "AГ§Д±lД±Еџ tarihi",
+  "accounts.open_date_hint": "YYYY-MM-DD",
   "accounts.close_date": "KapanД±Еџ tarihi",
   "accounts.commission_one_time": "Tek seferlik komisyon, %",
   "accounts.commission_monthly": "AylД±k komisyon, %",
@@ -715,4 +716,5 @@
   "add_planned.section_schedule": "Zamanlama",
   "add_planned.section_extra": "Ek"
 }
+
 

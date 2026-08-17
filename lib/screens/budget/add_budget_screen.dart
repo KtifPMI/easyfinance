@@ -10,6 +10,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
+import '../../utils/input_formatters.dart';
 
 class AddBudgetScreen extends StatefulWidget {
   final String? categoryId;
@@ -45,7 +46,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
 
   void _save() {
     final store = context.read<FinanceStore>();
-    final limit = double.tryParse(_limitCtrl.text.replaceAll(',', '.')) ?? 0;
+    final limit = double.tryParse(_limitCtrl.text.replaceAll(' ', '').replaceAll(',', '.')) ?? 0;
     if (limit <= 0 || _categoryId == null) return;
 
     store.addBudget(Budget(
@@ -156,7 +157,7 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
                   child: Text(context.tr('common.no_results'), style: TextStyle(color: AppColors.textSecondaryFor(context))),
                 ),
               const SizedBox(height: 16),
-              AppInput(label: context.tr('budget.limit'), controller: _limitCtrl, keyboardType: TextInputType.number),
+              AppInput(label: context.tr('budget.limit'), controller: _limitCtrl, keyboardType: TextInputType.number, inputFormatters: [ThousandsSeparatorFormatter()]),
               const SizedBox(height: 24),
               AppButton(title: context.tr('budget.save'), onPressed: _save),
             ],

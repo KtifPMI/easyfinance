@@ -7,6 +7,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../models/budget.dart';
 import '../../models/goal.dart';
 import '../../store/finance_store.dart';
+import '../../utils/input_formatters.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/translate_category.dart';
@@ -441,6 +442,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
             TextField(
               controller: limitCtrl,
               keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsSeparatorFormatter()],
               decoration: InputDecoration(labelText: context.tr('budget.limit_label')),
             ),
           ],
@@ -449,7 +451,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('budget.cancel'))),
           TextButton(
             onPressed: () async {
-              final newLimit = double.tryParse(limitCtrl.text.replaceAll(',', '.')) ?? 0;
+              final newLimit = double.tryParse(limitCtrl.text.replaceAll(' ', '').replaceAll(',', '.')) ?? 0;
               if (newLimit <= 0) return;
               await store.updateBudget(b.copyWith(limit: newLimit));
               if (!ctx.mounted) return;

@@ -131,6 +131,7 @@
   "accounts.credit_limit": "Limite di credito",
   "accounts.payment_day": "Giorno di pagamento",
   "accounts.open_date": "Data di apertura",
+  "accounts.open_date_hint": "YYYY-MM-DD",
   "accounts.close_date": "Data di chiusura",
   "accounts.commission_one_time": "Commissione una tantum, %",
   "accounts.commission_monthly": "Commissione mensile, %",
@@ -715,4 +716,5 @@
   "add_planned.section_schedule": "Programmazione",
   "add_planned.section_extra": "Aggiuntivo"
 }
+
 

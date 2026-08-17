@@ -131,6 +131,7 @@
   "accounts.credit_limit": "Limite de crГ©dit",
   "accounts.payment_day": "Jour de paiement",
   "accounts.open_date": "Date d'ouverture",
+  "accounts.open_date_hint": "YYYY-MM-DD",
   "accounts.close_date": "Date de clГґture",
   "accounts.commission_one_time": "Commission unique, %",
   "accounts.commission_monthly": "Commission mensuelle, %",
@@ -715,4 +716,5 @@
   "add_planned.section_schedule": "PР“В©riodicitР“В©",
   "add_planned.section_extra": "ComplР“В©mentaire"
 }
+
 

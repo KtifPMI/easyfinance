@@ -142,6 +142,7 @@
   "accounts.credit_limit": "Credit Limit",
   "accounts.payment_day": "Payment Day",
   "accounts.open_date": "Open Date",
+  "accounts.open_date_hint": "YYYY-MM-DD",
   "accounts.close_date": "Close Date",
   "accounts.commission_one_time": "One-time Fee, %",
   "accounts.commission_monthly": "Monthly Fee, %",
@@ -786,4 +787,5 @@
   "add_planned.section_schedule": "Schedule",
   "add_planned.section_extra": "Additional"
 }
+
 

@@ -372,7 +372,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             AppInput(
               label: context.tr('accounts.open_date'),
               controller: _openDateCtrl,
-              hint: 'YYYY-MM-DD',
+              hint: context.tr('accounts.open_date_hint'),
+              readOnly: true,
+              onTap: () => _pickOpenDate(context),
             ),
           ],
           if (_isDebitCard) ...[
@@ -380,7 +382,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             AppInput(
               label: context.tr('accounts.open_date'),
               controller: _openDateCtrl,
-              hint: 'YYYY-MM-DD',
+              hint: context.tr('accounts.open_date_hint'),
+              readOnly: true,
+              onTap: () => _pickOpenDate(context),
             ),
           ],
           const SizedBox(height: 24),
@@ -444,6 +448,20 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickOpenDate(BuildContext context) async {
+    final initial = DateTime.tryParse(_openDateCtrl.text) ?? DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1990),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (picked != null && mounted) {
+      setState(() => _openDateCtrl.text =
+          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}');
+    }
   }
 }
 

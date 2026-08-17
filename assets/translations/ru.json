@@ -147,6 +147,7 @@
   "accounts.credit_limit": "РљСЂРµРґРёС‚РЅС‹Р№ Р»РёРјРёС‚",
   "accounts.payment_day": "Р”РµРЅСЊ РїР»Р°С‚РµР¶Р°",
   "accounts.open_date": "Р”Р°С‚Р° РѕС‚РєСЂС‹С‚РёСЏ",
+  "accounts.open_date_hint": "ГГГГ-ММ-ДД",
   "accounts.close_date": "Р”Р°С‚Р° Р·Р°РєСЂС‹С‚РёСЏ",
   "accounts.commission_one_time": "Р•РґРёРЅРѕСЂР°Р·РѕРІР°СЏ РєРѕРјРёСЃСЃРёСЏ, %",
   "accounts.commission_monthly": "Р•Р¶РµРјРµСЃСЏС‡РЅР°СЏ РєРѕРјРёСЃСЃРёСЏ, %",
@@ -803,4 +804,5 @@
   "add_planned.section_schedule": "Р Р°СЃРїРёСЃР°РЅРёРµ",
   "add_planned.section_extra": "Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕ"
 }
+
 
