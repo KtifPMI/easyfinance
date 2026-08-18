@@ -27,7 +27,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   final _amountCtrl = TextEditingController();
   final _hourCtrl = TextEditingController();
   final _minuteCtrl = TextEditingController();
-  final _tagsCtrl = TextEditingController();
   final _commentCtrl = TextEditingController();
   bool _commentError = false;
 
@@ -40,7 +39,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   String? _accountId;
   String? _categoryId;
   String? _toAccountId;
-  final List<String> _selectedTags = [];
   final List<bool> _weekdays = List.filled(7, false); // Пн..Вс
 
   @override
@@ -53,10 +51,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       _amountCtrl.text = e.amount > 0 ? e.amount.toStringAsFixed(2) : '';
       _type = e.type;
       _commentCtrl.text = e.comment ?? '';
-      _tagsCtrl.text = e.tags ?? '';
-      if (e.tags != null && e.tags!.isNotEmpty) {
-        _selectedTags.addAll(e.tags!.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty));
-      }
       _accountId = e.accountId;
       _categoryId = e.categoryId;
       _toAccountId = e.toAccountId;
@@ -92,7 +86,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     _amountCtrl.dispose();
     _hourCtrl.dispose();
     _minuteCtrl.dispose();
-    _tagsCtrl.dispose();
     _commentCtrl.dispose();
     _repeatCountController?.dispose();
     super.dispose();
@@ -196,8 +189,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         _section(
           context.tr('add_planned.section_extra'),
           [
-            _buildTagSelector(context, store),
-            const SizedBox(height: 12),
             _commentField(context),
           ],
         ),
@@ -511,89 +502,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     );
   }
 
-  String _combinedTags() {
-    return {
-      ..._selectedTags,
-      ..._tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty),
-    }.join(', ');
-  }
-
-  Widget _buildTagSelector(BuildContext context, FinanceStore store) {
-    final availableTags = <String>{
-      ...store.tags.map((t) => t.name),
-      for (final op in store.operations) ...store.getTagsForOperation(op),
-    }.toList();
-    final customTags = _tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
-    final allTags = <String>{
-      ..._selectedTags,
-      ...customTags,
-    }.toList();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(context.tr('operations.tags'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(height: 8),
-        if (availableTags.isNotEmpty || allTags.isNotEmpty)
-          Wrap(
-            spacing: 6,
-            runSpacing: 4,
-            children: [
-              ...allTags.map((t) => Chip(
-                label: Text('#$t', style: TextStyle(fontSize: 13, color: Colors.white)),
-                backgroundColor: AppColors.primary,
-                deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
-                onDeleted: () {
-                  setState(() {
-                    _selectedTags.remove(t);
-                    final ctags = _tagsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-                    ctags.remove(t);
-                    _tagsCtrl.text = ctags.join(', ');
-                  });
-                },
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-              )),
-            ],
-          ),
-        if (availableTags.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: null,
-            decoration: InputDecoration(
-              filled: true, fillColor: AppColors.cardFor(context),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              hintText: context.tr('tags.add_tag'),
-            ),
-            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: TextStyle(fontSize: 15)))).toList(),
-            onChanged: (v) {
-              if (v != null && !_selectedTags.contains(v)) {
-                setState(() => _selectedTags.add(v));
-              }
-            },
-            isExpanded: true,
-          ),
-        ],
-        const SizedBox(height: 4),
-        TextField(
-          controller: _tagsCtrl,
-          style: TextStyle(fontSize: 14, color: AppColors.textFor(context)),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: AppColors.cardFor(context),
-            hintText: context.tr('tags.custom_tag_hint'),
-            hintStyle: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _commentField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -785,7 +693,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       amount: amount,
       type: _type,
       comment: comment.isNotEmpty ? comment : widget.existing?.comment,
-      tags: _combinedTags().isNotEmpty ? _combinedTags() : null,
+      tags: null,
       repeatMode: period,
       accountId: _accountId,
       toAccountId: _type == 'transfer' ? _toAccountId : null,
