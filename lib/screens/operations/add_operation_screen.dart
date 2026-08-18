@@ -155,6 +155,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       if (_isEditing) {
         final op = store.operations.where((o) => o.id == widget.operationId).firstOrNull;
         if (op != null) {
+          if (op.date.isNotEmpty) {
+            final d = DateTime.tryParse(op.date);
+            if (d != null) _selectedDT = d;
+          }
           _type = op.type;
           _amountCtrl.text = op.amount.toStringAsFixed(0);
           _accountId = op.accountId;
@@ -169,6 +173,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       } else if (widget.copyFrom != null) {
         final op = store.operations.where((o) => o.id == widget.copyFrom).firstOrNull;
         if (op != null) {
+          if (op.date.isNotEmpty) {
+            final d = DateTime.tryParse(op.date);
+            if (d != null) _selectedDT = d;
+          }
           _type = op.type;
           _amountCtrl.text = op.amount.toStringAsFixed(0);
           _accountId = op.accountId;
@@ -253,18 +261,45 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   void _showSavedDialog(BuildContext context, FinanceStore store, Operation op) {
     final catId = op.categoryId;
     final budget = catId != null ? store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull : null;
+    final now = DateTime.now();
+    final catSpend = catId != null
+        ? store.operations.where((o) => !o.isDeleted && o.type == 'expense' && o.categoryId == catId && store.isInMonth(o.date, now)).fold(0.0, (s, o) => s + o.amount)
+        : 0.0;
+    final totalBudgetRemaining = store.budgets.where((b) => !b.isDeleted).fold(0.0, (s, b) => s + (b.limit - b.spent));
+    final account = store.getAccount(op.accountId);
+    final accountRemaining = account != null ? store.accountActualBalance(account) : 0.0;
+
+    final bool overBudget = budget != null && budget.spent > budget.limit;
+    final String tip;
+    if (overBudget) {
+      tip = 'Превышен лимит бюджета категории на ${store.fmt(budget.spent - budget.limit)}.';
+    } else if (budget != null) {
+      tip = 'По бюджету категории сэкономлено ${store.fmt(budget.limit - budget.spent)}.';
+    } else {
+      tip = 'Категория без бюджета: за месяц потрачено ${store.fmt(catSpend)}.';
+    }
+
     final children = <Widget>[
       Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
       if (catId != null)
         Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 15)),
       const SizedBox(height: 12),
+      Text('По данным:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+      const SizedBox(height: 4),
+      Text('Расходы на категорию: ${store.fmt(catSpend)}', style: TextStyle(fontSize: 15)),
       if (budget != null)
-        Text(
-          '${context.tr('budget.spent_total')}: ${store.fmt(budget.spent)} / ${store.fmt(budget.limit)}  •  '
-          '${context.tr('budget.remaining')}: ${store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}',
-          style: TextStyle(fontSize: 15, color: AppColors.textFor(context)),
+        Text('Остаток по бюджету категории: ${store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}', style: TextStyle(fontSize: 15)),
+      Text('Всего остаток по бюджету: ${store.fmt(totalBudgetRemaining.clamp(0, double.infinity))}', style: TextStyle(fontSize: 15)),
+      Text('Остаток по счёту: ${store.fmt(accountRemaining)}', style: TextStyle(fontSize: 15)),
+      const SizedBox(height: 8),
+      Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: (overBudget ? AppColors.expense : AppColors.success).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
-      Text('${context.tr('operations.expense')}: ${store.fmt(store.monthExpense)}', style: TextStyle(fontSize: 15)),
+        child: Text(tip, style: TextStyle(fontSize: 13, color: overBudget ? AppColors.expense : AppColors.success)),
+      ),
     ];
     showDialog(
       context: context,
@@ -278,6 +313,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               _resetForAnother();
             },
             child: Text(context.tr('operations.more')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pushNamed(context, '/operations', arguments: {'sort': 'date_desc'});
+            },
+            child: const Text('Последние'),
           ),
           TextButton(
             onPressed: () {

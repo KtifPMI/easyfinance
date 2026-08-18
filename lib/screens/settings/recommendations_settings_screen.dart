@@ -40,6 +40,21 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AppCard(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(context.tr('settings.recommendations'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                const SizedBox(height: 4),
+                Text(
+                  'Эти настройки управляют советами в разделе «Рекомендации». Каждый ползунок задаёт порог, при котором появляется соответствующий совет. Чем ниже порог — тем чаще появляются советы.',
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           _sectionHeader(context.tr('rec_settings.food')),
           _slider('rec_settings.food_high', _prefs.foodHighPct, 10, 80, (v) { setState(() { _prefs.foodHighPct = v; }); _save(); }, hint: 'Доля расходов на продукты и кафе в доходе выше этого порога — совет сократить траты на еду.'),
           _slider('rec_settings.food_medium', _prefs.foodMediumPct, 10, 60, (v) { setState(() { _prefs.foodMediumPct = v; }); _save(); }, hint: 'Более мягкий порог доли расходов на еду в доходе для менее строгого совета.'),
@@ -79,8 +94,15 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
     );
   }
 
+  String _formatRub(double value) {
+    final s = value.round().toString();
+    return s.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
+  }
+
   Widget _slider(String label, double value, double min, double max, ValueChanged<double> onChanged, {int? divisions, String? suffix, String? hint}) {
-    final displayVal = value == value.roundToDouble() && value < 1000 ? value.round().toString() : value.toStringAsFixed(value < 100 ? 1 : 0);
+    final displayVal = suffix == '₽'
+        ? '${_formatRub(value)} ₽'
+        : '${value == value.roundToDouble() ? value.round().toString() : value.toStringAsFixed(value < 100 ? 1 : 0)}${suffix != null ? ' $suffix' : '%'}';
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
@@ -92,7 +114,7 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(child: Text(context.tr(label), style: TextStyle(fontSize: 15, color: AppColors.textFor(context)))),
-                Text('$displayVal${suffix != null ? ' $suffix' : '%'}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                Text(displayVal, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary)),
               ],
             ),
             if (hint != null)

@@ -21,7 +21,7 @@ class OperationDetailScreen extends StatelessWidget {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         final op = operationId != null
-            ? store.operations.where((o) => o.id == operationId).firstOrNull
+            ? store.operations.where((o) => o.id == operationId && !o.isDeleted).firstOrNull
             : null;
         if (op == null) return Scaffold(body: Center(child: Text(context.tr('operations.not_found'))));
 

@@ -37,6 +37,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
         _currentMonth = DateTime(_currentMonth.year, _currentMonth.month - 1);
         if (_selectedDate != null) _selectedDate = _shiftDay(_selectedDate!, _currentMonth);
       });
+
+  Widget _calendarLegend(BuildContext context) {
+    return Row(
+      children: [
+        Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.warning, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text('Запланировано', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(width: 16),
+        Icon(Icons.check_circle, size: 14, color: AppColors.success),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text('Подтверждено на эту дату', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        ),
+      ],
+    );
+  }
   void _nextMonth() => setState(() {
         _currentMonth = DateTime(_currentMonth.year, _currentMonth.month + 1);
         if (_selectedDate != null) _selectedDate = _shiftDay(_selectedDate!, _currentMonth);
@@ -139,10 +155,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   children: dayCells,
                 ),
                 const SizedBox(height: 12),
+                _calendarLegend(context),
+                const SizedBox(height: 8),
                 Expanded(
                   child: _selectedDate != null
                       ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
-                      : _buildMonthPlannedView(context, store, plannedStore, monthPlanned),
+                      : _buildMonthCombinedView(context, store, plannedStore, monthPlanned),
                 ),
               ],
             ),
@@ -164,17 +182,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return list;
   }
 
-  Widget _buildMonthPlannedView(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<Map<String, dynamic>> items) {
-    if (items.isEmpty) {
+  Widget _buildMonthCombinedView(BuildContext context, FinanceStore store, PlannedPaymentStore plannedStore, List<Map<String, dynamic>> plannedItems) {
+    final monthOps = store.operations
+        .where((o) => !o.isDeleted && store.isInMonth(o.date, _currentMonth))
+        .toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    if (plannedItems.isEmpty && monthOps.isEmpty) {
       return Center(child: Text(context.tr('calendar.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))));
     }
     return ListView(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
-        ),
-        ...items.map((m) => _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime)),
+        if (plannedItems.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text('Плановые операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+          ),
+          ...plannedItems.map((m) => _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime)),
+        ],
+        if (monthOps.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 4),
+            child: Text('Фактические операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+          ),
+          ...monthOps.map((op) => _operationTile(context, store, op)),
+        ],
       ],
     );
   }
@@ -191,11 +222,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ...planned.map((e) => _plannedPaymentTile(context, store, e, occurrenceDate: _selectedDate)),
         ],
         if (ops.isNotEmpty) ...[
-          if (planned.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 4),
-              child: Text(context.tr('calendar.operations'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
-            ),
+              if (planned.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 4),
+                  child: Text('Фактические операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+                ),
           ...ops.map((op) => _operationTile(context, store, op)),
         ],
       ],
@@ -330,6 +361,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   void _showPlannedActionDialog(BuildContext context, FinanceStore store, FinancialEvent e, [DateTime? occurrenceDate]) {
+    final ymd = occurrenceDate != null
+        ? '${occurrenceDate.year}-${occurrenceDate.month.toString().padLeft(2, '0')}-${occurrenceDate.day.toString().padLeft(2, '0')}'
+        : e.date;
+    final accepted = e.isAcceptedOn(ymd);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -351,13 +386,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
             },
             child: Text(context.tr('calendar.edit_payment')),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _createPlannedOperation(context, e, store, occurrenceDate);
-            },
-            child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
+          if (!accepted)
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await _createPlannedOperation(context, e, store, occurrenceDate);
+              },
+              child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+            )
+          else
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Подтверждено', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
+            ),
           TextButton(
             onPressed: () => _confirmDeletePlanned(context, e, store),
             child: Text(context.tr('calendar.delete_payment'), style: TextStyle(color: AppColors.expense)),

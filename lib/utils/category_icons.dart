@@ -238,6 +238,21 @@ const Map<String, IconData> _rootIcons = {
   'book': Icons.menu_book,
   'phone': Icons.phone_android,
   'gift': Icons.card_giftcard,
+  'housing': Icons.home,
+  'shopping': Icons.shopping_cart,
+  'health': Icons.medical_services,
+  'entertainment': Icons.movie,
+  'travel': Icons.flight,
+  'freelance': Icons.work,
+  'business': Icons.business,
+  'sports': Icons.fitness_center,
+  'dining': Icons.restaurant,
+  'internet': Icons.wifi,
+  'taxes': Icons.receipt_long,
+  'invest': Icons.trending_up,
+  'rent': Icons.apartment,
+  'other_income': Icons.attach_money,
+  'other_expense': Icons.more_horiz,
 };
 
 /// Ordered keyword groups used as a fallback for custom/unknown categories.

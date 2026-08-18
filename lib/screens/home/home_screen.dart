@@ -617,7 +617,10 @@ class HomeScreen extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final overdue = plannedPayments.overdueEvents;
-    final upcoming = plannedPayments.upcomingEvents;
+    final upcoming = plannedPayments.upcomingEvents.where((e) {
+      final next = e.nextOccurrence();
+      return next == null || !e.isAcceptedOn('${next.year}-${next.month.toString().padLeft(2, '0')}-${next.day.toString().padLeft(2, '0')}');
+    }).toList();
     final combined = <FinancialEvent>[...overdue, ...upcoming];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

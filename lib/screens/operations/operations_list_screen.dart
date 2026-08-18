@@ -34,14 +34,17 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is Map<String, dynamic> && _reportCategoryId == null) {
-      setState(() {
-        _reportCategoryId = args['categoryId'] as String?;
-        final dateFrom = args['dateFrom'] as String?;
-        final dateTo = args['dateTo'] as String?;
-        if (dateFrom != null) _advDateFrom = DateTime.tryParse(dateFrom);
-        if (dateTo != null) _advDateTo = DateTime.tryParse(dateTo);
-      });
+    if (args is Map<String, dynamic>) {
+      if (args['sort'] == 'date_desc') _sortByInputTime = false;
+      if (_reportCategoryId == null) {
+        setState(() {
+          _reportCategoryId = args['categoryId'] as String?;
+          final dateFrom = args['dateFrom'] as String?;
+          final dateTo = args['dateTo'] as String?;
+          if (dateFrom != null) _advDateFrom = DateTime.tryParse(dateFrom);
+          if (dateTo != null) _advDateTo = DateTime.tryParse(dateTo);
+        });
+      }
     }
   }
 
@@ -72,7 +75,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        var ops = store.operations.toList();
+        var ops = store.operations.where((o) => !o.isDeleted).toList();
 
         if (_advTypeFilter != null) {
           ops = ops.where((o) => o.type == _advTypeFilter).toList();
@@ -119,6 +122,8 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
 
         if (_sortByInputTime) {
           ops.sort((a, b) => (b.clientId ?? '').compareTo(a.clientId ?? ''));
+        } else {
+          ops.sort((a, b) => b.date.compareTo(a.date));
         }
 
         final grouped = groupByDay(ops);
