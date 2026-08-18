@@ -2379,7 +2379,7 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> refreshTags() async {
     try {
-      final server = await api.getTags();
+      final server = await authService.apiService.getTags();
       final localOnly = _tags.where((t) => t.id.isEmpty).toList();
       final merged = <Tag>[...server];
       for (final l in localOnly) {
