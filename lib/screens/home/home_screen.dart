@@ -719,11 +719,20 @@ class HomeScreen extends StatelessWidget {
     final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
     if (income == 0 && expense == 0) return const SizedBox.shrink();
 
-    final catTotals = store.categories
-        .where((c) => c.type == 'expense')
-        .map((c) => (category: c, total: monthOps.where((o) => o.categoryId == c.id && o.type == 'expense').fold<double>(0, (s, o) => s + o.amount)))
-        .where((e) => e.total > 0)
-        .toList()
+    final expenseOps = monthOps.where((o) => o.type == 'expense').toList();
+    final expenseCats = store.categories.where((c) => c.type == 'expense').toList();
+    final catById = {for (final c in expenseCats) c.id: c};
+    final byCat = <String, double>{};
+    double uncategorized = 0;
+    for (final o in expenseOps) {
+      final c = o.categoryId != null ? catById[o.categoryId] : null;
+      if (c != null) {
+        byCat[c.id] = (byCat[c.id] ?? 0) + o.amount;
+      } else {
+        uncategorized += o.amount;
+      }
+    }
+    final catTotals = byCat.entries.map((e) => (category: catById[e.key]!, total: e.value)).toList()
       ..sort((a, b) => b.total.compareTo(a.total));
 
     final chartPalette = [AppColors.expense, const Color(0xFF1E88E5), AppColors.warning, const Color(0xFF8E24AA), const Color(0xFF00ACC1)];
@@ -731,7 +740,7 @@ class HomeScreen extends StatelessWidget {
     for (int i = 0; i < catTotals.length && i < 5; i++) {
       chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: chartPalette[i % chartPalette.length]));
     }
-    final otherTotal = catTotals.length > 5 ? catTotals.skip(5).fold<double>(0, (s, e) => s + e.total) : 0.0;
+    final otherTotal = (catTotals.length > 5 ? catTotals.skip(5).fold<double>(0, (s, e) => s + e.total) : 0.0) + uncategorized;
     if (otherTotal > 0) chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: AppColors.textSecondary));
 
     return Column(

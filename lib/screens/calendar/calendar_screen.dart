@@ -482,6 +482,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ? '${occurrenceDate.year}-${occurrenceDate.month.toString().padLeft(2, '0')}-${occurrenceDate.day.toString().padLeft(2, '0')}'
           : e.date;
       await planned.accept(e, ymd);
+      // Re-sync from server so the accepted occurrence matches the
+      // authoritative per-operation state (a chain is collapsed into a single
+      // local event, but acceptance is tracked per server operation id).
+      if (context.mounted) await planned.syncFromServer();
     }
     if (context.mounted) await store.reloadOperations();
   }
