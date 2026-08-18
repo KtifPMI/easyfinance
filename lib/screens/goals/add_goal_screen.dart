@@ -266,7 +266,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     return store.accounts.where((a) {
       if (usedByOthers.contains(a.id)) return false;
       if (_type == 'pay') return a.isCredit;
-      if (_type == 'save') return a.groupForType(a.type) == 'money';
+      if (_type == 'save') return groupForType(a.type) == 'money';
       return true;
     }).toList();
   }
