@@ -7,6 +7,7 @@ import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_card.dart';
+import '../../components/common/calculator_input.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/common/grouped_picker_sheet.dart';
 import '../../utils/category_icons.dart';
@@ -38,6 +39,8 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   DateTime? _untilDate;
   String? _accountId;
   String? _categoryId;
+  String? _toAccountId;
+  final List<String> _selectedTags = [];
   final List<bool> _weekdays = List.filled(7, false); // Пн..Вс
 
   @override
@@ -51,8 +54,12 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       _type = e.type;
       _commentCtrl.text = e.comment ?? '';
       _tagsCtrl.text = e.tags ?? '';
+      if (e.tags != null && e.tags!.isNotEmpty) {
+        _selectedTags.addAll(e.tags!.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty));
+      }
       _accountId = e.accountId;
       _categoryId = e.categoryId;
+      _toAccountId = e.toAccountId;
       _date = e.dateStart != null
           ? DateTime.tryParse(e.dateStart!)
           : (e.date.isNotEmpty ? DateTime.tryParse(e.date) : null);
@@ -152,7 +159,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         _section(
           context.tr('add_planned.section_main'),
           [
-            _amountField(context),
+            CalculatorInput(controller: _amountCtrl, label: context.tr('add_planned.amount')),
             const SizedBox(height: 12),
             _typeButtons(context),
             const SizedBox(height: 12),
@@ -160,6 +167,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             if (_type != 'transfer') ...[
               const SizedBox(height: 12),
               _categoryField(context, store),
+            ],
+            if (_type == 'transfer') ...[
+              const SizedBox(height: 12),
+              _toAccountField(context, store),
             ],
           ],
         ),
@@ -185,7 +196,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         _section(
           context.tr('add_planned.section_extra'),
           [
-            _tagsField(context),
+            _buildTagSelector(context, store),
             const SizedBox(height: 12),
             _commentField(context),
           ],
@@ -237,34 +248,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text(text, style: TextStyle(fontSize: 13, color: AppColors.textFor(context))),
-      );
-
-  Widget _amountField(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _label(context.tr('planned_payments.amount') + ':'),
-          Container(
-            decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _amountCtrl,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    textAlign: TextAlign.right,
-                    decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-                    onSubmitted: (_) => _evalAmount(),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.calculate_outlined, size: 20, color: AppColors.textSecondaryFor(context)),
-                  onPressed: _evalAmount,
-                  tooltip: context.tr('add_planned.calculator'),
-                ),
-              ],
-            ),
-          ),
-        ],
       );
 
   Widget _dateField(BuildContext context) => Column(
@@ -416,6 +399,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         onTap: () => setState(() {
           _type = type;
           _categoryId = null;
+          if (type != 'transfer') _toAccountId = null;
         }),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
@@ -501,27 +485,114 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     return Color(int.parse('FF$cleaned', radix: 16));
   }
 
-  Widget _tagsField(BuildContext context) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _label(context.tr('planned_payments.tags') + ':'),
-          Container(
-            decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _tagsCtrl,
-                    decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12)),
-                  ),
-                ),
-                Padding(padding: const EdgeInsets.only(right: 12), child: Icon(Icons.chat_bubble_outline, size: 20, color: AppColors.textSecondaryFor(context))),
-              ],
-            ),
+  Widget _toAccountField(BuildContext context, FinanceStore store) {
+    final accounts = store.accounts.where((a) => !a.isArchived && a.id != _accountId).toList();
+    final selected = accounts.where((a) => a.id == _toAccountId).firstOrNull;
+    return _buildPicker(
+      label: context.tr('operations.to_account'),
+      value: selected?.name,
+      onTap: () async {
+        final result = await GroupedPickerSheet.show<String>(
+          context: context,
+          title: context.tr('operations.to_account'),
+          items: accounts.map((a) => a.id).toList(),
+          labelBuilder: (id) => accounts.firstWhere((a) => a.id == id).name,
+          groupBuilder: (id) => accounts.firstWhere((a) => a.id == id).currency,
+          subtitleBuilder: (id) {
+            final a = accounts.firstWhere((a) => a.id == id);
+            return '${a.balance.toStringAsFixed(2)} ${a.currency}';
+          },
+          iconBuilder: (id) => _accountIcon(accounts.firstWhere((a) => a.id == id).icon),
+          colorBuilder: (id) => _hexToColor(accounts.firstWhere((a) => a.id == id).color),
+          selectedId: _toAccountId,
+        );
+        if (result != null) setState(() => _toAccountId = result);
+      },
+    );
+  }
+
+  String _combinedTags() {
+    return {
+      ..._selectedTags,
+      ..._tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty),
+    }.join(', ');
+  }
+
+  Widget _buildTagSelector(BuildContext context, FinanceStore store) {
+    final availableTags = <String>{
+      ...store.tags.map((t) => t.name),
+      for (final op in store.operations) ...store.getTagsForOperation(op),
+    }.toList();
+    final customTags = _tagsCtrl.text.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+    final allTags = <String>{
+      ..._selectedTags,
+      ...customTags,
+    }.toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(context.tr('operations.tags'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+        const SizedBox(height: 8),
+        if (availableTags.isNotEmpty || allTags.isNotEmpty)
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              ...allTags.map((t) => Chip(
+                label: Text('#$t', style: TextStyle(fontSize: 13, color: Colors.white)),
+                backgroundColor: AppColors.primary,
+                deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
+                onDeleted: () {
+                  setState(() {
+                    _selectedTags.remove(t);
+                    final ctags = _tagsCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+                    ctags.remove(t);
+                    _tagsCtrl.text = ctags.join(', ');
+                  });
+                },
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+              )),
+            ],
           ),
-          _hint(context.tr('add_planned.name_example')),
+        if (availableTags.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: null,
+            decoration: InputDecoration(
+              filled: true, fillColor: AppColors.cardFor(context),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              hintText: context.tr('tags.add_tag'),
+            ),
+            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: TextStyle(fontSize: 15)))).toList(),
+            onChanged: (v) {
+              if (v != null && !_selectedTags.contains(v)) {
+                setState(() => _selectedTags.add(v));
+              }
+            },
+            isExpanded: true,
+          ),
         ],
-      );
+        const SizedBox(height: 4),
+        TextField(
+          controller: _tagsCtrl,
+          style: TextStyle(fontSize: 14, color: AppColors.textFor(context)),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.cardFor(context),
+            hintText: context.tr('tags.custom_tag_hint'),
+            hintStyle: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.6)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.borderFor(context))),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _commentField(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,52 +751,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   TextEditingController? _repeatCountController;
   TextEditingController _repeatCountCtrl() => _repeatCountController ??= TextEditingController(text: _repeatCount);
 
-  void _evalAmount() {
-    final expr = _amountCtrl.text.trim();
-    if (expr.isEmpty) return;
-    final value = _evaluate(expr.replaceAll(' ', ''));
-    if (value != null) {
-      setState(() => _amountCtrl.text = value.toStringAsFixed(2));
-    }
-  }
-
-  double? _evaluate(String s) {
-    try {
-      int pos = 0;
-      double parseTerm() {
-        double parseFactor() {
-          if (s[pos] == '(') {
-            pos++;
-            final v = parseTerm();
-            pos++; // закрывающая скобка
-            return v;
-          }
-          final start = pos;
-          while (pos < s.length && (s.codeUnitAt(pos) >= 0x30 && s.codeUnitAt(pos) <= 0x39 || s[pos] == '.')) pos++;
-          return double.parse(s.substring(start, pos));
-        }
-
-        var left = parseFactor();
-        while (pos < s.length && (s[pos] == '*' || s[pos] == '/')) {
-          final op = s[pos++];
-          final right = parseFactor();
-          left = op == '*' ? left * right : left / right;
-        }
-        return left;
-      }
-
-      var left = parseTerm();
-      while (pos < s.length && (s[pos] == '+' || s[pos] == '-')) {
-        final op = s[pos++];
-        final right = parseTerm();
-        left = op == '+' ? left + right : left - right;
-      }
-      return left;
-    } catch (_) {
-      return null;
-    }
-  }
-
   String? _buildWeekDays() {
     if (_repeatOption != 'week') return null;
     return _weekdays.map((b) => b ? '1' : '0').join('');
@@ -760,10 +785,10 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       amount: amount,
       type: _type,
       comment: comment.isNotEmpty ? comment : widget.existing?.comment,
-      tags: _tagsCtrl.text.trim().isEmpty ? null : _tagsCtrl.text.trim(),
+      tags: _combinedTags().isNotEmpty ? _combinedTags() : null,
       repeatMode: period,
       accountId: _accountId,
-      toAccountId: _type == 'transfer' ? _accountId : null,
+      toAccountId: _type == 'transfer' ? _toAccountId : null,
       categoryId: _categoryId,
       dayOfMonth: dayOfMonth,
       isRecurring: period > 0,
