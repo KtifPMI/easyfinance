@@ -126,7 +126,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
 
   Widget _groupHeader(BuildContext context, FinanceStore store, String group, List<Account> list) {
-    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(a.balance, a.currency, 'RUB', store.rates));
+    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, 'RUB', store.rates));
     final labels = {
       'money': 'accounts.group.money',
       'owed_by_me': 'accounts.group.owed_by_me',
@@ -198,10 +198,10 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   }
                 }) : null,
                 child: Text(
-                  a.isArchived && !_revealed.contains(a.id) ? '***' : formatMoney(a.balance, currency: a.currency),
+                  a.isArchived && !_revealed.contains(a.id) ? '***' : formatMoney(store.accountActualBalance(a), currency: a.currency),
                   maxLines: 1, softWrap: false,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                    color: a.balance >= 0 ? AppColors.textFor(context) : AppColors.expense),
+                    color: store.accountActualBalance(a) >= 0 ? AppColors.textFor(context) : AppColors.expense),
                 ),
               ),
               const SizedBox(width: 4),
@@ -262,7 +262,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   Widget _buildCurrencyRow(BuildContext context, FinanceStore store) {
     final byCurrency = <String, double>{};
     for (final a in store.accounts.where((a) => !a.isArchived)) {
-      byCurrency.update(a.currency, (v) => v + a.balance, ifAbsent: () => a.balance);
+      byCurrency.update(a.currency, (v) => v + store.accountActualBalance(a), ifAbsent: () => store.accountActualBalance(a));
     }
     final entries = byCurrency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));

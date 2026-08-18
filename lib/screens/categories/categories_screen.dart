@@ -21,6 +21,7 @@ class CategoriesScreen extends StatefulWidget {
 class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabCtrl;
   String _search = '';
+  final Set<String> _expanded = {};
 
   @override
   void initState() {
@@ -96,19 +97,13 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         ? Center(child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
                         : SingleChildScrollView(child: Padding(
                             padding: const EdgeInsets.only(top: 8),
-                            child: Column(children: [
-                              ..._buildParents(context, store, 'income'),
-                              ..._buildGrouped(context, store, incomes.where((c) => c.parentId != null && c.parentId!.isNotEmpty).toList()),
-                            ]),
+                            child: Column(children: _buildTwoLevel(context, store, 'income')),
                           )),
                     expenses.isEmpty
                         ? Center(child: Text(context.tr('categories.no_categories'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
                         : SingleChildScrollView(child: Padding(
                             padding: const EdgeInsets.only(top: 8),
-                            child: Column(children: [
-                              ..._buildParents(context, store, 'expense'),
-                              ..._buildGrouped(context, store, expenses.where((c) => c.parentId != null && c.parentId!.isNotEmpty).toList()),
-                            ]),
+                            child: Column(children: _buildTwoLevel(context, store, 'expense')),
                           )),
                   ],
                 ),
@@ -120,83 +115,101 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     );
   }
 
-  List<Widget> _buildGrouped(BuildContext context, FinanceStore store, List<cat.Category> cats) {
-    final grouped = <String?, List<cat.Category>>{};
-    for (final c in cats) {
-      final parent = (c.parentId != null && c.parentId!.isNotEmpty)
-          ? store.categories.where((p) => p.id == c.parentId).firstOrNull
-          : null;
-      (grouped[parent?.name] ??= []).add(c);
+  List<Widget> _buildTwoLevel(BuildContext context, FinanceStore store, String type) {
+    final all = store.categories.where((c) => c.type == type).toList();
+    final childMap = <String, List<cat.Category>>{};
+    final parentIds = <String>{};
+    for (final c in all) {
+      if (c.parentId != null && c.parentId!.isNotEmpty) {
+        (childMap[c.parentId!] ??= []).add(c);
+        parentIds.add(c.parentId!);
+      }
     }
-    // Sort groups: system categories first, then custom
-    final entries = grouped.entries.toList();
-    entries.sort((a, b) {
-      final aSys = a.value.any((c) => c.isDefault);
-      final bSys = b.value.any((c) => c.isDefault);
-      if (aSys && !bSys) return -1;
-      if (!aSys && bSys) return 1;
-      return (a.key ?? '').compareTo(b.key ?? '');
+    final parents = all.where((c) => c.parentId == null || c.parentId!.isEmpty || !parentIds.contains(c.id)).toList();
+    parents.sort((a, b) {
+      if (a.isDefault != b.isDefault) return a.isDefault ? -1 : 1;
+      return a.name.compareTo(b.name);
     });
 
     final result = <Widget>[];
-    for (final entry in entries) {
-      if (entry.key != null && entry.key!.isNotEmpty) {
-        result.add(_groupLabel(context, entry.key!));
-      }
-      for (final c in entry.value) {
-        result.add(_categoryTile(context, store, c));
+    for (final p in parents) {
+      final kids = childMap[p.id] ?? [];
+      kids.sort((a, b) => a.name.compareTo(b.name));
+      result.add(_parentHeader(context, store, p, kids.length));
+      if (_expanded.contains(p.id)) {
+        for (final k in kids) {
+          result.add(_categoryTile(context, store, k, indent: true));
+        }
       }
     }
     return result;
   }
 
-  List<Widget> _buildFrequent(BuildContext context, FinanceStore store, String type) {
-    final counts = <String, int>{};
-    for (final op in store.operations.where((o) => o.type == type && !o.isDeleted && o.categoryId != null)) {
-      counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
-    }
-    final top = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    final cats = top
-        .take(5)
-        .map((e) => store.categories.where((c) => c.id == e.key && c.type == type).firstOrNull)
-        .where((c) => c != null)
-        .cast<cat.Category>()
-        .toList();
-    if (cats.isEmpty) return [];
-    return [
-      _groupLabel(context, context.tr('categories.popular')),
-      ...cats.map((c) => _categoryTile(context, store, c)),
-    ];
-  }
-
-  List<Widget> _buildParents(BuildContext context, FinanceStore store, String type) {
-    final parents = store.categories
-        .where((c) => c.type == type && (c.parentId == null || c.parentId!.isEmpty))
-        .toList();
-    if (parents.isEmpty) return [];
-    return [
-      _groupLabel(context, context.tr('categories.parents')),
-      ...parents.map((c) => _categoryTile(context, store, c)),
-    ];
-  }
-
-  Widget _groupLabel(BuildContext context, String name) {
+  Widget _parentHeader(BuildContext context, FinanceStore store, cat.Category p, int childCount) {
+    final icon = categoryIconFor(p, allCategories: store.categories);
+    final color = p.type == 'income' ? AppColors.income : AppColors.expense;
+    final expanded = _expanded.contains(p.id);
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 4, left: 4),
-      child: Text(
-        tCat(context, name),
-        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)),
+      padding: const EdgeInsets.only(bottom: 6),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: InkWell(
+          onTap: () => setState(() {
+            if (expanded) _expanded.remove(p.id);
+            else _expanded.add(p.id);
+          }),
+          borderRadius: BorderRadius.circular(12),
+          child: Row(
+            children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 20, color: color),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tCat(context, p.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                    if (p.isDefault)
+                      Text(context.tr('categories.system'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  ],
+                ),
+              ),
+              if (childCount > 0)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Text('$childCount', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                ),
+              Icon(expanded ? Icons.expand_less : Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => _showEditSheet(context, store, p),
+                child: Icon(Icons.edit_outlined, size: 18, color: AppColors.textSecondaryFor(context)),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => _confirmDelete(context, store, p),
+                child: Icon(Icons.delete_outline, size: 18, color: AppColors.textSecondaryFor(context)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _categoryTile(BuildContext context, FinanceStore store, cat.Category c) {
+  Widget _categoryTile(BuildContext context, FinanceStore store, cat.Category c, {bool indent = false}) {
     final icon = categoryIconFor(c, allCategories: store.categories);
     final color = c.type == 'income' ? AppColors.income : AppColors.expense;
     final isSystem = c.isDefault;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: EdgeInsets.only(bottom: 6, left: indent ? 24 : 0),
       child: AppCard(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: InkWell(

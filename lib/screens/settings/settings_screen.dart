@@ -230,18 +230,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: _kopeksEnabled,
                   onChanged: (v) async {
                     final prefs = await SharedPreferences.getInstance();
+                    final store = context.read<FinanceStore>();
                     if (v) {
                       await prefs.setBool('easyfinance_show_kopeks', true);
                       await prefs.setBool('easyfinance_show_kopeks_ops', true);
                       showKopeks = true;
                       showKopeksInOps = true;
-                      if (mounted) setState(() { _kopeksEnabled = true; _kopeksInOpsEnabled = false; });
+                      store.showKopeks = true;
+                      store.showKopeksInOps = true;
+                      bindFormatSettings(true, true);
+                      if (mounted) setState(() { _kopeksEnabled = true; _kopeksInOpsEnabled = true; });
                     } else {
                       await prefs.setBool('easyfinance_show_kopeks', false);
                       showKopeks = false;
+                      store.showKopeks = false;
+                      bindFormatSettings(false, store.showKopeksInOps);
                       if (mounted) setState(() => _kopeksEnabled = false);
                     }
-                    if (context.mounted) context.read<FinanceStore>().notifyListeners();
+                    if (context.mounted) store.notifyListeners();
                   },
                   activeThumbColor: AppColors.primary,
                 ),
@@ -256,18 +262,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: _kopeksInOpsEnabled,
                   onChanged: (v) async {
                     final prefs = await SharedPreferences.getInstance();
+                    final store = context.read<FinanceStore>();
                     if (v) {
                       await prefs.setBool('easyfinance_show_kopeks_ops', true);
-                      await prefs.setBool('easyfinance_show_kopeks', false);
                       showKopeksInOps = true;
-                      showKopeks = false;
-                      if (mounted) setState(() { _kopeksInOpsEnabled = true; _kopeksEnabled = false; });
+                      store.showKopeksInOps = true;
+                      bindFormatSettings(store.showKopeks, true);
+                      if (mounted) setState(() => _kopeksInOpsEnabled = true);
                     } else {
                       await prefs.setBool('easyfinance_show_kopeks_ops', false);
                       showKopeksInOps = false;
+                      store.showKopeksInOps = false;
+                      bindFormatSettings(store.showKopeks, false);
                       if (mounted) setState(() => _kopeksInOpsEnabled = false);
                     }
-                    if (context.mounted) context.read<FinanceStore>().notifyListeners();
+                    if (context.mounted) store.notifyListeners();
                   },
                   activeThumbColor: AppColors.primary,
                 ),

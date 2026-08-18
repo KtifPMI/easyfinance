@@ -5,6 +5,15 @@ import '../models/operation.dart';
 bool showKopeks = true;
 bool showKopeksInOps = true;
 
+bool _boundShowKopeks = true;
+bool _boundShowKopeksInOps = true;
+bool _formatBound = false;
+void bindFormatSettings(bool kopeks, bool kopeksInOps) {
+  _boundShowKopeks = kopeks;
+  _boundShowKopeksInOps = kopeksInOps;
+  _formatBound = true;
+}
+
 String formatApiDateTime([DateTime? dt]) {
   final now = dt ?? DateTime.now();
   final tz = now.timeZoneOffset;
@@ -13,14 +22,16 @@ String formatApiDateTime([DateTime? dt]) {
 }
 
 String formatMoneyOps(double amount, {String currency = 'RUB'}) {
-  if (!showKopeksInOps) {
+  final hide = _formatBound ? !_boundShowKopeksInOps : !showKopeksInOps;
+  if (hide) {
     return formatMoneyWhole(amount, currency: currency);
   }
   return _formatMoneyWithKopeks(amount, currency: currency);
 }
 
 String formatMoney(double amount, {String currency = 'RUB'}) {
-  if (!showKopeks) {
+  final hide = _formatBound ? !_boundShowKopeks : !showKopeks;
+  if (hide) {
     return formatMoneyWhole(amount, currency: currency);
   }
   return _formatMoneyWithKopeks(amount, currency: currency);

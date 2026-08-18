@@ -45,6 +45,8 @@ class FinanceStore extends ChangeNotifier {
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
   bool _useMock = true;
+  bool showKopeks = true;
+  bool showKopeksInOps = true;
   bool _authExpired = false;
   String? _error;
   Future<void> _cacheReady = Future.value();
@@ -54,9 +56,11 @@ class FinanceStore extends ChangeNotifier {
   FinanceStore({required this.authService, required this.apiClient, PlannedPaymentStore? plannedPayments})
       : _plannedPayments = plannedPayments {
     apiClient.onAuthExpired = markAuthExpired;
+    bindFormatSettings(showKopeks, showKopeksInOps);
     _cacheReady = _loadFromCache();
     _templatesReady = _loadTemplates();
     _loadRecPrefs();
+    _loadFormatPrefs();
   }
 
   void setPlannedPaymentStore(PlannedPaymentStore store) => _plannedPayments = store;
@@ -252,6 +256,13 @@ class FinanceStore extends ChangeNotifier {
     }
   }
 
+  Future<void> _loadFormatPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    showKopeks = prefs.getBool('easyfinance_show_kopeks') ?? true;
+    showKopeksInOps = prefs.getBool('easyfinance_show_kopeks_ops') ?? true;
+    bindFormatSettings(showKopeks, showKopeksInOps);
+  }
+
   String fmt(double amount, {String fromCurrency = 'RUB', String? date}) {
     Map<String, double> rates = _rates;
     if (date != null && _histRates.containsKey(date)) {
@@ -270,11 +281,38 @@ class FinanceStore extends ChangeNotifier {
 
   double get totalBalance => _accounts
       .where((a) => a.includeInTotal && !a.isArchived)
-      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(a.balance, a.currency, 'RUB', _rates));
+      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, 'RUB', _rates));
 
   double get moneyBalance => _accounts
       .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
-      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(a.balance, a.currency, 'RUB', _rates));
+      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, 'RUB', _rates));
+
+  double accountActualBalance(Account a) {
+    double sum = a.initBalance;
+    for (final op in _operations) {
+      if (op.isDeleted) continue;
+      if (op.type == 'income' && op.accountId == a.id) {
+        sum += op.amount;
+      } else if (op.type == 'expense' && op.accountId == a.id) {
+        sum -= op.amount;
+      } else if (op.type == 'transfer') {
+        if (op.accountId == a.id) sum -= op.amount;
+        if (op.toAccountId == a.id) {
+          if (op.transferAmount != null && op.transferAmount! > 0) {
+            sum += op.transferAmount!;
+          } else {
+            final src = getAccount(op.accountId);
+            if (src != null && src.currency != a.currency) {
+              sum += CurrencyRateService.convert(op.amount, src.currency, a.currency, _rates);
+            } else {
+              sum += op.amount;
+            }
+          }
+        }
+      }
+    }
+    return sum;
+  }
   double _amountInRub(Operation o) {
     final acc = getAccount(o.accountId);
     final from = acc?.currency ?? o.currency;
@@ -1854,8 +1892,10 @@ class FinanceStore extends ChangeNotifier {
             _error = null;
             _goals.add(Goal(
               id: serverId, title: g.title, targetAmount: g.targetAmount,
-              currentAmount: g.currentAmount, deadline: g.deadline, icon: g.icon, color: g.color,
-              isCompleted: g.isCompleted, accountId: g.accountId,
+              currentAmount: g.currentAmount, deadline: g.deadline, startDate: g.startDate,
+              icon: g.icon, color: g.color, isCompleted: g.isCompleted, accountId: g.accountId,
+              currencyId: g.currencyId, comment: g.comment, category: g.category,
+              goalType: g.goalType, goalState: g.goalState,
             ));
             await _saveGoals();
             notifyListeners();

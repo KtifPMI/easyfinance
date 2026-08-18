@@ -20,6 +20,22 @@ class _CalculatorInputState extends State<CalculatorInput> {
     super.initState();
     _expression = widget.controller.text;
     _result = _evaluate(_expression);
+    widget.controller.addListener(_syncFromController);
+  }
+
+  void _syncFromController() {
+    if (_expression != widget.controller.text) {
+      setState(() {
+        _expression = widget.controller.text;
+        _result = _evaluate(_expression);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_syncFromController);
+    super.dispose();
   }
 
   void _onKey(String value) {
