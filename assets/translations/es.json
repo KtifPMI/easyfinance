@@ -726,6 +726,7 @@
   "budget.warning_fmt": "«{name}»: pronóstico {pct}% del presupuesto. Reduzca los gastos.",
   "filters.recent": "Recientes",
   "add_planned.title": "Operación planificada",
+  "add_planned.amount": "Importe",
   "add_planned.open_hint": "Se abre en una nueva ventana",
   "add_planned.amount_example": "Ejemplo: 12 + 33 * 45 <Enter>",
   "add_planned.time_hint": "Si no especifica la hora, la operación usará la hora en que se guardó.",

@@ -729,6 +729,7 @@
   "budget.warning_fmt": "„{name}“: Prognose {pct}% des Budgets. Reduzieren Sie die Ausgaben.",
   "filters.recent": "Zuletzt",
   "add_planned.title": "Geplante Operation",
+  "add_planned.amount": "Betrag",
   "add_planned.open_hint": "Öffnet in einem neuen Fenster",
   "add_planned.amount_example": "Beispiel: 12 + 33 * 45 <Enter>",
   "add_planned.time_hint": "Wenn keine Zeit angegeben wird, erhält der Vorgang die Zeit des Speicherns.",

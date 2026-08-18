@@ -791,6 +791,7 @@
   "goals.no_deadline": "Без срока",
   "more.debug": "Debug API",
   "add_planned.title": "Планируемая операция",
+  "add_planned.amount": "Сумма",
   "add_planned.open_hint": "Открывается в новом окне",
   "add_planned.amount_example": "Пример: 12 + 33 * 45 <Enter>",
   "add_planned.time_hint": "Если не указывать время операции, то в операцию запишется время момента ее сохранения.",

@@ -345,14 +345,19 @@ const List<(String, IconData)> _keywordIcons = [
 ///
 /// The icon is derived from the top-level parent category (system categories),
 /// so every subcategory (e.g. all automotive ones) shares the same icon.
-IconData categoryIconFor(Category category, {List<Category>? allCategories}) {
-  final own = category.icon.trim().toLowerCase();
-  if (own.isNotEmpty) {
-    final byOwn = _rootIcons[own] ?? _rootIcons[own.replaceAll('_', ' ')];
-    if (byOwn != null) return byOwn;
-  }
-
-  final root = _rootCategory(category, allCategories ?? const <Category>[]);
+  IconData categoryIconFor(Category category, {List<Category>? allCategories}) {
+    // System categories may carry a corrupted `icon` value from the server,
+    // but their (root) names are authoritative — derive the icon from those.
+    // Custom categories keep their user-chosen icon.
+    if (!category.isDefault) {
+      final raw = category.icon.trim().toLowerCase();
+      final own = catIconMap[raw] ?? raw;
+      if (own.isNotEmpty) {
+        final byOwn = _rootIcons[own] ?? _rootIcons[own.replaceAll('_', ' ')];
+        if (byOwn != null) return byOwn;
+      }
+    }
+    final root = _rootCategory(category, allCategories ?? const <Category>[]);
   final byRoot = _rootIcons[root.name.trim().toLowerCase()];
   if (byRoot != null) return byRoot;
 

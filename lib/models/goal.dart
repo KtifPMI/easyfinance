@@ -168,9 +168,15 @@ class Goal {
     if (accountIds.isEmpty) return currentAmount;
     if (balances == null) return currentAmount;
     double sum = 0;
+    int resolved = 0;
     for (final id in accountIds) {
-      sum += balances[id] ?? 0;
+      final b = balances[id];
+      if (b != null) {
+        sum += b;
+        resolved++;
+      }
     }
+    if (resolved == 0) return currentAmount;
     return sum;
   }
 

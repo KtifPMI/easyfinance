@@ -701,6 +701,7 @@
   "budget.warning_fmt": "«{name}» : prévision {pct}% du budget. Réduisez les dépenses.",
   "filters.recent": "Récents",
   "add_planned.title": "Opération planifiée",
+  "add_planned.amount": "Montant",
   "add_planned.open_hint": "S'ouvre dans une nouvelle fenêtre",
   "add_planned.amount_example": "Exemple : 12 + 33 * 45 <Enter>",
   "add_planned.time_hint": "Si vous ne précisez pas l'heure, l'opération utilisera l'heure de son enregistrement.",

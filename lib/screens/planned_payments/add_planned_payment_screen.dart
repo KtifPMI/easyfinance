@@ -144,10 +144,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Align(
-          alignment: Alignment.topRight,
-          child: Text(context.tr('add_planned.open_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-        ),
         const SizedBox(height: 12),
         _section(
           context.tr('add_planned.section_main'),

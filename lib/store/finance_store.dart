@@ -272,6 +272,15 @@ class FinanceStore extends ChangeNotifier {
     return formatMoney(converted, currency: _displayCurrency);
   }
 
+  String fmtOps(double amount, {String fromCurrency = 'RUB', String? date}) {
+    Map<String, double> rates = _rates;
+    if (date != null && _histRates.containsKey(date)) {
+      rates = _histRates[date]!;
+    }
+    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, rates);
+    return formatMoneyOps(converted, currency: _displayCurrency);
+  }
+
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   String? get error => _error;
