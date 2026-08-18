@@ -117,40 +117,43 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
 
   List<Widget> _buildTwoLevel(BuildContext context, FinanceStore store, String type) {
     final all = store.categories.where((c) => c.type == type).toList();
+    final allIds = all.map((c) => c.id).toSet();
     final childMap = <String, List<cat.Category>>{};
-    final parentIds = <String>{};
     for (final c in all) {
       if (c.parentId != null && c.parentId!.isNotEmpty) {
         (childMap[c.parentId!] ??= []).add(c);
-        parentIds.add(c.parentId!);
       }
     }
-    final parents = all.where((c) => c.parentId == null || c.parentId!.isEmpty || !parentIds.contains(c.id)).toList();
-    parents.sort((a, b) {
+    final roots = all.where((c) => c.parentId == null || c.parentId!.isEmpty || !allIds.contains(c.parentId!)).toList();
+    roots.sort((a, b) {
       if (a.isDefault != b.isDefault) return a.isDefault ? -1 : 1;
       return a.name.compareTo(b.name);
     });
+    return _buildTree(context, store, roots, 0, childMap);
+  }
 
+  List<Widget> _buildTree(BuildContext context, FinanceStore store, List<cat.Category> nodes, int depth, Map<String, List<cat.Category>> childMap) {
     final result = <Widget>[];
-    for (final p in parents) {
-      final kids = childMap[p.id] ?? [];
-      kids.sort((a, b) => a.name.compareTo(b.name));
-      result.add(_parentHeader(context, store, p, kids.length));
-      if (_expanded.contains(p.id)) {
-        for (final k in kids) {
-          result.add(_categoryTile(context, store, k, indent: true));
+    for (final node in nodes) {
+      final kids = (childMap[node.id] ?? [])..sort((a, b) => a.name.compareTo(b.name));
+      if (kids.isNotEmpty) {
+        result.add(_parentHeader(context, store, node, kids.length, depth));
+        if (_expanded.contains(node.id)) {
+          result.addAll(_buildTree(context, store, kids, depth + 1, childMap));
         }
+      } else {
+        result.add(_categoryTile(context, store, node, indent: depth > 0));
       }
     }
     return result;
   }
 
-  Widget _parentHeader(BuildContext context, FinanceStore store, cat.Category p, int childCount) {
+  Widget _parentHeader(BuildContext context, FinanceStore store, cat.Category p, int childCount, int depth) {
     final icon = categoryIconFor(p, allCategories: store.categories);
     final color = p.type == 'income' ? AppColors.income : AppColors.expense;
     final expanded = _expanded.contains(p.id);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: EdgeInsets.only(bottom: 6, left: depth * 12.0),
       child: AppCard(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: InkWell(

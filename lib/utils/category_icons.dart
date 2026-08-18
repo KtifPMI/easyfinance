@@ -226,6 +226,18 @@ const Map<String, IconData> _rootIcons = {
   'bonuses': Icons.card_giftcard,
   'boni': Icons.card_giftcard,
   'дивиденды': Icons.trending_up,
+  'home': Icons.home,
+  'building': Icons.business,
+  'cart': Icons.shopping_cart,
+  'cafe': Icons.local_cafe,
+  'flight': Icons.flight,
+  'fitness': Icons.fitness_center,
+  'pet': Icons.pets,
+  'movie': Icons.movie,
+  'music': Icons.music_note,
+  'book': Icons.menu_book,
+  'phone': Icons.phone_android,
+  'gift': Icons.card_giftcard,
 };
 
 /// Ordered keyword groups used as a fallback for custom/unknown categories.
@@ -346,10 +358,11 @@ class CategoryIconOption {
 }
 
 /// Selectable icons offered in the create/edit category UI, derived from the
-/// system `catimg1`..`catimg26` set (each maps to a logical name + Material icon).
+/// system `catimg1`..`catimg33` set (each maps to a logical name + Material icon),
+/// plus a curated set of extra commonly-used Material icons.
 final List<CategoryIconOption> kDefaultCategoryIcons = () {
   final opts = <CategoryIconOption>[];
-  for (var n = 1; n <= 26; n++) {
+  for (var n = 1; n <= 33; n++) {
     final catimg = 'catimg$n';
     final logical = catIconMap[catimg];
     if (logical == null) continue;
@@ -357,6 +370,21 @@ final List<CategoryIconOption> kDefaultCategoryIcons = () {
     final icon = _rootIcons[logical] ?? Icons.circle;
     opts.add(CategoryIconOption(logical: logical, catimg: catimg, icon: icon, color: color));
   }
+  const extra = <CategoryIconOption>[
+    CategoryIconOption(logical: 'home', catimg: 'extra_home', icon: Icons.home, color: '#16A34A'),
+    CategoryIconOption(logical: 'building', catimg: 'extra_building', icon: Icons.business, color: '#7C3AED'),
+    CategoryIconOption(logical: 'cart', catimg: 'extra_cart', icon: Icons.shopping_cart, color: '#EF4444'),
+    CategoryIconOption(logical: 'cafe', catimg: 'extra_cafe', icon: Icons.local_cafe, color: '#B45309'),
+    CategoryIconOption(logical: 'flight', catimg: 'extra_flight', icon: Icons.flight, color: '#0EA5E9'),
+    CategoryIconOption(logical: 'fitness', catimg: 'extra_fitness', icon: Icons.fitness_center, color: '#DC2626'),
+    CategoryIconOption(logical: 'pet', catimg: 'extra_pet', icon: Icons.pets, color: '#78716C'),
+    CategoryIconOption(logical: 'movie', catimg: 'extra_movie', icon: Icons.movie, color: '#EC4899'),
+    CategoryIconOption(logical: 'music', catimg: 'extra_music', icon: Icons.music_note, color: '#A855F7'),
+    CategoryIconOption(logical: 'book', catimg: 'extra_book', icon: Icons.menu_book, color: '#0EA5E9'),
+    CategoryIconOption(logical: 'phone', catimg: 'extra_phone', icon: Icons.phone_android, color: '#059669'),
+    CategoryIconOption(logical: 'gift', catimg: 'extra_gift', icon: Icons.card_giftcard, color: '#059669'),
+  ];
+  opts.addAll(extra);
   return opts;
 }();
 
