@@ -16,6 +16,7 @@ class Goal {
   final String? category;
   final int? goalType;
   final int? goalState;
+  final List<String> accountIds;
 
   Goal({
     required this.id,
@@ -35,20 +36,37 @@ class Goal {
     this.category,
     this.goalType,
     this.goalState,
+    this.accountIds = const [],
   });
 
-  factory Goal.fromJson(Map<String, dynamic> json, {Map<String, double>? accountBalances}) {
+  factory Goal.fromJson(Map<String, dynamic> json) {
     final amount = double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0;
     final amountDone = double.tryParse(json['amount_done']?.toString() ?? '0') ?? 0.0;
     final startDate = _normalizeDate(json['date_begin'] ?? json['start']);
     final deadline = _normalizeDate(json['date_end'] ?? json['end']);
+
     final accountsList = json['accounts'] as List<dynamic>?;
-    final directAccountId = json['account_id'] ?? json['account'];
-    final accountId = directAccountId?.toString() != null && directAccountId.toString() != '0'
-        ? directAccountId.toString()
-        : (accountsList?.isNotEmpty == true
-            ? (accountsList!.first as Map<String, dynamic>)['account_id']?.toString()
-            : null);
+    final List<String> parsedAccounts = [];
+    if (accountsList != null) {
+      for (final a in accountsList) {
+        if (a is Map) {
+          final aid = a['account_id']?.toString();
+          if (aid != null && aid != '0') parsedAccounts.add(aid);
+        } else {
+          final aid = a?.toString();
+          if (aid != null && aid != '0') parsedAccounts.add(aid);
+        }
+      }
+    }
+    final directAccountId = json['account_id']?.toString();
+    String? singleAccountId;
+    if (parsedAccounts.isNotEmpty) {
+      singleAccountId = parsedAccounts.first;
+    } else if (directAccountId != null && directAccountId != '0') {
+      singleAccountId = directAccountId;
+      parsedAccounts.add(directAccountId);
+    }
+
     return Goal(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
@@ -59,7 +77,8 @@ class Goal {
       icon: 'star',
       color: '#16A34A',
       isCompleted: (json['done']?.toString() == '1') || (amount > 0 && amountDone >= amount),
-      accountId: accountId,
+      accountId: singleAccountId,
+      accountIds: parsedAccounts,
       currencyId: json['currency_id']?.toString(),
       comment: json['comment']?.toString(),
       category: json['category_id']?.toString(),
@@ -80,6 +99,7 @@ class Goal {
     'monthlyRecommendation': monthlyRecommendation,
     'isCompleted': isCompleted,
     'accountId': accountId,
+    'accountIds': accountIds,
     'transferAccountId': transferAccountId,
     'currencyId': currencyId,
     'comment': comment,
@@ -123,9 +143,10 @@ class Goal {
     category: json['category'] as String?,
     goalType: (json['goalType'] as num?)?.toInt(),
     goalState: (json['goalState'] as num?)?.toInt(),
+    accountIds: (json['accountIds'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
   );
 
-  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, String? currencyId, String? comment, String? category, int? goalType, int? goalState}) =>
+  Goal copyWith({double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, List<String>? accountIds, String? currencyId, String? comment, String? category, int? goalType, int? goalState}) =>
       Goal(
         id: id, title: title ?? this.title, targetAmount: targetAmount ?? this.targetAmount,
         currentAmount: currentAmount ?? this.currentAmount,
@@ -133,13 +154,46 @@ class Goal {
         deadline: deadline ?? this.deadline, icon: icon, color: color,
         monthlyRecommendation: monthlyRecommendation,
         isCompleted: isCompleted ?? this.isCompleted,
-        accountId: accountId ?? this.accountId, transferAccountId: transferAccountId,
+        accountId: accountId ?? this.accountId,
+        accountIds: accountIds ?? this.accountIds,
+        transferAccountId: transferAccountId,
         currencyId: currencyId ?? this.currencyId,
         comment: comment ?? this.comment,
         category: category ?? this.category,
         goalType: goalType ?? this.goalType,
         goalState: goalState ?? this.goalState,
       );
+
+  double balanceFrom(Map<String, double>? balances) {
+    if (accountIds.isEmpty) return currentAmount;
+    if (balances == null) return currentAmount;
+    double sum = 0;
+    for (final id in accountIds) {
+      sum += balances[id] ?? 0;
+    }
+    return sum;
+  }
+
+  double progressAmount(Map<String, double>? balances) {
+    final bal = balanceFrom(balances);
+    if (goalType == 2) {
+      final remaining = -bal;
+      return targetAmount - (remaining < 0 ? 0 : remaining);
+    }
+    return bal;
+  }
+
+  bool achieved(Map<String, double>? balances) {
+    final bal = balanceFrom(balances);
+    if (goalType == 2) return bal >= 0;
+    return bal >= targetAmount;
+  }
+
+  double percent(Map<String, double>? balances) {
+    if (targetAmount <= 0) return 0;
+    final p = progressAmount(balances) / targetAmount * 100;
+    return p < 0 ? 0 : (p > 100 ? 100 : p);
+  }
 
   static String _normalizeDate(dynamic value) {
     final raw = value?.toString() ?? '';

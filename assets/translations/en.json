@@ -304,6 +304,8 @@
   "goals.save_first_date": "Savings start date",
   "goals.save_target_date": "Target date",
   "goals.save_accounts": "Saving accounts",
+  "goals.no_accounts": "No suitable accounts. Create a new one.",
+  "goals.create_account": "Create account",
 
   "goal_cat.appliances": "Appliances",
   "goal_cat.home": "Home",

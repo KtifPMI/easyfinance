@@ -28,7 +28,10 @@ class GoalsListScreen extends StatelessWidget {
               ? Center(child: Text(context.tr('goals.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(
                   children: store.goals.map((g) {
-                    final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+                    final balances = {for (final a in store.accounts) a.id: a.balance};
+                    final bal = g.balanceFrom(balances);
+                    final achieved = g.achieved(balances);
+                    final percent = achieved ? 100.0 : g.percent(balances);
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: AppCard(
@@ -43,12 +46,12 @@ class GoalsListScreen extends StatelessWidget {
                                 Container(
                                   width: 48, height: 48,
                                   decoration: BoxDecoration(
-                                    color: g.isCompleted ? AppColors.success.withValues(alpha: 0.15) : _parseColor(g.color).withValues(alpha: 0.15),
+                                    color: achieved ? AppColors.success.withValues(alpha: 0.15) : _parseColor(g.color).withValues(alpha: 0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
-                                    g.isCompleted ? Icons.emoji_events : _goalIcon(g.icon),
-                                    color: g.isCompleted ? AppColors.success : _parseColor(g.color),
+                                    achieved ? Icons.emoji_events : _goalIcon(g.icon),
+                                    color: achieved ? AppColors.success : _parseColor(g.color),
                                     size: 24,
                                   ),
                                 ),
@@ -60,7 +63,7 @@ class GoalsListScreen extends StatelessWidget {
                                       Row(
                                         children: [
                                           Expanded(child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context)))),
-                                          if (g.isCompleted) ...[
+                                          if (achieved) ...[
                                             const SizedBox(width: 6),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -71,23 +74,14 @@ class GoalsListScreen extends StatelessWidget {
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      if (g.isCompleted)
+                                      if (achieved)
                                         Text(context.tr('goals.achieved_title'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.success))
                                       else
-                                        Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                                        Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                                     ],
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                if (!g.isCompleted)
-                                  GestureDetector(
-                                    onTap: () => _showDepositDialog(context, g, store),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-                                      child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
-                                    ),
-                                  ),
                                 IconButton(
                                   icon: Icon(Icons.delete_outline, size: 20, color: AppColors.danger),
                                   padding: EdgeInsets.zero,
@@ -97,13 +91,13 @@ class GoalsListScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
+                            ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : _parseColor(g.color)),
                             const SizedBox(height: 4),
-                            if (g.isCompleted)
-                              Text('100%', style: TextStyle(fontSize: 12, color: AppColors.success))
+                              if (achieved)
+                                Text('100%', style: TextStyle(fontSize: 12, color: AppColors.success))
                             else
                               Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : context.tr('goals.no_deadline')}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                            if (!g.isCompleted && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
+                              if (!achieved && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
                               Text(context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                             ],
@@ -136,68 +130,6 @@ class GoalsListScreen extends StatelessWidget {
             child: Text(context.tr('goals.delete'), style: TextStyle(color: AppColors.danger)),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showDepositDialog(BuildContext context, Goal goal, FinanceStore store) {
-    final amountCtrl = TextEditingController();
-    String? accountId = store.accounts.isNotEmpty ? store.accounts.first.id : null;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDState) => AlertDialog(
-          title: Text(goal.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: amountCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: context.tr('goals.amount')),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: accountId,
-                decoration: InputDecoration(labelText: context.tr('goals.from_account')),
-                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${store.fmt(a.balance, fromCurrency: a.currency)})'))).toList(),
-                onChanged: (v) => setDState(() => accountId = v),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
-            TextButton(
-              onPressed: () async {
-                final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? 0;
-                if (amount > 0 && accountId != null) {
-                  await store.depositToGoal(goal.id, amount, accountId!);
-                  if (!ctx.mounted) return;
-                  if (store.error != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
-                    return;
-                  }
-                  final newGoal = store.goals.where((g) => g.id == goal.id).firstOrNull;
-                  if (newGoal != null && newGoal.isCompleted) {
-                    Navigator.pop(ctx);
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: Text(context.tr('goals.congrats')),
-                        content: Text(context.tr('goals.achieved_text', namedArgs: {'title': goal.title})),
-                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: Text(context.tr('goals.ok')))],
-                      ),
-                    );
-                    return;
-                  }
-                  Navigator.pop(ctx);
-                }
-              },
-              child: Text(context.tr('goals.top_up')),
-            ),
-          ],
-        ),
       ),
     );
   }

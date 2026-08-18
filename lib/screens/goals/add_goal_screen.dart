@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/screen_scaffold.dart';
+import '../../models/account.dart';
 import '../../models/goal.dart';
+import '../../screens/accounts/add_account_screen.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
@@ -97,7 +99,11 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             _targetDate = DateTime.tryParse(g.deadline);
           }
           _isCompleted = g.isCompleted;
-          if (g.accountId != null) _selectedAccountIds = [g.accountId!];
+          if (g.accountIds.isNotEmpty) {
+            _selectedAccountIds = List<String>.from(g.accountIds);
+          } else if (g.accountId != null) {
+            _selectedAccountIds = [g.accountId!];
+          }
           final cats = _currentCategories(context);
           if (cats.isNotEmpty) {
             if (g.category != null && cats.containsKey(g.category)) {
@@ -250,6 +256,63 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     Future.microtask(() => _calculating = false);
   }
 
+  List<Account> _availableAccounts(FinanceStore store) {
+    final usedByOthers = <String>{};
+    for (final g in store.goals) {
+      if (_isEditing && g.id == widget.goalId) continue;
+      usedByOthers.addAll(g.accountIds);
+      if (g.accountId != null) usedByOthers.add(g.accountId!);
+    }
+    return store.accounts.where((a) {
+      if (usedByOthers.contains(a.id)) return false;
+      if (_type == 'pay') return a.isCredit;
+      if (_type == 'save') return a.groupForType(a.type) == 'money';
+      return true;
+    }).toList();
+  }
+
+  Widget _accountSelector(FinanceStore store) {
+    final available = _availableAccounts(store);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: available.map((a) {
+            final selected = _selectedAccountIds.contains(a.id);
+            return FilterChip(
+              selected: selected,
+              label: Text(a.name),
+              onSelected: (v) => setState(() {
+                if (v) {
+                  if (!_selectedAccountIds.contains(a.id)) _selectedAccountIds.add(a.id);
+                } else {
+                  _selectedAccountIds.remove(a.id);
+                }
+              }),
+            );
+          }).toList(),
+        ),
+        if (available.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(context.tr('goals.no_accounts'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          ),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: () => _createAccount(context, store),
+          icon: const Icon(Icons.add, size: 18),
+          label: Text(context.tr('goals.create_account')),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _createAccount(BuildContext context, FinanceStore store) async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen()));
+  }
+
   bool get _canSave {
     if (_titleCtrl.text.trim().isEmpty) return false;
     if (_type == null) return false;
@@ -279,7 +342,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         isCompleted: _isCompleted,
         deadline: endStr,
         startDate: startStr,
-        accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
+        accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null, accountIds: _selectedAccountIds,
         currencyId: _currencyId,
         comment: _commentCtrl.text.trim(),
         category: _categoryId,
@@ -296,7 +359,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
           startDate: startStr,
           deadline: endStr,
           isCompleted: _isCompleted,
-          accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
+          accountId: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null, accountIds: _selectedAccountIds,
           currencyId: _currencyId,
           comment: _commentCtrl.text.trim(),
           category: _categoryId,
@@ -320,7 +383,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   Widget build(BuildContext context) {
     final store = context.watch<FinanceStore>();
     final currencies = store.currencies;
-    final accounts = store.accounts;
     final cats = _currentCategories(context);
 
     return ScreenScaffold(
@@ -421,14 +483,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 12),
 
             _label(_flabel(context, 'goals.accounts_for_payment', 'goals.save_accounts')),
-            DropdownButtonFormField<String>(
-              initialValue: _selectedAccountIds.isNotEmpty ? _selectedAccountIds.first : null,
-              decoration: _decoration(hint: context.tr('goals.select_accounts_hint')),
-              items: accounts.map((a) => DropdownMenuItem(value: a.id, child: Text(a.name))).toList(),
-              onChanged: (v) {
-                if (v != null) setState(() => _selectedAccountIds = [v]);
-              },
-            ),
+            _accountSelector(store),
             const SizedBox(height: 4),
             if (_type == 'pay')
               Text(context.tr('goals.debt_label', namedArgs: {'currency': _currencyLabel(currencies)}), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),

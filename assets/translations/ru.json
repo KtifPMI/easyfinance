@@ -647,6 +647,8 @@
   "goals.save_first_date": "Дата начала накопления",
   "goals.save_target_date": "Дата достижения цели",
   "goals.save_accounts": "Счета для накопления",
+  "goals.no_accounts": "Нет подходящих счетов. Создайте новый счёт.",
+  "goals.create_account": "Создать счёт",
 
   "goal_cat.appliances": "Бытовая техника",
   "goal_cat.home": "Дом",
