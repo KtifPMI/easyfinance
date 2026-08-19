@@ -6,6 +6,7 @@ import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/category.dart' as cat;
+import '../../models/operation.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/category_icons.dart';
@@ -262,6 +263,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
   }
 
   void _confirmDelete(BuildContext context, FinanceStore store, cat.Category c) {
+    final ops = store.operations.where((o) => o.categoryId == c.id).toList();
+    if (ops.isEmpty) {
+      _showSimpleDeleteConfirm(context, store, c);
+    } else {
+      _showReassignDelete(context, store, c, ops);
+    }
+  }
+
+  void _showSimpleDeleteConfirm(BuildContext context, FinanceStore store, cat.Category c) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -277,6 +287,60 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             child: Text(context.tr('categories.delete'), style: TextStyle(color: AppColors.expense)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showReassignDelete(BuildContext context, FinanceStore store, cat.Category c, List<Operation> ops) {
+    String? replacementId;
+    final candidates = store.categories.where((x) => x.type == c.type && x.id != c.id).toList();
+    final canDelete = candidates.isEmpty;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setD) => AlertDialog(
+          title: Text(context.tr('categories.delete_with_ops_title')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(context.tr('categories.delete_with_ops', namedArgs: {'count': ops.length.toString()})),
+              const SizedBox(height: 12),
+              if (candidates.isEmpty)
+                Text(context.tr('categories.no_replacement'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)))
+              else
+                DropdownButtonFormField<String>(
+                  decoration: _ddDecoration(context, context.tr('categories.replacement_category')),
+                  value: replacementId,
+                  items: candidates.map((x) => DropdownMenuItem<String>(
+                    value: x.id,
+                    child: Text(tCat(context, x.name), overflow: TextOverflow.ellipsis),
+                  )).toList(),
+                  onChanged: (v) => setD(() => replacementId = v),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('categories.cancel'))),
+            TextButton(
+              onPressed: (replacementId != null || canDelete)
+                  ? () async {
+                      Navigator.pop(ctx);
+                      if (replacementId != null) {
+                        for (final op in ops) {
+                          await store.updateOperation(op.copyWith(categoryId: replacementId));
+                        }
+                      }
+                      store.deleteCategory(c.id);
+                    }
+                  : null,
+              child: Text(
+                context.tr('categories.delete'),
+                style: TextStyle(color: (replacementId != null || canDelete) ? AppColors.expense : AppColors.textSecondaryFor(context)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
