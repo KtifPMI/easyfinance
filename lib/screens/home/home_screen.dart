@@ -484,10 +484,14 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBudgetsSection(BuildContext context, FinanceStore store) {
     final pendingCount = store.operations.where((op) => op.isPending).length;
 
-    final totalPlanned = store.budgets.fold(0.0, (sum, b) => sum + b.limit);
-    final totalSpent = store.budgets.fold(0.0, (sum, b) => sum + b.spent);
+    final expenseBudgets = store.budgets.where((b) {
+      final cat = store.getCategory(b.categoryId);
+      return cat == null || cat.type != 'income';
+    }).toList();
+    final totalPlanned = expenseBudgets.fold(0.0, (sum, b) => sum + b.limit);
+    final totalSpent = store.monthExpense;
     final totalRemaining = totalPlanned - totalSpent;
-    final totalForecast = store.budgets.fold(0.0, (sum, b) => sum + getBudgetForecastPercent(b) * b.limit / 100);
+    final totalForecast = expenseBudgets.fold(0.0, (sum, b) => sum + getBudgetForecastPercent(b) * b.limit / 100);
     final budgetForecastPct = totalPlanned > 0 ? (totalForecast / totalPlanned * 100) : 0.0;
     final forecastColor = budgetForecastColor(budgetForecastPct);
 
