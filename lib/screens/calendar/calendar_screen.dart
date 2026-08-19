@@ -104,8 +104,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
           final isToday = date == today;
           final isSelected = date == _selectedDate;
           final hasOps = opsByDate.containsKey(date);
-          final hasPlanned = plannedByDate.containsKey(date);
-          dayCells.add(_dayCell(d, isToday, isSelected, hasOps, hasPlanned, () => setState(() => _selectedDate = date)));
+          final planned = plannedByDate[date];
+          Color? plannedColor;
+          if (planned != null && planned.isNotEmpty) {
+            final ymd = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+            final completed = planned.any((e) => e.isAcceptedOn(ymd));
+            final todayOnly = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+            if (completed) {
+              plannedColor = AppColors.transfer;
+            } else if (date.isBefore(todayOnly)) {
+              plannedColor = AppColors.danger;
+            } else {
+              plannedColor = Colors.grey;
+            }
+          }
+          dayCells.add(_dayCell(d, isToday, isSelected, hasOps, plannedColor, () => setState(() => _selectedDate = date)));
         }
 
         final selectedOps = _selectedDate != null ? (opsByDate[_selectedDate] ?? <Operation>[]) : <Operation>[];
@@ -218,7 +231,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         if (ops.isEmpty && planned.isEmpty)
           Padding(padding: const EdgeInsets.only(top: 16), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
         if (planned.isNotEmpty) ...[
-          Padding(padding: const EdgeInsets.only(bottom: 4), child: Text(context.tr('calendar.scheduled_payments'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
+          Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('Плановые операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
           ...planned.map((e) => _plannedPaymentTile(context, store, e, occurrenceDate: _selectedDate)),
         ],
         if (ops.isNotEmpty) ...[
@@ -519,7 +532,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _dayCell(int day, bool isToday, bool isSelected, bool hasOps, bool hasPlanned, VoidCallback onTap) {
+  Widget _dayCell(int day, bool isToday, bool isSelected, bool hasOps, Color? plannedColor, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -539,16 +552,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 child: Center(child: Text('$day', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: isToday ? Colors.white : AppColors.textFor(context)))),
               ),
-              if (hasOps || hasPlanned)
+              if (hasOps || plannedColor != null)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (hasOps)
                       Container(width: 4, height: 4, decoration: BoxDecoration(color: AppColors.primary, shape: BoxShape.circle)),
-                    if (hasOps && hasPlanned)
+                    if (hasOps && plannedColor != null)
                       const SizedBox(width: 3),
-                    if (hasPlanned)
-                      Container(width: 4, height: 4, decoration: BoxDecoration(color: AppColors.warning, shape: BoxShape.circle)),
+                    if (plannedColor != null)
+                      Container(width: 4, height: 4, decoration: BoxDecoration(color: plannedColor, shape: BoxShape.circle)),
                   ],
                 ),
             ],

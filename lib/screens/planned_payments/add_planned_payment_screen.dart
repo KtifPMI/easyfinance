@@ -148,9 +148,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         _section(
           context.tr('add_planned.section_main'),
           [
-            CalculatorInput(controller: _amountCtrl, label: context.tr('add_planned.amount')),
-            const SizedBox(height: 12),
             _typeButtons(context),
+            const SizedBox(height: 12),
+            CalculatorInput(controller: _amountCtrl, label: context.tr('add_planned.amount')),
             const SizedBox(height: 12),
             _accountField(context, store),
             if (_type != 'transfer') ...[
