@@ -100,6 +100,13 @@ class PlannedPaymentStore extends ChangeNotifier {
     for (final raw in accepted) {
       final id = raw['id']?.toString();
       if (id == null) continue;
+      // The `options=accepted` list may contain every occurrence of a chain that
+      // has at least one accepted item, each carrying its own `accepted` flag.
+      // Only trust occurrences the server actually marks as accepted — otherwise
+      // the whole series would be wrongly marked confirmed (see _eventFromGroup).
+      final acceptedRaw = raw['accepted'];
+      final isAccepted = acceptedRaw == 1 || acceptedRaw == '1' || acceptedRaw == true;
+      if (!isAccepted) continue;
       final chain = raw['chain_id']?.toString();
       final key = (chain != null && chain.isNotEmpty && chain != '0') ? 'chain:$chain' : 'op:$id';
       final ad = _parseDate(raw['date']?.toString());
