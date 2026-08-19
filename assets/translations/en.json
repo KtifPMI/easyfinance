@@ -307,6 +307,7 @@
   "goals.save_accounts": "Saving accounts",
   "goals.no_accounts": "No suitable accounts. Create a new one.",
   "goals.create_account": "Create account",
+  "goals.select_accounts": "Select accounts",
 
   "goal_cat.appliances": "Appliances",
   "goal_cat.home": "Home",

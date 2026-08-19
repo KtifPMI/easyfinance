@@ -650,6 +650,7 @@
   "goals.save_accounts": "Счета для накопления",
   "goals.no_accounts": "Нет подходящих счетов. Создайте новый счёт.",
   "goals.create_account": "Создать счёт",
+  "goals.select_accounts": "Выберите счета",
 
   "goal_cat.appliances": "Бытовая техника",
   "goal_cat.home": "Дом",

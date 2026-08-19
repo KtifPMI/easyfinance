@@ -519,6 +519,8 @@
   "goals.financial_links": "Collegamenti finanziari",
   "goals.goal_currency": "Valuta dell'obiettivo",
   "goals.accounts_for_payment": "Conti di pagamento",
+  "goals.select_accounts": "Seleziona conti",
+  "goals.create_account": "Crea conto",
   "goals.select_accounts_hint": "Seleziona i conti collegati all'obiettivo",
   "goals.debt_label": "Devo: 0 {currency}",
   "goals.payment_params": "Parametri di pagamento e calcoli",

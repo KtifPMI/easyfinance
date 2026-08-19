@@ -547,6 +547,8 @@
   "goals.financial_links": "Finanzverknüpfungen",
   "goals.goal_currency": "Zielwährung",
   "goals.accounts_for_payment": "Zahlungskonten",
+  "goals.select_accounts": "Konten auswählen",
+  "goals.create_account": "Konto erstellen",
   "goals.select_accounts_hint": "Wählen Sie Konten für das Ziel",
   "goals.debt_label": "Ich schulde: 0 {currency}",
   "goals.payment_params": "Zahlungsparameter & Berechnungen",

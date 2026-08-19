@@ -272,33 +272,45 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   }
 
   Widget _accountSelector(FinanceStore store) {
-    final available = _availableAccounts(store);
+    final names = _selectedAccountIds
+        .map((id) => store.accounts.where((a) => a.id == id).firstOrNull?.name ?? id)
+        .toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: available.map((a) {
-            final selected = _selectedAccountIds.contains(a.id);
-            return FilterChip(
-              selected: selected,
-              label: Text(a.name),
-              onSelected: (v) => setState(() {
-                if (v) {
-                  if (!_selectedAccountIds.contains(a.id)) _selectedAccountIds.add(a.id);
-                } else {
-                  _selectedAccountIds.remove(a.id);
-                }
-              }),
-            );
-          }).toList(),
-        ),
-        if (available.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(context.tr('goals.no_accounts'), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+        GestureDetector(
+          onTap: () => _showAccountMultiPicker(context, store),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.cardFor(context),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: names.isEmpty ? AppColors.borderFor(context) : AppColors.primary),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.account_balance_wallet, size: 18, color: names.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    names.isEmpty ? context.tr('goals.select_accounts') : names.join(', '),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15, color: names.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                  ),
+                ),
+                if (names.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text('${names.length}', style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                  ),
+                const SizedBox(width: 4),
+                Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
+              ],
+            ),
           ),
+        ),
         const SizedBox(height: 8),
         TextButton.icon(
           onPressed: () => _createAccount(context, store),
@@ -307,6 +319,95 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
         ),
       ],
     );
+  }
+
+  void _showAccountMultiPicker(BuildContext context, FinanceStore store) {
+    final available = _availableAccounts(store);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (ctx, scrollCtrl) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(context.tr('goals.select_accounts'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(context.tr('common.ok'), style: TextStyle(color: AppColors.primary)),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: available.isEmpty
+                      ? Center(
+                          child: Text(context.tr('goals.no_accounts'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                        )
+                      : ListView.builder(
+                          controller: scrollCtrl,
+                          itemCount: available.length,
+                          itemBuilder: (_, i) {
+                            final a = available[i];
+                            final selected = _selectedAccountIds.contains(a.id);
+                            return CheckboxListTile(
+                              value: selected,
+                              onChanged: (v) => setSheetState(() {
+                                setState(() {
+                                  if (v == true) {
+                                    if (!_selectedAccountIds.contains(a.id)) _selectedAccountIds.add(a.id);
+                                  } else {
+                                    _selectedAccountIds.remove(a.id);
+                                  }
+                                });
+                              }),
+                              secondary: Icon(_accountIcon(a.icon), color: _accountColor(a.color)),
+                              title: Text(a.name, style: const TextStyle(fontSize: 15)),
+                              subtitle: Text('${a.balance.toStringAsFixed(2)} ${a.currency}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                              activeColor: AppColors.primary,
+                              controlAffinity: ListTileControlAffinity.leading,
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  IconData _accountIcon(String icon) {
+    const map = {
+      'cash': Icons.money, 'credit_card': Icons.credit_card,
+      'savings': Icons.savings, 'account_balance': Icons.account_balance,
+      'wallet': Icons.account_balance_wallet, 'payments': Icons.payments,
+      'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard,
+    };
+    return map[icon] ?? Icons.account_balance_wallet;
+  }
+
+  Color _accountColor(String hex) {
+    try {
+      final cleaned = hex.replaceAll('#', '');
+      if (cleaned.isEmpty) return AppColors.primary;
+      return Color(int.parse('FF$cleaned', radix: 16));
+    } catch (_) {
+      return AppColors.primary;
+    }
   }
 
   Future<void> _createAccount(BuildContext context, FinanceStore store) async {
