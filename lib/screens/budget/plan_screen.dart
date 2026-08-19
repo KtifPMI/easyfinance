@@ -249,7 +249,10 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       child: Column(
         children: [
           ...store.goals.map((g) {
-            final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+            final balances = {for (final a in store.accounts) a.id: store.accountActualBalance(a)};
+            final bal = g.balanceFrom(balances);
+            final achieved = g.achieved(balances);
+            final percent = achieved ? 100.0 : (g.targetAmount > 0 ? (bal / g.targetAmount * 100) : 0.0);
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: GestureDetector(
@@ -267,23 +270,13 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                                if (g.isCompleted)
+                                if (achieved)
                                   Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 13, color: AppColors.success, fontWeight: FontWeight.w600))
                                 else
-                                  Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                                  Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          if (!g.isCompleted)
-                            GestureDetector(
-                              onTap: () => _showDepositDialog(context, g, store),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-                                child: Text(context.tr('goals.top_up'), style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600)),
-                              ),
-                            ),
                           IconButton(
                             icon: Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
                             padding: EdgeInsets.zero,
@@ -293,9 +286,9 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                         ],
                       ),
                       const SizedBox(height: 8),
-                      ProgressBar(percent: g.isCompleted ? 100 : percent, color: g.isCompleted ? AppColors.success : _parseColor(g.color)),
+                      ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : _parseColor(g.color)),
                       const SizedBox(height: 4),
-                      Text(g.isCompleted ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                      Text(achieved ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),
@@ -313,67 +306,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     return map[name] ?? Icons.star;
   }
 
-  void _showDepositDialog(BuildContext context, Goal goal, FinanceStore store) {
-    final amountCtrl = TextEditingController();
-    String? accountId = store.accounts.isNotEmpty ? store.accounts.first.id : null;
 
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDState) => AlertDialog(
-          title: Text(goal.title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: amountCtrl,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: context.tr('goals.amount')),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                initialValue: accountId,
-                decoration: InputDecoration(labelText: context.tr('goals.from_account')),
-                items: store.accounts.map((a) => DropdownMenuItem(value: a.id, child: Text('${a.name} (${store.fmt(a.balance, fromCurrency: a.currency)})'))).toList(),
-                onChanged: (v) => setDState(() => accountId = v),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('goals.cancel'))),
-            TextButton(
-              onPressed: () async {
-                final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.')) ?? 0;
-                if (amount > 0 && accountId != null) {
-                  await store.depositToGoal(goal.id, amount, accountId!);
-                  if (!ctx.mounted) return;
-                  if (store.error != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
-                    return;
-                  }
-                  final newGoal = store.goals.where((g) => g.id == goal.id).firstOrNull;
-                  if (newGoal != null && newGoal.isCompleted) {
-                    Navigator.pop(ctx);
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: Text(context.tr('goals.congrats')),
-                        content: Text(context.tr('goals.achieved_text', namedArgs: {'title': goal.title})),
-                        actions: [TextButton(onPressed: () => Navigator.pop(_), child: Text(context.tr('goals.ok')))],
-                      ),
-                    );
-                    return;
-                  }
-                  Navigator.pop(ctx);
-                }
-              },
-              child: Text(context.tr('goals.top_up')),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _confirmDelete(BuildContext context, Goal goal, FinanceStore store) {
     showDialog(

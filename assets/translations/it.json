@@ -228,6 +228,7 @@
   "goals.name": "Nome",
   "goals.target_amount": "Importo Obiettivo",
   "goals.current_amount": "Importo Attuale",
+  "goals.current_balance": "Saldo attuale",
   "goals.save": "Salva",
   "goals.detail": "Dettagli Obiettivo",
   "goals.savings": "Risparmi",

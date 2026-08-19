@@ -228,6 +228,7 @@
   "goals.name": "Nombre",
   "goals.target_amount": "Cantidad Objetivo",
   "goals.current_amount": "Cantidad Actual",
+  "goals.current_balance": "Saldo actual",
   "goals.save": "Guardar",
   "goals.detail": "Detalles de la Meta",
   "goals.savings": "Ahorros",

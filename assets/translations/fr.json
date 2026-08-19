@@ -228,6 +228,7 @@
   "goals.name": "Nom",
   "goals.target_amount": "Montant Cible",
   "goals.current_amount": "Montant Actuel",
+  "goals.current_balance": "Solde actuel",
   "goals.save": "Enregistrer",
   "goals.detail": "Détails de l'Objectif",
   "goals.savings": "Épargne",

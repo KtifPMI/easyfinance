@@ -412,6 +412,39 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 8),
             const SizedBox(height: 24),
 
+            if (_isEditing) ...[
+              Builder(
+                builder: (context) {
+                  final g = store.goals.where((x) => x.id == widget.goalId).firstOrNull;
+                  if (g == null) return const SizedBox.shrink();
+                  final balances = {for (final a in store.accounts) a.id: store.accountActualBalance(a)};
+                  final bal = g.balanceFrom(balances);
+                  final percent = g.targetAmount > 0 ? (bal / g.targetAmount * 100).clamp(0, 100) : 0.0;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(context.tr('goals.current_balance'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                          const SizedBox(height: 4),
+                          Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                          const SizedBox(height: 6),
+                          Text('${percent.round()}%', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+
             // Блок 1
             Text(context.tr('goals.main_params'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),

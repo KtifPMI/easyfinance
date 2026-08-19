@@ -274,6 +274,7 @@
   "goals.name": "Название",
   "goals.target_amount": "Целевая сумма",
   "goals.current_amount": "Текущая сумма",
+  "goals.current_balance": "Текущий баланс цели",
   "goals.save": "Сохранить",
   "goals.detail": "Детали цели",
   "goals.savings": "Накопления",

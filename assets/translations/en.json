@@ -257,6 +257,7 @@
   "goals.name": "Name",
   "goals.target_amount": "Target Amount",
   "goals.current_amount": "Current Amount",
+  "goals.current_balance": "Current balance",
   "goals.save": "Save",
   "goals.detail": "Goal Details",
   "goals.savings": "Savings",
