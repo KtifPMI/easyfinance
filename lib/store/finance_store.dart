@@ -1470,7 +1470,7 @@ class FinanceStore extends ChangeNotifier {
           'name': c.name,
           'type': typeCode,
           'icon': _categoryIconToApi(c.icon),
-          'system_id': _systemIdForLogical(c.icon),
+          'system_id': c.systemId?.isNotEmpty == true ? c.systemId! : _systemIdForLogical(c.icon),
           'custom': '1',
           'parent_id': c.parentId ?? '0',
           'is_hidden': '0',
@@ -1482,9 +1482,10 @@ class FinanceStore extends ChangeNotifier {
         if (categories != null && categories.isNotEmpty) {
           final serverId = categories[0]['id']?.toString();
           if (serverId != null && serverId.isNotEmpty) {
+            final sid = c.systemId?.isNotEmpty == true ? c.systemId! : _systemIdForLogical(c.icon);
             _categories.add(cat.Category(
               id: serverId, name: c.name, type: c.type, icon: c.icon, color: c.color,
-              parentId: c.parentId, isDefault: false, systemId: _systemIdForLogical(c.icon),
+              parentId: c.parentId, isDefault: false, systemId: sid,
             ));
             await _saveCache();
             notifyListeners();
@@ -1522,7 +1523,7 @@ class FinanceStore extends ChangeNotifier {
           'name': c.name,
           'type': typeCode,
           'icon': _categoryIconToApi(c.icon),
-          'system_id': _systemIdForLogical(c.icon),
+          'system_id': c.systemId?.isNotEmpty == true ? c.systemId! : _systemIdForLogical(c.icon),
           'custom': c.isDefault ? '0' : '1',
           'parent_id': c.parentId ?? '0',
           'is_hidden': '0',

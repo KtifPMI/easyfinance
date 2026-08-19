@@ -10,6 +10,7 @@ import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/category_icons.dart';
 import '../../utils/translate_category.dart';
+import '../../utils/system_categories.dart';
 
 class CategoriesScreen extends StatefulWidget {
   const CategoriesScreen({super.key});
@@ -284,6 +285,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     final nameCtrl = TextEditingController();
     var type = 'expense';
     String? parentId;
+    String? systemId;
     CategoryIconOption? selectedIcon;
 
     showModalBottomSheet(
@@ -297,6 +299,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             (o) => o.logical == (type == 'income' ? 'other_income' : 'other_expense'),
             orElse: () => kDefaultCategoryIcons.first,
           );
+          final parent = parentId != null ? store.categories.where((p) => p.id == parentId).firstOrNull : null;
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Padding(
@@ -311,18 +314,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: type,
-                    decoration: InputDecoration(
-                      labelText: context.tr('categories.type'),
-                      filled: true, fillColor: AppColors.cardFor(context),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
+                    decoration: _ddDecoration(context, context.tr('categories.type')),
                     items: [
                       DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
                       DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
                     ],
                     onChanged: (v) => setInner(() {
                       type = v!;
+                      systemId = null;
                       selectedIcon = kDefaultCategoryIcons.firstWhere(
                         (o) => o.logical == (type == 'income' ? 'other_income' : 'other_expense'),
                         orElse: () => kDefaultCategoryIcons.first,
@@ -332,12 +331,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String?>(
                     initialValue: parentId,
-                    decoration: InputDecoration(
-                      labelText: context.tr('categories.parent'),
-                      filled: true, fillColor: AppColors.cardFor(context),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
+                    decoration: _ddDecoration(context, context.tr('categories.parent')),
                     items: [
                       DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.no_parent'))),
                       ...store.categories.where((c) => c.type == type && c.isDefault).map((c) => DropdownMenuItem<String?>(
@@ -347,6 +341,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                     ],
                     onChanged: (v) => setInner(() => parentId = v),
                   ),
+                  const SizedBox(height: 12),
+                  if (parentId == null)
+                    _systemCategoryField(ctx, type, systemId, (v) => setInner(() => systemId = v))
+                  else
+                    _inheritedSystemField(ctx, store, parent),
                   const SizedBox(height: 16),
                   _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
                   const SizedBox(height: 16),
@@ -355,6 +354,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                     onPressed: () {
                       final name = nameCtrl.text.trim();
                       if (name.isEmpty || selectedIcon == null) return;
+                      if (parentId == null && (systemId == null || systemId!.isEmpty)) return;
+                      final effectiveSystemId = parentId == null
+                          ? systemId
+                          : store.categories.where((p) => p.id == parentId).firstOrNull?.systemId;
                       store.addCategory(cat.Category(
                         id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
                         name: name,
@@ -363,6 +366,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         color: selectedIcon!.color,
                         parentId: parentId,
                         isDefault: false,
+                        systemId: effectiveSystemId,
                       ));
                       Navigator.pop(ctx);
                     },
@@ -377,10 +381,55 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     );
   }
 
+  InputDecoration _ddDecoration(BuildContext context, String label) => InputDecoration(
+    labelText: label,
+    filled: true,
+    fillColor: AppColors.cardFor(context),
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  );
+
+  Widget _systemCategoryField(BuildContext context, String type, String? systemId, ValueChanged<String?> onChanged) {
+    final map = systemCategories[type] ?? const <int, String>{};
+    return DropdownButtonFormField<String?>(
+      initialValue: systemId,
+      decoration: _ddDecoration(context, context.tr('categories.system_category')),
+      items: [
+        DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.choose_system'))),
+        ...map.entries.map((e) => DropdownMenuItem<String?>(value: e.key.toString(), child: Text(e.value, overflow: TextOverflow.ellipsis))),
+      ],
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _inheritedSystemField(BuildContext context, FinanceStore store, cat.Category? parent) {
+    final inheritedName = (parent != null && parent.systemId != null && parent.systemId!.isNotEmpty)
+        ? (systemCategories[parent.type]?[int.tryParse(parent.systemId!)] ?? context.tr('categories.system_inherited'))
+        : context.tr('categories.system_inherited');
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.cardFor(context),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderFor(context)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.tr('categories.system_category'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+          const SizedBox(height: 4),
+          Text('${context.tr('categories.system_inherited')}: $inheritedName', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+        ],
+      ),
+    );
+  }
+
   void _showEditSheet(BuildContext context, FinanceStore store, cat.Category c) {
     final nameCtrl = TextEditingController(text: c.name);
     var type = c.type;
     String? parentId = c.parentId;
+    String? systemId = c.systemId;
     final initial = kDefaultCategoryIcons.where((o) => o.logical == c.icon).firstOrNull
         ?? kDefaultCategoryIcons.where((o) => o.catimg == _storeIconToCatimg(c.icon)).firstOrNull
         ?? kDefaultCategoryIcons.first;
@@ -398,6 +447,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             final cur = store.categories.where((x) => x.id == parentId).firstOrNull;
             if (cur != null) parentCats.add(cur);
           }
+          final parent = parentId != null ? store.categories.where((p) => p.id == parentId).firstOrNull : null;
           return Padding(
             padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Padding(
@@ -412,30 +462,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: type,
-                    decoration: InputDecoration(
-                      labelText: context.tr('categories.type'),
-                      filled: true, fillColor: AppColors.cardFor(context),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
-                  items: [
-                    DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
-                    DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
-                  ],
-                  onChanged: (v) => setInner(() {
-                    type = v!;
-                    parentId = null;
-                  }),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String?>(
-                  initialValue: parentId,
-                    decoration: InputDecoration(
-                      labelText: context.tr('categories.parent'),
-                      filled: true, fillColor: AppColors.cardFor(context),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    ),
+                    decoration: _ddDecoration(context, context.tr('categories.type')),
+                    items: [
+                      DropdownMenuItem(value: 'expense', child: Text(context.tr('categories.type_expense'))),
+                      DropdownMenuItem(value: 'income', child: Text(context.tr('categories.type_income'))),
+                    ],
+                    onChanged: (v) => setInner(() {
+                      type = v!;
+                      parentId = null;
+                      systemId = null;
+                    }),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String?>(
+                    initialValue: parentId,
+                    decoration: _ddDecoration(context, context.tr('categories.parent')),
                     items: [
                       DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.no_parent'))),
                       ...parentCats.map((c2) => DropdownMenuItem<String?>(
@@ -445,6 +486,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                     ],
                     onChanged: (v) => setInner(() => parentId = v),
                   ),
+                  const SizedBox(height: 12),
+                  if (parentId == null)
+                    _systemCategoryField(ctx, type, systemId, (v) => setInner(() => systemId = v))
+                  else
+                    _inheritedSystemField(ctx, store, parent),
                   const SizedBox(height: 16),
                   _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
                   const SizedBox(height: 16),
@@ -453,6 +499,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                     onPressed: () {
                       final name = nameCtrl.text.trim();
                       if (name.isEmpty) return;
+                      if (parentId == null && (systemId == null || systemId!.isEmpty)) return;
+                      final effectiveSystemId = parentId == null
+                          ? systemId
+                          : store.categories.where((p) => p.id == parentId).firstOrNull?.systemId;
                       store.updateCategory(cat.Category(
                         id: c.id,
                         name: name,
@@ -461,6 +511,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                         color: selectedIcon.color,
                         parentId: parentId,
                         isDefault: c.isDefault,
+                        systemId: effectiveSystemId,
                       ));
                       Navigator.pop(ctx);
                     },
