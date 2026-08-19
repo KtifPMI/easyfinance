@@ -194,7 +194,7 @@
   "categories.delete_with_ops_title": "La catégorie a des opérations",
   "categories.delete_with_ops": "Cette catégorie contient {count} opérations. Choisissez une catégorie de remplacement :",
   "categories.replacement_category": "Catégorie de remplacement",
-  "categories.no_replacement": "Aucune autre catégorie de ce type — les opérations n'auront pas de catégorie",
+  "categories.no_replacement": "Aucune autre catégorie de ce type. Créez-en une d'abord pour y déplacer les opérations.",
   "categories.delete": "Supprimer",
   "categories.cancel": "Annuler",
   "categories.confirm_delete": "Supprimer la catégorie ?",

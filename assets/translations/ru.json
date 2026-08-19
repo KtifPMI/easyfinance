@@ -225,7 +225,7 @@
   "categories.delete_with_ops_title": "У категории есть операции",
   "categories.delete_with_ops": "Категория содержит {count} операций. Выберите категорию, куда они будут перенесены:",
   "categories.replacement_category": "Категория для замены",
-  "categories.no_replacement": "Нет других категорий этого типа — операции останутся без категории",
+  "categories.no_replacement": "Нет других категорий этого типа. Сначала создайте категорию, куда перенести операции.",
   "categories.delete": "Удалить",
   "categories.cancel": "Отмена",
   "categories.confirm_delete": "Удалить категорию?",

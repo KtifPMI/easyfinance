@@ -212,7 +212,7 @@
   "categories.delete_with_ops_title": "Category has operations",
   "categories.delete_with_ops": "This category has {count} operations. Choose a category to move them to:",
   "categories.replacement_category": "Replacement category",
-  "categories.no_replacement": "No other categories of this type — operations will have no category",
+  "categories.no_replacement": "No other categories of this type. Create one first to move the operations to.",
   "categories.delete": "Delete",
   "categories.cancel": "Cancel",
   "categories.confirm_delete": "Delete category?",

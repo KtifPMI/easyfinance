@@ -294,7 +294,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
   void _showReassignDelete(BuildContext context, FinanceStore store, cat.Category c, List<Operation> ops) {
     String? replacementId;
     final candidates = store.categories.where((x) => x.type == c.type && x.id != c.id).toList();
-    final canDelete = candidates.isEmpty;
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -323,20 +322,18 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
           actions: [
             TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('categories.cancel'))),
             TextButton(
-              onPressed: (replacementId != null || canDelete)
+              onPressed: replacementId != null
                   ? () async {
                       Navigator.pop(ctx);
-                      if (replacementId != null) {
-                        for (final op in ops) {
-                          await store.updateOperation(op.copyWith(categoryId: replacementId));
-                        }
+                      for (final op in ops) {
+                        await store.updateOperation(op.copyWith(categoryId: replacementId));
                       }
                       store.deleteCategory(c.id);
                     }
                   : null,
               child: Text(
                 context.tr('categories.delete'),
-                style: TextStyle(color: (replacementId != null || canDelete) ? AppColors.expense : AppColors.textSecondaryFor(context)),
+                style: TextStyle(color: replacementId != null ? AppColors.expense : AppColors.textSecondaryFor(context)),
               ),
             ),
           ],
