@@ -408,9 +408,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 12),
                   if (parentId == null)
-                    _systemCategoryField(ctx, type, systemId, (v) => setInner(() => systemId = v))
+                    _systemCategoryField(ctx, store, type, systemId, (v) => setInner(() => systemId = v))
                   else
-                    _inheritedSystemField(ctx, store, parent),
+                    _inheritedSystemField(ctx, parent),
                   const SizedBox(height: 16),
                   _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
                   const SizedBox(height: 16),
@@ -455,23 +455,31 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
   );
 
-  Widget _systemCategoryField(BuildContext context, String type, String? systemId, ValueChanged<String?> onChanged) {
-    final map = systemCategories[type] ?? const <int, String>{};
+  List<cat.Category> _rootCategories(FinanceStore store, String type) =>
+      store.categories.where((c) => (c.parentId == null || c.parentId == '0') && c.type == type && !c.isHidden).toList();
+
+  Widget _systemCategoryField(BuildContext context, FinanceStore store, String type, String? systemId, ValueChanged<String?> onChanged) {
+    final candidates = _rootCategories(store, type);
+    final items = candidates.isNotEmpty
+        ? candidates.map((c) => DropdownMenuItem<String?>(value: c.systemId, child: Text(c.name, overflow: TextOverflow.ellipsis))).toList()
+        : (systemCategories[type] ?? const <int, String>{})
+            .entries
+            .map((e) => DropdownMenuItem<String?>(value: e.key.toString(), child: Text(e.value, overflow: TextOverflow.ellipsis)))
+            .toList();
+    final values = <String?>{null, ...items.map((i) => i.value)};
     return DropdownButtonFormField<String?>(
-      initialValue: systemId,
+      initialValue: values.contains(systemId) ? systemId : null,
       decoration: _ddDecoration(context, context.tr('categories.system_category')),
       items: [
         DropdownMenuItem<String?>(value: null, child: Text(context.tr('categories.choose_system'))),
-        ...map.entries.map((e) => DropdownMenuItem<String?>(value: e.key.toString(), child: Text(e.value, overflow: TextOverflow.ellipsis))),
+        ...items,
       ],
       onChanged: onChanged,
     );
   }
 
-  Widget _inheritedSystemField(BuildContext context, FinanceStore store, cat.Category? parent) {
-    final inheritedName = (parent != null && parent.systemId != null && parent.systemId!.isNotEmpty)
-        ? (systemCategories[parent.type]?[int.tryParse(parent.systemId!)] ?? context.tr('categories.system_inherited'))
-        : context.tr('categories.system_inherited');
+  Widget _inheritedSystemField(BuildContext context, cat.Category? parent) {
+    final inheritedName = parent?.name ?? context.tr('categories.system_inherited');
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -555,9 +563,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 12),
                   if (parentId == null)
-                    _systemCategoryField(ctx, type, systemId, (v) => setInner(() => systemId = v))
+                    _systemCategoryField(ctx, store, type, systemId, (v) => setInner(() => systemId = v))
                   else
-                    _inheritedSystemField(ctx, store, parent),
+                    _inheritedSystemField(ctx, parent),
                   const SizedBox(height: 16),
                   _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
                   const SizedBox(height: 16),

@@ -35,6 +35,7 @@ class Category {
   final bool isDefault;
   final String? systemId;
   final bool isPending;
+  final bool isHidden;
 
   Category({
     required this.id,
@@ -46,6 +47,7 @@ class Category {
     this.isDefault = true,
     this.systemId,
     this.isPending = false,
+    this.isHidden = false,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -61,6 +63,7 @@ class Category {
       isDefault: custom == '0',
       systemId: json['system_id']?.toString(),
       isPending: false,
+      isHidden: json['is_hidden']?.toString() == '1',
     );
   }
 
@@ -70,10 +73,11 @@ class Category {
     'parent_id': parentId, 'is_default': isDefault,
     'system_id': systemId,
     'is_pending': isPending,
+    'is_hidden': isHidden,
   };
 
-  Category copyWith({String? id, String? name, String? type, String? icon, String? color, String? parentId, bool? isDefault, String? systemId, bool? isPending}) =>
-      Category(id: id ?? this.id, name: name ?? this.name, type: type ?? this.type, icon: icon ?? this.icon, color: color ?? this.color, parentId: parentId ?? this.parentId, isDefault: isDefault ?? this.isDefault, systemId: systemId ?? this.systemId, isPending: isPending ?? this.isPending);
+  Category copyWith({String? id, String? name, String? type, String? icon, String? color, String? parentId, bool? isDefault, String? systemId, bool? isPending, bool? isHidden}) =>
+      Category(id: id ?? this.id, name: name ?? this.name, type: type ?? this.type, icon: icon ?? this.icon, color: color ?? this.color, parentId: parentId ?? this.parentId, isDefault: isDefault ?? this.isDefault, systemId: systemId ?? this.systemId, isPending: isPending ?? this.isPending, isHidden: isHidden ?? this.isHidden);
 
   factory Category.fromLocalJson(Map<String, dynamic> json) => Category(
     id: json['id'] is int ? json['id'].toString() : json['id']?.toString() ?? '',
@@ -85,6 +89,7 @@ class Category {
     isDefault: json['is_default'] == true,
     systemId: json['system_id']?.toString(),
     isPending: json['is_pending'] == true,
+    isHidden: json['is_hidden'] == true,
   );
 
   static String _parseType(dynamic type) {
