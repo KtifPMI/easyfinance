@@ -91,7 +91,9 @@ class FinancialEvent {
 
     switch (repeatMode) {
       case 1: // daily
-        for (int d = 1; d <= daysInMonth; d++) add(d);
+        for (int d = 1; d <= daysInMonth; d++) {
+          add(d);
+        }
         break;
       case 7: // weekly — use the selected weekdays bitmask when present
         if (weekDays != null && weekDays!.length == 7) {

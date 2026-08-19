@@ -114,7 +114,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
       // Fallback to on-device ML Kit
       text ??= await _runMlKit(processed);
-      if (ocrSource == null) ocrSource = 'ML Kit (on-device)';
+      ocrSource ??= 'ML Kit (on-device)';
 
       if (!mounted) return;
       if (text == null || text.isEmpty) {
@@ -177,27 +177,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         .replaceAll('X', 'х').replaceAll('x', 'х')
         .replaceAll('Y', 'у').replaceAll('y', 'у')
         .toLowerCase();
-  }
-
-  String _normalizeDisplay(String s) {
-    return s
-        .replaceAll('A', 'А').replaceAll('a', 'а')
-        .replaceAll('B', 'В').replaceAll('b', 'в')
-        .replaceAll('C', 'С').replaceAll('c', 'с')
-        .replaceAll('D', 'Д').replaceAll('d', 'д')
-        .replaceAll('E', 'Е').replaceAll('e', 'е')
-        .replaceAll('H', 'Н').replaceAll('h', 'н')
-        .replaceAll('I', 'И').replaceAll('i', 'и')
-        .replaceAll('K', 'К').replaceAll('k', 'к')
-        .replaceAll('M', 'М').replaceAll('m', 'м')
-        .replaceAll('N', 'Л').replaceAll('n', 'л')
-        .replaceAll('O', 'О').replaceAll('o', 'о')
-        .replaceAll('P', 'Р').replaceAll('p', 'р')
-        .replaceAll('R', 'Г').replaceAll('r', 'г')
-        .replaceAll('T', 'Т').replaceAll('t', 'т')
-        .replaceAll('U', 'И').replaceAll('u', 'и')
-        .replaceAll('X', 'Х').replaceAll('x', 'х')
-        .replaceAll('Y', 'У').replaceAll('y', 'у');
   }
 
   String _extractItems(List<String> lines, String storeName) {

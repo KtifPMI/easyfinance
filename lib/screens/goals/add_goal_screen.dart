@@ -125,10 +125,10 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               }
             });
           }
-          final _remainingTotal = (g.targetAmount - g.currentAmount).clamp(0, g.targetAmount);
-          if (_remainingTotal > 0 && _firstPaymentDate != null && _targetDate != null && _targetDate!.isAfter(_firstPaymentDate!)) {
+          final remainingTotal = (g.targetAmount - g.currentAmount).clamp(0, g.targetAmount);
+          if (remainingTotal > 0 && _firstPaymentDate != null && _targetDate != null && _targetDate!.isAfter(_firstPaymentDate!)) {
             final months = (_targetDate!.year - _firstPaymentDate!.year) * 12 + (_targetDate!.month - _firstPaymentDate!.month);
-            if (months > 0) _monthlyCtrl.text = (_remainingTotal / months).toStringAsFixed(0);
+            if (months > 0) _monthlyCtrl.text = (remainingTotal / months).toStringAsFixed(0);
           }
         }
       }

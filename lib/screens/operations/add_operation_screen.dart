@@ -39,7 +39,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   bool _commentExpanded = false;
   final List<String> _selectedTags = [];
   final _categoryKey = GlobalKey();
-  final _scrollCtrl = ScrollController();
 
   bool get _isEditing => widget.operationId != null;
   bool _loaded = false;
@@ -392,14 +391,6 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         ],
       ),
     );
-  }
-
-  void _popAfterSave(BuildContext context) {
-    if (Navigator.of(context).canPop()) {
-      Navigator.pop(context);
-    } else {
-      Navigator.pushReplacementNamed(context, '/main');
-    }
   }
 
   @override
@@ -757,7 +748,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         if (availableTags.isNotEmpty) ...[
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: null,
+            initialValue: null,
             decoration: InputDecoration(
               filled: true, fillColor: AppColors.cardFor(context),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

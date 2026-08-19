@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../models/operation.dart';
-import '../../models/operation_template.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';

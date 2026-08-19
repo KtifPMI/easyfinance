@@ -86,12 +86,6 @@ class ScreenScaffold extends StatelessWidget {
       final leading = canPop
           ? const BackButton()
           : (showLogo ? const AppLogo(height: 28) : null);
-      final trailing = (actions == null || actions!.isEmpty)
-          ? null
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: actions!,
-            );
       final double slot = canPop
           ? kToolbarHeight
           : (showLogo ? _logoSlotWidth : kToolbarHeight);
@@ -120,7 +114,7 @@ class ScreenScaffold extends StatelessWidget {
             style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
           ),
           Positioned(left: 0, child: left),
-          Positioned(right: 0, child: right ?? const SizedBox.shrink()),
+          Positioned(right: 0, child: right),
         ],
       ),
     );

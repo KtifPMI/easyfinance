@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_logo.dart';
-import '../../components/common/screen_scaffold.dart';
 import '../../services/notification_service.dart';
 import '../../theme/theme.dart';
 

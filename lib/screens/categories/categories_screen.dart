@@ -160,8 +160,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: InkWell(
           onTap: () => setState(() {
-            if (expanded) _expanded.remove(p.id);
-            else _expanded.add(p.id);
+            if (expanded) {
+              _expanded.remove(p.id);
+            } else {
+              _expanded.add(p.id);
+            }
           }),
           borderRadius: BorderRadius.circular(12),
           child: Row(
@@ -310,7 +313,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
               else
                 DropdownButtonFormField<String>(
                   decoration: _ddDecoration(context, context.tr('categories.replacement_category')),
-                  value: replacementId,
+                  initialValue: replacementId,
                   items: candidates.map((x) => DropdownMenuItem<String>(
                     value: x.id,
                     child: Text(tCat(context, x.name), overflow: TextOverflow.ellipsis),
@@ -361,14 +364,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             orElse: () => kDefaultCategoryIcons.first,
           );
           final parent = parentId != null ? store.categories.where((p) => p.id == parentId).firstOrNull : null;
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          return SizedBox(
+            height: MediaQuery.of(ctx).size.height * 0.9,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                   Text(context.tr('categories.new'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   const SizedBox(height: 16),
                   AppInput(label: context.tr('categories.name'), controller: nameCtrl),
@@ -436,7 +440,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                 ],
               ),
             ),
-          );
+          ),
+        );
         },
       ),
     );
@@ -509,14 +514,15 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             if (cur != null) parentCats.add(cur);
           }
           final parent = parentId != null ? store.categories.where((p) => p.id == parentId).firstOrNull : null;
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
+          return SizedBox(
+            height: MediaQuery.of(ctx).size.height * 0.9,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                   Text(context.tr('categories.edit'), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   const SizedBox(height: 16),
                   AppInput(label: context.tr('categories.name'), controller: nameCtrl),
@@ -581,7 +587,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                 ],
               ),
             ),
-          );
+          ),
+        );
         },
       ),
     );

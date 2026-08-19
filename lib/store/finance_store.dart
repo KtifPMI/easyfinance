@@ -1552,24 +1552,20 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteCategory(String id) async {
     _error = null;
-    if (authService.isAuthenticated) {
-      try {
-        await apiClient.deleteCategoryV2(id);
-        _categories.removeWhere((x) => x.id == id);
-        await _saveCache();
-        notifyListeners();
-        return;
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-        return;
-      } catch (e) {
-        _error = 'Ошибка удаления категории: $e'; notifyListeners();
-        return;
-      }
-    }
+    // Optimistically remove locally so the UI stays consistent even if the
+    // server rejects (e.g. the category still has operations/children there).
     _categories.removeWhere((x) => x.id == id);
     await _saveCache();
     notifyListeners();
+    if (authService.isAuthenticated) {
+      try {
+        await apiClient.deleteCategoryV2(id);
+      } on ApiException catch (e) {
+        _error = e.message; notifyListeners();
+      } catch (e) {
+        _error = 'Ошибка удаления категории: $e'; notifyListeners();
+      }
+    }
   }
 
   String _categoryIconToApi(String icon) {

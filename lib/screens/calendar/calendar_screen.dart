@@ -98,7 +98,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
         }
 
         final dayCells = <Widget>[];
-        for (int i = 0; i < offset; i++) dayCells.add(const SizedBox.shrink());
+        for (int i = 0; i < offset; i++) {
+          dayCells.add(const SizedBox.shrink());
+        }
         for (int d = 1; d <= daysInMonth; d++) {
           final date = DateTime(_currentMonth.year, _currentMonth.month, d);
           final isToday = date == today;
@@ -386,7 +388,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${store.fmt(e.amount)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(store.fmt(e.amount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(formatDate(e.date), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           ],
@@ -425,50 +427,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  void _confirmPendingOp(BuildContext context, FinanceStore store, Operation op) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.tr('calendar.confirm_operation')),
-        content: Text('${store.fmt(op.amount)} — ${op.comment ?? ''}'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await store.updateOperation(op.copyWith(isPending: false));
-            },
-            child: Text(context.tr('calendar.confirm_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDeleteOp(BuildContext context, FinanceStore store, Operation op) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.tr('calendar.delete_payment')),
-        content: Text('${op.comment ?? ''} — ${store.fmt(op.amount)}'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await store.deleteOperation(op.id);
-              if (!context.mounted) return;
-              if (store.error != null) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
-              }
-            },
-            child: Text(context.tr('calendar.delete'), style: TextStyle(color: AppColors.expense)),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _createPlannedOperation(BuildContext context, FinancialEvent e, FinanceStore store, [DateTime? occurrenceDate]) async {
     final planned = context.read<PlannedPaymentStore>();
     if (e.serverId == null) {
@@ -501,35 +459,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       if (context.mounted) await planned.syncFromServer();
     }
     if (context.mounted) await store.reloadOperations();
-  }
-
-  void _confirmCreateOp(BuildContext context, FinancialEvent e, FinanceStore store, [DateTime? occurrenceDate]) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(plannedEventTitle(e, store)),
-        content: Text('${store.fmt(e.amount)}\n${context.tr('calendar.confirm_create_op')}'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
-          TextButton.icon(
-            icon: const Icon(Icons.arrow_forward),
-            label: Text(context.tr('tab.operations')),
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _createPlannedOperation(context, e, store, occurrenceDate);
-              if (context.mounted) Navigator.pushNamed(context, '/operations');
-            },
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _createPlannedOperation(context, e, store, occurrenceDate);
-            },
-            child: Text(context.tr('calendar.create_operation'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _dayCell(int day, bool isToday, bool isSelected, bool hasOps, Color? plannedColor, VoidCallback onTap) {

@@ -379,15 +379,17 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                     controller: scrollCtrl,
                     itemCount: filtered.length + 1,
                     itemBuilder: (_, i) {
-                      if (i == 0) return ListTile(
-                        leading: Icon(Icons.clear, color: AppColors.danger),
-                        title: Text(context.tr('filters.all_tags'), style: const TextStyle(fontSize: 15)),
-                        onTap: () {
-                          setPickerState(() => _advTagName = null);
-                          setSheetState(() {});
+                      if (i == 0) {
+                        return ListTile(
+                          leading: Icon(Icons.clear, color: AppColors.danger),
+                          title: Text(context.tr('filters.all_tags'), style: const TextStyle(fontSize: 15)),
+                          onTap: () {
+                            setPickerState(() => _advTagName = null);
+                            setSheetState(() {});
                           Navigator.pop(ctx);
                         },
                       );
+                      }
                       final t = filtered[i - 1];
                       return ListTile(
                         leading: Icon(Icons.label, color: _advTagName == t ? AppColors.primary : AppColors.textSecondaryFor(context)),
