@@ -44,6 +44,7 @@ class Operation {
     bool? isPending,
     double? transferAmount,
     String? clientId,
+    String? categoryId,
   }) =>
       Operation(
         id: id ?? this.id,
@@ -54,7 +55,7 @@ class Operation {
         date: date,
         accountId: accountId,
         toAccountId: toAccountId,
-        categoryId: categoryId,
+        categoryId: categoryId ?? this.categoryId,
         comment: comment,
         tags: tags ?? this.tags,
         isDeleted: isDeleted ?? this.isDeleted,
