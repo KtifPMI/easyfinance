@@ -232,7 +232,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         children: [
           AppInput(label: context.tr('accounts.name'), controller: _nameCtrl),
           const SizedBox(height: 16),
-          AppInput(label: _isDebtType ? context.tr('accounts.debt_amount') : context.tr('accounts.balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
+          AppInput(label: _isDebtType ? context.tr('accounts.debt_amount') : context.tr('accounts.initial_balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
           Text(context.tr('accounts.type'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),

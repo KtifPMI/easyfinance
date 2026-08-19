@@ -39,16 +39,33 @@ class _CalendarScreenState extends State<CalendarScreen> {
       });
 
   Widget _calendarLegend(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 16,
+      runSpacing: 6,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.warning, shape: BoxShape.circle)),
-        const SizedBox(width: 6),
-        Text('Запланировано', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-        const SizedBox(width: 16),
-        Icon(Icons.check_circle, size: 14, color: AppColors.success),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text('Подтверждено на эту дату', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+            Text(context.tr('calendar.legend_planned'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.danger, shape: BoxShape.circle)),
+            const SizedBox(width: 6),
+            Text(context.tr('calendar.legend_overdue'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+          ],
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, size: 14, color: AppColors.success),
+            const SizedBox(width: 6),
+            Text(context.tr('calendar.legend_confirmed'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+          ],
         ),
       ],
     );
