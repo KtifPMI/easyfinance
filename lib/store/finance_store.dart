@@ -1552,20 +1552,52 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteCategory(String id) async {
     _error = null;
-    // Optimistically remove locally so the UI stays consistent even if the
-    // server rejects (e.g. the category still has operations/children there).
+    final idx = _categories.indexWhere((x) => x.id == id);
+    if (idx < 0) return;
+    final c = _categories[idx];
+    // Local-only (pending) categories are removed locally only.
+    if (c.isPending) {
+      _categories.removeAt(idx);
+      await _saveCache();
+      notifyListeners();
+      return;
+    }
+    // Server-backed categories: delete on the server FIRST (mirrors
+    // deleteOperation). Only remove locally after a successful response, so a
+    // server rejection keeps the category visible instead of resurrecting it on
+    // the next fetch. We send the full record with `deleted_at` set, exactly
+    // like updateCategory, so the API soft-deletes it.
+    if (authService.isAuthenticated) {
+      try {
+        final now = formatApiDateTime();
+        final typeCode = c.type == 'expense' ? '-1' : '1';
+        final record = {
+          'id': c.id,
+          'name': c.name,
+          'type': typeCode,
+          'icon': _categoryIconToApi(c.icon),
+          'system_id': c.systemId?.isNotEmpty == true ? c.systemId! : _systemIdForLogical(c.icon),
+          'custom': c.isDefault ? '0' : '1',
+          'parent_id': c.parentId ?? '0',
+          'is_hidden': '0',
+          'created_at': now,
+          'updated_at': now,
+          'deleted_at': now,
+        };
+        await apiClient.setCategoryV2(c.id, record);
+      } on ApiException catch (e) {
+        _error = e.message;
+        notifyListeners();
+        return;
+      } catch (e) {
+        _error = 'Ошибка удаления категории: $e';
+        notifyListeners();
+        return;
+      }
+    }
     _categories.removeWhere((x) => x.id == id);
     await _saveCache();
     notifyListeners();
-    if (authService.isAuthenticated) {
-      try {
-        await apiClient.deleteCategoryV2(id);
-      } on ApiException catch (e) {
-        _error = e.message; notifyListeners();
-      } catch (e) {
-        _error = 'Ошибка удаления категории: $e'; notifyListeners();
-      }
-    }
   }
 
   String _categoryIconToApi(String icon) {

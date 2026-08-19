@@ -452,16 +452,6 @@ class ApiClient {
 
   // --- Categories (API v2) ---
 
-  String _isoNow() {
-    final now = DateTime.now();
-    final tz = now.timeZoneOffset;
-    final sign = tz.isNegative ? '-' : '+';
-    final h = tz.inHours.abs().toString().padLeft(2, '0');
-    final m = (tz.inMinutes.abs() % 60).toString().padLeft(2, '0');
-    final p = (int n) => n.toString().padLeft(2, '0');
-    return '${now.year}-${p(now.month)}-${p(now.day)}T${p(now.hour)}:${p(now.minute)}:${p(now.second)}$sign$h:$m';
-  }
-
   /// Fetches all categories via API v2 `categories.get`.
   Future<List<Map<String, dynamic>>> getCategoriesV2() async {
     final data = await get('categories.get');
@@ -486,15 +476,6 @@ class ApiClient {
       'categories.set',
       params: {'transact_key': _transactKey(), 'category_id': categoryId},
       body: {'request': {'request_data': {'categories': [record]}}},
-    );
-  }
-
-  /// Deletes a category via API v2 `categories.set` (sets `deleted_at`).
-  Future<Map<String, dynamic>> deleteCategoryV2(String categoryId) async {
-    return post(
-      'categories.set',
-      params: {'transact_key': _transactKey(), 'category_id': categoryId},
-      body: {'request': {'request_data': {'categories': [{'id': categoryId, 'deleted_at': _isoNow()}]}}},
     );
   }
 
