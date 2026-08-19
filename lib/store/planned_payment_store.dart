@@ -131,6 +131,7 @@ class PlannedPaymentStore extends ChangeNotifier {
   FinancialEvent _eventFromGroup(String key, List<Map<String, dynamic>> entries) {
     final first = entries.first;
     final acceptedDates = <String>[];
+    final occurrenceIds = <String, String>{};
     DateTime? earliestStart;
     String? earliestStartStr;
     String? dateEnd;
@@ -161,6 +162,9 @@ class PlannedPaymentStore extends ChangeNotifier {
         final ad = _parseDate(e['date']?.toString());
         if (ad.isNotEmpty) acceptedDates.add(ad);
       }
+      final occId = e['id']?.toString();
+      final occDate = _parseDate(e['date']?.toString());
+      if (occId != null && occId.isNotEmpty && occDate.isNotEmpty) occurrenceIds[occDate] = occId;
     }
 
     final typeRaw = first['type']?.toString();
@@ -200,6 +204,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       repeatCount: (period > 0 && repeatRawNum != null && repeatRawNum! > 0) ? repeatRawNum : null,
       time: first['time']?.toString(),
       acceptedDates: acceptedDates,
+      occurrenceIds: occurrenceIds,
     );
   }
 
@@ -277,7 +282,11 @@ class PlannedPaymentStore extends ChangeNotifier {
 
     if (_apiClient.accessToken != null && e.serverId != null) {
       try {
-        await _apiClient.acceptCalendarEventV2(e.serverId!, e.chain ?? '', dateYmd);
+        // Accept the specific occurrence, not the whole chain: use the
+        // per-date server occurrence id when available, otherwise fall back
+        // to the chain's first occurrence id.
+        final occurrenceId = e.occurrenceIds[dateYmd] ?? e.serverId!;
+        await _apiClient.acceptCalendarEventV2(occurrenceId, e.chain ?? '', dateYmd);
       } catch (err) {
         debugPrint('accept calendar event error: $err');
       }
@@ -341,6 +350,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     dateEnd: e.dateEnd,
     repeatCount: e.repeatCount,
     acceptedDates: acceptedDates ?? e.acceptedDates,
+    occurrenceIds: e.occurrenceIds,
   );
 
   FinancialEvent _copyWithServer(FinancialEvent e, {String? serverId, String? chain}) => FinancialEvent(
@@ -366,6 +376,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     dateEnd: e.dateEnd,
     repeatCount: e.repeatCount,
     acceptedDates: e.acceptedDates,
+    occurrenceIds: e.occurrenceIds,
   );
 
   String _parseDate(String? d) {

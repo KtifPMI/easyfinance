@@ -22,6 +22,7 @@ class FinancialEvent {
   final int? repeatCount; // fixed number of occurrences (count mode); null = unlimited
   final String? time; // 'HH:MM:SS' from the server, if any
   final List<String> acceptedDates; // 'YYYY-MM-DD' occurrences already confirmed
+  final Map<String, String> occurrenceIds; // 'YYYY-MM-DD' -> server occurrence id (per-date)
 
   FinancialEvent({
     required this.id,
@@ -47,6 +48,7 @@ class FinancialEvent {
     this.repeatCount,
     this.time,
     this.acceptedDates = const [],
+    this.occurrenceIds = const {},
   });
 
   bool get isRepeating => repeatMode > 0;
@@ -215,6 +217,7 @@ class FinancialEvent {
     if (repeatCount != null) 'repeatCount': repeatCount,
     if (time != null) 'time': time,
     'acceptedDates': acceptedDates,
+    'occurrenceIds': occurrenceIds,
   };
 
   factory FinancialEvent.fromJson(Map<String, dynamic> json) => FinancialEvent(
@@ -241,5 +244,6 @@ class FinancialEvent {
     repeatCount: json['repeatCount'] as int?,
     time: json['time'] as String?,
     acceptedDates: (json['acceptedDates'] as List<dynamic>?)?.map((e) => e as String).toList() ?? const [],
+    occurrenceIds: (json['occurrenceIds'] as Map<dynamic, dynamic>?)?.map((k, v) => MapEntry(k.toString(), v.toString())) ?? const {},
   );
 }
