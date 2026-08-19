@@ -28,7 +28,7 @@ class GoalsListScreen extends StatelessWidget {
               ? Center(child: Text(context.tr('goals.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
               : Column(
                   children: store.goals.map((g) {
-                    final balances = {for (final a in store.accounts) a.id: a.balance};
+                    final balances = {for (final a in store.accounts) a.id: store.accountActualBalance(a)};
                     final bal = g.balanceFrom(balances);
                     final achieved = g.achieved(balances);
                     final percent = achieved ? 100.0 : g.percent(balances);
