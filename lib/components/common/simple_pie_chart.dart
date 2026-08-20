@@ -58,9 +58,8 @@ class _PiePainter extends CustomPainter {
         final pct = (slice.value / total * 100).round();
         if (pct >= 5) {
           final midAngle = startAngle + sweepAngle / 2;
-          // Place the label in the inner part of the ring so it stays clear of
-          // the rim (and the bottom edge of the chart) and reads centered.
-          final labelRadius = radius * (holeRadius + (1 - holeRadius) * 0.28);
+          // Place the label exactly in the middle of the colored ring band.
+          final labelRadius = radius * (holeRadius + 1) / 2;
           final x = center.dx + labelRadius * cos(midAngle);
           final y = center.dy + labelRadius * sin(midAngle);
           final tp = TextPainter(

@@ -330,17 +330,12 @@ class FinanceStore extends ChangeNotifier {
     return CurrencyRateService.convert(o.amount, from, 'RUB', rates);
   }
 
-  bool _isInvestOp(Operation o) {
-    if (o.categoryId == null) return false;
-    return _categories.any((c) => c.id == o.categoryId && c.icon == 'invest');
-  }
-
   double get monthIncome {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
     return _operations
-        .where((o) => o.type == 'income' && !o.isDeleted && !_isInvestOp(o) && _inPeriod(o.date, start, end))
+        .where((o) => o.type == 'income' && !o.isDeleted && _inPeriod(o.date, start, end))
         .fold(0.0, (s, o) => s + _amountInRub(o));
   }
   double get monthExpense {
@@ -348,7 +343,7 @@ class FinanceStore extends ChangeNotifier {
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
     return _operations
-        .where((o) => o.type == 'expense' && !o.isDeleted && !_isInvestOp(o) && _inPeriod(o.date, start, end))
+        .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
         .fold(0.0, (s, o) => s + _amountInRub(o));
   }
 
@@ -604,13 +599,10 @@ class FinanceStore extends ChangeNotifier {
     final curOps = _operations.where((o) => inRange(o, monthStart, monthEnd)).toList();
     final prevOps = _operations.where((o) => inRange(o, prevMonthStart, prevMonthEnd)).toList();
 
-    final investCats = _categories.where((c) => c.icon == 'invest').map((c) => c.id).toSet();
-    bool isInvest(Operation o) => o.categoryId != null && investCats.contains(o.categoryId);
-
     final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
-    final monthExpense = curOps.where((o) => o.type == 'expense' && !isInvest(o)).fold(0.0, (s, o) => s + o.amount);
+    final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
     final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
-    final prevExpense = prevOps.where((o) => o.type == 'expense' && !isInvest(o)).fold(0.0, (s, o) => s + o.amount);
+    final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
 
     String fmt(double v) => formatMoneyWhole(v, currency: 'RUB').replaceAll(' ₽', '');
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
@@ -648,7 +640,7 @@ class FinanceStore extends ChangeNotifier {
       double foodTotal = 0;
       double diningTotal = 0;
       int diningCount = 0;
-      for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && foodCats.contains(o.categoryId))) {
+      for (final o in curOps.where((o) => o.type == 'expense' && foodCats.contains(o.categoryId))) {
         final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
         if (cat != null && (cat.name.contains('кафе') || cat.name.contains('ресторан') || cat.name.contains('cafe') || cat.name.contains('restaurant'))) {
           diningTotal += o.amount;
@@ -690,7 +682,7 @@ class FinanceStore extends ChangeNotifier {
 
     // 3 — no budget for high-spend categories
     final topSpend = <String, double>{};
-    for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && o.categoryId != null)) {
+    for (final o in curOps.where((o) => o.type == 'expense' && o.categoryId != null)) {
       topSpend.update(o.categoryId!, (v) => v + o.amount, ifAbsent: () => o.amount);
     }
     final budgetedCats = _budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
@@ -718,7 +710,7 @@ class FinanceStore extends ChangeNotifier {
       c.name.contains('rent') || c.name.contains('housing') || c.name.contains('utility') || c.name.contains('mortgage')
     ).map((c) => c.id).toSet();
     double housingTotal = 0;
-    for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && housingCats.contains(o.categoryId))) {
+    for (final o in curOps.where((o) => o.type == 'expense' && housingCats.contains(o.categoryId))) {
       housingTotal += o.amount;
     }
     if (monthIncome > 0 && housingTotal > 0) {
@@ -949,7 +941,7 @@ class FinanceStore extends ChangeNotifier {
     // 15 — weekend splurge
     if (monthExpense > 0) {
       double weekendExp = 0;
-      for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o))) {
+      for (final o in curOps.where((o) => o.type == 'expense')) {
         final d = DateTime.tryParse(o.date);
         if (d != null && (d.weekday == 6 || d.weekday == 7)) weekendExp += o.amount;
       }
@@ -966,7 +958,7 @@ class FinanceStore extends ChangeNotifier {
     }
 
     // 16 — large cash withdrawal
-    for (final o in curOps.where((o) => o.type == 'expense' && !isInvest(o) && o.amount > _recPrefs.largeCashMin)) {
+    for (final o in curOps.where((o) => o.type == 'expense' && o.amount > _recPrefs.largeCashMin)) {
       final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
       final name = cat?.name ?? 'Без категории';
       _recommendations.add(Recommendation(
