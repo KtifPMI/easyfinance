@@ -130,7 +130,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             final completed = planned.any((e) => e.isAcceptedOn(ymd));
             final todayOnly = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
             if (completed) {
-              plannedColor = AppColors.transfer;
+              plannedColor = AppColors.success;
             } else if (date.isBefore(todayOnly)) {
               plannedColor = AppColors.danger;
             } else {
@@ -313,6 +313,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               if (isCompleted) ...[
                                 const SizedBox(width: 6),
                                 Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text('Подтверждено', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success)),
+                                ),
                               ] else if (isOverdue) ...[
                                 const SizedBox(width: 6),
                                 Text('• ${context.tr('calendar.overdue')}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.expense)),
