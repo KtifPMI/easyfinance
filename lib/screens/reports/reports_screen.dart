@@ -87,17 +87,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
         final opsInMonth = store.operations.where((o) => _inPeriod(o, store) && !o.isDeleted).toList();
-        final investCatIds = store.categories.where((c) => c.icon == 'invest').map((c) => c.id).toSet();
         double amtRub(o) {
           final acc = store.getAccount(o.accountId);
           final from = acc?.currency ?? o.currency;
           return CurrencyRateService.convert(o.amount, from, 'RUB', store.rates);
         }
-        final monthIncome = opsInMonth.where((o) => o.type == 'income' && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o));
-        final monthExpense = opsInMonth.where((o) => o.type == 'expense' && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o));
+        final monthIncome = opsInMonth.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + amtRub(o));
+        final monthExpense = opsInMonth.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + amtRub(o));
         final catTotals = store.categories
-            .where((c) => c.type == 'expense' && c.icon != 'invest')
-            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o))))
+            .where((c) => c.type == 'expense')
+            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + amtRub(o))))
             .where((e) => e.total > 0)
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));
@@ -113,8 +112,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         }
 
         final incomeCatTotals = store.categories
-            .where((c) => c.type == 'income' && !investCatIds.contains(c.id))
-            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id && !investCatIds.contains(o.categoryId)).fold<double>(0, (s, o) => s + amtRub(o))))
+            .where((c) => c.type == 'income')
+            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + amtRub(o))))
             .where((e) => e.total > 0)
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));
@@ -393,9 +392,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final acc = store.getAccount(o.accountId);
         return CurrencyRateService.convert(o.amount, acc?.currency ?? o.currency, 'RUB', store.rates);
       }
-      final inv = store.categories.where((c) => c.icon == 'invest').map((c) => c.id).toSet();
-      final inc = ops.where((o) => o.type == 'income' && !inv.contains(o.categoryId)).fold(0.0, (s, o) => s + amtRub(o));
-      final exp = ops.where((o) => o.type == 'expense' && !inv.contains(o.categoryId)).fold(0.0, (s, o) => s + amtRub(o));
+      final inc = ops.where((o) => o.type == 'income').fold(0.0, (s, o) => s + amtRub(o));
+      final exp = ops.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + amtRub(o));
       labels.add(context.tr('month.short.${m.month}'));
       income.add(inc);
       expense.add(exp);

@@ -18,6 +18,7 @@ import '../../utils/category_icons.dart';
 import '../../utils/planned_event_title.dart';
 import '../../components/common/simple_pie_chart.dart';
 import '../../store/planned_payment_store.dart';
+import '../../services/currency_rate_service.dart';
 import '../accounts/add_account_screen.dart';
 import '../accounts/accounts_screen.dart';
 import '../budget/plan_screen.dart';
@@ -726,33 +727,37 @@ class HomeScreen extends StatelessWidget {
   Widget _buildReportsSection(BuildContext context, FinanceStore store) {
     final now = DateTime.now();
     final monthOps = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, now)).toList();
-    final income = monthOps.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + o.amount);
-    final expense = monthOps.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + o.amount);
-    if (income == 0 && expense == 0) return const SizedBox.shrink();
-
-    final expenseOps = monthOps.where((o) => o.type == 'expense').toList();
-    final expenseCats = store.categories.where((c) => c.type == 'expense').toList();
-    final catById = {for (final c in expenseCats) c.id: c};
-    final byCat = <String, double>{};
-    double uncategorized = 0;
-    for (final o in expenseOps) {
-      final c = o.categoryId != null ? catById[o.categoryId] : null;
-      if (c != null) {
-        byCat[c.id] = (byCat[c.id] ?? 0) + o.amount;
-      } else {
-        uncategorized += o.amount;
-      }
+    double amtRub(o) {
+      final acc = store.getAccount(o.accountId);
+      final from = acc?.currency ?? o.currency;
+      return CurrencyRateService.convert(o.amount, from, 'RUB', store.rates);
     }
-    final catTotals = byCat.entries.map((e) => (category: catById[e.key]!, total: e.value)).toList()
+    final catTotals = store.categories
+        .where((c) => c.type == 'expense')
+        .map((c) => (category: c, total: monthOps.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + amtRub(o))))
+        .where((e) => e.total > 0)
+        .toList()
       ..sort((a, b) => b.total.compareTo(a.total));
 
-    final chartPalette = [AppColors.expense, const Color(0xFF1E88E5), AppColors.warning, const Color(0xFF8E24AA), const Color(0xFF00ACC1)];
+    if (catTotals.isEmpty) return const SizedBox.shrink();
+
+    final catExpense = catTotals.fold<double>(0, (s, e) => s + e.total);
+    final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
+    final palette = const [
+      Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00),
+      Color(0xFF8E24AA), Color(0xFF00ACC1), Color(0xFFF4511E), Color(0xFF3949AB),
+      Color(0xFFD81B60), Color(0xFF7CB342), Color(0xFF6D4C41), Color(0xFFC0CA33),
+      Color(0xFFFF7043), Color(0xFF26A69A), Color(0xFF5C6BC0), Color(0xFFAB47BC),
+    ];
     final chartSlices = <({String label, double value, Color color})>[];
-    for (int i = 0; i < catTotals.length && i < 5; i++) {
-      chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: chartPalette[i % chartPalette.length]));
+    for (int i = 0; i < catTotals.length && i < 6; i++) {
+      chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: palette[i % palette.length]));
     }
-    final otherTotal = (catTotals.length > 5 ? catTotals.skip(5).fold<double>(0, (s, e) => s + e.total) : 0.0) + uncategorized;
-    if (otherTotal > 0) chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: AppColors.textSecondary));
+    if (otherTotal > 0) {
+      chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: const Color(0xFF9E9E9E)));
+    }
+
+    final top = catTotals.take(6).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -771,31 +776,49 @@ class HomeScreen extends StatelessWidget {
         AppCard(
           child: Column(
             children: [
-              if (chartSlices.isNotEmpty) ...[
-                GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
-                  child: SimplePieChart(slices: chartSlices, size: 160, holeRadius: 0.55, showPercentages: true),
-                ),
-                const SizedBox(height: 8),
-                ...chartSlices.take(4).map((s) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
+              GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+                child: SimplePieChart(slices: chartSlices, size: 220, holeRadius: 0.5, showPercentages: true),
+              ),
+              const SizedBox(height: 12),
+              ...top.map((e) {
+                final percent = catExpense > 0 ? e.total / catExpense * 100 : 0.0;
+                final color = palette[top.indexOf(e) % palette.length];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/operations', arguments: {
-                      'categoryId': catTotals.where((c) => tCat(context, c.category.name) == s.label).firstOrNull?.category.id,
-                      'dateFrom': DateTime(now.year, now.month, 1).toIso8601String().substring(0, 10),
-                      'dateTo': DateTime(now.year, now.month + 1, 0).toIso8601String().substring(0, 10),
-                    }),
-                    child: Row(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen())),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(width: 10, height: 10, decoration: BoxDecoration(color: s.color, shape: BoxShape.circle)),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(s.label, style: TextStyle(fontSize: 13, color: AppColors.textFor(context)))),
-                        Text(store.fmt(s.value), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        Row(
+                          children: [
+                            Expanded(child: Text(tCat(context, e.category.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, color: AppColors.textFor(context)))),
+                            const SizedBox(width: 8),
+                            Text('${percent.round()}% · ${store.fmt(e.total)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: Container(height: 6, color: AppColors.borderFor(context), child: FractionallySizedBox(widthFactor: percent / 100, child: Container(color: color))),
+                        ),
                       ],
                     ),
                   ),
-                )),
-              ],
+                );
+              }),
+              if (otherTotal > 0)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(context.tr('reports.other'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+                      const SizedBox(width: 8),
+                      Text('${catExpense > 0 ? (otherTotal / catExpense * 100).round() : 0}% · ${store.fmt(otherTotal)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
