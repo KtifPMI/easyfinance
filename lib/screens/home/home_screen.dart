@@ -572,6 +572,10 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildGoalsSection(BuildContext context, FinanceStore store) {
     if (store.goals.isEmpty) return const SizedBox.shrink();
+    // Same balance resolution as the goal screen: sum the linked accounts'
+    // actual balances (falls back to stored currentAmount when no accounts are
+    // linked), so the home card matches the goal settings screen.
+    final balances = {for (final a in store.accounts) a.id: store.accountActualBalance(a)};
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -587,7 +591,8 @@ class HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ...store.goals.where((g) => !g.isCompleted).take(3).map((g) {
-          final percent = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100) : 0.0;
+          final bal = g.balanceFrom(balances);
+          final percent = g.targetAmount > 0 ? (bal / g.targetAmount * 100) : 0.0;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: GestureDetector(
@@ -606,7 +611,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   ProgressBar(percent: percent, color: _parseColor(g.color)),
-                  Text('${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                 ],
               ),
             ),

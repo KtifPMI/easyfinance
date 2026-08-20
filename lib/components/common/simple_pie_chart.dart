@@ -19,7 +19,13 @@ class SimplePieChart extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: _PiePainter(slices: slices, total: total, holeRadius: holeRadius, showPercentages: showPercentages),
+        painter: _PiePainter(
+          slices: slices,
+          total: total,
+          holeRadius: holeRadius,
+          showPercentages: showPercentages,
+          holeColor: AppColors.backgroundFor(context),
+        ),
       ),
     );
   }
@@ -30,8 +36,9 @@ class _PiePainter extends CustomPainter {
   final double total;
   final double holeRadius;
   final bool showPercentages;
+  final Color holeColor;
 
-  _PiePainter({required this.slices, required this.total, required this.holeRadius, this.showPercentages = false});
+  _PiePainter({required this.slices, required this.total, required this.holeRadius, this.showPercentages = false, required this.holeColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -51,7 +58,9 @@ class _PiePainter extends CustomPainter {
         final pct = (slice.value / total * 100).round();
         if (pct >= 5) {
           final midAngle = startAngle + sweepAngle / 2;
-          final labelRadius = radius * 0.7;
+          // Place the label in the inner part of the ring so it stays clear of
+          // the rim (and the bottom edge of the chart) and reads centered.
+          final labelRadius = radius * (holeRadius + (1 - holeRadius) * 0.28);
           final x = center.dx + labelRadius * cos(midAngle);
           final y = center.dy + labelRadius * sin(midAngle);
           final tp = TextPainter(
@@ -66,7 +75,7 @@ class _PiePainter extends CustomPainter {
     }
 
     final holePaint = Paint()
-      ..color = AppColors.background
+      ..color = holeColor
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius * holeRadius, holePaint);
   }
