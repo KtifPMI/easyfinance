@@ -62,7 +62,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, size: 14, color: AppColors.success),
+            Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.transfer, shape: BoxShape.circle)),
             const SizedBox(width: 6),
             Text(context.tr('calendar.legend_confirmed'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
           ],
@@ -130,7 +130,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             final completed = planned.any((e) => e.isAcceptedOn(ymd));
             final todayOnly = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
             if (completed) {
-              plannedColor = AppColors.success;
+              plannedColor = AppColors.transfer;
             } else if (date.isBefore(todayOnly)) {
               plannedColor = AppColors.danger;
             } else {
