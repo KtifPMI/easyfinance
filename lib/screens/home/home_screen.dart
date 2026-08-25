@@ -61,7 +61,6 @@ class HomeScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.cardFor(context),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderFor(context)),
                 ),
                 child: const Center(child: AppLogo(height: 26)),
               ),

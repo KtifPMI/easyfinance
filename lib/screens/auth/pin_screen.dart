@@ -4,6 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_logo.dart';
 import '../../services/notification_service.dart';
+import 'package:provider/provider.dart';
+import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 
 class PinScreen extends StatefulWidget {
@@ -28,19 +30,21 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   Future<void> _loadExistingPin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final pin = prefs.getString('easyfinance_pin');
+    final auth = context.read<FinanceStore>().authService;
+    final has = await auth.hasPin();
+    if (!mounted) return;
     setState(() {
-      _hasExistingPin = pin != null && pin.isNotEmpty;
-      _step = _hasExistingPin ? 0 : 1;
+      _hasExistingPin = has;
+      _step = has ? 0 : 1;
       _loading = false;
     });
   }
 
   Future<void> _verifyPin() async {
+    final auth = context.read<FinanceStore>().authService;
     final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString('easyfinance_pin') ?? '';
-    if (_pin == stored) {
+    final ok = await auth.verifyPin(_pin);
+    if (ok) {
       if (mounted) {
         final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
         Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
@@ -56,8 +60,9 @@ class _PinScreenState extends State<PinScreen> {
   }
 
   Future<void> _setNewPin() async {
+    final auth = context.read<FinanceStore>().authService;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('easyfinance_pin', _pin);
+    await auth.setPin(_pin);
     if (mounted) {
       final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
       Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
@@ -120,8 +125,8 @@ class _PinScreenState extends State<PinScreen> {
       ),
     );
     if (confirmed == true && mounted) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('easyfinance_pin');
+      final auth = context.read<FinanceStore>().authService;
+      await auth.clearPin();
       if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
     }
   }

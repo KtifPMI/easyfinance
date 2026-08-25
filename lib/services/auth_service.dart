@@ -20,6 +20,50 @@ class AuthService {
 
   bool get isAuthenticated => _apiClient.accessToken != null;
 
+  // --- PIN code (per-account) ---
+  static const String _legacyPinKey = 'easyfinance_pin';
+
+  String get _pinKey {
+    final uid = userId;
+    return (uid != null && uid.isNotEmpty) ? 'easyfinance_pin_$uid' : _legacyPinKey;
+  }
+
+  Future<bool> hasPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(_pinKey);
+    return v != null && v.isNotEmpty;
+  }
+
+  Future<bool> verifyPin(String pin) async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_pinKey);
+    return stored != null && stored == pin;
+  }
+
+  Future<void> setPin(String pin) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_pinKey, pin);
+  }
+
+  Future<void> clearPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_pinKey);
+  }
+
+  /// Moves the legacy global PIN into the current account's key (one-time).
+  Future<void> migrateLegacyPin() async {
+    final uid = userId;
+    if (uid == null || uid.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final legacy = prefs.getString(_legacyPinKey);
+    if (legacy == null || legacy.isEmpty) return;
+    final key = 'easyfinance_pin_$uid';
+    if (prefs.getString(key) == null) {
+      await prefs.setString(key, legacy);
+    }
+    await prefs.remove(_legacyPinKey);
+  }
+
   Future<bool> tryRestoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(_tokenKey);
@@ -34,6 +78,7 @@ class AuthService {
         _apiClient.setWebSession(webSession);
       }
       _apiService = ApiService(_apiClient);
+      await migrateLegacyPin();
       return true;
     }
     return false;
@@ -60,6 +105,7 @@ class AuthService {
     if (webSession != null && webSession.isNotEmpty) {
       await prefs.setString(_webSessionKey, webSession);
     }
+    await migrateLegacyPin();
   }
 
   Future<void> logout() async {

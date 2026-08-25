@@ -44,9 +44,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadPinStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final pin = prefs.getString('easyfinance_pin');
-    if (mounted) setState(() => _pinEnabled = pin != null && pin.isNotEmpty);
+    final has = await context.read<FinanceStore>().authService.hasPin();
+    if (mounted) setState(() => _pinEnabled = has);
   }
 
   Future<void> _loadKopeksStatus() async {
@@ -194,13 +193,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Switch(
               value: _pinEnabled,
               onChanged: (v) async {
-                final prefs = await SharedPreferences.getInstance();
                 if (!context.mounted) return;
                 if (v) {
                   if (!context.mounted) return;
                   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PinScreen()));
                 } else {
-                  await prefs.remove('easyfinance_pin');
+                  await context.read<FinanceStore>().authService.clearPin();
                 }
                 if (mounted) setState(() => _pinEnabled = v);
               },
