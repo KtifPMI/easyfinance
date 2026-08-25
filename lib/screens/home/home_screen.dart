@@ -489,11 +489,14 @@ class HomeScreen extends StatelessWidget {
       final cat = store.getCategory(b.categoryId);
       return cat == null || cat.type != 'income';
     }).toList();
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysPassed = now.day.clamp(1, daysInMonth);
     final totalPlanned = expenseBudgets.fold(0.0, (sum, b) => sum + b.limit);
     final totalSpent = store.monthExpense;
     final totalRemaining = totalPlanned - totalSpent;
-    final totalForecast = expenseBudgets.fold(0.0, (sum, b) => sum + getBudgetForecastPercent(b) * b.limit / 100);
-    final budgetForecastPct = totalPlanned > 0 ? (totalForecast / totalPlanned * 100) : 0.0;
+    final forecastedSpend = (daysPassed > 0 && totalSpent > 0) ? totalSpent / daysPassed * daysInMonth : 0.0;
+    final budgetForecastPct = totalPlanned > 0 ? (forecastedSpend / totalPlanned * 100) : 0.0;
     final forecastColor = budgetForecastColor(budgetForecastPct);
 
     return Column(
