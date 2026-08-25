@@ -183,8 +183,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(tCat(context, p.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-                    if (p.isDefault)
-                      Text(context.tr('categories.system'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
@@ -214,7 +212,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
   Widget _categoryTile(BuildContext context, FinanceStore store, cat.Category c, {bool indent = false}) {
     final icon = categoryIconFor(c, allCategories: store.categories);
     final color = c.type == 'income' ? AppColors.income : AppColors.expense;
-    final isSystem = c.isDefault;
 
     return Padding(
       padding: EdgeInsets.only(bottom: 6, left: indent ? 24 : 0),
@@ -239,8 +236,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    if (isSystem)
-                      Text(context.tr('categories.system'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
@@ -363,7 +358,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             (o) => o.logical == (type == 'income' ? 'other_income' : 'other_expense'),
             orElse: () => kDefaultCategoryIcons.first,
           );
-          final parent = parentId != null ? store.categories.where((p) => p.id == parentId).firstOrNull : null;
           return SizedBox(
             height: MediaQuery.of(ctx).size.height * 0.9,
             child: SingleChildScrollView(
@@ -408,9 +402,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 12),
                   if (parentId == null)
-                    _systemCategoryField(ctx, store, type, systemId, (v) => setInner(() => systemId = v))
-                  else
-                    _inheritedSystemField(ctx, parent),
+                    _systemCategoryField(ctx, store, type, systemId, (v) => setInner(() => systemId = v)),
                   const SizedBox(height: 16),
                   _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
                   const SizedBox(height: 16),
@@ -478,27 +470,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     );
   }
 
-  Widget _inheritedSystemField(BuildContext context, cat.Category? parent) {
-    final inheritedName = parent?.name ?? context.tr('categories.system_inherited');
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.cardFor(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderFor(context)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(context.tr('categories.system_category'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-          const SizedBox(height: 4),
-          Text('${context.tr('categories.system_inherited')}: $inheritedName', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
-        ],
-      ),
-    );
-  }
-
   void _showEditSheet(BuildContext context, FinanceStore store, cat.Category c) {
     final nameCtrl = TextEditingController(text: c.name);
     var type = c.type;
@@ -521,7 +492,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
             final cur = store.categories.where((x) => x.id == parentId).firstOrNull;
             if (cur != null) parentCats.add(cur);
           }
-          final parent = parentId != null ? store.categories.where((p) => p.id == parentId).firstOrNull : null;
           return SizedBox(
             height: MediaQuery.of(ctx).size.height * 0.9,
             child: SingleChildScrollView(
@@ -563,9 +533,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                   ),
                   const SizedBox(height: 12),
                   if (parentId == null)
-                    _systemCategoryField(ctx, store, type, systemId, (v) => setInner(() => systemId = v))
-                  else
-                    _inheritedSystemField(ctx, parent),
+                    _systemCategoryField(ctx, store, type, systemId, (v) => setInner(() => systemId = v)),
                   const SizedBox(height: 16),
                   _iconPicker(ctx, selectedIcon, (opt) => setInner(() => selectedIcon = opt)),
                   const SizedBox(height: 16),

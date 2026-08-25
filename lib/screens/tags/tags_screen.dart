@@ -93,6 +93,7 @@ class _TagsScreenState extends State<TagsScreen> {
             ? byName.values.toList()
             : byName.values.where((t) => t.name.toLowerCase().contains(_search.toLowerCase())).toList();
         tags.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        debugPrint('[TAGS] operations=${store.operations.length} catalog=${store.tags.length} result=${byName.length}');
 
         return ScreenScaffold(
           title: context.tr('tags.title'),
