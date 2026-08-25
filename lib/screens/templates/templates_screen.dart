@@ -38,7 +38,7 @@ class TemplatesScreen extends StatelessWidget {
                     leading: CircleAvatar(
                       backgroundColor: (t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense).withValues(alpha: 0.15),
                       child: Icon(
-                        t.type == 'income' ? Icons.trending_up : t.type == 'transfer' ? Icons.swap_horiz : Icons.trending_down,
+                        t.type == 'income' ? Icons.add_circle_outline : t.type == 'transfer' ? Icons.swap_horiz : Icons.remove_circle_outline,
                         color: t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense,
                         size: 20,
                       ),
@@ -144,12 +144,6 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        if (_accountId == null && store.accounts.isNotEmpty) _accountId ??= store.accounts.first.id;
-        if (_categoryId == null) {
-          final cats = store.categories.where((c) => c.type == _type).toList();
-          if (cats.isNotEmpty) _categoryId ??= cats.first.id;
-        }
-
         return ScreenScaffold(
           title: context.tr('templates.new'),
           showLogo: false,
@@ -160,11 +154,11 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    _typeBtn('expense', context.tr('operations.type_expense')),
+                    _typeBtn('expense', Icons.remove_circle_outline, context.tr('operations.type_expense')),
                     const SizedBox(width: 8),
-                    _typeBtn('income', context.tr('operations.type_income')),
+                    _typeBtn('income', Icons.add_circle_outline, context.tr('operations.type_income')),
                     const SizedBox(width: 8),
-                    _typeBtn('transfer', context.tr('operations.type_transfer')),
+                    _typeBtn('transfer', Icons.swap_horiz, context.tr('operations.type_transfer')),
                   ],
                 ),
                 const SizedBox(height: 16),

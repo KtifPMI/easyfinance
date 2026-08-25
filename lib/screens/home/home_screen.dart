@@ -55,9 +55,15 @@ class HomeScreen extends StatelessWidget {
           showLogo: false,
           titleWidget: Row(
             children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: AppLogo(height: 28),
+              Container(
+                height: 42,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.cardFor(context),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.borderFor(context)),
+                ),
+                child: const Center(child: AppLogo(height: 26)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -83,7 +89,7 @@ class HomeScreen extends StatelessWidget {
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child:                           const Icon(Icons.send, size: 16, color: Colors.white),
+                          child:                          const Icon(Icons.send, size: 16, color: Colors.white),
                         ),
                       ],
                     ),

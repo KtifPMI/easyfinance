@@ -369,9 +369,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           const SizedBox(height: 8),
           Row(
             children: [
-              _typeBtn('expense', Icons.trending_down, AppColors.expense, context.tr('planned_payments.expense')),
+              _typeBtn('expense', Icons.remove_circle_outline, AppColors.expense, context.tr('planned_payments.expense')),
               const SizedBox(width: 8),
-              _typeBtn('income', Icons.trending_up, AppColors.success, context.tr('planned_payments.income')),
+              _typeBtn('income', Icons.add_circle_outline, AppColors.success, context.tr('planned_payments.income')),
               const SizedBox(width: 8),
               _typeBtn('transfer', Icons.swap_horiz, AppColors.transfer, context.tr('planned_payments.transfer')),
             ],

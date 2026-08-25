@@ -2162,12 +2162,15 @@ class FinanceStore extends ChangeNotifier {
         final typeCode = t.type == 'expense' ? 0 : t.type == 'income' ? 1 : 2;
         final clientId = DateTime.now().millisecondsSinceEpoch.toString();
         final userId = authService.userId ?? '';
+        final catIcon = t.categoryId != null ? categories.where((c) => c.id == t.categoryId).firstOrNull?.icon : null;
+        final iconCode = catIcon ?? 'catimg1';
         final resp = await authService.apiService.addTemplate({
           'operationPatterns': [{
             'client_id': clientId,
             'user_id': userId,
             'name': t.name,
             'type': typeCode,
+            'icon': {'code': iconCode},
             'amount': t.amount.toStringAsFixed(2),
             if (t.accountId != null) 'account_id': t.accountId,
             if (t.categoryId != null) 'category_id': t.categoryId,
@@ -2304,9 +2307,12 @@ class FinanceStore extends ChangeNotifier {
         final typeCode = t.type == 'expense' ? 0 : t.type == 'income' ? 1 : 2;
         final clientId = DateTime.now().millisecondsSinceEpoch.toString();
         final userId = authService.userId ?? '';
+        final catIcon = t.categoryId != null ? categories.where((c) => c.id == t.categoryId).firstOrNull?.icon : null;
+        final iconCode = catIcon ?? 'catimg1';
         final resp = await authService.apiService.addTemplate({
           'operationPatterns': [{
             'client_id': clientId, 'user_id': userId, 'name': t.name, 'type': typeCode,
+            'icon': {'code': iconCode},
             'amount': t.amount.toStringAsFixed(2),
             if (t.accountId != null) 'account_id': t.accountId,
             if (t.categoryId != null) 'category_id': t.categoryId,

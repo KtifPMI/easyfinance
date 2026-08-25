@@ -425,9 +425,9 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             children: [
               Row(
                 children: [
-                  _typeBtn('expense', Icons.trending_down, AppColors.expense, context.tr('operations.type_expense')),
+                  _typeBtn('expense', Icons.remove_circle_outline, AppColors.expense, context.tr('operations.type_expense')),
                   const SizedBox(width: 8),
-                  _typeBtn('income', Icons.trending_up, AppColors.success, context.tr('operations.type_income')),
+                  _typeBtn('income', Icons.add_circle_outline, AppColors.success, context.tr('operations.type_income')),
                   const SizedBox(width: 8),
                   _typeBtn('transfer', Icons.swap_horiz, AppColors.transfer, context.tr('operations.type_transfer')),
                 ],
@@ -500,12 +500,14 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                       if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
                     }
                     cats.sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
+                    final frequentIds = cats.take(5).where((c) => (counts[c.id] ?? 0) > 0).map((c) => c.id).toSet();
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
                       title: context.tr('operations.category'),
                       items: cats.map((c) => c.id).toList(),
                       labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
                       groupBuilder: (id) {
+                        if (frequentIds.contains(id)) return context.tr('categories.popular');
                         final c = store.categories.firstWhere((c) => c.id == id);
                         if (c.parentId == null || c.parentId!.isEmpty) return '';
                         final parent = store.categories.where((p) => p.id == c.parentId);
@@ -678,7 +680,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             ),
             ...store.templates.map((t) => ListTile(
               leading: Icon(
-                t.type == 'income' ? Icons.trending_up : t.type == 'transfer' ? Icons.swap_horiz : Icons.trending_down,
+                t.type == 'income' ? Icons.add_circle_outline : t.type == 'transfer' ? Icons.swap_horiz : Icons.remove_circle_outline,
                 color: t.type == 'income' ? AppColors.income : t.type == 'transfer' ? AppColors.transfer : AppColors.expense,
               ),
               title: Text(t.name),

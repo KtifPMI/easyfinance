@@ -147,40 +147,30 @@ class _PinScreenState extends State<PinScreen> {
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Column(
-                    children: [
-                      const SizedBox(height: 24),
-                      const AppLogo(height: 48),
-                      const SizedBox(height: 20),
-                      Text(title, style: TextStyle(fontSize: 21, fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 32),
-                      _buildDots(),
-                      if (_error.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(_error, style: TextStyle(color: AppColors.expense, fontSize: 14)),
-                      ],
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      _buildKeypad(),
-                      const SizedBox(height: 16),
-                      if (_hasExistingPin && _step == 0)
-                        GestureDetector(
-                          onTap: _onForgotPin,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Text(
-                              context.tr('auth.forgot_pin'),
-                              style: TextStyle(color: AppColors.primary, fontSize: 14),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                  const SizedBox(height: 24),
+                  const AppLogo(height: 48),
+                  const SizedBox(height: 16),
+                  Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 28),
+                  _buildDots(),
+                  if (_error.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(_error, style: TextStyle(color: AppColors.expense, fontSize: 14)),
+                  ],
+                  const SizedBox(height: 28),
+                  _buildKeypad(),
+                  const SizedBox(height: 16),
+                  if (_hasExistingPin && _step == 0)
+                    GestureDetector(
+                      onTap: _onForgotPin,
+                      child: Text(
+                        context.tr('auth.forgot_pin'),
+                        style: TextStyle(color: AppColors.primary, fontSize: 14),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
