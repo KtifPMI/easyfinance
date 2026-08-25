@@ -19,6 +19,7 @@ class Operation {
   final bool isDeleted;
   final bool isPending;
   final String? clientId;
+  final String? updatedAt;
 
   Operation({
     required this.id,
@@ -35,6 +36,7 @@ class Operation {
     this.isDeleted = false,
     this.isPending = false,
     this.clientId,
+    this.updatedAt,
   });
 
   Operation copyWith({
@@ -45,6 +47,7 @@ class Operation {
     double? transferAmount,
     String? clientId,
     String? categoryId,
+    String? updatedAt,
   }) =>
       Operation(
         id: id ?? this.id,
@@ -61,6 +64,7 @@ class Operation {
         isDeleted: isDeleted ?? this.isDeleted,
         isPending: isPending ?? this.isPending,
         clientId: clientId ?? this.clientId,
+        updatedAt: updatedAt ?? this.updatedAt,
       );
 
   Map<String, dynamic> toJson() => {
@@ -70,6 +74,7 @@ class Operation {
     'date': date, 'account_id': accountId,
     'to_account_id': toAccountId, 'category_id': categoryId,
     'comment': comment, 'tags': tags, 'is_deleted': isDeleted, 'is_pending': isPending,
+    'updated_at': updatedAt,
     if (clientId != null) 'client_id': clientId,
   };
 
@@ -88,6 +93,7 @@ class Operation {
     isDeleted: json['is_deleted'] == true,
     isPending: json['is_pending'] == true,
     clientId: json['client_id']?.toString(),
+    updatedAt: json['updated_at']?.toString()?.replaceFirst(' ', 'T'),
   );
 
   factory Operation.fromJson(Map<String, dynamic> json) {
@@ -109,6 +115,7 @@ class Operation {
       tags: json['tags']?.toString(),
       isDeleted: json['deleted_at'] != null || json['state']?.toString() == '2',
       clientId: json['client_id']?.toString(),
+      updatedAt: (json['updated_at']?.toString() ?? json['changed_at']?.toString())?.replaceFirst(' ', 'T'),
     );
   }
 

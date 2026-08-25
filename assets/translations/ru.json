@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title": "EasyFinance",
 
   "tab.home": "Главная",
@@ -164,6 +164,8 @@
   "accounts.cancel": "Отмена",
 
   "operations.title": "Учёт",
+  "operations.sort_date": "По дате",
+  "operations.sort_updated": "Последние",
   "operations.all": "Все",
   "operations.income": "Доходы",
   "operations.expense": "Расходы",

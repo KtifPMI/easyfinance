@@ -1084,6 +1084,7 @@ class FinanceStore extends ChangeNotifier {
     } else {
       op = op.copyWith(isPending: true, clientId: clientId);
     }
+    op = op.copyWith(updatedAt: formatApiDateTime());
     _operations.insert(0, op);
     _recalcAccountBalances();
     _recalcBudgetSpent();
@@ -1218,7 +1219,7 @@ class FinanceStore extends ChangeNotifier {
     }
     final idx = _operations.indexWhere((o) => o.id == op.id);
     if (idx >= 0) {
-      _operations[idx] = op;
+      _operations[idx] = op.copyWith(updatedAt: formatApiDateTime());
     }
     _recalcAccountBalances();
     _recalcBudgetSpent();

@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title": "EasyFinance",
 
   "tab.home": "Home",
@@ -159,6 +159,8 @@
   "accounts.cancel": "Cancel",
 
   "operations.title": "Operations",
+  "operations.sort_date": "By date",
+  "operations.sort_updated": "Latest",
   "operations.all": "All",
   "operations.income": "Income",
   "operations.expense": "Expenses",

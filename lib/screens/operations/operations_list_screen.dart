@@ -28,6 +28,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   String? _advTagName;
   List<String> _advAccountIds = [];
   bool _sortByInputTime = false;
+  bool _sortByUpdated = false;
   String? _reportCategoryId;
 
   @override
@@ -35,7 +36,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Map<String, dynamic>) {
-      if (args['sort'] == 'date_desc') _sortByInputTime = false;
+      if (args['sort'] == 'date_desc') { _sortByInputTime = false; _sortByUpdated = false; }
       if (_reportCategoryId == null) {
         setState(() {
           _reportCategoryId = args['categoryId'] as String?;
@@ -120,7 +121,9 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           ops = ops.where((o) => store.getTagsForOperation(o).contains(_advTagName)).toList();
         }
 
-        if (_sortByInputTime) {
+        if (_sortByUpdated) {
+          ops.sort((a, b) => (b.updatedAt ?? b.date).compareTo(a.updatedAt ?? a.date));
+        } else if (_sortByInputTime) {
           ops.sort((a, b) => (b.clientId ?? '').compareTo(a.clientId ?? ''));
         } else {
           ops.sort((a, b) => b.date.compareTo(a.date));
@@ -147,6 +150,31 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 children: [
                   ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
               const SizedBox(height: 16),
+              Row(
+                children: [
+                  ChoiceChip(
+                    label: Text(context.tr('operations.sort_date')),
+                    selected: !_sortByUpdated,
+                    onSelected: (_) => setState(() => _sortByUpdated = false),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                  ),
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.update, size: 16, color: _sortByUpdated ? AppColors.primary : AppColors.textSecondaryFor(context)),
+                        const SizedBox(width: 4),
+                        Text(context.tr('operations.sort_updated')),
+                      ],
+                    ),
+                    selected: _sortByUpdated,
+                    onSelected: (_) => setState(() => _sortByUpdated = true),
+                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               if (_hasAdvFilter || _reportCategoryId != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -165,6 +193,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           _resetAdvFilter();
                           _reportCategoryId = null;
                           _sortByInputTime = false;
+                          _sortByUpdated = false;
                         }),
                         child: Text(context.tr('filters.reset'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
                       ),
@@ -173,7 +202,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                 ),
               if (ops.isEmpty && !_hasAdvFilter && _reportCategoryId == null)
                 Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
-              else if (_sortByInputTime)
+              else if (_sortByInputTime || _sortByUpdated)
                 _buildFlatList(context, store, ops)
               else
                 ...grouped.map((entry) => Column(

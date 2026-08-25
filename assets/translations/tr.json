@@ -1,4 +1,4 @@
-﻿{
+{
   "app.title": "EasyFinance",
 
   "tab.home": "Ana Sayfa",
@@ -144,6 +144,8 @@
   "accounts.cancel": "İptal",
 
   "operations.title": "İşlemler",
+  "operations.sort_date": "Tarihe göre",
+  "operations.sort_updated": "Son",
   "operations.all": "Tümü",
   "operations.income": "Gelirler",
   "operations.expense": "Giderler",
