@@ -93,13 +93,24 @@ class _TagsScreenState extends State<TagsScreen> {
             ? byName.values.toList()
             : byName.values.where((t) => t.name.toLowerCase().contains(_search.toLowerCase())).toList();
         tags.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-        debugPrint('[TAGS] operations=${store.operations.length} catalog=${store.tags.length} result=${byName.length}');
 
         return ScreenScaffold(
           title: context.tr('tags.title'),
           showLogo: false,
           child: Column(
             children: [
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.amber.withOpacity(0.25), borderRadius: BorderRadius.circular(8)),
+                child: Text(
+                  'DEBUG ops=${store.operations.length} cat=${store.tags.length} '
+                  'withTags=${store.operations.where((o) => store.getTagsForOperation(o).isNotEmpty).length} '
+                  'result=${byName.length} search="$_search"'
+                  '${store.operations.isNotEmpty ? "\nfirstOpTags=[${store.getTagsForOperation(store.operations.first).join(', ')}]" : ""}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: TextField(
