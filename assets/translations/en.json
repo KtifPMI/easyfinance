@@ -804,7 +804,25 @@
   "add_planned.repeat_until": "Repeat until a date",
   "add_planned.section_main": "Main",
   "add_planned.section_schedule": "Schedule",
-  "add_planned.section_extra": "Additional"
+  "add_planned.section_extra": "Additional",
+  "accounts.initial_balance": "Initial balance",
+  "calendar.cancel": "Cancel",
+  "calendar.confirm_operation": "Confirm operation",
+  "calendar.delete": "Delete",
+  "calendar.delete_payment": "Delete payment",
+  "home.profit": "Profit",
+  "operations.more": "More",
+  "operations.saved": "Operation saved",
+  "planned_payments.transfer": "Transfer",
+  "calendar.planned_operations": "Planned operations",
+  "calendar.actual_operations": "Actual operations",
+  "calendar.confirmed": "Confirmed",
+  "add_operation.by_data": "Based on:",
+  "add_operation.category_spend": "Category spending: {amount}",
+  "add_operation.category_budget_remaining": "Category budget left: {amount}",
+  "add_operation.total_budget_remaining": "Total budget left: {amount}",
+  "add_operation.account_remaining": "Account left: {amount}",
+  "add_operation.recent": "Recent"
 }
 
 

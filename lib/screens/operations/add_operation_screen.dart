@@ -283,13 +283,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       if (catId != null)
         Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 15)),
       const SizedBox(height: 12),
-      Text('По данным:', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+      Text('add_operation.by_data'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
       const SizedBox(height: 4),
-      Text('Расходы на категорию: ${store.fmt(catSpend)}', style: TextStyle(fontSize: 15)),
+      Text('add_operation.category_spend'.tr(namedArgs: {'amount': store.fmt(catSpend)}), style: TextStyle(fontSize: 15)),
       if (budget != null)
-        Text('Остаток по бюджету категории: ${store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}', style: TextStyle(fontSize: 15)),
-      Text('Всего остаток по бюджету: ${store.fmt(totalBudgetRemaining.clamp(0, double.infinity))}', style: TextStyle(fontSize: 15)),
-      Text('Остаток по счёту: ${store.fmt(accountRemaining)}', style: TextStyle(fontSize: 15)),
+        Text('add_operation.category_budget_remaining'.tr(namedArgs: {'amount': store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}), style: TextStyle(fontSize: 15)),
+      Text('add_operation.total_budget_remaining'.tr(namedArgs: {'amount': store.fmt(totalBudgetRemaining.clamp(0, double.infinity))}), style: TextStyle(fontSize: 15)),
+      Text('add_operation.account_remaining'.tr(namedArgs: {'amount': store.fmt(accountRemaining)}), style: TextStyle(fontSize: 15)),
       const SizedBox(height: 8),
       Container(
         padding: const EdgeInsets.all(10),
@@ -318,7 +318,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               Navigator.pop(ctx);
               Navigator.pushNamed(context, '/operations', arguments: {'sort': 'date_desc'});
             },
-            child: const Text('Последние'),
+            child: Text('add_operation.recent'.tr()),
           ),
           TextButton(
             onPressed: () {

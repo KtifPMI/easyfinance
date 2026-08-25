@@ -227,14 +227,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         if (plannedItems.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
-            child: Text('Плановые операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+            child: Text('calendar.planned_operations'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
           ),
           ...plannedItems.map((m) => _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime)),
         ],
         if (monthOps.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
-            child: Text('Фактические операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+            child: Text('calendar.actual_operations'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
           ),
           ...monthOps.map((op) => _operationTile(context, store, op)),
         ],
@@ -250,14 +250,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         if (ops.isEmpty && planned.isEmpty)
           Padding(padding: const EdgeInsets.only(top: 16), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
         if (planned.isNotEmpty) ...[
-          Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('Плановые операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
+          Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('calendar.planned_operations'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context)))),
           ...planned.map((e) => _plannedPaymentTile(context, store, e, occurrenceDate: _selectedDate)),
         ],
         if (ops.isNotEmpty) ...[
               if (planned.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 8, bottom: 4),
-                  child: Text('Фактические операции', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+            child: Text('calendar.actual_operations'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
                 ),
           ...ops.map((op) => _operationTile(context, store, op)),
         ],
@@ -315,7 +315,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 Icon(Icons.check_circle, size: 14, color: AppColors.success),
                                 const SizedBox(width: 4),
                                 Flexible(
-                                  child: Text('Подтверждено', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success)),
+                                  child: Text('calendar.confirmed'.tr(), maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success)),
                                 ),
                               ] else if (isOverdue) ...[
                                 const SizedBox(width: 6),
@@ -433,7 +433,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           else
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Подтверждено', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
+              child: Text('calendar.confirmed'.tr(), style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
             ),
           TextButton(
             onPressed: () => _confirmDeletePlanned(context, e, store),

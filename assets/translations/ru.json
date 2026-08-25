@@ -821,7 +821,16 @@
   "add_planned.repeat_until": "Повторить до даты",
   "add_planned.section_main": "Основное",
   "add_planned.section_schedule": "Расписание",
-  "add_planned.section_extra": "Дополнительно"
+  "add_planned.section_extra": "Дополнительно",
+  "calendar.planned_operations": "Плановые операции",
+  "calendar.actual_operations": "Фактические операции",
+  "calendar.confirmed": "Подтверждено",
+  "add_operation.by_data": "По данным:",
+  "add_operation.category_spend": "Расходы на категорию: {amount}",
+  "add_operation.category_budget_remaining": "Остаток по бюджету категории: {amount}",
+  "add_operation.total_budget_remaining": "Всего остаток по бюджету: {amount}",
+  "add_operation.account_remaining": "Остаток по счёту: {amount}",
+  "add_operation.recent": "Последние"
 }
 
 
