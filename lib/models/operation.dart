@@ -93,7 +93,7 @@ class Operation {
     isDeleted: json['is_deleted'] == true,
     isPending: json['is_pending'] == true,
     clientId: json['client_id']?.toString(),
-    updatedAt: json['updated_at']?.toString()?.replaceFirst(' ', 'T'),
+    updatedAt: json['updated_at'] == null ? null : json['updated_at'].toString().replaceFirst(' ', 'T'),
   );
 
   factory Operation.fromJson(Map<String, dynamic> json) {

@@ -202,7 +202,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
     );
   }
 
-  Widget _typeBtn(String type, String label) {
+  Widget _typeBtn(String type, IconData icon, String label) {
     final active = _type == type;
     return Expanded(
       child: GestureDetector(
@@ -214,10 +214,17 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: active ? AppColors.primary : AppColors.borderFor(context)),
           ),
-          child: Text(label, textAlign: TextAlign.center, style: TextStyle(
-            fontSize: 15, fontWeight: FontWeight.w600,
-            color: active ? Colors.white : AppColors.textFor(context),
-          )),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: active ? Colors.white : AppColors.textFor(context)),
+              const SizedBox(width: 6),
+              Text(label, textAlign: TextAlign.center, style: TextStyle(
+                fontSize: 15, fontWeight: FontWeight.w600,
+                color: active ? Colors.white : AppColors.textFor(context),
+              )),
+            ],
+          ),
         ),
       ),
     );
