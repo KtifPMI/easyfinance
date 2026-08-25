@@ -48,7 +48,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         return ScreenScaffold(
           title: context.tr('budget.title'),
           forceLogo: true,
-          onRefresh: () => store.fetchAllData(),
+          scrollable: false,
           floatingActionButton: FloatingActionButton(
             onPressed: () => _showAddChoice(context),
             child: const Icon(Icons.add),
@@ -103,11 +103,13 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
     final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (incomeBudgets.isNotEmpty || expenseBudgets.isNotEmpty) ...[
+    return RefreshIndicator(
+      onRefresh: () => store.fetchAllData(),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (incomeBudgets.isNotEmpty || expenseBudgets.isNotEmpty) ...[
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,6 +163,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           const SizedBox(height: 24),
         ],
       ),
+    ),
     );
   }
 
@@ -245,10 +248,12 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildGoalsTab(BuildContext context, FinanceStore store) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          ...store.goals.map((g) {
+    return RefreshIndicator(
+      onRefresh: () => store.fetchAllData(),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            ...store.goals.map((g) {
             final balances = {for (final a in store.accounts) a.id: store.accountActualBalance(a)};
             final bal = g.balanceFrom(balances);
             final achieved = g.achieved(balances);
@@ -298,6 +303,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           const SizedBox(height: 24),
         ],
       ),
+    ),
     );
   }
 

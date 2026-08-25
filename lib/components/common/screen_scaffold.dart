@@ -15,6 +15,7 @@ class ScreenScaffold extends StatelessWidget {
   final bool showLogo;
   final bool forceLogo;
   final Widget? titleWidget;
+  final bool scrollable;
 
   const ScreenScaffold({
     super.key,
@@ -27,6 +28,7 @@ class ScreenScaffold extends StatelessWidget {
     this.showLogo = true,
     this.forceLogo = false,
     this.titleWidget,
+    this.scrollable = true,
   });
 
   @override
@@ -147,6 +149,8 @@ class ScreenScaffold extends StatelessWidget {
   }
 
   Widget _buildBody() {
+    if (!scrollable) return child;
+
     final scrollable = SingleChildScrollView(
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
       child: child,
