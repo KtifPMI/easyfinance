@@ -76,26 +76,10 @@ class _TagsScreenState extends State<TagsScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        // Catalog tags synced with the server + tag names used on operations.
-        final catalog = store.tags;
-        final catalogLower = catalog.map((t) => t.name.toLowerCase()).toSet();
-        final opNames = <String>{};
-        for (final op in store.operations) {
-          for (final t in store.getTagsForOperation(op)) {
-            opNames.add(t);
-          }
-        }
-        final extra = opNames.where((n) => !catalogLower.contains(n.toLowerCase()));
-
-        final items = <Tag>[
-          ...catalog,
-          ...extra.map((n) => Tag(id: '', name: n)),
-        ];
-        items.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-
+        // Server catalog (tags.get) merged with tag names parsed directly from operations.
         final tags = _search.isEmpty
-            ? items
-            : items.where((t) => t.name.toLowerCase().contains(_search.toLowerCase())).toList();
+            ? store.allTags
+            : store.allTags.where((t) => t.name.toLowerCase().contains(_search.toLowerCase())).toList();
 
         return ScreenScaffold(
           title: context.tr('tags.title'),

@@ -2431,4 +2431,22 @@ class FinanceStore extends ChangeNotifier {
     if (op.tags == null || op.tags!.isEmpty) return [];
     return op.tags!.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
   }
+
+  /// All tags: server catalog (tags.get) merged with tag names used directly on operations.
+  List<Tag> get allTags {
+    final byName = <String, Tag>{};
+    for (final t in _tags) {
+      byName[t.name.toLowerCase()] = t;
+    }
+    for (final op in _operations) {
+      if (op.isDeleted) continue;
+      for (final name in getTagsForOperation(op)) {
+        final key = name.toLowerCase();
+        byName.putIfAbsent(key, () => Tag(id: '', name: name));
+      }
+    }
+    final list = byName.values.toList();
+    list.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return list;
+  }
 }
