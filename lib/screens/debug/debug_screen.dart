@@ -59,6 +59,7 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('targets.post', 'targets.post'),
     _MethodItem('targets.set', 'targets.set'),
     _MethodItem('tags.get', 'tags.get'),
+    _MethodItem('tags.post', 'tags.post'),
     _MethodItem('operationPatterns.get', 'operationPatterns.get'),
     _MethodItem('calendar.get', 'calendar.get'),
   ];
@@ -245,6 +246,19 @@ class _DebugScreenState extends State<DebugScreen> {
           "amount": 100000,
           "amount_done": 0,
           "end": "2026-12-31"
+        }
+      ]
+    }
+  }
+}''',
+    'tags.post': '''{
+  "request": {
+    "request_data": {
+      "tags": [
+        {
+          "text": "TAG_NAME",
+          "created_at": "DATE",
+          "updated_at": "DATE"
         }
       ]
     }
