@@ -2392,8 +2392,14 @@ class FinanceStore extends ChangeNotifier {
             }
           ],
         });
-        debugPrint('[TAGS][store.addTag] respKeys=${resp.keys} tagsLen=${(resp['tags'] as List?)?.length}');
-        final tags = resp['tags'] as List<dynamic>?;
+        final dynamic respData = resp;
+        List<dynamic>? tags;
+        if (respData is List) {
+          tags = respData;
+        } else if (respData is Map) {
+          tags = respData['tags'] as List<dynamic>?;
+        }
+        debugPrint('[TAGS][store.addTag] tagsLen=${tags?.length}');
         if (tags != null && tags.isNotEmpty) {
           final serverId = tags[0]['id']?.toString();
           if (serverId != null && serverId.isNotEmpty) {

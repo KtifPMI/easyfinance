@@ -256,6 +256,8 @@ class _DebugScreenState extends State<DebugScreen> {
     "request_data": {
       "tags": [
         {
+          "id": "TAG_ID",
+          "user_id": "USER_ID",
           "text": "TAG_NAME",
           "created_at": "DATE",
           "updated_at": "DATE"
