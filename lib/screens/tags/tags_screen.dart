@@ -113,35 +113,37 @@ class _TagsScreenState extends State<TagsScreen> {
                   onChanged: (v) => setState(() => _search = v),
                 ),
               ),
-              Expanded(
-                child: tags.isEmpty
-                    ? Center(child: Text(context.tr('tags.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))
-                    : ListView(
-                        children: tags.map((tag) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.cardFor(context),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ListTile(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              leading: CircleAvatar(
-                                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                                child: Icon(Icons.label, color: AppColors.primary, size: 20),
-                              ),
-                              title: Text('#${tag.name}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
-                              trailing: tag.id.isNotEmpty
-                                  ? IconButton(
-                                      icon: Icon(Icons.delete_outline, color: AppColors.expense, size: 20),
-                                      onPressed: () => _confirmDelete(context, store, tag),
-                                    )
-                                  : null,
-                            ),
-                          ),
-                        )).toList(),
+              if (tags.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: Center(child: Text(context.tr('tags.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
+                )
+              else
+                Column(
+                  children: tags.map((tag) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.cardFor(context),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-              ),
+                      child: ListTile(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                          child: Icon(Icons.label, color: AppColors.primary, size: 20),
+                        ),
+                        title: Text('#${tag.name}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                        trailing: tag.id.isNotEmpty
+                            ? IconButton(
+                                icon: Icon(Icons.delete_outline, color: AppColors.expense, size: 20),
+                                onPressed: () => _confirmDelete(context, store, tag),
+                              )
+                            : null,
+                      ),
+                    ),
+                  )).toList(),
+                ),
             ],
           ),
           floatingActionButton: FloatingActionButton(
