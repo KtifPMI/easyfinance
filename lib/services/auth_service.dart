@@ -33,7 +33,7 @@ class AuthService {
 
   String _hashPin(String pin, String salt) {
     final bytes = utf8.encode('$salt::$pin');
-    return sha256(bytes).toString();
+    return sha256.convert(bytes).toString();
   }
 
   String _newSalt() {
