@@ -65,15 +65,7 @@ class ApiService {
 
   Future<dynamic> addTag(Map<String, dynamic> body) async {
     print('[TAGS][POST] body=$body');
-    final userId = _client.userId;
-    final tagsInput = (body['tags'] as List?)?.map((t) {
-      final m = Map<String, dynamic>.from(t as Map);
-      m['user_id'] = userId ?? '';
-      m['id'] ??= '${userId ?? '0'}_${DateTime.now().microsecondsSinceEpoch}';
-      return m;
-    }).toList();
-    final finalBody = {'tags': tagsInput};
-    final json = await _client.post('tags.post', params: _writeParams(), body: {'request': {'request_data': finalBody}});
+    final json = await _client.post('tags.post', params: _writeParams(), body: {'request': {'request_data': body}});
     final s = json.toString();
     print('[TAGS][POST] respType=${json.runtimeType} resp=${s.length > 600 ? s.substring(0, 600) : s}');
     return json;

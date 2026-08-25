@@ -2382,22 +2382,19 @@ class FinanceStore extends ChangeNotifier {
     if (_tags.any((t) => t.name.toLowerCase() == tag.name.toLowerCase())) return;
     if (authService.isAuthenticated) {
       try {
-        final now = formatApiDateTime();
         final resp = await authService.apiService.addTag({
           'tags': [
             {
-              'text': tag.name,
-              'created_at': now,
-              'updated_at': now,
+              'name': tag.name,
             }
           ],
         });
         final dynamic respData = resp;
         List<dynamic>? tags;
         if (respData is List) {
-          tags = respData;
+          tags = respData; 
         } else if (respData is Map) {
-          tags = respData['tags'] as List<dynamic>?;
+          tags = (respData['tags'] ?? respData['data']) as List<dynamic>?;
         }
         debugPrint('[TAGS][store.addTag] tagsLen=${tags?.length}');
         if (tags != null && tags.isNotEmpty) {
@@ -2425,7 +2422,7 @@ class FinanceStore extends ChangeNotifier {
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
-        await authService.apiService.setTag({'id': id, 'text': tag.name, 'deleted_at': now}, tagId: id);
+        await authService.apiService.setTag({'id': id, 'name': tag.name, 'deleted_at': now}, tagId: id);
       } catch (e) {
         debugPrint('deleteTag error: $e');
       }
@@ -2456,17 +2453,20 @@ class FinanceStore extends ChangeNotifier {
     final pending = _tags.where((t) => t.id.isEmpty).toList();
     for (final t in pending) {
       try {
-        final now = formatApiDateTime();
         final resp = await authService.apiService.addTag({
           'tags': [
             {
-              'text': t.name,
-              'created_at': now,
-              'updated_at': now,
+              'name': t.name,
             }
           ],
         });
-        final tags = resp['tags'] as List<dynamic>?;
+        final dynamic respData = resp;
+        List<dynamic>? tags;
+        if (respData is List) {
+          tags = respData;
+        } else if (respData is Map) {
+          tags = (respData['tags'] ?? respData['data']) as List<dynamic>?;
+        }
         if (tags != null && tags.isNotEmpty) {
           final serverId = tags[0]['id']?.toString();
           if (serverId != null && serverId.isNotEmpty) {
