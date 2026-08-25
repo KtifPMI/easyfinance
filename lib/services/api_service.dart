@@ -54,6 +54,7 @@ class ApiService {
 
   Future<List<Tag>> getTags() async {
     final json = await _client.get('tags.get');
+    debugPrint('[TAGS][GET] keys=${json.keys} tagsLen=${(json['tags'] as List?)?.length}');
     return _parseList(json, 'tags', Tag.fromJson);
   }
 
@@ -63,7 +64,10 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> addTag(Map<String, dynamic> body) async {
+    debugPrint('[TAGS][POST] body=$body');
     final json = await _client.post('tags.post', params: _writeParams(), body: {'request': {'request_data': body}});
+    final s = json.toString();
+    debugPrint('[TAGS][POST] respKeys=${json.keys} resp=${s.length > 600 ? s.substring(0, 600) : s}');
     return json;
   }
 

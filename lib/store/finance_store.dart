@@ -2384,10 +2384,15 @@ class FinanceStore extends ChangeNotifier {
       try {
         final now = formatApiDateTime();
         final resp = await authService.apiService.addTag({
-          'text': tag.name,
-          'created_at': now,
-          'updated_at': now,
+          'tags': [
+            {
+              'text': tag.name,
+              'created_at': now,
+              'updated_at': now,
+            }
+          ],
         });
+        debugPrint('[TAGS][store.addTag] respKeys=${resp.keys} tagsLen=${(resp['tags'] as List?)?.length}');
         final tags = resp['tags'] as List<dynamic>?;
         if (tags != null && tags.isNotEmpty) {
           final serverId = tags[0]['id']?.toString();
@@ -2447,9 +2452,13 @@ class FinanceStore extends ChangeNotifier {
       try {
         final now = formatApiDateTime();
         final resp = await authService.apiService.addTag({
-          'text': t.name,
-          'created_at': now,
-          'updated_at': now,
+          'tags': [
+            {
+              'text': t.name,
+              'created_at': now,
+              'updated_at': now,
+            }
+          ],
         });
         final tags = resp['tags'] as List<dynamic>?;
         if (tags != null && tags.isNotEmpty) {
