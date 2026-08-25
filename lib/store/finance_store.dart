@@ -453,10 +453,17 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      _tags = await api.getTags();
+      final server = await api.getTags();
+      final localOnly = _tags.where((t) => t.id.isEmpty).toList();
+      final merged = <Tag>[...server];
+      for (final l in localOnly) {
+        if (!merged.any((t) => t.name.toLowerCase() == l.name.toLowerCase())) merged.add(l);
+      }
+      _tags = merged;
     } catch (e) {
       debugPrint('getTags error: $e');
     }
+    await _syncPendingTags();
 
     try {
       await _plannedPayments?.syncFromServer();
@@ -2431,6 +2438,33 @@ class FinanceStore extends ChangeNotifier {
     } catch (e) {
       debugPrint('refreshTags error: $e');
     }
+  }
+
+  Future<void> _syncPendingTags() async {
+    if (!authService.isAuthenticated) return;
+    final pending = _tags.where((t) => t.id.isEmpty).toList();
+    for (final t in pending) {
+      try {
+        final now = formatApiDateTime();
+        final resp = await authService.apiService.addTag({
+          'text': t.name,
+          'created_at': now,
+          'updated_at': now,
+        });
+        final tags = resp['tags'] as List<dynamic>?;
+        if (tags != null && tags.isNotEmpty) {
+          final serverId = tags[0]['id']?.toString();
+          if (serverId != null && serverId.isNotEmpty) {
+            final idx = _tags.indexWhere((x) => x.id.isEmpty && x.name.toLowerCase() == t.name.toLowerCase());
+            if (idx >= 0) _tags[idx] = Tag(id: serverId, name: t.name);
+          }
+        }
+      } catch (e) {
+        debugPrint('syncPendingTag error: $e');
+      }
+    }
+    await _saveCache();
+    notifyListeners();
   }
 
   List<String> getTagsForOperation(Operation op) {
