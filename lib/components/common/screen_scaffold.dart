@@ -151,7 +151,7 @@ class ScreenScaffold extends StatelessWidget {
   Widget _buildBody() {
     if (!scrollable) return child;
 
-    final scrollable = SingleChildScrollView(
+    final scrollView = SingleChildScrollView(
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
       child: child,
     );
@@ -159,10 +159,10 @@ class ScreenScaffold extends StatelessWidget {
     if (onRefresh != null) {
       return RefreshIndicator(
         onRefresh: onRefresh!,
-        child: scrollable,
+        child: scrollView,
       );
     }
 
-    return scrollable;
+    return scrollView;
   }
 }
