@@ -34,6 +34,9 @@ class FinanceStore extends ChangeNotifier {
   List<Recommendation> _recommendations = [];
   RecommendationPrefs _recPrefs = RecommendationPrefs();
   List<Tag> _tags = [];
+  final Set<String> _deletedTagNames = {};
+
+  bool isTagDeleted(String name) => _deletedTagNames.contains(name.toLowerCase());
   List<OperationTemplate> _templates = [];
   List<Map<String, dynamic>> _currencies = [];
   List<Map<String, dynamic>> _systemCategories = [];
@@ -119,6 +122,11 @@ class FinanceStore extends ChangeNotifier {
       final list = jsonDecode(tagsRaw) as List<dynamic>;
       _tags = list.map((e) => Tag.fromJson(e as Map<String, dynamic>)).toList();
     }
+    final deletedRaw = prefs.getString('easyfinance_deleted_tags');
+    if (deletedRaw != null) {
+      final list = jsonDecode(deletedRaw) as List<dynamic>;
+      _deletedTagNames.addAll(list.map((e) => e.toString().toLowerCase()));
+    }
     if (userRaw != null) {
       try { _currentUser = User.fromJson(jsonDecode(userRaw) as Map<String, dynamic>); } catch (_) {}
     }
@@ -156,6 +164,11 @@ class FinanceStore extends ChangeNotifier {
       await prefs.setString('easyfinance_cached_tags', jsonEncode(_tags.map((t) => t.toJson()).toList()));
     } else {
       await prefs.remove('easyfinance_cached_tags');
+    }
+    if (_deletedTagNames.isNotEmpty) {
+      await prefs.setString('easyfinance_deleted_tags', jsonEncode(_deletedTagNames.toList()));
+    } else {
+      await prefs.remove('easyfinance_deleted_tags');
     }
     if (_currentUser != null) {
       await prefs.setString('easyfinance_cached_user', jsonEncode(_currentUser!.toJson()));
@@ -2373,12 +2386,14 @@ class FinanceStore extends ChangeNotifier {
     final existing = _tags.map((t) => t.name.toLowerCase()).toSet();
     for (final name in names) {
       if (existing.contains(name.toLowerCase())) continue;
+      if (_deletedTagNames.contains(name.toLowerCase())) continue;
       existing.add(name.toLowerCase());
       await addTag(Tag(id: DateTime.now().microsecondsSinceEpoch.toRadixString(36), name: name));
     }
   }
 
   Future<void> addTag(Tag tag) async {
+    _deletedTagNames.remove(tag.name.toLowerCase());
     if (_tags.any((t) => t.name.toLowerCase() == tag.name.toLowerCase())) return;
     if (authService.isAuthenticated) {
       try {
@@ -2418,26 +2433,55 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteTag(String id) async {
     final tag = _tags.where((t) => t.id == id).firstOrNull;
-    if (tag == null) return;
+    final name = tag?.name ?? '';
+    if (name.isEmpty) return;
+
+    // Hide everywhere by name (server tags.get does NOT filter deleted_at).
+    _deletedTagNames.add(name.toLowerCase());
+
+    // Soft-delete on the server catalog (best-effort; harmless if ignored).
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
-        await authService.apiService.setTag({'id': id, 'name': tag.name, 'deleted_at': now}, tagId: id);
+        await authService.apiService.setTag({'id': id, 'name': name, 'deleted_at': now}, tagId: id);
       } catch (e) {
         debugPrint('deleteTag error: $e');
       }
     }
+
+    // Strip the tag name from every operation that references it.
+    for (final op in List<Operation>.from(_operations)) {
+      if (op.isDeleted) continue;
+      final names = getTagsForOperation(op);
+      if (!names.any((n) => n.toLowerCase() == name.toLowerCase())) continue;
+      final kept = names.where((n) => n.toLowerCase() != name.toLowerCase()).toList();
+      final newStr = _rebuildTagsString(op.tags, kept);
+      if (newStr == (op.tags ?? '')) continue;
+      try {
+        await updateOperation(op.copyWith(tags: newStr));
+      } catch (e) {
+        debugPrint('deleteTag strip op error: $e');
+      }
+    }
+
     _tags.removeWhere((t) => t.id == id);
     await _saveCache();
     notifyListeners();
+  }
+
+  String _rebuildTagsString(String? original, List<String> kept) {
+    final s = (original ?? '').trim();
+    if (s.startsWith('[')) return jsonEncode(kept);
+    return kept.join(',');
   }
 
   Future<void> refreshTags() async {
     try {
       final server = await authService.apiService.getTags();
       final localOnly = _tags.where((t) => t.id.isEmpty).toList();
-      final merged = <Tag>[...server];
+      final merged = <Tag>[...server.where((t) => !_deletedTagNames.contains(t.name.toLowerCase()))];
       for (final l in localOnly) {
+        if (_deletedTagNames.contains(l.name.toLowerCase())) continue;
         if (!merged.any((t) => t.name.toLowerCase() == l.name.toLowerCase())) merged.add(l);
       }
       _tags = merged;
@@ -2501,12 +2545,14 @@ class FinanceStore extends ChangeNotifier {
   List<Tag> get allTags {
     final byName = <String, Tag>{};
     for (final t in _tags) {
+      if (_deletedTagNames.contains(t.name.toLowerCase())) continue;
       byName[t.name.toLowerCase()] = t;
     }
     for (final op in _operations) {
       if (op.isDeleted) continue;
       for (final name in getTagsForOperation(op)) {
         final key = name.toLowerCase();
+        if (_deletedTagNames.contains(key)) continue;
         byName.putIfAbsent(key, () => Tag(id: '', name: name));
       }
     }
