@@ -53,8 +53,10 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
             onPressed: () => _showAddChoice(context),
             child: const Icon(Icons.add),
           ),
-          child: Column(
-            children: [
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
@@ -84,7 +86,8 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
               ),
             ],
           ),
-        );
+        ),
+      );
       },
     );
   }
