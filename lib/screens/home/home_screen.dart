@@ -155,7 +155,7 @@ class HomeScreen extends StatelessWidget {
             Row(children: [
               _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
               const SizedBox(width: 12),
-              _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense, align: CrossAxisAlignment.end),
+              _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense, align: CrossAxisAlignment.start),
             ]),
             const SizedBox(height: 8),
             _statLine(context.tr('home.profit'), store.fmt(savings), Colors.white),

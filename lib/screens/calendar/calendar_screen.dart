@@ -147,7 +147,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return Scaffold(
           backgroundColor: AppColors.backgroundFor(context),
           appBar: AppBar(
-            title: Text(context.tr('calendar.title')),
+            title: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(context.tr('calendar.title')),
+            ),
             centerTitle: true,
           ),
           floatingActionButton: FloatingActionButton(

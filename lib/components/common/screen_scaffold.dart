@@ -39,7 +39,9 @@ class ScreenScaffold extends StatelessWidget {
         automaticallyImplyLeading: false,
         centerTitle: false,
         titleSpacing: 0,
-        title: titleWidget ?? (hasTitle ? _buildTitle(context) : null),
+        title: titleWidget != null
+            ? Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: titleWidget)
+            : (hasTitle ? Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: _buildTitle(context)) : null),
       ),
       floatingActionButton: floatingActionButton,
       body: Stack(
