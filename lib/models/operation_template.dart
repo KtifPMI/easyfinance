@@ -11,6 +11,7 @@ class OperationTemplate {
   final String createdAt;
   final String updatedAt;
   final bool isPending;
+  final String? deletedAt;
 
   OperationTemplate({
     required this.id,
@@ -25,6 +26,7 @@ class OperationTemplate {
     this.createdAt = '',
     this.updatedAt = '',
     this.isPending = false,
+    this.deletedAt,
   });
 
   factory OperationTemplate.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class OperationTemplate {
       createdAt: json['created_at']?.toString() ?? '',
       updatedAt: json['updated_at']?.toString() ?? '',
       isPending: false,
+      deletedAt: json['deleted_at']?.toString(),
     );
   }
 
@@ -86,10 +89,13 @@ class OperationTemplate {
     'createdAt': createdAt,
     'updatedAt': updatedAt,
     'is_pending': isPending,
+    'deleted_at': deletedAt,
   };
 
-  OperationTemplate copyWith({String? id, String? name, String? type, double? amount, String? accountId, String? categoryId, String? toAccountId, String? comment, String? tags, String? createdAt, String? updatedAt, bool? isPending}) =>
-      OperationTemplate(id: id ?? this.id, name: name ?? this.name, type: type ?? this.type, amount: amount ?? this.amount, accountId: accountId ?? this.accountId, categoryId: categoryId ?? this.categoryId, toAccountId: toAccountId ?? this.toAccountId, comment: comment ?? this.comment, tags: tags ?? this.tags, createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt, isPending: isPending ?? this.isPending);
+  OperationTemplate copyWith({String? id, String? name, String? type, double? amount, String? accountId, String? categoryId, String? toAccountId, String? comment, String? tags, String? createdAt, String? updatedAt, bool? isPending, String? deletedAt}) =>
+      OperationTemplate(id: id ?? this.id, name: name ?? this.name, type: type ?? this.type, amount: amount ?? this.amount, accountId: accountId ?? this.accountId, categoryId: categoryId ?? this.categoryId, toAccountId: toAccountId ?? this.toAccountId, comment: comment ?? this.comment, tags: tags ?? this.tags, createdAt: createdAt ?? this.createdAt, updatedAt: updatedAt ?? this.updatedAt, isPending: isPending ?? this.isPending, deletedAt: deletedAt ?? this.deletedAt);
+
+  bool get isDeleted => deletedAt != null && deletedAt!.isNotEmpty && deletedAt != '0000-00-00 00:00:00';
 
   factory OperationTemplate.fromLocalJson(Map<String, dynamic> json) => OperationTemplate(
     id: json['id'] as String? ?? '',
@@ -104,5 +110,6 @@ class OperationTemplate {
     createdAt: json['createdAt'] as String? ?? '',
     updatedAt: json['updatedAt'] as String? ?? '',
     isPending: json['is_pending'] == true,
+    deletedAt: json['deleted_at'] as String?,
   );
 }

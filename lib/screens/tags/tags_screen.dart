@@ -53,23 +53,11 @@ class _TagsScreenState extends State<TagsScreen> {
   }
 
   Future<void> _confirmDelete(BuildContext context, FinanceStore store, Tag tag) async {
-    final confirmed = await showDialog<bool>(
+    await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(context.tr('tags.delete_title')),
-        content: Text(context.tr('tags.confirm_delete')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(context.tr('budget.cancel'))),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(context.tr('common.delete'), style: TextStyle(color: AppColors.expense)),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (ctx) => _TagDeleteDialog(tag: tag, store: store),
     );
-    if (confirmed == true && mounted) {
-      await store.deleteTag(tag.id);
-    }
   }
 
   @override
@@ -122,12 +110,10 @@ class _TagsScreenState extends State<TagsScreen> {
                           child: Icon(Icons.label, color: AppColors.primary, size: 20),
                         ),
                         title: Text('#${tag.name}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
-                        trailing: tag.id.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(Icons.delete_outline, color: AppColors.expense, size: 20),
-                                onPressed: () => _confirmDelete(context, store, tag),
-                              )
-                            : null,
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete_outline, color: AppColors.expense, size: 20),
+                          onPressed: () => _confirmDelete(context, store, tag),
+                        ),
                       ),
                     ),
                   )).toList(),
@@ -141,6 +127,73 @@ class _TagsScreenState extends State<TagsScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _TagDeleteDialog extends StatefulWidget {
+  final Tag tag;
+  final FinanceStore store;
+  const _TagDeleteDialog({required this.tag, required this.store});
+
+  @override
+  State<_TagDeleteDialog> createState() => _TagDeleteDialogState();
+}
+
+class _TagDeleteDialogState extends State<_TagDeleteDialog> {
+  String? _replacement;
+
+  @override
+  Widget build(BuildContext context) {
+    final store = widget.store;
+    final tag = widget.tag;
+    final hasOps = store.operationsUsingTag(tag.name).isNotEmpty;
+    final replacements = store.allTags.where((t) => t.name.toLowerCase() != tag.name.toLowerCase()).toList();
+    final message = hasOps
+        ? 'tags.confirm_delete_with_ops'.tr(args: [tag.name])
+        : 'tags.confirm_delete'.tr(args: [tag.name]);
+
+    return AlertDialog(
+      title: Text('tags.delete_title'.tr()),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(message),
+            const SizedBox(height: 16),
+            Text('tags.replace_with'.tr(), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String?>(
+              value: _replacement,
+              isExpanded: true,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: AppColors.cardFor(context),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              hint: Text('tags.replace_none'.tr()),
+              items: [
+                DropdownMenuItem<String?>(value: null, child: Text('tags.replace_none'.tr())),
+                ...replacements.map((t) => DropdownMenuItem<String?>(value: t.name, child: Text('#${t.name}'))),
+              ],
+              onChanged: (v) => setState(() => _replacement = v),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text('budget.cancel'.tr())),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            store.deleteTag(tag, replacementTagName: _replacement);
+          },
+          child: Text('common.delete'.tr(), style: TextStyle(color: AppColors.expense)),
+        ),
+      ],
     );
   }
 }

@@ -35,6 +35,7 @@ class FinanceStore extends ChangeNotifier {
   RecommendationPrefs _recPrefs = RecommendationPrefs();
   List<Tag> _tags = [];
   final Set<String> _deletedTagNames = {};
+  final Set<String> _deletedTemplateIds = {};
 
   bool isTagDeleted(String name) => _deletedTagNames.contains(name.toLowerCase());
   List<OperationTemplate> _templates = [];
@@ -487,7 +488,7 @@ class FinanceStore extends ChangeNotifier {
     try {
       final pendingTpl = _templates.where((t) => t.isPending).toList();
       final apiTemplates = await api.getTemplates();
-      _templates = apiTemplates;
+      _templates = apiTemplates.where((t) => !t.isDeleted && !_deletedTemplateIds.contains(t.id)).toList();
       final tplIds = _templates.map((t) => t.id).toSet();
       for (final p in pendingTpl) {
         if (!tplIds.contains(p.id)) _templates.add(p);
@@ -2236,6 +2237,11 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> deleteTemplate(String id) async {
     _error = null;
+    // Hide locally first so it disappears even if the server ignores/errors.
+    _deletedTemplateIds.add(id);
+    _templates.removeWhere((t) => t.id == id);
+    await _saveTemplates();
+    notifyListeners();
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -2244,15 +2250,10 @@ class FinanceStore extends ChangeNotifier {
         }, operationPatternId: id);
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
-        return;
       } catch (e) {
         _error = 'Ошибка удаления шаблона: $e'; notifyListeners();
-        return;
       }
     }
-    _templates.removeWhere((t) => t.id == id);
-    await _saveTemplates();
-    notifyListeners();
   }
 
   Future<void> syncPendingAccounts() async {
@@ -2360,6 +2361,7 @@ class FinanceStore extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final data = _templates.map((t) => t.toJson()).toList();
     await prefs.setString('easyfinance_templates', jsonEncode(data));
+    await prefs.setString('easyfinance_deleted_templates', jsonEncode(_deletedTemplateIds.toList()));
   }
 
   Future<void> _loadTemplates() async {
@@ -2369,6 +2371,11 @@ class FinanceStore extends ChangeNotifier {
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
         _templates = list.map((e) => OperationTemplate.fromLocalJson(e as Map<String, dynamic>)).toList();
+      }
+      final delRaw = prefs.getString('easyfinance_deleted_templates');
+      if (delRaw != null) {
+        final list = jsonDecode(delRaw) as List<dynamic>;
+        _deletedTemplateIds.addAll(list.map((e) => e.toString()));
       }
       notifyListeners();
     } catch (_) {
@@ -2431,40 +2438,53 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteTag(String id) async {
-    final tag = _tags.where((t) => t.id == id).firstOrNull;
-    final name = tag?.name ?? '';
+  List<Operation> operationsUsingTag(String name) {
+    final key = name.toLowerCase();
+    return _operations.where((op) => !op.isDeleted && getTagsForOperation(op).any((n) => n.toLowerCase() == key)).toList();
+  }
+
+  Future<void> deleteTag(Tag tag, {String? replacementTagName}) async {
+    final name = tag.name;
+    final key = name.toLowerCase();
     if (name.isEmpty) return;
 
-    // Hide everywhere by name (server tags.get does NOT filter deleted_at).
-    _deletedTagNames.add(name.toLowerCase());
+    String? repl = replacementTagName?.trim();
+    if (repl != null && (repl.isEmpty || repl.toLowerCase() == key)) repl = null;
+    final useRepl = repl != null;
 
-    // Soft-delete on the server catalog (best-effort; harmless if ignored).
-    if (authService.isAuthenticated) {
-      try {
-        final now = formatApiDateTime();
-        await authService.apiService.setTag({'id': id, 'name': name, 'deleted_at': now}, tagId: id);
-      } catch (e) {
-        debugPrint('deleteTag error: $e');
-      }
-    }
-
-    // Strip the tag name from every operation that references it.
+    // Reassign (or strip) the tag on every operation that references it.
     for (final op in List<Operation>.from(_operations)) {
       if (op.isDeleted) continue;
       final names = getTagsForOperation(op);
-      if (!names.any((n) => n.toLowerCase() == name.toLowerCase())) continue;
-      final kept = names.where((n) => n.toLowerCase() != name.toLowerCase()).toList();
+      if (!names.any((n) => n.toLowerCase() == key)) continue;
+      final kept = names.where((n) => n.toLowerCase() != key).toList();
+      if (useRepl) {
+        final r = repl!;
+        if (!kept.any((n) => n.toLowerCase() == r.toLowerCase())) kept.add(r);
+      }
       final newStr = _rebuildTagsString(op.tags, kept);
       if (newStr == (op.tags ?? '')) continue;
       try {
         await updateOperation(op.copyWith(tags: newStr));
       } catch (e) {
-        debugPrint('deleteTag strip op error: $e');
+        debugPrint('deleteTag reassign op error: $e');
       }
     }
 
-    _tags.removeWhere((t) => t.id == id);
+    // Hide everywhere by name (server tags.get may still return it).
+    _deletedTagNames.add(key);
+
+    // Soft-delete on the server catalog (best-effort; ignored if no real id).
+    if (authService.isAuthenticated && tag.id.isNotEmpty) {
+      try {
+        final now = formatApiDateTime();
+        await authService.apiService.setTag({'id': tag.id, 'name': name, 'deleted_at': now}, tagId: tag.id);
+      } catch (e) {
+        debugPrint('deleteTag server error: $e');
+      }
+    }
+
+    _tags.removeWhere((t) => t.id == tag.id || t.name.toLowerCase() == key);
     await _saveCache();
     notifyListeners();
   }
