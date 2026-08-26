@@ -31,7 +31,7 @@ class FinHealthCard extends StatelessWidget {
 
     final items = [
       ('health.status', Icons.favorite, indicators.finState, finColor, indicators.finStateTip),
-      ('health.money', Icons.currency_ruble, indicators.money, moneyColor, indicators.moneyTip),
+      ('health.money', Icons.attach_money, indicators.money, moneyColor, indicators.moneyTip),
       ('health.budget', Icons.bar_chart, indicators.budget, budgetColor, indicators.budgetTip),
       ('health.debts', Icons.account_balance, indicators.debt, debtColor, indicators.debtTip),
       ('health.savings', Icons.savings, indicators.income, incomeColor, indicators.incomeTip),

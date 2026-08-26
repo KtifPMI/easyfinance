@@ -6,6 +6,7 @@ import '../../models/operation.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
+import '../../services/currency_rate_service.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
 
@@ -33,7 +34,7 @@ class OperationDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _amountCard(context, op, cat),
+              _amountCard(context, op, store, cat),
               const SizedBox(height: 10),
               _detailCard(context, op, store, acc, toAcc),
               if (op.comment != null && op.comment!.isNotEmpty) ...[
@@ -53,12 +54,35 @@ class OperationDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _amountCard(BuildContext context, Operation op, dynamic cat) {
+  Widget _amountCard(BuildContext context, Operation op, FinanceStore store, dynamic cat) {
+    final display = store.displayCurrency;
+    final opCur = op.currency;
+    final displayStr = store.fmtOps(op.amount, fromCurrency: opCur);
+
+    final secondary = <Widget>[];
+    if (opCur != display) {
+      secondary.add(Text(
+        formatMoneyOps(op.amount, currency: opCur),
+        style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)),
+      ));
+    }
+    final userCurrencies = store.currencies
+        .map((c) => (c['code']?.toString() ?? '').toUpperCase())
+        .where((code) => code.isNotEmpty && code != display && code != opCur && store.rates.containsKey(code))
+        .toList();
+    for (final code in userCurrencies) {
+      final converted = CurrencyRateService.convert(op.amount, opCur, code, store.rates);
+      secondary.add(Text(
+        formatMoneyOps(converted, currency: code),
+        style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)),
+      ));
+    }
+
     return AppCard(
       child: Column(
         children: [
           Text(
-            formatMoneyOps(op.amount),
+            displayStr,
             style: TextStyle(
               fontSize: 35,
               fontWeight: FontWeight.w700,
@@ -70,6 +94,10 @@ class OperationDetailScreen extends StatelessWidget {
             tCat(context, cat?.name ?? ''),
             style: TextStyle(fontSize: 17, color: AppColors.textSecondaryFor(context)),
           ),
+          if (secondary.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ...secondary,
+          ],
         ],
       ),
     );
