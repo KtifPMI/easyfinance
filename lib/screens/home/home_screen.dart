@@ -57,6 +57,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               Container(
                 height: 42,
+                margin: const EdgeInsets.only(left: -8),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: AppColors.cardFor(context),
