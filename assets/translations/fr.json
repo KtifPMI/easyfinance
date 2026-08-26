@@ -747,5 +747,6 @@
   "planned_payments.transfer": "Virement",
   "tags.confirm_delete_with_ops": "Vous avez des opérations avec l'étiquette «%s». Êtes-vous sûr de vouloir la supprimer ?",
   "tags.replace_none": "Sans remplacement (retirer l'étiquette des opérations)",
-  "tags.replace_with": "Remplacer par l'étiquette :"
+  "tags.replace_with": "Remplacer par l'étiquette :",
+  "categories.all": "Toutes les catégories"
 }

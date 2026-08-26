@@ -70,29 +70,73 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
     if (q.isNotEmpty) {
       return cats.where((c) => tCat(context, c.name).toLowerCase().contains(q)).toList();
     }
+    return cats;
+  }
 
+  Map<String, int> _usageCounts() {
     final counts = <String, int>{};
     for (final op in widget.store.operations.where((o) => !o.isDeleted)) {
       if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
     }
-    cats.sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
-    return cats;
+    return counts;
   }
 
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredCategories();
+    final searching = _search.isNotEmpty;
+    final counts = _usageCounts();
 
-    final grouped = <String, List<dynamic>>{};
-    for (final c in filtered) {
-      String parentName = '';
-      if (c.parentId != null && c.parentId!.isNotEmpty) {
-        final parent = widget.store.categories.where((p) => p.id == c.parentId).firstOrNull;
-        if (parent != null) parentName = parent.name;
+    Widget sectionHeader(String text) => Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+      child: Text(text, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
+    );
+
+    List<Widget> tilesFor(List<dynamic> cats, {bool grouped = false}) {
+      if (!grouped) {
+        return cats.map((c) => _categoryTile(context, c)).toList();
       }
-      final key = parentName.isNotEmpty ? parentName : '-';
-      grouped.putIfAbsent(key, () => []);
-      grouped[key]!.add(c);
+      final groups = <String, List<dynamic>>{};
+      for (final c in cats) {
+        String parentName = '';
+        if (c.parentId != null && c.parentId!.isNotEmpty) {
+          final parent = widget.store.categories.where((p) => p.id == c.parentId).firstOrNull;
+          if (parent != null) parentName = parent.name;
+        }
+        final key = parentName.isNotEmpty ? parentName : '-';
+        groups.putIfAbsent(key, () => []);
+        groups[key]!.add(c);
+      }
+      final out = <Widget>[];
+      for (final entry in groups.entries) {
+        if (entry.key != '-') {
+          out.add(Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+          ));
+        }
+        out.addAll(entry.value.map((c) => _categoryTile(context, c)));
+      }
+      return out;
+    }
+
+    List<Widget> body;
+    if (searching) {
+      body = tilesFor(filtered, grouped: true);
+    } else {
+      final frequent = filtered.where((c) => (counts[c.id] ?? 0) > 0).toList()
+        ..sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
+      final rest = filtered.where((c) => (counts[c.id] ?? 0) == 0).toList();
+      body = <Widget>[];
+      if (frequent.isNotEmpty) {
+        body.add(sectionHeader(context.tr('categories.popular')));
+        body.addAll(tilesFor(frequent));
+        if (rest.isNotEmpty) body.add(const Divider(height: 1, indent: 16, endIndent: 16));
+      }
+      if (rest.isNotEmpty) {
+        body.add(sectionHeader(context.tr('categories.all')));
+        body.addAll(tilesFor(rest, grouped: true));
+      }
     }
 
     return DraggableScrollableSheet(
@@ -153,45 +197,34 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
           Expanded(
             child: ListView.builder(
               controller: scrollCtrl,
-              itemCount: grouped.entries.length,
-              itemBuilder: (_, i) {
-                final entry = grouped.entries.elementAt(i);
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (entry.key != '-')
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                        child: Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
-                      ),
-                    ...entry.value.map((c) {
-                      final catId = c.id as String;
-                      final catName = c.name as String;
-                      final catType = c.type as String;
-                      final color = catType == 'income' ? AppColors.income : AppColors.expense;
-                      final selected = widget.selectedId == catId;
-                      return ListTile(
-                        leading: Container(
-                          width: 36, height: 36,
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(categoryIconFor(c, allCategories: widget.store.categories), size: 18, color: color),
-                        ),
-                        title: Text(tCat(context, catName), style: TextStyle(fontSize: 15, fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
-                        trailing: selected ? Icon(Icons.check, color: AppColors.primary, size: 20) : null,
-                        onTap: () => Navigator.pop(context, catId),
-                        dense: true,
-                      );
-                    }),
-                  ],
-                );
-              },
+              itemCount: body.length,
+              itemBuilder: (_, i) => body[i],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _categoryTile(BuildContext context, dynamic c) {
+    final catId = c.id as String;
+    final catName = c.name as String;
+    final catType = c.type as String;
+    final color = catType == 'income' ? AppColors.income : AppColors.expense;
+    final selected = widget.selectedId == catId;
+    return ListTile(
+      leading: Container(
+        width: 36, height: 36,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(categoryIconFor(c, allCategories: widget.store.categories), size: 18, color: color),
+      ),
+      title: Text(tCat(context, catName), style: TextStyle(fontSize: 15, fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
+      trailing: selected ? Icon(Icons.check, color: AppColors.primary, size: 20) : null,
+      onTap: () => Navigator.pop(context, catId),
+      dense: true,
     );
   }
 }

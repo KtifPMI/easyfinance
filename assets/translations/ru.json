@@ -785,5 +785,6 @@
   "calendar.planned_operations": "Плановые операции",
   "tags.confirm_delete_with_ops": "У вас есть операции с тегом «%s». Вы уверены, что хотите его удалить?",
   "tags.replace_none": "Без замены (удалить тег из операций)",
-  "tags.replace_with": "Заменить на тег:"
+  "tags.replace_with": "Заменить на тег:",
+  "categories.all": "Все категории"
 }

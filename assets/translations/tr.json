@@ -734,5 +734,6 @@
   "planned_payments.transfer": "Transfer",
   "tags.confirm_delete_with_ops": "«%s» etiketiyle ilişkili işlemleriniz var. Silmek istediğinizden emin misiniz?",
   "tags.replace_none": "Değiştirme yok (etiketi işlemlerden kaldır)",
-  "tags.replace_with": "Şu etiketle değiştir:"
+  "tags.replace_with": "Şu etiketle değiştir:",
+  "categories.all": "Tüm kategoriler"
 }

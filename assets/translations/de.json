@@ -747,5 +747,6 @@
   "planned_payments.transfer": "Übertragung",
   "tags.confirm_delete_with_ops": "Sie haben Operationen mit dem Tag «%s». Sind Sie sicher, dass Sie ihn löschen möchten?",
   "tags.replace_none": "Ohne Ersetzung (Tag aus Operationen entfernen)",
-  "tags.replace_with": "Ersetzen durch Tag:"
+  "tags.replace_with": "Ersetzen durch Tag:",
+  "categories.all": "Alle Kategorien"
 }

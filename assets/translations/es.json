@@ -747,5 +747,6 @@
   "planned_payments.transfer": "Transferencia",
   "tags.confirm_delete_with_ops": "Tiene operaciones con la etiqueta «%s». ¿Está seguro de que desea eliminarla?",
   "tags.replace_none": "Sin reemplazo (eliminar etiqueta de las operaciones)",
-  "tags.replace_with": "Reemplazar por etiqueta:"
+  "tags.replace_with": "Reemplazar por etiqueta:",
+  "categories.all": "Todas las categorías"
 }

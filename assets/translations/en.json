@@ -784,5 +784,6 @@
   "planned_payments.transfer": "Transfer",
   "tags.confirm_delete_with_ops": "You have operations with the tag «%s». Are you sure you want to delete it?",
   "tags.replace_none": "No replacement (remove tag from operations)",
-  "tags.replace_with": "Replace with tag:"
+  "tags.replace_with": "Replace with tag:",
+  "categories.all": "All categories"
 }
