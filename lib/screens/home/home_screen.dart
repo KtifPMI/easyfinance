@@ -155,7 +155,7 @@ class HomeScreen extends StatelessWidget {
             Row(children: [
               _statLine(context.tr('home.income'), store.fmt(store.monthIncome), AppColors.success),
               const SizedBox(width: 12),
-              _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense, align: CrossAxisAlignment.start),
+              _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense, alignment: Alignment.centerRight),
             ]),
             const SizedBox(height: 8),
             _statLine(context.tr('home.profit'), store.fmt(savings), Colors.white),
@@ -165,14 +165,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _statLine(String label, String amount, Color color, {CrossAxisAlignment align = CrossAxisAlignment.start}) {
+  Widget _statLine(String label, String amount, Color color, {Alignment alignment = Alignment.centerLeft}) {
     return Expanded(
-      child: Column(crossAxisAlignment: align, children: [
-        Text(label, style: const TextStyle(color: Colors.white60, fontSize: 12)),
-        const SizedBox(height: 4),
-        Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-          child: Text(amount, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
-      ]),
+      child: Align(
+        alignment: alignment,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+          const SizedBox(height: 4),
+          Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
+            child: Text(amount, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
+        ]),
+      ),
     );
   }
 

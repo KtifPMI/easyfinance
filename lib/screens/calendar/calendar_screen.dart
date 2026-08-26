@@ -2,6 +2,7 @@
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
+import '../../components/common/screen_scaffold.dart';
 import '../../components/common/screen_hint.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
@@ -144,22 +145,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final selectedPlanned = _selectedDate != null ? (plannedByDate[_selectedDate] ?? <FinancialEvent>[]) : <FinancialEvent>[];
         final monthPlanned = _selectedDate == null ? _monthPlannedOccurrences(plannedStore) : <Map<String, dynamic>>[];
 
-        return Scaffold(
-          backgroundColor: AppColors.backgroundFor(context),
-          appBar: AppBar(
-            title: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(context.tr('calendar.title')),
-            ),
-            centerTitle: true,
-          ),
+        return ScreenScaffold(
+          title: context.tr('calendar.title'),
+          scrollable: false,
           floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: _selectedDate != null
                 ? {'date': _selectedDate!.toIso8601String().substring(0, 10)}
                 : null),
             child: const Icon(Icons.event),
           ),
-          body: Padding(
+          child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
