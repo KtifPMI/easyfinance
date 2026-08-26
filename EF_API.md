@@ -66,7 +66,7 @@
 
 ## Page 12
 
-12  API   EasyFinance.ru   Руководство   разработчика  Шаг(7)  После   получения   access_token,   приложению   следует   сохранить   его   значение   и  передавать   access_token   при   каждом   обращение   к   методам   работы   с   данными ,  которые   предоставляет API EasyFinance.ru. Для каждого пользователя выдается  свой   access_token,   который   является   идентификатором   сессии   пользователя.  Пример   получения   данных   пользователя:  https://api.easyfinance.ru/v2/ ?method=users.get&app_id=423004&  access_token=be6ef89965d58e56dec21acb9b62bdaa&&sig=hf94fh943fh349hf934hf93  4hf943hf34&sig=*подпись*
+12  API   EasyFinance.ru   Руководство   разработчика  Шаг(7)  После   получения   access_token,   приложению   следует   сохранить   его   значение   и  передавать   access_token   при   каждом   обращение   к   методам   работы   с   данными ,  которые   предоставляет API EasyFinance.ru. Для каждого пользователя выдается  свой   access_token,   который   является   идентификатором   сессии   пользователя.  Пример   получения   данных   пользователя:  https://api.easyfinance.ru/v2/ ?method=users.get&app_id=423004&  access_token=be6ef89965d58e56dec21acb9b62bdaa&sig=*подпись*
 
 ---
 
@@ -96,7 +96,7 @@
 
 ## Page 17
 
-17  API   EasyFinance.ru   Руководство   разработчика  параметры запроса.   Для  каждого запроса она будет  различаться в соответствии с  передаваемыми   параметрами  запроса.  app_id=3123742374234&response_type=code  Запрос   на   получение   счетов :  method=accounts.get&  app_id=423004&  access_token=be6ef89965d58e56dec21acb9b62  bda  Таблица.   Параметры   для   расчета   sig(цифровой   подписи).  12.1   Пример   расчета   sig:  Общая   формула   расчета:  sig=md5(secret_key.uid*.params)  *uid   –   передается,   если   запрос   требует   его   использование  Пример:  Запрос   на   получение   счетов   пользователя:  https://api.easyfinance.ru/v2/?method=accounts.get&app_id=423004&access_token=be6ef899  65d58e56dec21acb9b62bda  Параметр   sig   не   указан   и   API   EasyFinance.ru   вернет   ошибку.   Следует   добавить   sig.  Находим   параметры sig,   для данного   запроса:  Из URL мы получаем   params   :  method= accounts.get&app_id=423004&access_token=be6ef89965d58e56dec21acb9b62bda  Находим   идентификатор   пользователя:  uid   = 46732644  Из   настроек   учетной   записи   получаем   secret_key :  secret_key = hf78g6f6gf6467f7f77ff7f7f77f  Таким   образом,   формула   расчета   подписи   будет   выглядеть   так:  sig =md5( hf78g6f6gf6467f7f77ff7f7f77f 46732644 method=accounts.get&app_id=423004&ac  cess_token=be6ef89965d58e56dec21acb9b62bd)  В   результате   выполнения   алгоритма   хеширование   MD5   мы   получаем:  sig=b9cc2e5c047d54e96c74adbfa8d43abe
+17  API   EasyFinance.ru   Руководство   разработчика  параметры запроса.   Для  каждого запроса она будет  различаться в соответствии с  передаваемыми   параметрами  запроса.  app_id=3123742374234&response_type=code  Запрос   на   получение   счетов :  method=accounts.get&  app_id=423004&  access_token=be6ef89965d58e56dec21acb9b62  bda  Таблица.   Параметры   для   расчета   sig(цифровой   подписи).  12.1   Пример   расчета   sig:  Общая   формула   расчета:  sig=md5(secret_key + uid + params_string)  (конкатенация строк, без разделителей; uid опускается в запросах до получения access_token)  *uid   –   передается,   если   запрос   требует   его   использование  Пример:  Запрос   на   получение   счетов   пользователя:  https://api.easyfinance.ru/v2/?method=accounts.get&app_id=423004&access_token=be6ef899  65d58e56dec21acb9b62bda  Параметр   sig   не   указан   и   API   EasyFinance.ru   вернет   ошибку.   Следует   добавить   sig.  Находим   параметры sig,   для данного   запроса:  Из URL мы получаем   params   :  method= accounts.get&app_id=423004&access_token=be6ef89965d58e56dec21acb9b62bda  Находим   идентификатор   пользователя:  uid   = 46732644  Из   настроек   учетной   записи   получаем   secret_key :  secret_key = hf78g6f6gf6467f7f77ff7f7f77f  Таким   образом,   формула   расчета   подписи   будет   выглядеть   так:  sig =md5( hf78g6f6gf6467f7f77ff7f7f77f 46732644 method=accounts.get&app_id=423004&ac  cess_token=be6ef89965d58e56dec21acb9b62bd)  В   результате   выполнения   алгоритма   хеширование   MD5   мы   получаем:  sig=b9cc2e5c047d54e96c74adbfa8d43abe
 
 ---
 
@@ -488,3 +488,159 @@
 
 82  API   EasyFinance.ru   Руководство   разработчика  176   operationPattern_invalid_deleted_at   operationPattern   invalid   deleted_at  177   operationPattern_required_deleted_at   operationPattern   required   deleted_at  178   account_have_operations  account   can   not   be   deleted   because   it has  operations  179   category_have_operations  category   can not   be deleted   because   it   has  operations  27.2   Оплата   тарифа.  Таблица.   Список   ошибок.  На   сервисе EasyFinance.ru существует тарифная система, у каждого тарифа есть свои  возможности.   Изучите тарифную сетку   https://easyfinance.ru/my/profile/ #   .  Если   у   пользователя   будет   тариф,   на   котором   не   разрешено   использование   синхронизации  с   мобильным   приложение,   то   API   вернет   информативную   ошибку ,   и   пользователь   дальше  не   сможет   вести   работу на   мобильном   приложении. Мобильное приложение,   в свою  очередь,   должно   перенаправить   пользователя   на   страницу   оплаты   тарифа   -  https://easyfinance.ru/my/profile/ # .
 
+
+
+---
+
+## Дополнение к документации (методы, используемые мобильным приложением)
+
+Ниже описаны методы API v2, которые добавлены для мобильного приложения EasyFinance, но
+отсутствовали в основной части руководства. Все методы вызываются по адресу
+`https://api.easyfinance.ru/v2/` с обязательными параметрами `method`, `app_id`,
+`access_token` и подписью `sig` (см. раздел 12, формула уточнена в конце этого дополнения).
+POST-запросы на добавление/изменение дополнительно содержат параметр `transact_key`
+(ключ идемпотентности, см. раздел 9) и передают тело в формате JSON:
+`{"request": {"request_data": {...}}}`.
+
+### 27.1 Календарь / Планировщик (calendar.*)
+
+Планируемые (будущие) платежи и события. Событие может быть одноразовым или
+повторяющимся (серия разворачивается сервером в цепочку — chain).
+
+#### calendar.get
+**HTTP:** GET. Возвращает список запланированных событий.
+Параметры запроса: `from`, `to` (необязательно, фильтр по дате), `options`
+(например, `accepted` — вернуть только подтверждённые вхождения).
+Ответ: `{"response": {"response_data": {"calendar": [ ... ]}}}`.
+Поля события (snake_case, как возвращает сервер):
+- `id` — идентификатор события/операции;
+- `operation_id`, `chain_id` — id операции и цепочки (нужны для set/delete/accept);
+- `account_id`, `transfer_account_id` — счёт списания и счёт зачисления (для перевода);
+- `category_id` — категория;
+- `amount` — сумма;
+- `date` — дата (YYYY-MM-DD);
+- `time` — время (HH:MM:SS);
+- `comment` — комментарий (также используется как заголовок события);
+- `type` — тип: `0` — расход, `1` — доход, `2` — перевод;
+- `accepted` — подтверждено ли вхождение (0/1);
+- `every_day` — интервал повторения в днях: `1` (ежедневно), `7` (еженедельно),
+  `30` (ежемесячно), `90` (ежеквартально), `365` (ежегодно);
+- `repeat` — режим повторения: `"1"` — одноразовое; `"0"` — повторять до `date_end`;
+  иначе — число вхождений, которые сервер сгенерирует для цепочки;
+- `date_start`, `date_end` — начало и конец периода повторения;
+- `week_days` — маска дней недели (7 символов Пн..Вс, '1'/'0'), для еженедельного повтора;
+- `tags` — теги.
+
+#### calendar.post
+**HTTP:** POST. Создаёт запланированное событие (операцию + цепочку).
+Параметры запроса: `transact_key`.
+Тело: `{"request": {"request_data": { <объект события> }}}`, где объект содержит поля:
+`account_id`, `category_id`, `amount`, `date`, `time`, `comment`, `type` (0/1/2),
+`transfer_account_id`, `transfer_amount` (для перевода), `accepted` (0),
+`every_day` (для повторяющегося), `date_start`, `date_end`, `repeat`, `week_days`.
+Ответ содержит созданное событие в `calendar` с заполненными `id` и `chain_id`.
+
+#### calendar.set
+**HTTP:** POST. Обновляет запланированное событие.
+Параметры запроса: `transact_key`, `operation_id`, `chain_id`.
+Тело: `{"request": {"request_data": { <объект события> }}}` (те же поля, что у `calendar.post`).
+
+#### calendar.delete
+**HTTP:** POST. Удаляет запланированное событие.
+Параметры запроса: `transact_key`, `operation_id`, `chain_id`.
+Тело: `{"request": {"request_data": {}}}`.
+
+#### calendar.accept
+**HTTP:** POST. Подтверждает (принимает) конкретное вхождение повторяющегося события.
+Параметры запроса: `transact_key`, `operation_id` (id вхождения), `chain_id`.
+Тело: `{"request": {"request_data": {"date": "<YYYY-MM-DD>", "accepted": 1}}}`.
+
+### 27.2 Цели (targets.*)
+
+Финансовые цели (накопления).
+
+#### targets.get
+**HTTP:** GET. Возвращает список целей: `{"response": {"response_data": {"targets": [ ... ]}}}`.
+Поля цели:
+- `id` — уникальный идентификатор;
+- `title` — название;
+- `type` — тип (`0` — накопление);
+- `state` — состояние (`0` — активна);
+- `amount` — целевая сумма (строкой);
+- `amount_done` — накоплено (строкой);
+- `currency_id` — ID валюты (`1` — RUB);
+- `account_id` — счёт для накоплений;
+- `category_id` — ID категории (опционально);
+- `date_begin`, `date_end` — даты начала/завершения (YYYY-MM-DD);
+- `comment` — комментарий;
+- `photo`, `url` — фото/ссылка (опционально);
+- `visible` — видимость (`1` — видна, `0` — скрыта/удалена);
+- `close` — закрыта (`1`/`0`);
+- `done` — выполнена (`1`/`0`).
+Важно: сервер возвращает все цели, включая `visible=0`; клиент фильтрует скрытые самостоятельно.
+
+#### targets.post
+**HTTP:** POST. Создаёт цель.
+Параметры запроса: `transact_key`, `options` (например, `client`).
+Тело: `{"request": {"request_data": {"targets": [ { <поля цели> } ]}}}`.
+Обязательные поля: `title`, `amount` (строкой, с двумя знаками).
+Опционально: `amount_done` (по умолчанию `0.00`), `visible` (по умолчанию `1`),
+`currency_id` (по умолчанию `1`), `date_begin`, `date_end`, `account_id`.
+
+#### targets.set
+**HTTP:** POST. Обновляет цель.
+Параметры запроса: `transact_key`, `target_id`.
+Тело: `{"request": {"request_data": {"targets": [ {"id": "<target_id>", ...поля цели} ]}}}`.
+Важно: `id` цели передаётся дважды — в параметре `target_id` и внутри объекта
+`targets[].id`. Для скрытия/удаления цели достаточно передать
+`{"id": "<target_id>", "visible": "0"}`.
+
+### 27.3 Бюджет по категориям (budget.categories.*)
+
+Плановые суммы расходов по отдельным категориям (детализация общего бюджета `budget.get`).
+
+#### budget.categoriesget
+**HTTP:** GET. Возвращает список бюджетов по категориям:
+`{"response": {"response_data": {"budgets": [ ... ]}}}`.
+Поля элемента: `id`, `category_id` (к какой категории относится план),
+`planned` (плановая сумма на период, строкой), `spent` (фактически потрачено за период).
+
+#### budget.categoriespost
+**HTTP:** POST. Создаёт/устанавливает план по категории.
+Параметры запроса: `transact_key`, `options` (например, `client`).
+Тело: `{"request": {"request_data": {"category_id": "<id>", "planned": "<сумма>"}}}`.
+
+#### budget.categoriesset
+**HTTP:** POST. Изменяет план по категории.
+Параметры запроса: `transact_key`.
+Тело: `{"request": {"request_data": {"id": "<id плана>", "category_id": "<id>", "planned": "<сумма>"}}}`.
+
+### 27.4 Веб-эндпоинты (не по схеме method=)
+
+Часть функций реализована через сайт easyfinance.ru и требует сессионную cookie
+`PHPSESSID` (выдаётся при веб-логине, см. ниже). Они не используют подпись `sig`.
+
+- **Веб-логин:** `POST https://easyfinance.ru/login/` с телом `login`, `pass` →
+  в ответе cookie `PHPSESSID`.
+- **Получение событий календаря (сайт):** `GET https://easyfinance.ru/calendar/events/?responseMode=json`
+  (с cookie) → `{"result": [ ... ]}`.
+- **Создание события календаря (сайт):** `POST https://easyfinance.ru/calendar/add/?responseMode=json`
+  (с cookie, `Content-Type: application/x-www-form-urlencoded`).
+- **Удаление события календаря (сайт):** `POST https://easyfinance.ru/calendar/delete/?responseMode=json`
+  с телом `id`, `chain` (с cookie).
+- **Обратная связь:** `POST https://easyfinance.ru/feedback/add_message/?responseMode=json`
+  с телом `title`, `msg`, `email`.
+
+### Уточнение формулы подписи (раздел 12)
+
+Формула из раздела 12 записана как `sig=md5(secret_key.uid*.params)`. Это следует
+читать как конкатенацию (склейку) строк без разделителей, а не соединение через точку:
+
+- Для запросов, где ещё нет `uid` (получение `access_token`, регистрация):
+  `sig = md5(secret_key + params_string)`
+- Для всех остальных запросов (после получения `access_token` и `uid` пользователя):
+  `sig = md5(secret_key + uid + params_string)`
+
+где `params_string` — строка всех параметров запроса (без `sig`), значения которых
+URL-кодируются; порядок параметров влияет только на расчёт подписи. Пример из
+раздела 17 (страница 17) построен именно по этой формуле.
