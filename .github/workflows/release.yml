@@ -11,8 +11,6 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      PLAY_SA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
 
     steps:
       - uses: actions/checkout@v4
@@ -58,18 +56,3 @@ jobs:
             build/app/outputs/flutter-apk/*.apk
             build/app/outputs/bundle/release/*.aab
           body: 'Исправления и улучшения.'
-
-      # Опциональная авто-загрузка в Google Play. Срабатывает только если в
-      # настройках репозитория добавлен секрет PLAY_SERVICE_ACCOUNT_JSON
-      # (JSON service-аккаунта с доступом к Play Console). Иначе шаг пропускается,
-      # а готовый .aab уже лежит в GitHub-релизе для ручной заливки.
-      - name: Upload to Google Play (optional)
-        if: ${{ env.PLAY_SA != '' }}
-        continue-on-error: true
-        uses: r0adkll/upload-google-play@v1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.easyfinance.app
-          releaseFiles: build/app/outputs/bundle/release/*.aab
-          track: internal
-          status: draft
