@@ -519,12 +519,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                       title: context.tr('operations.category'),
                       items: cats.map((c) => c.id).toList(),
                       labelBuilder: (id) => tCat(context, store.categories.firstWhere((c) => c.id == id).name),
+                      orderedGroups: [context.tr('categories.popular'), context.tr('categories.main')],
                       groupBuilder: (id) {
                         if (frequentIds.contains(id)) return context.tr('categories.popular');
                         final c = store.categories.firstWhere((c) => c.id == id);
-                        if (c.parentId == null || c.parentId!.isEmpty) return '';
+                        if (c.parentId == null || c.parentId!.isEmpty || c.parentId == '0') return context.tr('categories.main');
                         final parent = store.categories.where((p) => p.id == c.parentId);
-                        return parent.isNotEmpty ? parent.first.name : '';
+                        return parent.isNotEmpty ? parent.first.name : context.tr('categories.main');
                       },
                       iconBuilder: (id) => categoryIconFor(store.categories.firstWhere((c) => c.id == id), allCategories: store.categories),
                       colorBuilder: (id) => _type == 'income' ? AppColors.income : AppColors.expense,

@@ -10,6 +10,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
   final String? Function(T)? subtitleBuilder;
   final IconData Function(T)? iconBuilder;
   final Color Function(T)? colorBuilder;
+  final List<String>? orderedGroups;
   final T? selectedId;
   final ValueChanged<T> onSelected;
 
@@ -22,6 +23,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
     this.subtitleBuilder,
     this.iconBuilder,
     this.colorBuilder,
+    this.orderedGroups,
     this.selectedId,
     required this.onSelected,
   });
@@ -35,6 +37,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
     String? Function(T)? subtitleBuilder,
     IconData Function(T)? iconBuilder,
     Color Function(T)? colorBuilder,
+    List<String>? orderedGroups,
     T? selectedId,
   }) {
     return showModalBottomSheet<T>(
@@ -54,6 +57,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
           subtitleBuilder: subtitleBuilder,
           iconBuilder: iconBuilder,
           colorBuilder: colorBuilder,
+          orderedGroups: orderedGroups,
           selectedId: selectedId,
           onSelected: (item) { Navigator.pop(ctx, item); },
         ),
@@ -83,6 +87,19 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
     for (final item in filtered) {
       final group = widget.groupBuilder?.call(item) ?? '';
       groups.putIfAbsent(group, () => []).add(item);
+    }
+
+    final entries = groups.entries.toList();
+    if (widget.orderedGroups != null) {
+      final order = widget.orderedGroups!;
+      int idx(String k) => order.indexOf(k);
+      entries.sort((a, b) {
+        final ia = idx(a.key), ib = idx(b.key);
+        if (ia == -1 && ib == -1) return a.key.compareTo(b.key);
+        if (ia == -1) return 1;
+        if (ib == -1) return -1;
+        return ia.compareTo(ib);
+      });
     }
 
     return Column(
@@ -117,15 +134,21 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: groups.entries.length,
+            itemCount: entries.length,
             itemBuilder: (ctx, gi) {
-              final entry = groups.entries.elementAt(gi);
+              final entry = entries[gi];
+              final isLast = gi == entries.length - 1;
               final hasHeader = entry.key.isNotEmpty;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: AppColors.textSecondaryFor(context).withValues(alpha: 0.35),
+                  ),
                   if (hasHeader) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
                     const SizedBox(height: 4),
                   ],
@@ -150,6 +173,12 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
                       onTap: () => widget.onSelected(item),
                     );
                   }),
+                  if (isLast)
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.textSecondaryFor(context).withValues(alpha: 0.35),
+                    ),
                 ],
               );
             },
