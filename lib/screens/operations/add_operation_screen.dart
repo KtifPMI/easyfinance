@@ -14,6 +14,7 @@ import '../../models/operation.dart';
 import '../../models/operation_template.dart';
 import '../../services/currency_rate_service.dart';
 import '../../utils/calc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AddOperationScreen extends StatefulWidget {
   final String? type;
@@ -380,11 +381,16 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             child: Text(context.tr('common.cancel')),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('https://easyfinance.ru/my/shop'), duration: const Duration(seconds: 5)),
-              );
+              final uri = Uri.parse('https://easyfinance.ru/my/shop');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('https://easyfinance.ru/my/shop'), duration: const Duration(seconds: 5)),
+                );
+              }
             },
             child: Text(context.tr('operations.upgrade_tariff'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),

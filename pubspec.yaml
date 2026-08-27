@@ -1,7 +1,7 @@
 name: easyfinance_app
 description: EasyFinance - personal finance management app
 publish_to: 'none'
-version: 1.37.131+131
+version: 1.37.132+132
 
 environment:
   sdk: '>=3.1.0 <4.0.0'
@@ -20,6 +20,7 @@ dependencies:
   http: ^1.2.1
   crypto: ^3.0.3
   webview_flutter: ^4.10.0
+  url_launcher: ^6.3.0
   easy_localization: ^3.0.7
   package_info_plus: ^8.1.0
   path_provider: ^2.1.5

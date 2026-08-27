@@ -1069,7 +1069,10 @@ class FinanceStore extends ChangeNotifier {
 
   Future<void> addOperation(Operation op) async {
     _error = null;
-    if (_operations.length >= 1000) {
+    // Лимит в 1000 операций распространяется только на бесплатный тариф.
+    // У пользователей с активным платным тарифом (isPremium) этого ограничения нет.
+    final isFreeUser = _currentUser == null || !_currentUser!.isPremium;
+    if (isFreeUser && _operations.length >= 1000) {
       _error = 'LIMIT';
       notifyListeners();
       return;
