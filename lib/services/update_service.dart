@@ -24,6 +24,7 @@ class UpdateService {
     try {
       final info = await PackageInfo.fromPlatform();
       final current = info.version.split('+').first;
+      final currentBuild = int.tryParse(info.buildNumber) ?? 0;
 
       final response = await http.get(
         Uri.parse(_apiUrl),
@@ -32,10 +33,21 @@ class UpdateService {
       if (response.statusCode != 200) return null;
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final tag = (data['tag_name'] as String?)?.replaceFirst('v', '').split('+').first ?? '';
+      final tagRaw = (data['tag_name'] as String?)?.replaceFirst('v', '') ?? '';
+      final tagParts = tagRaw.split('+');
+      final tag = tagParts.first;
       if (tag.isEmpty) return null;
 
-      if (!_isNewer(tag, current)) return null;
+      // Prefer comparing build numbers (monotonic, immune to versionName resets).
+      // Fall back to semantic versionName compare when build info is unavailable.
+      final latestBuild = tagParts.length > 1 ? (int.tryParse(tagParts.last) ?? 0) : 0;
+      final bool newer;
+      if (latestBuild > 0 && currentBuild > 0) {
+        newer = latestBuild > currentBuild;
+      } else {
+        newer = _isNewer(tag, current);
+      }
+      if (!newer) return null;
 
       final assets = data['assets'] as List? ?? [];
       Map<String, dynamic>? apkAsset;
