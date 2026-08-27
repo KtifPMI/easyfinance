@@ -681,6 +681,8 @@
   "home.money": "Nakit",
   "budget.forecast": "Tahmin",
   "categories.popular": "Popüler kategoriler",
+  "categories.main": "Kategoriler",
+  "categories.subcategories": "Alt kategoriler",
   "categories.parents": "Üst kategoriler",
   "common.cancel": "İptal",
   "common.no_results": "Sonuç bulunamadı",

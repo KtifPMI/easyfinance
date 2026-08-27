@@ -692,6 +692,8 @@
   "home.money": "Argent",
   "budget.forecast": "Prévision",
   "categories.popular": "Catégories populaires",
+  "categories.main": "Catégories",
+  "categories.subcategories": "Sous-catégories",
   "categories.parents": "Catégories parentes",
   "common.cancel": "Annuler",
   "common.no_results": "Aucun résultat",

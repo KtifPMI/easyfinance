@@ -120,25 +120,52 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
       return out;
     }
 
-    List<Widget> body;
+    List<Widget> body = <Widget>[];
+
+    void addSection(String title, List<dynamic> items, bool grouped) {
+      body.add(Divider(
+        height: 1,
+        thickness: 1,
+        indent: 16,
+        endIndent: 16,
+        color: AppColors.textSecondaryFor(context).withValues(alpha: 0.2),
+      ));
+      body.add(sectionHeader(title));
+      body.addAll(tilesFor(items, grouped: grouped));
+    }
+
     if (searching) {
-      body = tilesFor(filtered, grouped: true);
+      body.addAll(tilesFor(filtered, grouped: true));
     } else {
       final frequent = filtered
           .where((c) => (counts[c.id] ?? 0) > 0 && !c.isDefault)
           .toList()
         ..sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
       if (frequent.length > 5) frequent.length = 5;
-      final rest = filtered.where((c) => (counts[c.id] ?? 0) == 0).toList();
-      body = <Widget>[];
-      if (frequent.isNotEmpty) {
-        body.add(sectionHeader(context.tr('categories.popular')));
-        body.addAll(tilesFor(frequent));
-        if (rest.isNotEmpty) body.add(const Divider(height: 1, indent: 16, endIndent: 16));
-      }
-      if (rest.isNotEmpty) {
-        body.add(sectionHeader(context.tr('categories.all')));
-        body.addAll(tilesFor(rest, grouped: true));
+      final popularIds = <String>{for (final c in frequent) c.id as String};
+
+      final rest = filtered.where((c) => !popularIds.contains(c.id as String)).toList();
+      final parents = rest.where((c) {
+        final pid = c.parentId as String?;
+        return pid == null || pid.isEmpty;
+      }).toList();
+      final children = rest.where((c) {
+        final pid = c.parentId as String?;
+        return pid != null && pid.isNotEmpty;
+      }).toList();
+
+      if (frequent.isNotEmpty) addSection(context.tr('categories.popular'), frequent, false);
+      if (parents.isNotEmpty) addSection(context.tr('categories.main'), parents, false);
+      if (children.isNotEmpty) addSection(context.tr('categories.subcategories'), children, true);
+
+      if (body.isNotEmpty) {
+        body.add(Divider(
+          height: 1,
+          thickness: 1,
+          indent: 16,
+          endIndent: 16,
+          color: AppColors.textSecondaryFor(context).withValues(alpha: 0.2),
+        ));
       }
     }
 

@@ -692,6 +692,8 @@
   "home.money": "Dinero",
   "budget.forecast": "Pronóstico",
   "categories.popular": "Categorías populares",
+  "categories.main": "Categorías",
+  "categories.subcategories": "Subcategorías",
   "categories.parents": "Categorías principales",
   "common.cancel": "Cancelar",
   "common.no_results": "Nada encontrado",

@@ -729,6 +729,8 @@
   "home.money": "Money",
   "budget.forecast": "Forecast",
   "categories.popular": "Popular categories",
+  "categories.main": "Categories",
+  "categories.subcategories": "Subcategories",
   "categories.parents": "Parent categories",
   "common.cancel": "Cancel",
   "common.no_results": "Nothing found",

@@ -201,6 +201,8 @@
   "operations.use_template": "Использовать шаблон",
   "categories.title": "Категории",
   "categories.popular": "Популярные категории",
+  "categories.main": "Категории",
+  "categories.subcategories": "Подкатегории",
   "categories.parents": "Родительские категории",
   "categories.incomes": "Доходы",
   "categories.expenses": "Расходы",
