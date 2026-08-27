@@ -177,6 +177,7 @@ class UpdateService {
       return;
     }
     if (!context.mounted) return;
+    final info = update;
 
     showDialog(
       context: context,
@@ -186,7 +187,7 @@ class UpdateService {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('update.new_version', namedArgs: {'version': update.version}), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(context.tr('update.new_version', namedArgs: {'version': info.version}), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(context.tr('update.whats_new'), style: const TextStyle(fontSize: 14)),
           ],
@@ -196,7 +197,7 @@ class UpdateService {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _downloadWithProgress(context, update.downloadUrl);
+              _downloadWithProgress(context, info.downloadUrl);
             },
             child: Text(context.tr('update.update_now')),
           ),
