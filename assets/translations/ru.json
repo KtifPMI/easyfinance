@@ -647,6 +647,7 @@
   "goal_cat.debt_card": "Карта (долг)",
   "goal_cat.debt_other": "Прочий долг",
   "update.latest_version": "У вас последняя версия",
+  "update.check_failed": "Не удалось проверить обновление (возможно, лимит GitHub). Повторите позже",
   "update.available": "Доступно обновление",
   "update.new_version": "Новая версия: {version}",
   "update.later": "Позже",

@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/theme.dart';
 
 class UpdateInfo {
@@ -20,53 +21,102 @@ class UpdateService {
   static const _repo = 'KtifPMI/easyfinance';
   static const _apiUrl = 'https://api.github.com/repos/$_repo/releases/latest';
 
-  static Future<UpdateInfo?> check() async {
+  static const _cacheKey = 'update_cache_v1';
+  static const _ttl = Duration(minutes: 15);
+
+  static Future<UpdateInfo?> check({bool force = false}) async {
+    if (!force) {
+      final cached = await _readCache();
+      if (cached != null) return cached;
+    }
     try {
-      final info = await PackageInfo.fromPlatform();
-      final current = info.version.split('+').first;
-      final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+      final result = await _fetch();
+      await _writeCache(result);
+      return result;
+    } catch (_) {
+      rethrow;
+    }
+  }
 
-      final response = await http.get(
-        Uri.parse(_apiUrl),
-        headers: {'Accept': 'application/vnd.github.v3+json'},
-      ).timeout(const Duration(seconds: 10));
-      if (response.statusCode != 200) return null;
+  static Future<UpdateInfo?> _fetch() async {
+    final info = await PackageInfo.fromPlatform();
+    final current = info.version.split('+').first;
+    final currentBuild = int.tryParse(info.buildNumber) ?? 0;
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final tagRaw = (data['tag_name'] as String?)?.replaceFirst('v', '') ?? '';
-      final tagParts = tagRaw.split('+');
-      final tag = tagParts.first;
-      if (tag.isEmpty) return null;
+    final response = await http.get(
+      Uri.parse(_apiUrl),
+      headers: {'Accept': 'application/vnd.github.v3+json'},
+    ).timeout(const Duration(seconds: 10));
+    if (response.statusCode != 200) throw Exception('http ${response.statusCode}');
 
-      // Prefer comparing build numbers (monotonic, immune to versionName resets).
-      // Fall back to semantic versionName compare when build info is unavailable.
-      final latestBuild = tagParts.length > 1 ? (int.tryParse(tagParts.last) ?? 0) : 0;
-      final bool newer;
-      if (latestBuild > 0 && currentBuild > 0) {
-        newer = latestBuild > currentBuild;
-      } else {
-        newer = _isNewer(tag, current);
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final tagRaw = (data['tag_name'] as String?)?.replaceFirst('v', '') ?? '';
+    final tagParts = tagRaw.split('+');
+    final tag = tagParts.first;
+    if (tag.isEmpty) return null;
+
+    // Prefer comparing build numbers (monotonic, immune to versionName resets).
+    // Fall back to semantic versionName compare when build info is unavailable.
+    final latestBuild = tagParts.length > 1 ? (int.tryParse(tagParts.last) ?? 0) : 0;
+    final bool newer;
+    if (latestBuild > 0 && currentBuild > 0) {
+      newer = latestBuild > currentBuild;
+    } else {
+      newer = _isNewer(tag, current);
+    }
+    if (!newer) return null;
+
+    final assets = data['assets'] as List? ?? [];
+    Map<String, dynamic>? apkAsset;
+    for (final a in assets) {
+      if ((a['name'] as String?)?.endsWith('.apk') == true) {
+        apkAsset = a as Map<String, dynamic>;
+        break;
       }
-      if (!newer) return null;
+    }
+    if (apkAsset == null) return null;
 
-      final assets = data['assets'] as List? ?? [];
-      Map<String, dynamic>? apkAsset;
-      for (final a in assets) {
-        if ((a['name'] as String?)?.endsWith('.apk') == true) {
-          apkAsset = a as Map<String, dynamic>;
-          break;
-        }
-      }
-      if (apkAsset == null) return null;
+    return UpdateInfo(
+      version: tag,
+      downloadUrl: apkAsset['browser_download_url'] as String,
+      changelog: data['body'] as String?,
+    );
+  }
 
+  static Future<UpdateInfo?> _readCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_cacheKey);
+      if (raw == null) return null;
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      final ts = map['ts'] as int?;
+      if (ts == null) return null;
+      if (DateTime.now().millisecondsSinceEpoch - ts > _ttl.inMilliseconds) return null;
+      if ((map['hasUpdate'] as bool? ?? false) != true) return null;
       return UpdateInfo(
-        version: tag,
-        downloadUrl: apkAsset['browser_download_url'] as String,
-        changelog: data['body'] as String?,
+        version: map['version'] as String,
+        downloadUrl: map['url'] as String,
+        changelog: map['changelog'] as String?,
       );
     } catch (_) {
       return null;
     }
+  }
+
+  static Future<void> _writeCache(UpdateInfo? info) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = <String, dynamic>{
+        'ts': DateTime.now().millisecondsSinceEpoch,
+        'hasUpdate': info != null,
+      };
+      if (info != null) {
+        map['version'] = info.version;
+        map['url'] = info.downloadUrl;
+        map['changelog'] = info.changelog;
+      }
+      await prefs.setString(_cacheKey, jsonEncode(map));
+    } catch (_) {}
   }
 
   static bool _isNewer(String latest, String current) {
@@ -106,10 +156,20 @@ class UpdateService {
     await OpenFilex.open(file.path);
   }
 
-  static Future<void> checkAndShow(BuildContext context, {bool showLatest = false}) async {
-    final update = await check();
+  static Future<void> checkAndShow(BuildContext context, {bool showLatest = false, bool force = false}) async {
+    UpdateInfo? update;
+    bool errored = false;
+    try {
+      update = await check(force: force);
+    } catch (_) {
+      errored = true;
+    }
     if (update == null) {
-      if (showLatest && context.mounted) {
+      if (errored && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.tr('update.check_failed')), backgroundColor: Colors.orange, duration: const Duration(seconds: 2)),
+        );
+      } else if (showLatest && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.tr('update.latest_version')), backgroundColor: AppColors.success, duration: const Duration(seconds: 2)),
         );

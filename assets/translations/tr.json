@@ -697,6 +697,7 @@
   "templates.save_as_template": "Şablon olarak kaydet?",
   "templates.save_as_template_desc": "Bu işlemi hızlı tekrarlama için şablon olarak kaydedebilirsiniz.",
   "update.latest_version": "En son sürümü kullanıyorsunuz",
+  "update.check_failed": "Güncelleme kontrol edilemedi (GitHub limiti?). Daha sonra tekrar deneyin",
   "health.money": "Nakit",
   "budget.warning_fmt": "«{name}»: bütçe tahmini %{pct}. Harcamaları azaltın.",
   "filters.recent": "Son işlemler",

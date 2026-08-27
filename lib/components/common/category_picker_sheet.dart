@@ -128,7 +128,7 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
         thickness: 1,
         indent: 16,
         endIndent: 16,
-        color: AppColors.textSecondaryFor(context).withValues(alpha: 0.2),
+        color: AppColors.textSecondaryFor(context).withValues(alpha: 0.35),
       ));
       body.add(sectionHeader(title));
       body.addAll(tilesFor(items, grouped: grouped));
@@ -147,11 +147,11 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
       final rest = filtered.where((c) => !popularIds.contains(c.id as String)).toList();
       final parents = rest.where((c) {
         final pid = c.parentId as String?;
-        return pid == null || pid.isEmpty;
+        return pid == null || pid.isEmpty || pid == '0';
       }).toList();
       final children = rest.where((c) {
         final pid = c.parentId as String?;
-        return pid != null && pid.isNotEmpty;
+        return pid != null && pid.isNotEmpty && pid != '0';
       }).toList();
 
       if (frequent.isNotEmpty) addSection(context.tr('categories.popular'), frequent, false);
@@ -164,7 +164,7 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
           thickness: 1,
           indent: 16,
           endIndent: 16,
-          color: AppColors.textSecondaryFor(context).withValues(alpha: 0.2),
+          color: AppColors.textSecondaryFor(context).withValues(alpha: 0.35),
         ));
       }
     }

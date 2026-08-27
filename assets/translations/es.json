@@ -708,6 +708,7 @@
   "templates.save_as_template": "¿Guardar como plantilla?",
   "templates.save_as_template_desc": "Puede guardar esta operación como plantilla para repetición rápida.",
   "update.latest_version": "Tiene la última versión",
+  "update.check_failed": "No se pudo comprobar la actualización (¿límite de GitHub?). Inténtelo más tarde",
   "health.money": "Dinero",
   "budget.warning_fmt": "«{name}»: pronóstico {pct}% del presupuesto. Reduzca los gastos.",
   "filters.recent": "Recientes",

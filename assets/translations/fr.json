@@ -708,6 +708,7 @@
   "templates.save_as_template": "Enregistrer comme modèle ?",
   "templates.save_as_template_desc": "Vous pouvez enregistrer cette opération comme modèle pour une répétition rapide.",
   "update.latest_version": "Vous avez la dernière version",
+  "update.check_failed": "Impossible de vérifier la mise à jour (limite GitHub ?). Réessayez plus tard",
   "health.money": "Argent",
   "budget.warning_fmt": "«{name}» : prévision {pct}% du budget. Réduisez les dépenses.",
   "filters.recent": "Récents",

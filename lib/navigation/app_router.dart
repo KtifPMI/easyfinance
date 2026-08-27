@@ -11,6 +11,8 @@ import '../screens/operations/scan_receipt_screen.dart';
 import '../screens/accounts/accounts_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/recommendations/recommendations_screen.dart';
+import '../screens/planned_payments/add_planned_payment_screen.dart';
+import '../../models/financial_event.dart';
 import 'tab_router.dart';
 
 class AppRouter {
@@ -31,6 +33,7 @@ class AppRouter {
   static const String calendar = '/calendar';
   static const String settings = '/settings';
   static const String recommendations = '/recommendations';
+  static const String addPlannedPayment = '/add-planned-payment';
 
   static const Map<String, int> tabIndexes = {
     main: 0,
@@ -73,6 +76,11 @@ class AppRouter {
         tab = args['tab'] as int;
       }
       page = MainTabs(initialIndex: tab);
+    } else if (name == addPlannedPayment) {
+      final args = settings.arguments;
+      final existing = args is FinancialEvent ? args : null;
+      final presetDate = args is Map ? (args['date'] as String?) : null;
+      page = AddPlannedPaymentScreen(existing: existing, presetDate: presetDate);
     }
     if (page != null) {
       return PageRouteBuilder(

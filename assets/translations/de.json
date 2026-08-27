@@ -708,6 +708,7 @@
   "templates.save_as_template": "Als Vorlage speichern?",
   "templates.save_as_template_desc": "Sie können diese Operation als Vorlage für schnelle Wiederholung speichern.",
   "update.latest_version": "Sie haben die neueste Version",
+  "update.check_failed": "Updateprüfung fehlgeschlagen (GitHub-Limit?). Später erneut versuchen",
   "health.money": "Geld",
   "budget.warning_fmt": "„{name}“: Prognose {pct}% des Budgets. Reduzieren Sie die Ausgaben.",
   "filters.recent": "Zuletzt",

@@ -745,6 +745,7 @@
   "templates.save_as_template": "Save as template?",
   "templates.save_as_template_desc": "You can save this operation as a template for quick repetition in the future.",
   "update.latest_version": "You have the latest version",
+  "update.check_failed": "Could not check for updates (GitHub rate limit?). Try again later",
   "health.money": "Money",
   "budget.warning_fmt": "«{name}»: forecast {pct}% of budget. Reduce spending in this category.",
   "filters.recent": "Recent",

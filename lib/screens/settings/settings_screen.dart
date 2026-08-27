@@ -82,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: AppCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: InkWell(
-                onTap: () => UpdateService.checkAndShow(context, showLatest: true),
+                onTap: () => UpdateService.checkAndShow(context, showLatest: true, force: true),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
