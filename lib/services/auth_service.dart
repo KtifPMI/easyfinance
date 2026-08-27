@@ -2,16 +2,22 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_client.dart';
 import 'api_service.dart';
 
 class AuthService {
   final ApiClient _apiClient;
+
+  // Encrypted storage (Android Keystore / iOS Keychain).
+  // Holds only the session secrets; appId/secretKey come from AppConfig at runtime.
+  final FlutterSecureStorage _secure = const FlutterSecureStorage();
   static const String _tokenKey = 'easyfinance_access_token';
   static const String _userIdKey = 'easyfinance_user_id';
-  static const String _appIdKey = 'easyfinance_app_id';
-  static const String _secretKeyKey = 'easyfinance_secret_key';
   static const String _webSessionKey = 'easyfinance_web_session';
+  // Legacy plaintext SharedPreferences keys (one-time migration only).
+  static const String _legacyAppIdKey = 'easyfinance_app_id';
+  static const String _legacySecretKeyKey = 'easyfinance_secret_key';
 
   AuthService(this._apiClient);
 
@@ -85,15 +91,30 @@ class AuthService {
   }
 
   Future<bool> tryRestoreSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(_tokenKey);
-    final userId = prefs.getString(_userIdKey);
-    final appId = prefs.getString(_appIdKey);
-    final secretKey = prefs.getString(_secretKeyKey);
+    String? token = await _secure.read(key: _tokenKey);
+    String? userId = await _secure.read(key: _userIdKey);
+    String? webSession = await _secure.read(key: _webSessionKey);
 
-    if (token != null && appId != null && secretKey != null) {
+    if (token == null) {
+      // One-time migration from plaintext SharedPreferences.
+      final prefs = await SharedPreferences.getInstance();
+      token = prefs.getString(_tokenKey);
+      userId = prefs.getString(_userIdKey);
+      webSession = prefs.getString(_webSessionKey);
+      if (token != null) {
+        await _secure.write(key: _tokenKey, value: token);
+        if (userId != null) await _secure.write(key: _userIdKey, value: userId);
+        if (webSession != null) await _secure.write(key: _webSessionKey, value: webSession);
+        await prefs.remove(_tokenKey);
+        await prefs.remove(_userIdKey);
+        await prefs.remove(_webSessionKey);
+        await prefs.remove(_legacyAppIdKey);
+        await prefs.remove(_legacySecretKeyKey);
+      }
+    }
+
+    if (token != null && token.isNotEmpty) {
       _apiClient.setAuth(accessToken: token, userId: userId);
-      final webSession = prefs.getString(_webSessionKey);
       if (webSession != null && webSession.isNotEmpty) {
         _apiClient.setWebSession(webSession);
       }
@@ -117,13 +138,12 @@ class AuthService {
     }
     _apiService = ApiService(_apiClient);
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, accessToken);
-    if (userId != null) await prefs.setString(_userIdKey, userId);
-    await prefs.setString(_appIdKey, appId);
-    await prefs.setString(_secretKeyKey, secretKey);
+    await _secure.write(key: _tokenKey, value: accessToken);
+    if (userId != null) await _secure.write(key: _userIdKey, value: userId);
     if (webSession != null && webSession.isNotEmpty) {
-      await prefs.setString(_webSessionKey, webSession);
+      await _secure.write(key: _webSessionKey, value: webSession);
+    } else {
+      await _secure.delete(key: _webSessionKey);
     }
     await migrateLegacyPin();
   }
@@ -131,11 +151,14 @@ class AuthService {
   Future<void> logout() async {
     _apiClient.clearAuth();
     _apiService = null;
+    await _secure.delete(key: _tokenKey);
+    await _secure.delete(key: _userIdKey);
+    await _secure.delete(key: _webSessionKey);
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
-    await prefs.remove(_appIdKey);
-    await prefs.remove(_secretKeyKey);
     await prefs.remove(_webSessionKey);
+    await prefs.remove(_legacyAppIdKey);
+    await prefs.remove(_legacySecretKeyKey);
   }
 }

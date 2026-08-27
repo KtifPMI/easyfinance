@@ -650,7 +650,7 @@ class HomeScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/planned-payments'),
+          onTap: () => Navigator.pushNamed(context, '/calendar'),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -670,7 +670,7 @@ class HomeScreen extends StatelessWidget {
             final isOverdue = overdue.contains(e);
             final displayDate = isOverdue ? (e.lastOccurrence(before: today) ?? today) : (e.nextOccurrence() ?? today);
             return GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/planned-payments'),
+              onTap: () => Navigator.pushNamed(context, '/calendar'),
               child: _upcomingTile(context, e, store, displayDate: displayDate, isOverdue: isOverdue),
             );
           }),

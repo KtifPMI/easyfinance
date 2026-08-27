@@ -28,6 +28,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   String? _ocrSource;
   String? _ocrLog;
   bool _showConfirm = false;
+  bool _saving = false;
 
   String _parsedAmount = '';
   String _parsedStore = '';
@@ -401,44 +402,50 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   Future<void> _save(FinanceStore store) async {
-    final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
-    if (amount <= 0) return;
-    if (store.accounts.isEmpty) return;
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
+      if (amount <= 0) return;
+      if (store.accounts.isEmpty) return;
 
-    final catId = _selectedCategoryId ?? store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
-    final now = DateTime.now();
-    DateTime opDt = now;
-    if (_dateCtrl.text.isNotEmpty) {
-      final parsed = DateTime.tryParse(_dateCtrl.text);
-      if (parsed != null) {
-        opDt = DateTime(parsed.year, parsed.month, parsed.day, now.hour, now.minute, now.second);
+      final catId = _selectedCategoryId ?? store.categories.where((c) => c.type == 'expense').firstOrNull?.id;
+      final now = DateTime.now();
+      DateTime opDt = now;
+      if (_dateCtrl.text.isNotEmpty) {
+        final parsed = DateTime.tryParse(_dateCtrl.text);
+        if (parsed != null) {
+          opDt = DateTime(parsed.year, parsed.month, parsed.day, now.hour, now.minute, now.second);
+        }
       }
-    }
-    final clientId = now.microsecondsSinceEpoch.toString();
+      final clientId = now.microsecondsSinceEpoch.toString();
 
-    final op = Operation(
-      id: clientId,
-      type: 'expense',
-      amount: amount,
-      date: formatApiDateTime(opDt),
-      accountId: _selectedAccountId ?? store.accounts.first.id,
-      categoryId: catId,
-      comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : context.tr('scan.receipt_comment', namedArgs: {'store': _parsedStore}),
-      clientId: clientId,
-    );
-
-    await store.addOperation(op);
-    if (!mounted) return;
-    if (store.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+      final op = Operation(
+        id: clientId,
+        type: 'expense',
+        amount: amount,
+        date: formatApiDateTime(opDt),
+        accountId: _selectedAccountId ?? store.accounts.first.id,
+        categoryId: catId,
+        comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : context.tr('scan.receipt_comment', namedArgs: {'store': _parsedStore}),
+        clientId: clientId,
       );
-      return;
+
+      await store.addOperation(op);
+      if (!mounted) return;
+      if (store.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+        );
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.tr('scan.expense_added', namedArgs: {'amount': amount.toStringAsFixed(0)})), backgroundColor: AppColors.success),
+      );
+      Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.tr('scan.expense_added', namedArgs: {'amount': amount.toStringAsFixed(0)})), backgroundColor: AppColors.success),
-    );
-    Navigator.pop(context);
   }
 
   @override
@@ -623,14 +630,16 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _save(store),
+              onPressed: _saving ? null : () => _save(store),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(context.tr('scan.add_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: _saving
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                  : Text(context.tr('scan.add_expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 8),

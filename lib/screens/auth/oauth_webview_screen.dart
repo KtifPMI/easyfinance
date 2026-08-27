@@ -37,6 +37,11 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
   Future<NavigationDecision> _interceptNav(NavigationRequest req) async {
     final uri = Uri.parse(req.url);
 
+    final host = uri.host.toLowerCase();
+    if (!host.endsWith('easyfinance.ru')) {
+      return NavigationDecision.prevent;
+    }
+
     if (uri.path.endsWith('/v2/result')) {
       if (uri.queryParameters.containsKey('access_token')) {
         _handleToken(uri.queryParameters['access_token']!);

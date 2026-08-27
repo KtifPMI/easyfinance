@@ -38,6 +38,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   final _commentCtrl = TextEditingController();
   final _tagsCtrl = TextEditingController();
   bool _commentExpanded = false;
+  bool _saving = false;
   final List<String> _selectedTags = [];
   final _categoryKey = GlobalKey();
 
@@ -208,54 +209,60 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   }
 
   Future<void> _save() async {
-    final store = context.read<FinanceStore>();
-    final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
-    if (amount <= 0) return;
-    if (store.accounts.isEmpty) return;
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final store = context.read<FinanceStore>();
+      final amount = double.tryParse(_amountCtrl.text.replaceAll(',', '.')) ?? 0;
+      if (amount <= 0) return;
+      if (store.accounts.isEmpty) return;
 
-    final catId = _type != 'transfer' ? (_categoryId ?? store.categories.where((c) => c.type == _type).firstOrNull?.id) : null;
-    if (_type != 'transfer' && catId == null) return;
+      final catId = _type != 'transfer' ? (_categoryId ?? store.categories.where((c) => c.type == _type).firstOrNull?.id) : null;
+      if (_type != 'transfer' && catId == null) return;
 
-    final accountId = _accountId ?? store.accounts.first.id;
-    final toAccountId = _type == 'transfer' ? _toAccountId : null;
-    double? transferAmount;
-    if (_type == 'transfer' && toAccountId != null) {
-      final src = store.getAccount(accountId);
-      final dst = store.getAccount(toAccountId);
-      if (src != null && dst != null && src.currency != dst.currency) {
-        transferAmount = CurrencyRateService.convert(amount, src.currency, dst.currency, store.rates);
+      final accountId = _accountId ?? store.accounts.first.id;
+      final toAccountId = _type == 'transfer' ? _toAccountId : null;
+      double? transferAmount;
+      if (_type == 'transfer' && toAccountId != null) {
+        final src = store.getAccount(accountId);
+        final dst = store.getAccount(toAccountId);
+        if (src != null && dst != null && src.currency != dst.currency) {
+          transferAmount = CurrencyRateService.convert(amount, src.currency, dst.currency, store.rates);
+        }
       }
-    }
-    final clientId = _isEditing ? null : DateTime.now().microsecondsSinceEpoch.toString();
-    final op = Operation(
-      id: _isEditing ? widget.operationId! : clientId!,
-      type: _type,
-      amount: amount,
-      transferAmount: transferAmount,
-      date: _dateStr(),
-      accountId: accountId,
-      toAccountId: toAccountId,
-      categoryId: catId,
-      comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
-      tags: _combinedTags().isNotEmpty ? _combinedTags() : null,
-      clientId: clientId,
-    );
+      final clientId = _isEditing ? null : DateTime.now().microsecondsSinceEpoch.toString();
+      final op = Operation(
+        id: _isEditing ? widget.operationId! : clientId!,
+        type: _type,
+        amount: amount,
+        transferAmount: transferAmount,
+        date: _dateStr(),
+        accountId: accountId,
+        toAccountId: toAccountId,
+        categoryId: catId,
+        comment: _commentCtrl.text.isNotEmpty ? _commentCtrl.text : null,
+        tags: _combinedTags().isNotEmpty ? _combinedTags() : null,
+        clientId: clientId,
+      );
 
-    if (_isEditing) {
-      await store.updateOperation(op);
-    } else {
-      await store.addOperation(op);
-    }
-    if (!mounted) return;
-    if (store.error != null) {
-      if (store.error == 'LIMIT') {
-        _showLimitDialog(context);
+      if (_isEditing) {
+        await store.updateOperation(op);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
+        await store.addOperation(op);
       }
-      return;
+      if (!mounted) return;
+      if (store.error != null) {
+        if (store.error == 'LIMIT') {
+          _showLimitDialog(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
+        }
+        return;
+      }
+      _showSavedDialog(context, store, op);
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    _showSavedDialog(context, store, op);
   }
 
   void _showSavedDialog(BuildContext context, FinanceStore store, Operation op) {
@@ -590,7 +597,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               ),
               const SizedBox(height: 24),
               if (_type == 'expense' && _categoryId != null) _buildBudgetWarning(context, store),
-              AppButton(title: context.tr('operations.save'), onPressed: _save),
+              AppButton(title: context.tr('operations.save'), onPressed: _saving ? null : _save, loading: _saving),
            ],
           ),
         );

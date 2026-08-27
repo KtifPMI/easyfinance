@@ -124,8 +124,11 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
     if (searching) {
       body = tilesFor(filtered, grouped: true);
     } else {
-      final frequent = filtered.where((c) => (counts[c.id] ?? 0) > 0).toList()
+      final frequent = filtered
+          .where((c) => (counts[c.id] ?? 0) > 0 && !c.isDefault)
+          .toList()
         ..sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
+      if (frequent.length > 5) frequent.length = 5;
       final rest = filtered.where((c) => (counts[c.id] ?? 0) == 0).toList();
       body = <Widget>[];
       if (frequent.isNotEmpty) {

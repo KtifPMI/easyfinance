@@ -54,7 +54,6 @@ class ApiService {
 
   Future<List<Tag>> getTags() async {
     final json = await _client.get('tags.get');
-    print('[TAGS][GET] keys=${json.keys} tagsLen=${(json['tags'] as List?)?.length}');
     return _parseList(json, 'tags', Tag.fromJson);
   }
 
@@ -64,10 +63,7 @@ class ApiService {
   }
 
   Future<dynamic> addTag(Map<String, dynamic> body) async {
-    print('[TAGS][POST] body=$body');
     final json = await _client.post('tags.post', params: _writeParams(), body: {'request': {'request_data': body}});
-    final s = json.toString();
-    print('[TAGS][POST] respType=${json.runtimeType} resp=${s.length > 600 ? s.substring(0, 600) : s}');
     return json;
   }
 
