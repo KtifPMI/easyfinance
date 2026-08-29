@@ -25,11 +25,27 @@ import '../budget/plan_screen.dart';
 import '../recommendations/recommendations_screen.dart';
 import '../reports/reports_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   static bool _plannedSynced = false;
   static bool _goalsSynced = false;
+  bool _restReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Верх (баланс/счета/кружки фин-состояния) рисуется сразу из кэша,
+    // остальное блокируем плейсхолдером на мгновение, чтобы экран ощущался мгновенным.
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (mounted) setState(() => _restReady = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,12 +129,15 @@ class HomeScreen extends StatelessWidget {
               ],
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
-              _buildRatesSection(context, store),
-              _buildRecommendationsSection(context, store),
-              _buildUpcomingPaymentsSection(context, plannedPayments, store),
-              _buildBudgetsSection(context, store),
-              _buildGoalsSection(context, store),
-              _buildReportsSection(context, store),
+              if (_restReady) ...[
+                _buildRatesSection(context, store),
+                _buildRecommendationsSection(context, store),
+                _buildUpcomingPaymentsSection(context, plannedPayments, store),
+                _buildBudgetsSection(context, store),
+                _buildGoalsSection(context, store),
+                _buildReportsSection(context, store),
+              ] else
+                _buildRestSkeleton(context),
             ],
           ),
         );
@@ -180,6 +199,34 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+
+  Widget _buildRestSkeleton(BuildContext context) {
+    return Column(
+      children: [
+        AppCard(
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
+              const SizedBox(height: 12),
+              Center(
+                child: Text(context.tr('home.loading_rest'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: AppColors.cardFor(context),
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildProfitLossSection(BuildContext context, FinanceStore store) {
     final now = DateTime.now();

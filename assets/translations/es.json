@@ -691,6 +691,7 @@
   "more.debug": "Debug API",
   "home.capital": "Capital",
   "home.money": "Dinero",
+  "home.loading_rest": "Cargando el resto…",
   "budget.forecast": "Pronóstico",
   "categories.popular": "Categorías populares",
   "categories.main": "Categorías",

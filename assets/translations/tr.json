@@ -680,6 +680,7 @@
   "more.debug": "Debug API",
   "home.capital": "Sermaye",
   "home.money": "Nakit",
+  "home.loading_rest": "Geri kalanı yükleniyor…",
   "budget.forecast": "Tahmin",
   "categories.popular": "Popüler kategoriler",
   "categories.main": "Kategoriler",
