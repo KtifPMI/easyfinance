@@ -230,8 +230,6 @@ class UpdateService {
                   backgroundColor: AppColors.borderFor(context),
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
-                const SizedBox(height: 8),
-                Text('${(progress * 100).round()}%', style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
               ],
             ),
           );

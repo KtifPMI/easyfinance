@@ -201,30 +201,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Widget _buildRestSkeleton(BuildContext context) {
-    return Column(
-      children: [
-        AppCard(
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              Center(child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
-              const SizedBox(height: 12),
-              Center(
-                child: Text(context.tr('home.loading_rest'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          height: 120,
-          decoration: BoxDecoration(
-            color: AppColors.cardFor(context),
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-      ],
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 28),
+      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 
