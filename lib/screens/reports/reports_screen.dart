@@ -122,7 +122,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final incomeOtherTotal = incomeCatTotals.length > 6 ? incomeCatTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
         final incomeChartSlices = <({String label, double value, Color color})>[];
         for (int i = 0; i < incomeCatTotals.length && i < 6; i++) {
-          incomeChartSlices.add((label: tCat(context, incomeCatTotals[i].category.name), value: incomeCatTotals[i].total, color: _chartPalette[i % _chartPalette.length]));
+          incomeChartSlices.add((label: tCat(context, incomeCatTotals[i].category.name), value: incomeCatTotals[i].total, color: _incomePalette[i % _incomePalette.length]));
         }
         if (incomeOtherTotal > 0) {
           incomeChartSlices.add((label: context.tr('reports.other'), value: incomeOtherTotal, color: const Color(0xFF9E9E9E)));
@@ -474,6 +474,27 @@ class _ReportsScreenState extends State<ReportsScreen> {
     const Color(0xFF795548),
     const Color(0xFF00897B),
     const Color(0xFFF06292),
+  ];
+
+  // Доходная диаграмма: первый цвет — наш зелёный, далее все цвета кроме красного и жёлтого.
+  static final List<Color> _incomePalette = [
+    AppColors.income,
+    const Color(0xFF1E88E5),
+    const Color(0xFF8E24AA),
+    const Color(0xFF00ACC1),
+    const Color(0xFF3949AB),
+    const Color(0xFFD81B60),
+    const Color(0xFF26A69A),
+    const Color(0xFF5C6BC0),
+    const Color(0xFFAB47BC),
+    const Color(0xFF795548),
+    const Color(0xFF00897B),
+    const Color(0xFFFB8C00),
+    const Color(0xFFF4511E),
+    const Color(0xFFFF7043),
+    const Color(0xFF7CB342),
+    const Color(0xFFC0CA33),
+    const Color(0xFF6D4C41),
   ];
 }
 

@@ -573,6 +573,7 @@
   "settings.select_currencies_hint": "Selecciona divisas para mostrar tipos de cambio en la pantalla principal",
   "settings.no_data": "Sin datos",
   "update.available": "Actualización disponible",
+  "update.downloading": "Descargando actualización…",
   "update.new_version": "Nueva versión: {version}",
   "update.later": "Después",
   "update.update_now": "Actualizar",

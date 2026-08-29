@@ -573,6 +573,7 @@
   "goal_cat.debt_card": "Kreditkartenschuld",
   "goal_cat.debt_other": "Sonstige Schulden",
   "update.available": "Update verfügbar",
+  "update.downloading": "Update wird heruntergeladen…",
   "update.new_version": "Neue Version: {version}",
   "update.later": "Später",
   "update.update_now": "Aktualisieren",

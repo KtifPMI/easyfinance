@@ -562,6 +562,7 @@
   "goal_cat.debt_card": "Kart borcu",
   "goal_cat.debt_other": "Diğer borç",
   "update.available": "Güncelleme mevcut",
+  "update.downloading": "Güncelleme indiriliyor…",
   "update.new_version": "Yeni sürüm: {version}",
   "update.later": "Sonra",
   "update.update_now": "Güncelle",

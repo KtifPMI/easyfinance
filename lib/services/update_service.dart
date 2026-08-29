@@ -129,7 +129,7 @@ class UpdateService {
     return l.length > c.length;
   }
 
-  static Future<void> downloadAndInstall(String url, BuildContext context) async {
+  static Future<void> downloadAndInstall(String url, BuildContext context, {void Function(double)? onProgress}) async {
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/easyfinance.apk');
 
@@ -137,10 +137,14 @@ class UpdateService {
     try {
       final request = http.Request('GET', Uri.parse(url));
       final response = await client.send(request).timeout(const Duration(minutes: 5));
+      final total = (response.contentLength ?? 0).toDouble();
+      int received = 0;
 
       final sink = file.openWrite();
       await for (final chunk in response.stream) {
         sink.add(chunk);
+        received += chunk.length;
+        if (total > 0 && onProgress != null) onProgress(received / total);
       }
       await sink.close();
     } finally {
@@ -207,13 +211,38 @@ class UpdateService {
   }
 
   static void _downloadWithProgress(BuildContext context, String url) async {
+    double progress = 0;
+    StateSetter? setDialogState;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) {
+          setDialogState = setState;
+          return AlertDialog(
+            title: Text(context.tr('update.downloading')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                LinearProgressIndicator(
+                  value: progress > 0 ? progress : null,
+                  minHeight: 8,
+                  backgroundColor: AppColors.borderFor(context),
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+                const SizedBox(height: 8),
+                Text('${(progress * 100).round()}%', style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+              ],
+            ),
+          );
+        },
+      ),
     );
     try {
-      await downloadAndInstall(url, context);
+      await downloadAndInstall(url, context, onProgress: (p) {
+        progress = p;
+        setDialogState?.call(() {});
+      });
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

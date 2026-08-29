@@ -573,6 +573,7 @@
   "goal_cat.debt_card": "Debito carta",
   "goal_cat.debt_other": "Altro debito",
   "update.available": "Aggiornamento disponibile",
+  "update.downloading": "Download dell'aggiornamento…",
   "update.new_version": "Nuova versione: {version}",
   "update.later": "Dopo",
   "update.update_now": "Aggiorna",

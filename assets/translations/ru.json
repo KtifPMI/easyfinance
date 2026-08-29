@@ -649,6 +649,7 @@
   "update.latest_version": "У вас последняя версия",
   "update.check_failed": "Не удалось проверить обновление (возможно, лимит GitHub). Повторите позже",
   "update.available": "Доступно обновление",
+  "update.downloading": "Загрузка обновления…",
   "update.new_version": "Новая версия: {version}",
   "update.later": "Позже",
   "update.update_now": "Обновить",

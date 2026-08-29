@@ -712,6 +712,7 @@
   "scan.account": "Account",
   "scan.camera": "Camera",
   "update.available": "Update available",
+  "update.downloading": "Downloading update…",
   "auth.login_error": "Login failed. Please try again.",
   "home.display_currency": "Display currency",
   "update.update_now": "Update now",
