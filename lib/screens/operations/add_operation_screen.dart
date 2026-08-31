@@ -263,6 +263,8 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool('show_post_op_analysis') ?? true) {
         _showSavedDialog(context, store, op);
+      } else {
+        Navigator.pushNamed(context, '/operations');
       }
     } finally {
       if (mounted) setState(() => _saving = false);
