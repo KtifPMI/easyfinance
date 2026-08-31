@@ -567,7 +567,6 @@
   "update.new_version": "Yeni sürüm: {version}",
   "update.later": "Sonra",
   "update.update_now": "Güncelle",
-  "update.downloading": "İndiriliyor... {progress}%",
   "update.apk_ready": "APK indirildi, yükleyici açılıyor...",
   "update.error": "Güncelleme indirme hatası",
   "account.account_type": "Hesap",

@@ -578,7 +578,6 @@
   "update.new_version": "Nuova versione: {version}",
   "update.later": "Dopo",
   "update.update_now": "Aggiorna",
-  "update.downloading": "Download... {progress}%",
   "update.apk_ready": "APK scaricato, apertura dell'installatore...",
   "update.error": "Errore nel download",
   "account.account_type": "Conto",
