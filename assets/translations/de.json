@@ -286,6 +286,7 @@
   "settings.language_pt": "Português",
   "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Dunkelmodus",
+  "settings.post_op_analysis": "Analyse nach Hinzufügen der Operation",
   "settings.pin_code": "PIN-Code",
   "settings.show_kopeks": "Überall",
   "settings.amount_format": "Betrag im Format 0,00 anzeigen",

@@ -27,7 +27,21 @@ class UpdateService {
   static Future<UpdateInfo?> check({bool force = false}) async {
     if (!force) {
       final cached = await _readCache();
-      if (cached != null) return cached;
+      if (cached != null) {
+        final info = await PackageInfo.fromPlatform();
+        final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+        final tagParts = cached.version.split('+');
+        final latestBuild = tagParts.length > 1 ? (int.tryParse(tagParts.last) ?? 0) : 0;
+        bool newer;
+        if (latestBuild > 0 && currentBuild > 0) {
+          newer = latestBuild > currentBuild;
+        } else {
+          newer = _isNewer(tagParts.first, info.version.split('+').first);
+        }
+        if (newer) return cached;
+        await _writeCache(null);
+        return null;
+      }
     }
     try {
       final result = await _fetch();

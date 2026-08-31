@@ -277,6 +277,7 @@
   "settings.language_pt": "Português",
   "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Modo Escuro",
+  "settings.post_op_analysis": "Análise após adicionar operação",
   "settings.pin_code": "Código PIN",
   "settings.show_kopeks": "Em todo lugar",
   "settings.amount_format": "Exibir valor no formato 0,00",

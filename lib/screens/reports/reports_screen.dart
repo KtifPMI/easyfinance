@@ -228,7 +228,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         ),
                 ),
                 const SizedBox(height: 16),
-                ..._buildCategoryRows(catTotals, catExpense, store),
+                ..._buildCategoryRows(catTotals, catExpense, store, _chartPalette),
               ],
               const SizedBox(height: 24),
               Row(
@@ -272,7 +272,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                 ),
                 const SizedBox(height: 16),
-                ..._buildCategoryRows(incomeCatTotals, incomeCatTotal, store),
+                ..._buildCategoryRows(incomeCatTotals, incomeCatTotal, store, _incomePalette),
               ],
             ],
           ),
@@ -310,13 +310,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
      }
   }
 
-  List<Widget> _buildCategoryRows(List<({dynamic category, double total})> catTotals, double monthExpense, FinanceStore store) {
+  List<Widget> _buildCategoryRows(List<({dynamic category, double total})> catTotals, double monthExpense, FinanceStore store, List<Color> palette) {
     final top = catTotals.take(6).toList();
     final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
     return [
       ...top.map((e) {
         final percent = monthExpense > 0 ? e.total / monthExpense * 100 : 0.0;
-        final color = _chartPalette[top.indexOf(e) % _chartPalette.length];
+        final color = palette[top.indexOf(e) % palette.length];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: GestureDetector(

@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/calculator_input.dart';
 import '../../components/common/grouped_picker_sheet.dart';
@@ -259,7 +260,10 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         }
         return;
       }
-      _showSavedDialog(context, store, op);
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('show_post_op_analysis') ?? true) {
+        _showSavedDialog(context, store, op);
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -273,39 +277,39 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         ? store.operations.where((o) => !o.isDeleted && o.type == 'expense' && o.categoryId == catId && store.isInMonth(o.date, now)).fold(0.0, (s, o) => s + o.amount)
         : 0.0;
     final totalBudgetRemaining = store.budgets.where((b) => !b.isDeleted).fold(0.0, (s, b) => s + (b.limit - b.spent));
-    final account = store.getAccount(op.accountId);
-    final accountRemaining = account != null ? store.accountActualBalance(account) : 0.0;
 
     final bool overBudget = budget != null && budget.spent > budget.limit;
-    final String tip;
-    if (overBudget) {
-      tip = 'Превышен лимит бюджета категории на ${store.fmt(budget.spent - budget.limit)}.';
-    } else if (budget != null) {
-      tip = 'По бюджету категории сэкономлено ${store.fmt(budget.limit - budget.spent)}.';
-    } else {
-      tip = 'Категория без бюджета: за месяц потрачено ${store.fmt(catSpend)}.';
-    }
+    final accentColor = overBudget ? AppColors.expense : AppColors.success;
 
     final children = <Widget>[
-      Text('${context.tr('operations.amount')}: ${store.fmt(op.amount)}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-      if (catId != null)
-        Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 15)),
-      const SizedBox(height: 12),
-      Text('add_operation.by_data'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
-      const SizedBox(height: 4),
-      Text('add_operation.category_spend'.tr(namedArgs: {'amount': store.fmt(catSpend)}), style: TextStyle(fontSize: 15)),
-      if (budget != null)
-        Text('add_operation.category_budget_remaining'.tr(namedArgs: {'amount': store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}), style: TextStyle(fontSize: 15)),
-      Text('add_operation.total_budget_remaining'.tr(namedArgs: {'amount': store.fmt(totalBudgetRemaining.clamp(0, double.infinity))}), style: TextStyle(fontSize: 15)),
-      Text('add_operation.account_remaining'.tr(namedArgs: {'amount': store.fmt(accountRemaining)}), style: TextStyle(fontSize: 15)),
-      const SizedBox(height: 8),
       Container(
-        padding: const EdgeInsets.all(10),
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: (overBudget ? AppColors.expense : AppColors.success).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
+          color: accentColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: accentColor.withValues(alpha: 0.3)),
         ),
-        child: Text(tip, style: TextStyle(fontSize: 13, color: overBudget ? AppColors.expense : AppColors.success)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(store.fmt(op.amount), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: accentColor)),
+            if (catId != null) ...[
+              const SizedBox(height: 12),
+              Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              const SizedBox(height: 4),
+              Text('add_operation.category_spend'.tr(namedArgs: {'amount': store.fmt(catSpend)}), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+              if (budget != null) ...[
+                const SizedBox(height: 4),
+                Text('${store.fmt(budget.spent)} / ${store.fmt(budget.limit)}', style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                const SizedBox(height: 4),
+                Text('add_operation.category_budget_remaining'.tr(namedArgs: {'amount': store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+              ],
+            ],
+            const SizedBox(height: 8),
+            Text('add_operation.total_budget_remaining'.tr(namedArgs: {'amount': store.fmt(totalBudgetRemaining.clamp(0, double.infinity))}), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          ],
+        ),
       ),
     ];
     showDialog(

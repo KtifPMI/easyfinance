@@ -29,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _pinEnabled = false;
   bool _kopeksEnabled = false;
   bool _kopeksInOpsEnabled = false;
+  bool _postOpAnalysisEnabled = true;
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadVersion();
     _loadPinStatus();
     _loadKopeksStatus();
+    _loadPostOpAnalysis();
   }
 
   Future<void> _loadVersion() async {
@@ -57,6 +59,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) setState(() { _kopeksEnabled = val; _kopeksInOpsEnabled = opsVal; });
   }
 
+  Future<void> _loadPostOpAnalysis() async {
+    final prefs = await SharedPreferences.getInstance();
+    final val = prefs.getBool('show_post_op_analysis') ?? true;
+    if (mounted) setState(() => _postOpAnalysisEnabled = val);
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScreenScaffold(
@@ -73,6 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _darkModeItem(context),
           _pinItem(context),
           _amountFormatItem(context),
+          _postOpAnalysisItem(context),
           _startScreenItem(context),
           _infoItem(context.tr('settings.about'), 'v$_appVersion'),
           _exportItem(context),
@@ -279,6 +288,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   activeThumbColor: AppColors.primary,
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _postOpAnalysisItem(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: AppCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(child: Text(context.tr('settings.post_op_analysis'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context)))),
+            Switch(
+              value: _postOpAnalysisEnabled,
+              onChanged: (v) async {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('show_post_op_analysis', v);
+                if (mounted) setState(() => _postOpAnalysisEnabled = v);
+              },
+              activeThumbColor: AppColors.primary,
             ),
           ],
         ),

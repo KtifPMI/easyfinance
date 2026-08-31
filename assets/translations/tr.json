@@ -277,6 +277,7 @@
   "settings.language_pt": "Português",
   "settings.language_tr": "Türkçe",
   "settings.dark_mode": "Karanlık Mod",
+  "settings.post_op_analysis": "İşlem ekleme sonrası analiz",
   "settings.pin_code": "PIN Kodu",
   "settings.show_kopeks": "Her yerde",
   "settings.amount_format": "Tutarı 0,00 biçiminde göster",
