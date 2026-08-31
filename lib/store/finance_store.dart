@@ -409,168 +409,94 @@ class FinanceStore extends ChangeNotifier {
     await syncPendingTemplates();
     final pendingOps = _operations.where((op) => op.isPending).toList();
 
-    try {
-      final user = await api.getUser();
-      _currentUser = user;
-      if (user.id.isNotEmpty && apiClient.userId != user.id) {
-        apiClient.setAuth(
-          accessToken: apiClient.accessToken ?? '',
-          userId: user.id,
-        );
-      }
-    } catch (e) {
-      debugPrint('getUser error: $e');
-    }
+    final results = await Future.wait([
+      api.getUser().then((u) {
+        _currentUser = u;
+        if (u.id.isNotEmpty && apiClient.userId != u.id) {
+          apiClient.setAuth(accessToken: apiClient.accessToken ?? '', userId: u.id);
+        }
+        return u;
+      }).catchError((e) { debugPrint('getUser error: $e'); return null; }),
 
-    try {
-      final pendingAcc = _accounts.where((a) => a.isPending).toList();
-      final serverAccounts = await api.getAccounts();
-      _accounts = serverAccounts;
-      await _applyFavoriteStates();
-      final accIds = _accounts.map((a) => a.id).toSet();
-      for (final p in pendingAcc) {
-        if (!accIds.contains(p.id)) _accounts.add(p);
-      }
-    } on ApiException catch (e) {
-      _error = e.message;
-    } catch (e) {
-      _error ??= 'Ошибка загрузки счетов: $e';
-    }
+      api.getAccounts().then((accs) {
+        final pendingAcc = _accounts.where((a) => a.isPending).toList();
+        _accounts = accs;
+        final accIds = _accounts.map((a) => a.id).toSet();
+        for (final p in pendingAcc) { if (!accIds.contains(p.id)) _accounts.add(p); }
+        return accs;
+      }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <dynamic>[]; }),
 
-    try {
-      _operations = await api.getOperations();
-    } on ApiException catch (e) {
-      _error = e.message;
-    } catch (e) {
-      _error ??= 'Ошибка загрузки операций: $e';
-    }
+      api.getOperations().then((ops) {
+        _operations = ops;
+        final serverIds = _operations.map((o) => o.id).toSet();
+        for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
+        return ops;
+      }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <dynamic>[]; }),
 
-    final serverIds = _operations.map((o) => o.id).toSet();
-    for (final p in pendingOps) {
-      if (!serverIds.contains(p.id)) {
-        _operations.insert(0, p);
-      }
-    }
+      apiClient.getCategoriesV2().then((rawCats) {
+        _buildSystemIconMap(rawCats);
+        final pendingCats = _categories.where((c) => c.isPending).toList();
+        _categories = rawCats.map((j) => cat.Category.fromJson(j)).toList();
+        if (_categories.isEmpty) _categories = [...mockCategories];
+        final catIds = _categories.map((c) => c.id).toSet();
+        for (final p in pendingCats) { if (!catIds.contains(p.id)) _categories.add(p); }
+        return rawCats;
+      }).catchError((e) { _error ??= 'Ошибка загрузки категорий: $e'; return <dynamic>[]; }),
 
-    try {
-      final rawCats = await apiClient.getCategoriesV2();
-      _buildSystemIconMap(rawCats);
-      final pendingCats = _categories.where((c) => c.isPending).toList();
-      _categories = rawCats.map((j) => cat.Category.fromJson(j)).toList();
-      if (_categories.isEmpty) {
-        _categories = [...mockCategories];
-      }
-      final catIds = _categories.map((c) => c.id).toSet();
-      for (final p in pendingCats) {
-        if (!catIds.contains(p.id)) _categories.add(p);
-      }
-    } on ApiException catch (e) {
-      _error = e.message;
-    } catch (e) {
-      _error ??= 'Ошибка загрузки категорий: $e';
-    }
+      api.getTags().then((server) {
+        final localOnly = _tags.where((t) => t.id.isEmpty).toList();
+        final merged = <Tag>[...server];
+        for (final l in localOnly) { if (!merged.any((t) => t.name.toLowerCase() == l.name.toLowerCase())) merged.add(l); }
+        _tags = merged;
+        return server;
+      }).catchError((e) { debugPrint('getTags error: $e'); return <dynamic>[]; }),
 
-    try {
-      final server = await api.getTags();
-      final localOnly = _tags.where((t) => t.id.isEmpty).toList();
-      final merged = <Tag>[...server];
-      for (final l in localOnly) {
-        if (!merged.any((t) => t.name.toLowerCase() == l.name.toLowerCase())) merged.add(l);
-      }
-      _tags = merged;
-    } catch (e) {
-      debugPrint('getTags error: $e');
-    }
+      api.getTemplates().then((apiTemplates) {
+        final pendingTpl = _templates.where((t) => t.isPending).toList();
+        _templates = apiTemplates.where((t) => !t.isDeleted && !_deletedTemplateIds.contains(t.id)).toList();
+        final tplIds = _templates.map((t) => t.id).toSet();
+        for (final p in pendingTpl) { if (!tplIds.contains(p.id)) _templates.add(p); }
+        return apiTemplates;
+      }).catchError((e) { debugPrint('getTemplates error: $e'); return <dynamic>[]; }),
+
+      api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null; }),
+      api.getCurrencies().then((c) { _currencies = c; return c; }).catchError((e) { debugPrint('getCurrencies error: $e'); return null; }),
+      CurrencyRateService.fetchRates().then((r) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null; }),
+      api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null; }),
+      api.getBudgetCategories().then((bc) {
+        _budgets = bc.map((b) => Budget(
+          id: b['id']?.toString() ?? '',
+          categoryId: b['category_id']?.toString() ?? '',
+          limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
+          spent: double.tryParse(b['spent']?.toString() ?? '0') ?? 0,
+          period: b['period']?.toString() ?? 'monthly',
+          isDeleted: b['deleted_at'] != null && b['deleted_at'].toString().isNotEmpty,
+        )).toList();
+        return bc;
+      }).catchError((e) { debugPrint('getBudgetCategories error: $e'); return <dynamic>[]; }),
+      api.getTargets().catchError((e) { debugPrint('getTargets error: $e'); return <dynamic>[]; }),
+      api.getGoalTemplates().catchError((e) { debugPrint('getGoalTemplates error: $e'); return <dynamic>[]; }),
+    ], eagerError: false);
+
+    await _applyFavoriteStates();
     await _syncPendingTags();
+    try { await _plannedPayments?.syncFromServer(); } catch (e) { debugPrint('planned payments sync error: $e'); }
 
-    try {
-      await _plannedPayments?.syncFromServer();
-    } catch (e) {
-      debugPrint('planned payments sync error: $e');
-    }
-
-    try {
-      final pendingTpl = _templates.where((t) => t.isPending).toList();
-      final apiTemplates = await api.getTemplates();
-      _templates = apiTemplates.where((t) => !t.isDeleted && !_deletedTemplateIds.contains(t.id)).toList();
-      final tplIds = _templates.map((t) => t.id).toSet();
-      for (final p in pendingTpl) {
-        if (!tplIds.contains(p.id)) _templates.add(p);
-      }
-      await _saveTemplates();
-    } catch (e) {
-      debugPrint('getTemplates error: $e');
-    }
-    notifyListeners();
-
-    try {
-      _serverBudget = await api.getBudget();
-    } catch (e) {
-      debugPrint('getBudget error: $e');
-    }
-
-    try {
-      _currencies = await api.getCurrencies();
-    } catch (e) {
-      debugPrint('getCurrencies error: $e');
-    }
-
-    try {
-      _rates = {'RUB': 1.0, ...await CurrencyRateService.fetchRates()};
-      _ratesUpdatedAt = DateTime.now();
-    } catch (e) {
-      debugPrint('fetchRates error: $e');
-    }
-
-    _watchedCurrencies = await _loadWatchedCurrencies();
-    await _loadDisplayCurrency();
-
-    try {
-      _systemCategories = await api.getSystemCategories();
-    } catch (e) {
-      debugPrint('getSystemCategories error: $e');
-    }
-
-    try {
-      final apiBudgets = await api.getBudgetCategories();
-      _budgets = apiBudgets.map((b) => Budget(
-        id: b['id']?.toString() ?? '',
-        categoryId: b['category_id']?.toString() ?? '',
-        limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
-        spent: double.tryParse(b['spent']?.toString() ?? '0') ?? 0,
-        period: b['period']?.toString() ?? 'monthly',
-        isDeleted: b['deleted_at'] != null && b['deleted_at'].toString().isNotEmpty,
-      )).toList();
-      _recalcBudgetSpent();
-      await _saveBudgets();
-    } catch (_) {
-      await _loadBudgets();
-    }
-
+    final targets = results[11] as List<dynamic>? ?? [];
+    final templateGoals = results[12] as List<dynamic>? ?? [];
     final existingGoalIds = _goals.map((g) => g.id).toSet();
-
-    try {
-      final targets = await api.getTargets();
-      final targetIds = targets.map((t) => t['id']?.toString()).whereType<String>().toSet();
-      _goals.removeWhere((g) => targetIds.contains(g.id));
-      existingGoalIds.removeAll(targetIds);
-      for (final g in targets.where((t) => t['visible']?.toString() != '0').map((g) => Goal.fromJson(g))) {
-        existingGoalIds.add(g.id);
-        _goals.add(g);
-      }
-    } catch (_) {}
-
-    try {
-      final templateGoals = await api.getGoalTemplates();
-      for (final g in templateGoals.map((g) => Goal.fromOpPattern(g))) {
-        if (existingGoalIds.contains(g.id)) continue;
-        _goals.add(g);
-        existingGoalIds.add(g.id);
-      }
-    } catch (e) {
-      debugPrint('getGoalTemplates error: $e');
+    final targetIds = targets.map((t) => t['id']?.toString()).whereType<String>().toSet();
+    _goals.removeWhere((g) => targetIds.contains(g.id));
+    existingGoalIds.removeAll(targetIds);
+    for (final g in targets.where((t) => t['visible']?.toString() != '0').map((g) => Goal.fromJson(g))) {
+      existingGoalIds.add(g.id);
+      _goals.add(g);
+    }
+    for (final g in templateGoals.map((g) => Goal.fromOpPattern(g))) {
+      if (!existingGoalIds.contains(g.id)) { _goals.add(g); existingGoalIds.add(g.id); }
     }
 
+    _recalcBudgetSpent();
     _recalcAccountBalances();
     _generateRecommendations();
 
