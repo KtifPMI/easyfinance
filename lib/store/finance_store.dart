@@ -438,22 +438,16 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      final now = DateTime.now();
-      final yearStart = DateTime(now.year, 1, 1).toIso8601String().substring(0, 10);
-      final yearEnd = DateTime(now.year, 12, 31).toIso8601String().substring(0, 10);
-      final serverOps = await api.getOperations(from: yearStart, to: yearEnd);
-      final srvIds = serverOps.map((o) => o.id).toSet();
-      final cachedOnly = _operations.where((o) => !srvIds.contains(o.id)).toList();
-      _operations = [...serverOps, ...cachedOnly];
+      _operations = await api.getOperations();
     } on ApiException catch (e) {
       _error = e.message;
     } catch (e) {
       _error ??= 'Ошибка загрузки операций: $e';
     }
 
-    final opIds = _operations.map((o) => o.id).toSet();
+    final serverIds = _operations.map((o) => o.id).toSet();
     for (final p in pendingOps) {
-      if (!opIds.contains(p.id)) {
+      if (!serverIds.contains(p.id)) {
         _operations.insert(0, p);
       }
     }
