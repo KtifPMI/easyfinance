@@ -397,12 +397,14 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             onPressed: () async {
               Navigator.pop(ctx);
               final uri = Uri.parse('https://easyfinance.ru/my/shop');
-              if (await canLaunchUrl(uri)) {
+              try {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
-              } else if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('https://easyfinance.ru/my/shop'), duration: const Duration(seconds: 5)),
-                );
+              } catch (_) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('https://easyfinance.ru/my/shop'), duration: const Duration(seconds: 5)),
+                  );
+                }
               }
             },
             child: Text(context.tr('operations.upgrade_tariff'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),

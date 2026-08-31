@@ -135,10 +135,14 @@ class FinanceStore extends ChangeNotifier {
     await _loadGoals();
     await _loadDisplayCurrency();
     _watchedCurrencies = await _loadWatchedCurrencies();
-    _recalcBudgetSpent();
-    _generateRecommendations();
-    await _preloadHistoricalRates();
     notifyListeners();
+
+    Future.delayed(Duration.zero, () async {
+      _recalcBudgetSpent();
+      _generateRecommendations();
+      await _preloadHistoricalRates();
+      if (hasListeners) notifyListeners();
+    });
   } catch (_) {
       // Ignore a corrupt cache and continue with server data.
     }
@@ -434,16 +438,22 @@ class FinanceStore extends ChangeNotifier {
     }
 
     try {
-      _operations = await api.getOperations();
+      final now = DateTime.now();
+      final yearStart = DateTime(now.year, 1, 1).toIso8601String().substring(0, 10);
+      final yearEnd = DateTime(now.year, 12, 31).toIso8601String().substring(0, 10);
+      final serverOps = await api.getOperations(from: yearStart, to: yearEnd);
+      final srvIds = serverOps.map((o) => o.id).toSet();
+      final cachedOnly = _operations.where((o) => !srvIds.contains(o.id)).toList();
+      _operations = [...serverOps, ...cachedOnly];
     } on ApiException catch (e) {
       _error = e.message;
     } catch (e) {
       _error ??= 'Ошибка загрузки операций: $e';
     }
 
-    final serverIds = _operations.map((o) => o.id).toSet();
+    final opIds = _operations.map((o) => o.id).toSet();
     for (final p in pendingOps) {
-      if (!serverIds.contains(p.id)) {
+      if (!opIds.contains(p.id)) {
         _operations.insert(0, p);
       }
     }
@@ -576,6 +586,27 @@ class FinanceStore extends ChangeNotifier {
     await _saveCache();
     await _preloadHistoricalRates();
     notifyListeners();
+  }
+
+  Future<void> loadMoreOperations(DateTime from, DateTime to) async {
+    if (!authService.isAuthenticated) return;
+    final api = authService.apiService;
+    try {
+      final fromStr = from.toIso8601String().substring(0, 10);
+      final toStr = to.toIso8601String().substring(0, 10);
+      final serverOps = await api.getOperations(from: fromStr, to: toStr);
+      final existingIds = _operations.map((o) => o.id).toSet();
+      final newOps = serverOps.where((o) => !existingIds.contains(o.id)).toList();
+      if (newOps.isNotEmpty) {
+        _operations.addAll(newOps);
+        _recalcAccountBalances();
+        _recalcBudgetSpent();
+        notifyListeners();
+        await _saveCache();
+      }
+    } catch (e) {
+      debugPrint('loadMoreOperations error: $e');
+    }
   }
 
   /// Refreshes only the goals list from the server (targets + templates).
