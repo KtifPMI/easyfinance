@@ -154,12 +154,12 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
         webSession: webSession,
       );
-      await store.fetchAllData();
-      await plannedStore.syncFromServer();
-      NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
+      store.fetchAllData();
+      plannedStore.syncFromServer();
+      NotificationService().rescheduleAll();
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
@@ -198,12 +198,12 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
         webSession: webSession,
       );
-      await store.fetchAllData();
-      await plannedStore.syncFromServer();
-      NotificationService().rescheduleAll();
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
+      store.fetchAllData();
+      plannedStore.syncFromServer();
+      NotificationService().rescheduleAll();
     } on ApiException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
