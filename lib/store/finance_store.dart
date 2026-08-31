@@ -577,15 +577,18 @@ class FinanceStore extends ChangeNotifier {
       debugPrint('getGoalTemplates error: $e');
     }
 
-    _recalcAccountBalances();
-
-    _generateRecommendations();
-
     _useMock = !authService.isAuthenticated;
     _isLoading = false;
     await _saveCache();
-    await _preloadHistoricalRates();
     notifyListeners();
+
+    Future.delayed(Duration.zero, () async {
+      _recalcAccountBalances();
+      _generateRecommendations();
+      if (hasListeners) notifyListeners();
+      await _preloadHistoricalRates();
+      if (hasListeners) notifyListeners();
+    });
   }
 
   Future<void> loadMoreOperations(DateTime from, DateTime to) async {
