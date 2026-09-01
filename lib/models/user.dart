@@ -1,8 +1,4 @@
-const Map<String, String> _currencyIdToCode = {
-  '1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF',
-  '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT',
-  '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK',
-};
+import '../utils/currency_utils.dart';
 
 class User {
   final String id;
@@ -45,7 +41,7 @@ class User {
       login: json['login']?.toString() ?? '',
       accountType: json['account_type']?.toString() ?? 'individual',
       tariffEnd: tariffEnd,
-      currency: _currencyIdToCode[json['default_currency']?.toString()] ?? 'RUB',
+      currency: currencyIdToCode[json['default_currency']?.toString()] ?? 'RUB',
       registeredAt: registeredAt,
     );
   }

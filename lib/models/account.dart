@@ -1,8 +1,4 @@
-const Map<String, String> _currencyIdToCode = {
-  '1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF',
-  '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT',
-  '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK',
-};
+import '../utils/currency_utils.dart';
 
 const Map<String, String> _iconMap = {
   'accountimage1': 'cash', 'accountimage2': 'credit_card',
@@ -172,7 +168,7 @@ class Account {
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
       balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0,
-      currency: _currencyIdToCode[currencyId] ?? json['currency_char_code']?.toString() ?? 'RUB',
+      currency: currencyIdToCode[currencyId] ?? json['currency_char_code']?.toString() ?? 'RUB',
       currencyId: currencyId,
       icon: _iconMap[icon] ?? 'credit_card',
       color: _iconColor[icon] ?? '#16A34A',
