@@ -35,17 +35,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static bool _plannedSynced = false;
   static bool _goalsSynced = false;
-  bool _restReady = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Верх (баланс/счета/кружки фин-состояния) рисуется сразу из кэша,
-    // остальное блокируем плейсхолдером на мгновение, чтобы экран ощущался мгновенным.
-    Future.delayed(const Duration(milliseconds: 350), () {
-      if (mounted) setState(() => _restReady = true);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          isLoading: store.isLoading,
+          isLoading: store.isLoading && store.accounts.isEmpty && store.operations.isEmpty,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -129,15 +118,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
               FinHealthCard(indicators: indicators),
               const SizedBox(height: 16),
-              if (_restReady) ...[
-                _buildRatesSection(context, store),
-                _buildRecommendationsSection(context, store),
-                _buildUpcomingPaymentsSection(context, plannedPayments, store),
-                _buildBudgetsSection(context, store),
-                _buildGoalsSection(context, store),
-                _buildReportsSection(context, store),
-              ] else
-                _buildRestSkeleton(context),
+              _buildRatesSection(context, store),
+              _buildRecommendationsSection(context, store),
+              _buildUpcomingPaymentsSection(context, plannedPayments, store),
+              _buildBudgetsSection(context, store),
+              _buildGoalsSection(context, store),
+              _buildReportsSection(context, store),
             ],
           ),
         );

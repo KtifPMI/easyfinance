@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (restored && mounted) {
       Navigator.pushReplacementNamed(context, initialRoute);
-      await store.fetchAllData();
+      store.fetchAllData();
       NotificationService().rescheduleAll();
       NotificationService().trackAppOpen();
     } else if (mounted && !store.useMock) {

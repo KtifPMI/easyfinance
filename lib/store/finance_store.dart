@@ -395,20 +395,22 @@ class FinanceStore extends ChangeNotifier {
   Future<void> fetchAllData() async {
     if (!authService.isAuthenticated) return;
     await Future.wait([_cacheReady, _templatesReady]);
-    _isLoading = true;
+    final bool hasCache = _accounts.isNotEmpty || _operations.isNotEmpty;
+    if (!hasCache) {
+      _isLoading = true;
+    }
     _error = null;
     notifyListeners();
 
-    await _loadGoals();
-
-    final api = authService.apiService;
-
-    await syncPendingOperations();
-    await syncPendingAccounts();
-    await syncPendingCategories();
-    await syncPendingTemplates();
+    await Future.wait([
+      syncPendingOperations(),
+      syncPendingAccounts(),
+      syncPendingCategories(),
+      syncPendingTemplates(),
+    ]);
     final pendingOps = _operations.where((op) => op.isPending).toList();
 
+    final api = authService.apiService;
     final results = await Future.wait([
       api.getUser().then((u) {
         _currentUser = u;
@@ -478,9 +480,11 @@ class FinanceStore extends ChangeNotifier {
       api.getGoalTemplates().catchError((e) { debugPrint('getGoalTemplates error: $e'); return <dynamic>[]; }),
     ], eagerError: false);
 
-    await _applyFavoriteStates();
-    await _syncPendingTags();
-    try { await _plannedPayments?.syncFromServer(); } catch (e) { debugPrint('planned payments sync error: $e'); }
+    await Future.wait([
+      _applyFavoriteStates(),
+      _syncPendingTags(),
+      _plannedPayments?.syncFromServer().catchError((e) { debugPrint('planned payments sync error: $e'); }) ?? Future.value(),
+    ]);
 
     final targets = results[11] as List<dynamic>? ?? [];
     final templateGoals = results[12] as List<dynamic>? ?? [];
