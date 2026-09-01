@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(label, style: const TextStyle(color: Colors.white60, fontSize: 12)),
           const SizedBox(height: 4),
           Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-            child: Text(amount, style: TextStyle(color: color == Colors.white ? const Color(0xFF0F2A14) : Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
+            child: Text(amount, style: TextStyle(color: color == Colors.white ? AppColors.text : Colors.white, fontSize: 14, fontWeight: FontWeight.w600))),
         ]),
       ),
     );
@@ -768,18 +768,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final catExpense = catTotals.fold<double>(0, (s, e) => s + e.total);
     final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
-    final palette = const [
-      Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00),
-      Color(0xFF8E24AA), Color(0xFF00ACC1), Color(0xFFF4511E), Color(0xFF3949AB),
-      Color(0xFFD81B60), Color(0xFF7CB342), Color(0xFF6D4C41), Color(0xFFC0CA33),
-      Color(0xFFFF7043), Color(0xFF26A69A), Color(0xFF5C6BC0), Color(0xFFAB47BC),
-    ];
+    final palette = AppColors.chartPalette;
     final chartSlices = <({String label, double value, Color color})>[];
     for (int i = 0; i < catTotals.length && i < 6; i++) {
       chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: palette[i % palette.length]));
     }
     if (otherTotal > 0) {
-      chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: const Color(0xFF9E9E9E)));
+      chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: AppColors.textSecondary));
     }
 
     final top = catTotals.take(6).toList();

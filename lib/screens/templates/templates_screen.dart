@@ -134,7 +134,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
     ));
     if (!mounted) return;
     if (store.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
       return;
     }
     Navigator.pop(context);

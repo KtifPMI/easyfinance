@@ -435,7 +435,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       if (!mounted) return;
       if (store.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+          SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger),
         );
         return;
       }

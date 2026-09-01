@@ -256,7 +256,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         if (store.error == 'LIMIT') {
           _showLimitDialog(context);
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: Colors.red));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger));
         }
         return;
       }

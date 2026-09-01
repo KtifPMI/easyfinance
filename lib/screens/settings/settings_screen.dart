@@ -455,7 +455,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await CsvExportService.export(store, picked.start, picked.end);
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export error: $e'), backgroundColor: Colors.red));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export error: $e'), backgroundColor: AppColors.danger));
                 }
               }
             }

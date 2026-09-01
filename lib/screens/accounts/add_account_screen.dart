@@ -38,7 +38,6 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   bool get _isCreditType => _type == 'credit' || _type == 'credit_card' || _type == 'loan_received';
   bool get _isDepositType => _type == 'deposit' || _type == 'insurance_savings' || _type == 'savings_plan' || _type == 'npf' || _type == 'pension';
   bool get _isDebitCard => _type == 'card';
-  bool get _isDebtType => _type == 'credit' || _type == 'credit_card' || _type == 'loan_received';
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
 
@@ -86,7 +85,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
     var balance = double.tryParse(_balanceCtrl.text.replaceAll(',', '.')) ?? 0;
-    if (_isDebtType) balance = -balance.abs();
+    if (_isCreditType) balance = -balance.abs();
 
     String createdAt = '';
     double initBalance = balance;
@@ -166,7 +165,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     if (!mounted) return;
     if (store.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(store.error!), backgroundColor: Colors.red),
+        SnackBar(content: Text(store.error!), backgroundColor: AppColors.danger),
       );
       return;
     }
@@ -232,7 +231,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         children: [
           AppInput(label: context.tr('accounts.name'), controller: _nameCtrl),
           const SizedBox(height: 16),
-          AppInput(label: _isDebtType ? context.tr('accounts.debt_amount') : context.tr('accounts.initial_balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
+          AppInput(label: _isCreditType ? context.tr('accounts.debt_amount') : context.tr('accounts.initial_balance'), controller: _balanceCtrl, keyboardType: TextInputType.number),
           const SizedBox(height: 16),
           Text(context.tr('accounts.type'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),

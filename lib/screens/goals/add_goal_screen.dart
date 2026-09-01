@@ -504,7 +504,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               child: Container(
                 width: 120, height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: AppColors.primaryLightFor(context),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(Icons.monetization_on, size: 48, color: AppColors.primary),
@@ -527,7 +527,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
+                        color: AppColors.primaryLightFor(context),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(

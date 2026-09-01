@@ -7,6 +7,7 @@ import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
+import '../../theme/theme.dart';
 
 class OAuthWebViewScreen extends StatefulWidget {
   const OAuthWebViewScreen({super.key});
@@ -162,12 +163,12 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       NotificationService().rescheduleAll();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: AppColors.danger));
         Navigator.pop(context, false);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('auth.login_error')), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('auth.login_error')), backgroundColor: AppColors.danger));
         Navigator.pop(context, false);
       }
     }
@@ -206,12 +207,12 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       NotificationService().rescheduleAll();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: AppColors.danger));
         Navigator.pop(context, false);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('auth.login_error')), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.tr('auth.login_error')), backgroundColor: AppColors.danger));
         Navigator.pop(context, false);
       }
     }

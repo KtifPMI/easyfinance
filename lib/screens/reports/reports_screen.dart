@@ -108,7 +108,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: _chartPalette[i % _chartPalette.length]));
         }
         if (otherTotal > 0) {
-          chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: const Color(0xFF9E9E9E)));
+          chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: AppColors.textSecondaryFor(context)));
         }
 
         final incomeCatTotals = store.categories
@@ -125,7 +125,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           incomeChartSlices.add((label: tCat(context, incomeCatTotals[i].category.name), value: incomeCatTotals[i].total, color: _incomePalette[i % _incomePalette.length]));
         }
         if (incomeOtherTotal > 0) {
-          incomeChartSlices.add((label: context.tr('reports.other'), value: incomeOtherTotal, color: const Color(0xFF9E9E9E)));
+          incomeChartSlices.add((label: context.tr('reports.other'), value: incomeOtherTotal, color: AppColors.textSecondaryFor(context)));
         }
 
         return ScreenScaffold(
@@ -453,28 +453,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     );
   }
 
-  static const _chartPalette = [
-    const Color(0xFFE53935),
-    const Color(0xFF1E88E5),
-    const Color(0xFF43A047),
-    const Color(0xFFFB8C00),
-    const Color(0xFF8E24AA),
-    const Color(0xFF00ACC1),
-    const Color(0xFFF4511E),
-    const Color(0xFF3949AB),
-    const Color(0xFFD81B60),
-    const Color(0xFF7CB342),
-    const Color(0xFF6D4C41),
-    const Color(0xFFC0CA33),
-    const Color(0xFFFF7043),
-    const Color(0xFF26A69A),
-    const Color(0xFF5C6BC0),
-    const Color(0xFFAB47BC),
-    const Color(0xFFFFCA28),
-    const Color(0xFF795548),
-    const Color(0xFF00897B),
-    const Color(0xFFF06292),
-  ];
+  List<Color> get _chartPalette => AppColors.chartPalette;
 
   // Доходная диаграмма: первый цвет — наш зелёный, далее все цвета кроме красного и жёлтого.
   static final List<Color> _incomePalette = [
