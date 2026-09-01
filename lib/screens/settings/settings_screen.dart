@@ -204,12 +204,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (v) async {
                 if (!context.mounted) return;
                 if (v) {
-                  if (!context.mounted) return;
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PinScreen()));
+                  final result = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => const PinScreen()));
+                  if (mounted) setState(() => _pinEnabled = result == true);
                 } else {
                   await context.read<FinanceStore>().authService.clearPin();
+                  if (mounted) setState(() => _pinEnabled = false);
                 }
-                if (mounted) setState(() => _pinEnabled = v);
               },
               activeThumbColor: AppColors.primary,
             ),

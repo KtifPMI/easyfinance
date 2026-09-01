@@ -65,8 +65,7 @@ class _PinScreenState extends State<PinScreen> {
     await auth.setPin(_pin);
     if (mounted) {
       final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
-      Navigator.pushReplacementNamed(context, startScreen == 'addOperation' ? '/add-operation' : '/main');
-      NotificationService().trackAppOpen();
+      Navigator.of(context).pop(true);
     }
   }
 

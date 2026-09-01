@@ -57,6 +57,11 @@ class FinanceStore extends ChangeNotifier {
   Future<void> _templatesReady = Future.value();
   PlannedPaymentStore? _plannedPayments;
 
+  double _cachedTotalBalance = 0;
+  double _cachedMoneyBalance = 0;
+  double _cachedMonthIncome = 0;
+  double _cachedMonthExpense = 0;
+
   FinanceStore({required this.authService, required this.apiClient, PlannedPaymentStore? plannedPayments})
       : _plannedPayments = plannedPayments {
     apiClient.onAuthExpired = markAuthExpired;
@@ -259,6 +264,7 @@ class FinanceStore extends ChangeNotifier {
     _displayCurrency = code;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('display_currency', code);
+    _recalcCachedTotals();
     notifyListeners();
   }
 
@@ -304,13 +310,8 @@ class FinanceStore extends ChangeNotifier {
   cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
 
-  double get totalBalance => _accounts
-      .where((a) => a.includeInTotal && !a.isArchived)
-      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
-
-  double get moneyBalance => _accounts
-      .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
-      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
+  double get totalBalance => _cachedTotalBalance;
+  double get moneyBalance => _cachedMoneyBalance;
 
   double accountActualBalance(Account a) {
     double sum = a.initBalance;
@@ -346,22 +347,8 @@ class FinanceStore extends ChangeNotifier {
     return CurrencyRateService.convert(o.amount, from, 'RUB', rates);
   }
 
-  double get monthIncome {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, 1);
-    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    return _operations
-        .where((o) => o.type == 'income' && !o.isDeleted && _inPeriod(o.date, start, end))
-        .fold(0.0, (s, o) => s + _amountInRub(o));
-  }
-  double get monthExpense {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, 1);
-    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-    return _operations
-        .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
-        .fold(0.0, (s, o) => s + _amountInRub(o));
-  }
+  double get monthIncome => _cachedMonthIncome;
+  double get monthExpense => _cachedMonthExpense;
 
   bool isInCurrentMonth(String dateIso) => isInMonth(dateIso, DateTime.now());
 
@@ -1798,6 +1785,25 @@ class FinanceStore extends ChangeNotifier {
         _accounts[i] = a.copyWith(balance: balance);
       }
     }
+    _recalcCachedTotals();
+  }
+
+  void _recalcCachedTotals() {
+    _cachedTotalBalance = _accounts
+        .where((a) => a.includeInTotal && !a.isArchived)
+        .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
+    _cachedMoneyBalance = _accounts
+        .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
+        .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, 1);
+    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    _cachedMonthIncome = _operations
+        .where((o) => o.type == 'income' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .fold(0.0, (s, o) => s + _amountInRub(o));
+    _cachedMonthExpense = _operations
+        .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .fold(0.0, (s, o) => s + _amountInRub(o));
   }
 
   Future<void> deleteBudget(String id) async {
