@@ -14,7 +14,8 @@ import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
 
 class ReportsScreen extends StatefulWidget {
-  const ReportsScreen({super.key});
+  final bool showBackButton;
+  const ReportsScreen({super.key, this.showBackButton = true});
 
   @override
   State<ReportsScreen> createState() => _ReportsScreenState();
@@ -130,6 +131,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
         return ScreenScaffold(
           title: context.tr('reports.title'),
+          showBackButton: widget.showBackButton,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

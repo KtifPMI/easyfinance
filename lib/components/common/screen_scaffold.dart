@@ -16,6 +16,7 @@ class ScreenScaffold extends StatelessWidget {
   final bool forceLogo;
   final Widget? titleWidget;
   final bool scrollable;
+  final bool showBackButton;
 
   const ScreenScaffold({
     super.key,
@@ -29,6 +30,7 @@ class ScreenScaffold extends StatelessWidget {
     this.forceLogo = false,
     this.titleWidget,
     this.scrollable = true,
+    this.showBackButton = true,
   });
 
   @override
@@ -60,7 +62,7 @@ class ScreenScaffold extends StatelessWidget {
   /// The leading and trailing slots have equal fixed widths so the title text
   /// stays centered regardless of a back button, the logo, or actions.
   Widget _buildTitle(BuildContext context) {
-    final canPop = Navigator.of(context).canPop();
+    final canPop = showBackButton && Navigator.of(context).canPop();
 
     Widget left;
     Widget right;

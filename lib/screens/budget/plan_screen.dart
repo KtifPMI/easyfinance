@@ -18,7 +18,8 @@ import 'add_budget_screen.dart';
 
 class PlanScreen extends StatefulWidget {
   final bool scrollToGoals;
-  const PlanScreen({super.key, this.scrollToGoals = false});
+  final bool showBackButton;
+  const PlanScreen({super.key, this.scrollToGoals = false, this.showBackButton = true});
 
   @override
   State<PlanScreen> createState() => _PlanScreenState();
@@ -50,6 +51,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           title: context.tr('budget.title'),
           forceLogo: true,
           scrollable: false,
+          showBackButton: widget.showBackButton,
           floatingActionButton: FloatingActionButton(
             onPressed: () => _showAddChoice(context),
             child: const Icon(Icons.add),

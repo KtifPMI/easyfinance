@@ -13,7 +13,8 @@ import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
 
 class OperationsListScreen extends StatefulWidget {
-  const OperationsListScreen({super.key});
+  final bool showBackButton;
+  const OperationsListScreen({super.key, this.showBackButton = true});
 
   @override
   State<OperationsListScreen> createState() => _OperationsListScreenState();
@@ -136,6 +137,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
           children: [
             ScreenScaffold(
               title: context.tr('operations.title'),
+              showBackButton: widget.showBackButton,
               actions: [
                 IconButton(
                   icon: _hasAdvFilter

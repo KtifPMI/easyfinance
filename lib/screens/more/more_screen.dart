@@ -15,7 +15,8 @@ import '../tags/tags_screen.dart';
 import '../settings/support_screen.dart';
 
 class MoreScreen extends StatelessWidget {
-  const MoreScreen({super.key});
+  final bool showBackButton;
+  const MoreScreen({super.key, this.showBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,7 @@ class MoreScreen extends StatelessWidget {
 
     return ScreenScaffold(
       title: context.tr('more.title'),
+      showBackButton: showBackButton,
       child: Column(
         children: [
           ScreenHint(hintId: 'more', text: context.tr('hints.more')),

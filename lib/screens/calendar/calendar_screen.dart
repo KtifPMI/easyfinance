@@ -14,7 +14,8 @@ import '../../utils/category_icons.dart';
 import '../../utils/planned_event_title.dart';
 
 class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+  final bool showBackButton;
+  const CalendarScreen({super.key, this.showBackButton = true});
 
   @override
   State<CalendarScreen> createState() => _CalendarScreenState();
@@ -148,6 +149,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         return ScreenScaffold(
           title: context.tr('calendar.title'),
           scrollable: false,
+          showBackButton: widget.showBackButton,
           floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: _selectedDate != null
                 ? {'date': _selectedDate!.toIso8601String().substring(0, 10)}

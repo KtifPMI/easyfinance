@@ -26,11 +26,11 @@ class _MainTabsState extends State<MainTabs> {
 
   final _screens = const [
     HomeScreen(),
-    OperationsListScreen(),
-    PlanScreen(),
-    CalendarScreen(),
-    ReportsScreen(),
-    MoreScreen(),
+    OperationsListScreen(showBackButton: false),
+    PlanScreen(showBackButton: false),
+    CalendarScreen(showBackButton: false),
+    ReportsScreen(showBackButton: false),
+    MoreScreen(showBackButton: false),
   ];
 
   final _icons = [Icons.home_outlined, Icons.list_alt_outlined, Icons.track_changes_outlined, Icons.calendar_month_outlined, Icons.pie_chart_outline, Icons.menu_outlined];
