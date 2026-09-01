@@ -24,6 +24,22 @@ class Recommendation {
   String get titleKey => 'recommend.$_baseId.title';
   String get descKey => 'recommend.$_baseId.desc';
 
+  String localizeTitle(String translated) {
+    var s = translated;
+    for (final e in titleArgs.entries) {
+      s = s.replaceAll('{${e.key}}', e.value);
+    }
+    return s;
+  }
+
+  String localizeDesc(String translated) {
+    var s = translated;
+    for (final e in descArgs.entries) {
+      s = s.replaceAll('{${e.key}}', e.value);
+    }
+    return s;
+  }
+
   String get _baseId {
     if (id.startsWith('b_overspent_')) return 'budget_overspent';
     if (id.startsWith('b_near_')) return 'budget_near_limit';

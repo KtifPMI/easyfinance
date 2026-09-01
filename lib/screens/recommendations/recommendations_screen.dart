@@ -43,8 +43,8 @@ class RecommendationsScreen extends StatelessWidget {
                   icon = Icons.lightbulb_outline;
               }
 
-              final title = context.tr(r.titleKey, namedArgs: r.titleArgs);
-              final desc = context.tr(r.descKey, namedArgs: r.descArgs);
+              final title = r.localizeTitle(context.tr(r.titleKey));
+              final desc = r.localizeDesc(context.tr(r.descKey));
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),

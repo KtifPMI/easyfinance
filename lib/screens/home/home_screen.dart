@@ -489,9 +489,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(context.tr(r.titleKey, namedArgs: r.titleArgs), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+                      Text(r.localizeTitle(context.tr(r.titleKey)), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
                       const SizedBox(height: 2),
-                      Text(context.tr(r.descKey, namedArgs: r.descArgs), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                      Text(r.localizeDesc(context.tr(r.descKey)), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),

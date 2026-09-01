@@ -150,7 +150,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     // ---- RECOMMENDATIONS / TIPS ----
     if (_match(q, ['совет', 'рекомендац', 'улучш', 'оптимиз', 'помощ', 'предлож', 'tip', 'recommend', 'advice', 'improve', 'suggest', 'help me'])) {
       if (recs.isEmpty) return _ChatMessage(role: 'assistant', text: context.tr('ai.no_recommendations'));
-      final items = recs.map((r) => '• ${context.tr(r.titleKey, namedArgs: r.titleArgs)}\n  ${context.tr(r.descKey, namedArgs: r.descArgs)}').join('\n\n');
+      final items = recs.map((r) => '• ${r.localizeTitle(context.tr(r.titleKey))}\n  ${r.localizeDesc(context.tr(r.descKey))}').join('\n\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.recommendations_title')}\n\n$items', navLabel: context.tr('ai.nav_recommendations'), navRoute: '/recommendations');
     }
 
