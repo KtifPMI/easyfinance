@@ -7,6 +7,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../components/operations/operation_list_item.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/color_utils.dart';
 import '../../utils/format.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
@@ -356,7 +357,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           });
                           setSheetState(() {});
                         },
-                        secondary: Icon(_accountIcon(a.icon), color: _parseColor(a.color)),
+                        secondary: Icon(_accountIcon(a.icon), color: parseColor(a.color)),
                         title: Text(a.name, style: const TextStyle(fontSize: 15)),
                         activeColor: AppColors.primary,
                         controlAffinity: ListTileControlAffinity.leading,
@@ -675,10 +676,5 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   IconData _accountIcon(String icon) {
     const map = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.account_balance_wallet, 'payments': Icons.payments, 'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard};
     return map[icon] ?? Icons.account_balance_wallet;
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
   }
 }

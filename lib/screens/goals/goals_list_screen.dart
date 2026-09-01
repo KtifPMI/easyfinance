@@ -7,6 +7,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../models/goal.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/color_utils.dart';
 import '../../utils/format.dart';
 import 'add_goal_screen.dart';
 
@@ -46,12 +47,12 @@ class GoalsListScreen extends StatelessWidget {
                                 Container(
                                   width: 48, height: 48,
                                   decoration: BoxDecoration(
-                                    color: achieved ? AppColors.success.withValues(alpha: 0.15) : _parseColor(g.color).withValues(alpha: 0.15),
+                                    color: achieved ? AppColors.success.withValues(alpha: 0.15) : parseColor(g.color).withValues(alpha: 0.15),
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
                                     achieved ? Icons.emoji_events : _goalIcon(g.icon),
-                                    color: achieved ? AppColors.success : _parseColor(g.color),
+                                    color: achieved ? AppColors.success : parseColor(g.color),
                                     size: 24,
                                   ),
                                 ),
@@ -91,7 +92,7 @@ class GoalsListScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : _parseColor(g.color)),
+                            ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : parseColor(g.color)),
                             const SizedBox(height: 4),
                               if (achieved)
                                 Text('100%', style: TextStyle(fontSize: 12, color: AppColors.success))
@@ -137,10 +138,5 @@ class GoalsListScreen extends StatelessWidget {
   IconData _goalIcon(String name) {
     const map = {'shield': Icons.shield, 'beach_access': Icons.beach_access, 'laptop': Icons.laptop, 'star': Icons.star};
     return map[name] ?? Icons.star;
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
   }
 }

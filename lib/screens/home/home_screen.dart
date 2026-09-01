@@ -13,6 +13,7 @@ import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
+import '../../utils/color_utils.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
 import '../../utils/planned_event_title.dart';
@@ -33,8 +34,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static bool _plannedSynced = false;
-  static bool _goalsSynced = false;
+  bool _plannedSynced = false;
+  bool _goalsSynced = false;
 
   @override
   Widget build(BuildContext context) {
@@ -250,8 +251,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Container(
                     width: 48, height: 48,
-                    decoration: BoxDecoration(color: _parseColor(a.color).withValues(alpha: 0.15), shape: BoxShape.circle),
-                    child: Icon(iconMap[a.icon] ?? Icons.account_balance, color: _parseColor(a.color)),
+                    decoration: BoxDecoration(color: parseColor(a.color).withValues(alpha: 0.15), shape: BoxShape.circle),
+                    child: Icon(iconMap[a.icon] ?? Icons.account_balance, color: parseColor(a.color)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -635,7 +636,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ProgressBar(percent: percent, color: _parseColor(g.color)),
+                  ProgressBar(percent: percent, color: parseColor(g.color)),
                   Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                 ],
               ),
@@ -849,10 +850,5 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 16),
       ],
     );
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
   }
 }

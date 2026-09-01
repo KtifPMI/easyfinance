@@ -10,6 +10,7 @@ import '../../store/finance_store.dart';
 import '../../utils/input_formatters.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
+import '../../utils/color_utils.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
 import '../goals/add_goal_screen.dart';
@@ -271,7 +272,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     children: [
                       Row(
                         children: [
-                          Icon(_goalIcon(g.icon), color: _parseColor(g.color), size: 24),
+                          Icon(_goalIcon(g.icon), color: parseColor(g.color), size: 24),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -294,7 +295,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                         ],
                       ),
                       const SizedBox(height: 8),
-                      ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : _parseColor(g.color)),
+                      ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : parseColor(g.color)),
                       const SizedBox(height: 4),
                       Text(achieved ? '100%' : '${percent.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
                     ],
@@ -405,10 +406,5 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         ],
       ),
     );
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
   }
 }

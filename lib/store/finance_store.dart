@@ -104,24 +104,32 @@ class FinanceStore extends ChangeNotifier {
     final tagsRaw = prefs.getString('easyfinance_cached_tags');
     final userRaw = prefs.getString('easyfinance_cached_user');
     if (accountsRaw != null) {
-      final list = jsonDecode(accountsRaw) as List<dynamic>;
-      _accounts = list.map((e) => Account.fromLocalJson(e as Map<String, dynamic>)).toList();
-      await _applyFavoriteStates();
-      _useMock = false;
+      try {
+        final list = jsonDecode(accountsRaw) as List<dynamic>;
+        _accounts = list.map((e) => Account.fromLocalJson(e as Map<String, dynamic>)).toList();
+        await _applyFavoriteStates();
+        _useMock = false;
+      } catch (_) {}
     }
     if (operationsRaw != null) {
-      final list = jsonDecode(operationsRaw) as List<dynamic>;
-      _operations = list.map((e) => Operation.fromLocalJson(e as Map<String, dynamic>)).toList();
-      _useMock = false;
+      try {
+        final list = jsonDecode(operationsRaw) as List<dynamic>;
+        _operations = list.map((e) => Operation.fromLocalJson(e as Map<String, dynamic>)).toList();
+        _useMock = false;
+      } catch (_) {}
     }
     if (categoriesRaw != null) {
-      final list = jsonDecode(categoriesRaw) as List<dynamic>;
-      _categories = list.map((e) => cat.Category.fromLocalJson(e as Map<String, dynamic>)).toList();
-      _useMock = false;
+      try {
+        final list = jsonDecode(categoriesRaw) as List<dynamic>;
+        _categories = list.map((e) => cat.Category.fromLocalJson(e as Map<String, dynamic>)).toList();
+        _useMock = false;
+      } catch (_) {}
     }
     if (tagsRaw != null) {
-      final list = jsonDecode(tagsRaw) as List<dynamic>;
-      _tags = list.map((e) => Tag.fromJson(e as Map<String, dynamic>)).toList();
+      try {
+        final list = jsonDecode(tagsRaw) as List<dynamic>;
+        _tags = list.map((e) => Tag.fromJson(e as Map<String, dynamic>)).toList();
+      } catch (_) {}
     }
     final deletedRaw = prefs.getString('easyfinance_deleted_tags');
     if (deletedRaw != null) {
@@ -152,28 +160,18 @@ class FinanceStore extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     if (_accounts.isNotEmpty) {
       await prefs.setString('easyfinance_cached_accounts', jsonEncode(_accounts.map((a) => a.toJson()).toList()));
-    } else {
-      await prefs.remove('easyfinance_cached_accounts');
     }
     if (_operations.isNotEmpty) {
       await prefs.setString('easyfinance_cached_operations', jsonEncode(_operations.map((o) => o.toJson()).toList()));
-    } else {
-      await prefs.remove('easyfinance_cached_operations');
     }
     if (_categories.isNotEmpty) {
       await prefs.setString('easyfinance_cached_categories', jsonEncode(_categories.map((c) => c.toJson()).toList()));
-    } else {
-      await prefs.remove('easyfinance_cached_categories');
     }
     if (_tags.isNotEmpty) {
       await prefs.setString('easyfinance_cached_tags', jsonEncode(_tags.map((t) => t.toJson()).toList()));
-    } else {
-      await prefs.remove('easyfinance_cached_tags');
     }
     if (_deletedTagNames.isNotEmpty) {
       await prefs.setString('easyfinance_deleted_tags', jsonEncode(_deletedTagNames.toList()));
-    } else {
-      await prefs.remove('easyfinance_deleted_tags');
     }
     if (_currentUser != null) {
       await prefs.setString('easyfinance_cached_user', jsonEncode(_currentUser!.toJson()));
@@ -308,11 +306,11 @@ class FinanceStore extends ChangeNotifier {
 
   double get totalBalance => _accounts
       .where((a) => a.includeInTotal && !a.isArchived)
-      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, 'RUB', _rates));
+      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
 
   double get moneyBalance => _accounts
       .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
-      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, 'RUB', _rates));
+      .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
 
   double accountActualBalance(Account a) {
     double sum = a.initBalance;
@@ -330,7 +328,7 @@ class FinanceStore extends ChangeNotifier {
           } else {
             final src = getAccount(op.accountId);
             if (src != null && src.currency != a.currency) {
-              sum += CurrencyRateService.convert(op.amount, src.currency, a.currency, _rates);
+              sum += CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op));
             } else {
               sum += op.amount;
             }
@@ -578,12 +576,18 @@ class FinanceStore extends ChangeNotifier {
     final curOps = _operations.where((o) => inRange(o, monthStart, monthEnd)).toList();
     final prevOps = _operations.where((o) => inRange(o, prevMonthStart, prevMonthEnd)).toList();
 
-    final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
-    final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
-    final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + o.amount);
-    final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + o.amount);
+    final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + _amountInRub(o));
+    final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
+    final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + _amountInRub(o));
+    final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
 
-    String fmt(double v) => formatMoneyWhole(v, currency: 'RUB').replaceAll(' ₽', '');
+    String fmt(double v) {
+      final converted = CurrencyRateService.convert(v, 'RUB', _displayCurrency, _rates);
+      final sign = converted < 0 ? '-' : '';
+      final intPart = converted.abs().toStringAsFixed(0).replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
+      return '$sign$intPart';
+    }
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
 
     // 1 — budget overspent or near limit
@@ -621,11 +625,12 @@ class FinanceStore extends ChangeNotifier {
       int diningCount = 0;
       for (final o in curOps.where((o) => o.type == 'expense' && foodCats.contains(o.categoryId))) {
         final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
+        final amt = _amountInRub(o);
         if (cat != null && (cat.name.contains('кафе') || cat.name.contains('ресторан') || cat.name.contains('cafe') || cat.name.contains('restaurant'))) {
-          diningTotal += o.amount;
+          diningTotal += amt;
           diningCount++;
         } else {
-          foodTotal += o.amount;
+          foodTotal += amt;
         }
       }
       final allFood = foodTotal + diningTotal;
@@ -662,7 +667,7 @@ class FinanceStore extends ChangeNotifier {
     // 3 — no budget for high-spend categories
     final topSpend = <String, double>{};
     for (final o in curOps.where((o) => o.type == 'expense' && o.categoryId != null)) {
-      topSpend.update(o.categoryId!, (v) => v + o.amount, ifAbsent: () => o.amount);
+      topSpend.update(o.categoryId!, (v) => v + _amountInRub(o), ifAbsent: () => _amountInRub(o));
     }
     final budgetedCats = _budgets.where((b) => !b.isDeleted).map((b) => b.categoryId).toSet();
     final sortedCats = topSpend.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
@@ -690,7 +695,7 @@ class FinanceStore extends ChangeNotifier {
     ).map((c) => c.id).toSet();
     double housingTotal = 0;
     for (final o in curOps.where((o) => o.type == 'expense' && housingCats.contains(o.categoryId))) {
-      housingTotal += o.amount;
+      housingTotal += _amountInRub(o);
     }
     if (monthIncome > 0 && housingTotal > 0) {
       final housingRatio = housingTotal / monthIncome * 100;
@@ -833,7 +838,7 @@ class FinanceStore extends ChangeNotifier {
       final me = DateTime(now.year, now.month - m + 1, 0);
       for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null && inRange(o, ms, me))) {
         catExpenses.putIfAbsent(o.categoryId!, () => []);
-        if (m == 0) catExpenses[o.categoryId]!.add(o.amount);
+        if (m == 0) catExpenses[o.categoryId]!.add(_amountInRub(o));
       }
     }
     for (final entry in catExpenses.entries) {
@@ -846,7 +851,7 @@ class FinanceStore extends ChangeNotifier {
         final me = DateTime(now.year, now.month - m + 1, 0);
         double sum = 0;
         for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId == entry.key && inRange(o, ms, me))) {
-          sum += o.amount;
+          sum += _amountInRub(o);
         }
         if (sum > 0) prevTotals.add(sum);
       }
@@ -871,7 +876,7 @@ class FinanceStore extends ChangeNotifier {
       final me = DateTime(now.year, now.month - m + 1, 0);
       for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null && inRange(o, ms, me))) {
         catMonthTotals.putIfAbsent(o.categoryId!, () => {});
-        catMonthTotals[o.categoryId!]![m] = (catMonthTotals[o.categoryId!]![m] ?? 0) + o.amount;
+        catMonthTotals[o.categoryId!]![m] = (catMonthTotals[o.categoryId!]![m] ?? 0) + _amountInRub(o);
       }
     }
     final subCats = <String>{};
@@ -922,7 +927,7 @@ class FinanceStore extends ChangeNotifier {
       double weekendExp = 0;
       for (final o in curOps.where((o) => o.type == 'expense')) {
         final d = DateTime.tryParse(o.date);
-        if (d != null && (d.weekday == 6 || d.weekday == 7)) weekendExp += o.amount;
+        if (d != null && (d.weekday == 6 || d.weekday == 7)) weekendExp += _amountInRub(o);
       }
       final weekendPct = weekendExp / monthExpense * 100;
       if (weekendPct > _recPrefs.weekendRatioPct) {
@@ -937,16 +942,19 @@ class FinanceStore extends ChangeNotifier {
     }
 
     // 16 — large cash withdrawal
-    for (final o in curOps.where((o) => o.type == 'expense' && o.amount > _recPrefs.largeCashMin)) {
-      final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
-      final name = cat?.name ?? 'Без категории';
-      _recommendations.add(Recommendation(
-        id: 'large_cash_${o.id}', type: 'risk', severity: 'medium',
-        title: 'Крупная трата: ${fmt(o.amount)} ₽',
-        description: '«$name» — ${o.date.substring(0, 10)}.',
-        titleArgs: {'amount': fmt(o.amount)},
-        descArgs: {'amount': fmt(o.amount), 'name': name, 'date': o.date.substring(0, 10)},
-      ));
+    for (final o in curOps.where((o) => o.type == 'expense')) {
+      final convertedAmt = _amountInRub(o);
+      if (convertedAmt > _recPrefs.largeCashMin) {
+        final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
+        final name = cat?.name ?? 'Без категории';
+        _recommendations.add(Recommendation(
+          id: 'large_cash_${o.id}', type: 'risk', severity: 'medium',
+          title: 'Крупная трата: ${fmt(convertedAmt)} ₽',
+          description: '«$name» — ${o.date.substring(0, 10)}.',
+          titleArgs: {'amount': fmt(convertedAmt)},
+          descArgs: {'amount': fmt(convertedAmt), 'name': name, 'date': o.date.substring(0, 10)},
+        ));
+      }
     }
 
     // 17 — goal pacing (will goal be met on time?)
@@ -1070,17 +1078,6 @@ class FinanceStore extends ChangeNotifier {
     _operations.insert(0, op);
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    if (op.type != 'transfer' && op.categoryId != null) {
-      final hasBudget = _budgets.any((b) => b.categoryId == op.categoryId && !b.isDeleted);
-      if (!hasBudget) {
-        await addBudget(Budget(
-          id: DateTime.now().microsecondsSinceEpoch.toString(),
-          categoryId: op.categoryId!,
-          limit: 0,
-        ));
-        _error = null;
-      }
-    }
     _generateRecommendations();
     await _registerTags(op.tags);
     await _saveCache();
@@ -1102,7 +1099,7 @@ class FinanceStore extends ChangeNotifier {
   }
 
   String? _transferCategoryId() {
-    return _categories.cast<cat.Category?>().firstWhere((c) => c!.type == '0' && (c.name == 'Перевод' || c.name.contains('еревод')), orElse: () => null)?.id;
+    return _categories.cast<cat.Category?>().firstWhere((c) => c!.type == '0' && (c.name == 'Перевод' || c.name == 'Transfer' || c.name.contains('еревод') || c.name.toLowerCase().contains('transfer')), orElse: () => null)?.id;
   }
 
   /// Re-fetches the operation list from the server. Used after an operation is
@@ -1151,7 +1148,6 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    await _saveCache();
     notifyListeners();
   }
 
@@ -2248,7 +2244,6 @@ class FinanceStore extends ChangeNotifier {
         debugPrint('Sync pending account ${a.id} failed: $e');
       }
     }
-    await _saveCache();
     notifyListeners();
   }
 
@@ -2275,7 +2270,6 @@ class FinanceStore extends ChangeNotifier {
         debugPrint('Sync pending category ${c.id} failed: $e');
       }
     }
-    await _saveCache();
     notifyListeners();
   }
 

@@ -258,7 +258,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               if (incomeCatTotals.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: Text(context.tr('home.no_expenses'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+                  child: Center(child: Text(context.tr('reports.no_income'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
                 )
               else ...[
                 Center(

@@ -416,7 +416,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       'type': e.type == 'income' ? '1' : e.type == 'transfer' ? '2' : '0',
       if (e.toAccountId != null) 'transfer_account_id': e.toAccountId,
       if (e.toAccountId != null) 'transfer_amount': e.amount > 0 ? e.amount.toStringAsFixed(2) : '0',
-      'accepted': 0,
+      'accepted': e.acceptedDates.isNotEmpty ? e.acceptedDates.length : 0,
       // Server `every_day` is the recurrence INTERVAL in days (1/7/30/90/365),
       // not the day-of-month.
       if (recurring) 'every_day': e.repeatMode,

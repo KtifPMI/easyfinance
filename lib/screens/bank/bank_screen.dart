@@ -5,6 +5,7 @@ import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/color_utils.dart';
 import '../accounts/add_account_screen.dart';
 
 class BankScreen extends StatelessWidget {
@@ -59,8 +60,8 @@ class BankScreen extends StatelessWidget {
                         children: [
                           Container(
                             width: 48, height: 48,
-                            decoration: BoxDecoration(color: _parseColor(a.color).withValues(alpha: 0.15), shape: BoxShape.circle),
-                            child: Icon(iconMap[a.icon] ?? Icons.account_balance, color: _parseColor(a.color)),
+                            decoration: BoxDecoration(color: parseColor(a.color).withValues(alpha: 0.15), shape: BoxShape.circle),
+                            child: Icon(iconMap[a.icon] ?? Icons.account_balance, color: parseColor(a.color)),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -86,10 +87,5 @@ class BankScreen extends StatelessWidget {
         );
       },
     );
-  }
-
-  Color _parseColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    return Color(int.parse('FF$hex', radix: 16));
   }
 }
