@@ -1130,15 +1130,23 @@ class FinanceStore extends ChangeNotifier {
       try {
         final withClient = op.copyWith(clientId: op.clientId ?? op.id);
         final now = DateTime.now();
-        final payload = _buildOperationPayload(withClient, createdAt: formatApiDateTime(now), updatedAt: formatApiDateTime(now));
+        final isDel = op.isDeleted;
+        final payload = _buildOperationPayload(
+          withClient,
+          createdAt: formatApiDateTime(now),
+          updatedAt: formatApiDateTime(now),
+          deletedAt: isDel ? formatApiDateTime(now) : null,
+        );
         final response = await authService.apiService.addOperation({'operations': [payload]});
         final serverOperations = response['operations'] as List<dynamic>?;
         final serverId = serverOperations?.isNotEmpty == true
             ? (serverOperations!.first as Map<String, dynamic>)['id']?.toString()
             : null;
-        if (serverId != null && serverId.isNotEmpty) {
-          final idx = _operations.indexWhere((o) => o.id == op.id);
-          if (idx >= 0) {
+        final idx = _operations.indexWhere((o) => o.id == op.id);
+        if (idx >= 0) {
+          if (isDel) {
+            _operations.removeAt(idx);
+          } else if (serverId != null && serverId.isNotEmpty) {
             _operations[idx] = _operations[idx].copyWith(id: serverId, isPending: false, clientId: withClient.clientId);
           }
         }
@@ -1148,6 +1156,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _recalcBudgetSpent();
+    _generateRecommendations();
     notifyListeners();
   }
 
@@ -1227,9 +1236,18 @@ class FinanceStore extends ChangeNotifier {
         final payload = _buildOperationPayload(op, existingId: op.id, updatedAt: now, deletedAt: now);
         await authService.apiService.setOperation({'operations': [payload]}, operationId: op.id);
       } on ApiException catch (e) {
+        if (_isNetworkError(e)) {
+          _queuePendingDelete(op, opIdx);
+          return;
+        }
         _error = e.message; notifyListeners();
         return;
       } catch (e) {
+        final msg = e.toString().toLowerCase();
+        if (msg.contains('socket') || msg.contains('host') || msg.contains('network') || msg.contains('connection')) {
+          _queuePendingDelete(op, opIdx);
+          return;
+        }
         _error = 'Ошибка удаления: $e'; notifyListeners();
         return;
       }
@@ -1241,6 +1259,16 @@ class FinanceStore extends ChangeNotifier {
     _recalcBudgetSpent();
     _generateRecommendations();
     await _saveCache();
+    notifyListeners();
+  }
+
+  void _queuePendingDelete(Operation op, int idx) {
+    final now = formatApiDateTime();
+    _operations[idx] = op.copyWith(isPending: true, isDeleted: true, updatedAt: now);
+    _recalcAccountBalances();
+    _recalcBudgetSpent();
+    _generateRecommendations();
+    _saveCache();
     notifyListeners();
   }
 
