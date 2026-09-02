@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -374,7 +374,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
     if (customFrom != null || customTo != null) {
       final start = customFrom != null
           ? DateTime(customFrom.year, customFrom.month, 1)
-          : DateTime(customTo!.year, customTo!.month, 1);
+          : DateTime(customTo.year, customTo.month, 1);
       final end = customTo != null
           ? DateTime(customTo.year, customTo.month, 1)
           : DateTime(DateTime.now().year, DateTime.now().month, 1);

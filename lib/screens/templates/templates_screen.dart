@@ -45,7 +45,7 @@ class TemplatesScreen extends StatelessWidget {
                     ),
                     title: Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     subtitle: Text(
-                      t.amount > 0 ? '$typeLabel � ${store.fmt(t.amount)}' : typeLabel,
+                      t.amount > 0 ? '$typeLabel В· ${store.fmt(t.amount)}' : typeLabel,
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)),
                     ),

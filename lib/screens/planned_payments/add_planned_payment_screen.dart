@@ -39,7 +39,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   String? _accountId;
   String? _categoryId;
   String? _toAccountId;
-  final List<bool> _weekdays = List.filled(7, false); // Пн..Вс
+  final List<bool> _weekdays = List.filled(7, false); // РџРЅ..Р’СЃ
 
   @override
   void initState() {
@@ -77,7 +77,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       }
     } else {
       _date = widget.presetDate != null ? DateTime.tryParse(widget.presetDate!) : DateTime.now();
-      _weekdays[2] = true; // Ср по умолчанию
+      _weekdays[2] = true; // РЎСЂ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
     }
   }
 
@@ -227,11 +227,6 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         ),
       );
 
-  Widget _hint(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 2),
-        child: Text(text, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
-      );
-
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 4),
         child: Text(text, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textFor(context))),
@@ -254,7 +249,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
-              child: Text(_date != null ? _fmt(_date!) : '—', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context))),
+              child: Text(_date != null ? _fmt(_date!) : 'вЂ”', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context))),
             ),
           ),
         ],
@@ -652,7 +647,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         ),
       );
 
-  // Отдельный контрлер для количества повторов (лениво)
+  // РћС‚РґРµР»СЊРЅС‹Р№ РєРѕРЅС‚СЂР»РµСЂ РґР»СЏ РєРѕР»РёС‡РµСЃС‚РІР° РїРѕРІС‚РѕСЂРѕРІ (Р»РµРЅРёРІРѕ)
   TextEditingController? _repeatCountController;
   TextEditingController _repeatCountCtrl() => _repeatCountController ??= TextEditingController(text: _repeatCount);
 

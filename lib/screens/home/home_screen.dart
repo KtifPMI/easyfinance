@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
@@ -187,13 +187,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-  Widget _buildRestSkeleton(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 28),
-      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-    );
-  }
 
   Widget _buildProfitLossSection(BuildContext context, FinanceStore store) {
     final now = DateTime.now();

@@ -25,7 +25,7 @@ class ProfileScreen extends StatelessWidget {
     final user = store.currentUser;
     final name = user?.name ?? context.tr('profile.demo_user');
     final email = user?.email ?? 'demo@easyfinance.ru';
-    final regDate = user?.registeredAt != null ? formatDateLong(user!.registeredAt!.toIso8601String()) : '—';
+    final regDate = user?.registeredAt != null ? formatDateLong(user!.registeredAt!.toIso8601String()) : 'â€”';
     final plan = user?.isPremium == true ? context.tr('profile.premium') : context.tr('profile.free');
     final syncLabel = user != null ? 'EasyFinance.ru' : context.tr('profile.local_data');
 

@@ -24,6 +24,7 @@ import '../utils/format.dart';
 import '../utils/currency_utils.dart';
 
 class FinanceStore extends ChangeNotifier {
+  void refresh() => notifyListeners();
   final AuthService authService;
   final ApiClient apiClient;
   User? _currentUser;
@@ -404,7 +405,7 @@ class FinanceStore extends ChangeNotifier {
           apiClient.setAuth(accessToken: apiClient.accessToken ?? '', userId: u.id);
         }
         return u;
-      }).catchError((e) { debugPrint('getUser error: $e'); return null; }),
+      }).catchError((e) { debugPrint('getUser error: $e'); return null as dynamic; }),
 
       api.getAccounts().then((accs) {
         final pendingAcc = _accounts.where((a) => a.isPending).toList();
@@ -412,14 +413,14 @@ class FinanceStore extends ChangeNotifier {
         final accIds = _accounts.map((a) => a.id).toSet();
         for (final p in pendingAcc) { if (!accIds.contains(p.id)) _accounts.add(p); }
         return accs;
-      }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <dynamic>[]; }),
+      }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <Account>[]; }),
 
       api.getOperations().then((ops) {
         _operations = ops;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
         return ops;
-      }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <dynamic>[]; }),
+      }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
       apiClient.getCategoriesV2().then((rawCats) {
         _buildSystemIconMap(rawCats);
@@ -429,7 +430,7 @@ class FinanceStore extends ChangeNotifier {
         final catIds = _categories.map((c) => c.id).toSet();
         for (final p in pendingCats) { if (!catIds.contains(p.id)) _categories.add(p); }
         return rawCats;
-      }).catchError((e) { _error ??= 'Ошибка загрузки категорий: $e'; return <dynamic>[]; }),
+      }).catchError((e) { _error ??= 'Ошибка загрузки категорий: $e'; return <Map<String, dynamic>>[]; }),
 
       api.getTags().then((server) {
         final localOnly = _tags.where((t) => t.id.isEmpty).toList();
@@ -437,7 +438,7 @@ class FinanceStore extends ChangeNotifier {
         for (final l in localOnly) { if (!merged.any((t) => t.name.toLowerCase() == l.name.toLowerCase())) merged.add(l); }
         _tags = merged;
         return server;
-      }).catchError((e) { debugPrint('getTags error: $e'); return <dynamic>[]; }),
+      }).catchError((e) { debugPrint('getTags error: $e'); return <Tag>[]; }),
 
       api.getTemplates().then((apiTemplates) {
         final pendingTpl = _templates.where((t) => t.isPending).toList();
@@ -445,12 +446,12 @@ class FinanceStore extends ChangeNotifier {
         final tplIds = _templates.map((t) => t.id).toSet();
         for (final p in pendingTpl) { if (!tplIds.contains(p.id)) _templates.add(p); }
         return apiTemplates;
-      }).catchError((e) { debugPrint('getTemplates error: $e'); return <dynamic>[]; }),
+      }).catchError((e) { debugPrint('getTemplates error: $e'); return <OperationTemplate>[]; }),
 
-      api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null; }),
-      api.getCurrencies().then((c) { _currencies = c; return c; }).catchError((e) { debugPrint('getCurrencies error: $e'); return null; }),
-      CurrencyRateService.fetchRates().then((r) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null; }),
-      api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null; }),
+      api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null as dynamic; }),
+      api.getCurrencies().then((c) { _currencies = c; return c; }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
+      CurrencyRateService.fetchRates().then((r) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null as dynamic; }),
+      api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
       api.getBudgetCategories().then((bc) {
         _budgets = bc.map((b) => Budget(
           id: b['id']?.toString() ?? '',
@@ -461,9 +462,9 @@ class FinanceStore extends ChangeNotifier {
           isDeleted: b['deleted_at'] != null && b['deleted_at'].toString().isNotEmpty,
         )).toList();
         return bc;
-      }).catchError((e) { debugPrint('getBudgetCategories error: $e'); return <dynamic>[]; }),
-      api.getTargets().catchError((e) { debugPrint('getTargets error: $e'); return <dynamic>[]; }),
-      api.getGoalTemplates().catchError((e) { debugPrint('getGoalTemplates error: $e'); return <dynamic>[]; }),
+      }).catchError((e) { debugPrint('getBudgetCategories error: $e'); return <Map<String, dynamic>>[]; }),
+      api.getTargets().catchError((e) { debugPrint('getTargets error: $e'); return <Map<String, dynamic>>[]; }),
+      api.getGoalTemplates().catchError((e) { debugPrint('getGoalTemplates error: $e'); return <Map<String, dynamic>>[]; }),
     ], eagerError: false);
 
     await Future.wait([
@@ -2414,7 +2415,7 @@ class FinanceStore extends ChangeNotifier {
       if (!names.any((n) => n.toLowerCase() == key)) continue;
       final kept = names.where((n) => n.toLowerCase() != key).toList();
       if (useRepl) {
-        final r = repl!;
+        final r = repl;
         if (!kept.any((n) => n.toLowerCase() == r.toLowerCase())) kept.add(r);
       }
       final newStr = _rebuildTagsString(op.tags, kept);

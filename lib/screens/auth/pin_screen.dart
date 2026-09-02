@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -64,7 +64,6 @@ class _PinScreenState extends State<PinScreen> {
     final prefs = await SharedPreferences.getInstance();
     await auth.setPin(_pin);
     if (mounted) {
-      final startScreen = prefs.getString('easyfinance_start_screen') ?? 'main';
       Navigator.of(context).pop(true);
     }
   }

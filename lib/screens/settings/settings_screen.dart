@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -254,7 +254,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       bindFormatSettings(false, store.showKopeksInOps);
                       if (mounted) setState(() => _kopeksEnabled = false);
                     }
-                    if (context.mounted) store.notifyListeners();
+                    if (context.mounted) store.refresh();
                   },
                   activeThumbColor: AppColors.primary,
                 ),
@@ -283,7 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       bindFormatSettings(store.showKopeks, false);
                       if (mounted) setState(() => _kopeksInOpsEnabled = false);
                     }
-                    if (context.mounted) store.notifyListeners();
+                    if (context.mounted) store.refresh();
                   },
                   activeThumbColor: AppColors.primary,
                 ),

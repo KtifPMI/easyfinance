@@ -147,7 +147,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     for (final e in entries) {
       final ds = e['date_start']?.toString() ?? e['date']?.toString();
       final d = _parseDate(ds).isNotEmpty ? DateTime.tryParse(_parseDate(ds)) : null;
-      if (d != null && (earliestStart == null || d.isBefore(earliestStart!))) {
+      if (d != null && (earliestStart == null || d.isBefore(earliestStart))) {
         earliestStart = d;
         earliestStartStr = _parseDate(ds);
       }
@@ -155,7 +155,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       final de = e['date_end']?.toString();
       if (de != null && de.isNotEmpty && de != '0000-00-00') {
         final parsed = DateTime.tryParse(_parseDate(de));
-        if (parsed != null && (dateEnd == null || parsed.isAfter(DateTime.tryParse(dateEnd!)!))) {
+        if (parsed != null && (dateEnd == null || parsed.isAfter(DateTime.tryParse(dateEnd)!))) {
           dateEnd = _parseDate(de);
         }
       }
@@ -208,7 +208,7 @@ class PlannedPaymentStore extends ChangeNotifier {
       weekDays: first['week_days']?.toString(),
       dateStart: earliestStartStr,
       dateEnd: dateEnd,
-      repeatCount: (period > 0 && repeatRawNum != null && repeatRawNum! > 0) ? repeatRawNum : null,
+      repeatCount: (period > 0 && repeatRawNum != null && repeatRawNum > 0) ? repeatRawNum : null,
       time: first['time']?.toString(),
       acceptedDates: acceptedDates,
       occurrenceIds: occurrenceIds,
@@ -323,7 +323,6 @@ class PlannedPaymentStore extends ChangeNotifier {
 
   void _recalcDates() {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
     for (int i = 0; i < _events.length; i++) {
       final e = _events[i];
       final next = e.nextOccurrence();
