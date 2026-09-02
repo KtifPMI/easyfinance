@@ -66,7 +66,7 @@ class _DateTimeStepperState extends State<DateTimeStepper> {
             border: Border.all(color: Theme.of(context).dividerColor),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+          child: Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
         ),
         GestureDetector(onTap: onDown, child: Icon(Icons.keyboard_arrow_down, size: 28, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
       ],

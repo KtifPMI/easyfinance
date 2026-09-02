@@ -55,7 +55,7 @@ class TemplatesScreen extends StatelessWidget {
                         if (t.amount > 0)
                           Text('${t.type == 'income' ? '+' : '-'}${store.fmt(t.amount)}',
                               maxLines: 1, softWrap: false,
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
+                              style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600,
                                   color: t.type == 'income' ? AppColors.income : AppColors.expense)),
                         const SizedBox(width: 4),
                         IconButton(
@@ -219,8 +219,8 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
             children: [
               Icon(icon, size: 18, color: active ? Colors.white : AppColors.textFor(context)),
               const SizedBox(width: 6),
-              Text(label, textAlign: TextAlign.center, style: TextStyle(
-                fontSize: 15, fontWeight: FontWeight.w600,
+              Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium.copyWith(
+                fontWeight: FontWeight.w600,
                 color: active ? Colors.white : AppColors.textFor(context),
               )),
             ],

@@ -16,7 +16,7 @@ class InformerScreen extends StatelessWidget {
           children: [
             Icon(Icons.info_outline, size: 64, color: AppColors.textSecondaryFor(context)),
             const SizedBox(height: 16),
-            Text(context.tr('informer.subtitle'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('informer.subtitle'), style: Theme.of(context).textTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 8),
             Text(context.tr('informer.description'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)), textAlign: TextAlign.center),
           ],

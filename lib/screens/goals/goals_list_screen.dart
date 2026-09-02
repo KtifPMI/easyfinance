@@ -63,13 +63,13 @@ class GoalsListScreen extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Expanded(child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context)))),
+                                          Expanded(child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context)))),
                                           if (achieved) ...[
                                             const SizedBox(width: 6),
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                               decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                                              child: Text(context.tr('goals.achieved'), style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)),
+                                              child: Text(context.tr('goals.achieved'), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.success, fontWeight: FontWeight.w600)),
                                             ),
                                           ],
                                         ],
@@ -95,12 +95,12 @@ class GoalsListScreen extends StatelessWidget {
                             ProgressBar(percent: achieved ? 100 : percent, color: achieved ? AppColors.success : parseColor(g.color)),
                             const SizedBox(height: 4),
                               if (achieved)
-                                Text('100%', style: TextStyle(fontSize: 12, color: AppColors.success))
+                                Text('100%', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.success))
                             else
-                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : context.tr('goals.no_deadline')}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                              Text('${percent.round()}% · ${context.tr('goals.deadline')} ${g.deadline.isNotEmpty ? formatDateLong(g.deadline) : context.tr('goals.no_deadline')}', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                               if (!achieved && g.monthlyRecommendation != null && g.monthlyRecommendation! > 0) ...[
                               const SizedBox(height: 4),
-                              Text(context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(g.monthlyRecommendation!)}), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                              Text(context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(g.monthlyRecommendation!)}), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                             ],
                           ],
                         ),

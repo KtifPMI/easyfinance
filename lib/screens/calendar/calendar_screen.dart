@@ -50,7 +50,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text(context.tr('calendar.legend_planned'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('calendar.legend_planned'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
           ],
         ),
         Row(
@@ -58,7 +58,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.danger, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text(context.tr('calendar.legend_overdue'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('calendar.legend_overdue'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
           ],
         ),
         Row(
@@ -66,7 +66,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.transfer, shape: BoxShape.circle)),
             const SizedBox(width: 6),
-            Text(context.tr('calendar.legend_confirmed'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('calendar.legend_confirmed'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
           ],
         ),
       ],
@@ -173,7 +173,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [context.tr('calendar.mon'), context.tr('calendar.tue'), context.tr('calendar.wed'), context.tr('calendar.thu'), context.tr('calendar.fri'), context.tr('calendar.sat'), context.tr('calendar.sun')]
-                      .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))))
+                      .map((d) => SizedBox(width: 36, child: Text(d, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context)))))
                       .toList(),
                 ),
                 const SizedBox(height: 8),
@@ -245,7 +245,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildDayEvents(BuildContext context, FinanceStore store, List<Operation> ops, List<FinancialEvent> planned) {
     return ListView(
       children: [
-        Text(formatDateLong(_selectedDate!.toIso8601String()), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        Text(formatDateLong(_selectedDate!.toIso8601String()), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         const SizedBox(height: 8),
         if (ops.isEmpty && planned.isEmpty)
           Padding(padding: const EdgeInsets.only(top: 16), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))),
@@ -306,20 +306,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                          Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                           Row(
                             children: [
-                              Text(formatDate(displayDateStr), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                              Text(formatDate(displayDateStr), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context))),
                               if (isCompleted) ...[
                                 const SizedBox(width: 6),
                                 Icon(Icons.check_circle, size: 14, color: AppColors.success),
                                 const SizedBox(width: 4),
                                 Flexible(
-                                  child: Text('calendar.confirmed'.tr(), maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success)),
+                                  child: Text('calendar.confirmed'.tr(), maxLines: 2, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.success)),
                                 ),
                               ] else if (isOverdue) ...[
                                 const SizedBox(width: 6),
-                                Text('• ${context.tr('calendar.overdue')}', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.expense)),
+                                Text('• ${context.tr('calendar.overdue')}', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600, color: AppColors.expense)),
                               ],
                             ],
                           ),
@@ -327,7 +327,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: iconColor)),
+                    Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: iconColor)),
                   ],
                 ),
               ),
@@ -362,13 +362,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                    Text(op.comment ?? cat?.name ?? context.tr('operations.no_category'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(store.getAccount(op.accountId)?.name ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
+              Text(store.fmt(op.amount, fromCurrency: op.currency), maxLines: 1, softWrap: false, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: op.type == 'income' ? AppColors.success : AppColors.expense)),
             ],
           ),
         ),

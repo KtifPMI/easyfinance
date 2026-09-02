@@ -143,7 +143,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_right), onPressed: _nextMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),
                   TextButton.icon(
                     icon: Icon(_isCustomPeriod ? Icons.clear : Icons.date_range, size: 20, color: _isCustomPeriod ? AppColors.danger : AppColors.primary),
-                    label: Text(_isCustomPeriod ? context.tr('reports.clear_period') : context.tr('reports.choose_period'), style: TextStyle(fontSize: 13, color: _isCustomPeriod ? AppColors.danger : AppColors.primary)),
+                    label: Text(_isCustomPeriod ? context.tr('reports.clear_period') : context.tr('reports.choose_period'), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: _isCustomPeriod ? AppColors.danger : AppColors.primary)),
                     onPressed: _isCustomPeriod ? () => setState(() { _customFrom = null; _customTo = null; _preset = null; }) : _pickPeriod,
                     style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                   ),
@@ -165,9 +165,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: AppCard(
                       child: Column(
                         children: [
-                          Text(context.tr('reports.income'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.success)),
+                          Text(context.tr('reports.income'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.success)),
                           const SizedBox(height: 4),
-                          Text(store.fmt(monthIncome), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                          Text(store.fmt(monthIncome), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                         ],
                       ),
                     ),
@@ -177,9 +177,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     child: AppCard(
                       child: Column(
                         children: [
-                          Text(context.tr('reports.expense'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.expense)),
+                          Text(context.tr('reports.expense'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.expense)),
                           const SizedBox(height: 4),
-                          Text(store.fmt(monthExpense), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                          Text(store.fmt(monthExpense), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                         ],
                       ),
                     ),
@@ -216,7 +216,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               if (catTotals.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: Text(context.tr('home.no_expenses'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+                  child: Center(child: Text(context.tr('home.no_expenses'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context)))),
                 )
               else ...[
                 Center(
@@ -260,7 +260,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
               if (incomeCatTotals.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(child: Text(context.tr('reports.no_income'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+                  child: Center(child: Text(context.tr('reports.no_income'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context)))),
                 )
               else ...[
                 Center(
@@ -286,7 +286,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget _presetChip(BuildContext context, String preset, String label) {
     final active = _preset == preset;
     return ChoiceChip(
-      label: Text(label, style: TextStyle(fontSize: 13, color: active ? Colors.white : AppColors.textFor(context))),
+      label: Text(label, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: active ? Colors.white : AppColors.textFor(context))),
       selected: active,
       selectedColor: AppColors.primary,
       backgroundColor: AppColors.backgroundFor(context),
@@ -336,7 +336,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(tCat(context, e.category.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, color: AppColors.textFor(context)))),
+                  Expanded(child: Text(tCat(context, e.category.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context)))),
                   const SizedBox(width: 8),
                   Text('${percent.round()}% · ${store.fmt(e.total)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                 ],
@@ -356,7 +356,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
-              Expanded(child: Text(context.tr('reports.other'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+              Expanded(child: Text(context.tr('reports.other'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context)))),
               const SizedBox(width: 8),
               Text('${monthExpense > 0 ? (otherTotal / monthExpense * 100).round() : 0}% · ${store.fmt(otherTotal)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
             ],
@@ -408,7 +408,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.tr('reports.monthly_trends'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          Text(context.tr('reports.monthly_trends'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 12),
           SizedBox(
             height: 220,
@@ -450,7 +450,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       children: [
         Container(width: 14, height: 14, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3))),
         const SizedBox(width: 6),
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        Text(label, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
       ],
     );
   }

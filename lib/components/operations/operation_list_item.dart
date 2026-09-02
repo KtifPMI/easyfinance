@@ -66,7 +66,7 @@ class OperationListItem extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Wrap(
                         spacing: 4,
-                        children: tags.map((t) => Text('#$t', style: TextStyle(fontSize: 12, color: AppColors.primary))).toList(),
+                        children: tags.map((t) => Text('#$t', style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.primary))).toList(),
                       ),
                     ),
                 ],

@@ -483,7 +483,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: AppColors.expense.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-            child: Text(_error!, style: TextStyle(color: AppColors.expense, fontSize: 15)),
+            child: Text(_error!, style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.expense)),
           ),
           const SizedBox(height: 16),
         ],
@@ -546,7 +546,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               ),
               child: Text(
                 'OCR: $_ocrSource${_ocrLog != null ? '\n$_ocrLog' : ''}',
-                style: TextStyle(fontSize: 12, color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
+                style: Theme.of(context).textTheme.labelSmall.copyWith(color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
               ),
             ),
             const SizedBox(height: 8),
@@ -560,7 +560,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.borderFor(context)),
               ),
-              child: Text(_recognizedText!, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+              child: Text(_recognizedText!, style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textSecondaryFor(context))),
             ),
             const SizedBox(height: 16),
           ],

@@ -40,7 +40,7 @@ class QuickActions extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 26),
               const SizedBox(height: 4),
-              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+              Text(label, style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.textSecondaryFor(context))),
             ],
           ),
         ),

@@ -82,7 +82,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                               AppCard(
                                 child: Column(
                                   children: [
-                                    Text(context.tr('accounts.my_capital'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                                    Text(context.tr('accounts.my_capital'), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                                     const SizedBox(height: 4),
                                     Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                                     if (all.where((a) => !a.isArchived).length > 1) ...[
@@ -155,7 +155,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
               ),
               child: Text(
                 store.fmt(total),
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: total >= 0 ? AppColors.success : AppColors.danger),
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.w600, color: total >= 0 ? AppColors.success : AppColors.danger),
               ),
             ),
           ],
@@ -184,9 +184,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                    Text(context.tr(accountTypeLabels[int.tryParse(_typeToId(a.type)) ?? 1] ?? 'accounts.type.cash'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                    Text(context.tr(accountTypeLabels[int.tryParse(_typeToId(a.type)) ?? 1] ?? 'accounts.type.cash'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                     if (a.isArchived)
-                      Text(context.tr('accounts.hidden'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: AppColors.warning)),
+                      Text(context.tr('accounts.hidden'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.warning)),
                   ],
                 ),
               ),

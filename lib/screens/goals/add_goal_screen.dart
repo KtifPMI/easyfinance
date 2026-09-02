@@ -297,13 +297,13 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                     names.isEmpty ? context.tr('goals.select_accounts') : names.join(', '),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 15, color: names.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: names.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
                   ),
                 ),
                 if (names.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: Text('${names.length}', style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
+                    child: Text('${names.length}', style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.primary, fontWeight: FontWeight.w600)),
                   ),
                 const SizedBox(width: 4),
                 Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
@@ -341,7 +341,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(context.tr('goals.select_accounts'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        child: Text(context.tr('goals.select_accounts'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(ctx),
@@ -375,7 +375,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                               }),
                               secondary: Icon(_accountIcon(a.icon), color: _accountColor(a.color)),
                               title: Text(a.name, style: const TextStyle(fontSize: 15)),
-                              subtitle: Text('${a.balance.toStringAsFixed(2)} ${a.currency}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                              subtitle: Text('${a.balance.toStringAsFixed(2)} ${a.currency}', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                               activeColor: AppColors.primary,
                               controlAffinity: ListTileControlAffinity.leading,
                             );
@@ -533,11 +533,11 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(context.tr('goals.current_balance'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                          Text(context.tr('goals.current_balance'), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                           const SizedBox(height: 4),
                           Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                           const SizedBox(height: 6),
-                          Text('${percent.round()}%', style: TextStyle(fontSize: 13, color: AppColors.primary)),
+                          Text('${percent.round()}%', style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.primary)),
                         ],
                       ),
                     ),
@@ -547,7 +547,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             ],
 
             // Блок 1
-            Text(context.tr('goals.main_params'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.main_params'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.want_to')),
@@ -600,7 +600,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 24),
 
             // Блок 2
-            Text(context.tr('goals.financial_links'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.financial_links'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.goal_currency')),
@@ -620,11 +620,11 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             _accountSelector(store),
             const SizedBox(height: 4),
             if (_type == 'pay')
-              Text(context.tr('goals.debt_label', namedArgs: {'currency': _currencyLabel(currencies)}), style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              Text(context.tr('goals.debt_label', namedArgs: {'currency': _currencyLabel(currencies)}), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 24),
 
             // Блок 3
-            Text(context.tr('goals.payment_params'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.payment_params'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(_flabel(context, 'goals.total_to_pay', 'goals.save_goal_amount')),
@@ -642,7 +642,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               },
               onChanged: (_) => setState(() {}),
             ),
-            Text(context.tr('goals.calc_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(context.tr('goals.calc_hint'), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 12),
 
             _label(_flabel(context, 'goals.first_payment_date', 'goals.save_first_date')),
@@ -659,7 +659,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
               keyboardType: TextInputType.number,
               onChanged: (_) => _recalcFromMonthly(),
             ),
-            Text(_flabel(context, 'goals.monthly_hint', 'goals.save_monthly_hint'), style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            Text(_flabel(context, 'goals.monthly_hint', 'goals.save_monthly_hint'), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
 
             Center(child: Text(context.tr('goals.or'), style: TextStyle(color: AppColors.textSecondary, fontStyle: FontStyle.italic))),
@@ -673,7 +673,7 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
             const SizedBox(height: 24),
 
             // Блок 4
-            Text(context.tr('goals.additional'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('goals.additional'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             const SizedBox(height: 12),
 
             _label(context.tr('goals.comments')),

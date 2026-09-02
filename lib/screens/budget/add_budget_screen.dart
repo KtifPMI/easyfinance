@@ -123,8 +123,8 @@ class _AddBudgetScreenState extends State<AddBudgetScreen> {
           color: _typeFilter == type ? activeColor : AppColors.cardFor(context),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Text(label, textAlign: TextAlign.center, style: TextStyle(
-          fontSize: 15, fontWeight: FontWeight.w600,
+        child: Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+          fontWeight: FontWeight.w600,
           color: _typeFilter == type ? Colors.white : AppColors.textFor(context),
         )),
       ),

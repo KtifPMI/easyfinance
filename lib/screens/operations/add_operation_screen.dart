@@ -94,7 +94,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           builder: (ctx, setSheetState) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(context.tr('operations.select_time'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              Text(context.tr('operations.select_time'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -120,7 +120,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     setState(() => _selectedDT = DateTime(date.year, date.month, date.day, hour, minute));
                     Navigator.pop(ctx);
                   },
-                  child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600)),
+                  child: Text(context.tr('common.ok'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -298,7 +298,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             Text(store.fmt(op.amount), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: accentColor)),
             if (catId != null) ...[
               const SizedBox(height: 12),
-              Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               const SizedBox(height: 4),
               Text('add_operation.category_spend'.tr(namedArgs: {'amount': store.fmt(catSpend)}), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
               if (budget != null) ...[
@@ -630,8 +630,8 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             children: [
               Icon(icon, size: 22, color: active ? Colors.white : color),
               const SizedBox(height: 2),
-              Text(label, textAlign: TextAlign.center, style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w500,
+              Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w500,
                 color: active ? Colors.white : AppColors.textFor(context),
               )),
             ],
@@ -698,7 +698,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(context.tr('operations.use_template'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              child:               Text(context.tr('operations.use_template'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             ),
             ...store.templates.map((t) => ListTile(
               leading: Icon(
@@ -752,7 +752,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
             runSpacing: 4,
             children: [
               ...allTags.map((t) => Chip(
-                label: Text('#$t', style: TextStyle(fontSize: 13, color: Colors.white)),
+                label: Text('#$t', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white)),
                 backgroundColor: AppColors.primary,
                 deleteIcon: const Icon(Icons.close, size: 14, color: Colors.white),
                 onDeleted: () {
@@ -779,7 +779,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               hintText: context.tr('tags.add_tag'),
             ),
-            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: TextStyle(fontSize: 15)))).toList(),
+            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: Theme.of(context).textTheme.bodyMedium))).toList(),
             onChanged: (v) {
               if (v != null && !_selectedTags.contains(v)) {
                 setState(() => _selectedTags.add(v));
@@ -836,7 +836,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                   'name': cat != null ? tCat(context, cat.name) : '',
                   'pct': '${forecastPct.round()}',
                 }),
-                style: TextStyle(fontSize: 13, color: AppColors.textFor(context)),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textFor(context)),
               ),
             ),
           ],

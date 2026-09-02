@@ -232,7 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('settings.show_kopeks'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                Text(context.tr('settings.show_kopeks'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textFor(context))),
                 Switch(
                   value: _kopeksEnabled,
                   onChanged: (v) async {
@@ -264,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(context.tr('settings.show_kopeks_ops'), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                Text(context.tr('settings.show_kopeks_ops'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textFor(context))),
                 Switch(
                   value: _kopeksInOpsEnabled,
                   onChanged: (v) async {

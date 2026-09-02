@@ -59,8 +59,8 @@ class FinHealthCard extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: Text(context.tr(item.$1), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
-                        content: SingleChildScrollView(child: Text(context.tr(item.$5), style: TextStyle(fontSize: 15))),
+                        title: Text(context.tr(item.$1), style: Theme.of(context).textTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+                        content: SingleChildScrollView(child: Text(context.tr(item.$5), style: Theme.of(context).textTheme.bodyMedium)),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
                         ],

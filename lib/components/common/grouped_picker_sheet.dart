@@ -149,7 +149,7 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
                   ),
                   if (hasHeader) ...[
                     const SizedBox(height: 8),
-                    Text(entry.key, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
+                    Text(entry.key, style: Theme.of(context).textTheme.labelSmall.copyWith(fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
                     const SizedBox(height: 4),
                   ],
                   ...entry.value.map((item) {
@@ -168,7 +168,7 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
                         child: Icon(icon, size: 18, color: color ?? AppColors.primary),
                       ) : null,
                       title: Text(widget.labelBuilder(item), style: TextStyle(fontSize: 16, fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, color: AppColors.textFor(context))),
-                      subtitle: subtitle != null ? Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))) : null,
+                      subtitle: subtitle != null ? Text(subtitle, style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textSecondaryFor(context))) : null,
                       trailing: isSelected ? Icon(Icons.check_circle, color: AppColors.primary, size: 20) : null,
                       onTap: () => widget.onSelected(item),
                     );

@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Text(context.tr('ai_assistant.placeholder'), style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
+                          child: Text(context.tr('ai_assistant.placeholder'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context))),
                         ),
                         Container(
                           width: 34,
@@ -204,26 +204,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppCard(
       child: Column(
         children: [
-          Text(context.tr('home.profit_loss'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          Text(context.tr('home.profit_loss'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(child: Column(children: [
-                Text(context.tr('home.revenue'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                Text(context.tr('home.revenue'), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 4),
-                Text(store.fmt(income), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.success)),
+                Text(store.fmt(income), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w700, color: AppColors.success)),
               ])),
               Container(width: 1, height: 32, color: AppColors.border),
               Expanded(child: Column(children: [
-                Text(context.tr('home.costs'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                Text(context.tr('home.costs'), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 4),
-                Text(store.fmt(expense), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: AppColors.expense)),
+                Text(store.fmt(expense), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w700, color: AppColors.expense)),
               ])),
               Container(width: 1, height: 32, color: AppColors.border),
               Expanded(child: Column(children: [
-                Text(context.tr('home.net_profit'), style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                Text(context.tr('home.net_profit'), style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                 const SizedBox(height: 4),
-                Text(store.fmt(profit), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: profit >= 0 ? AppColors.success : AppColors.expense)),
+                Text(store.fmt(profit), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w700, color: profit >= 0 ? AppColors.success : AppColors.expense)),
               ])),
             ],
           ),
@@ -241,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(context.tr('accounts.title'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        Text(context.tr('accounts.title'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         const SizedBox(height: 8),
         ...accounts.map((a) => Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _typeBadge(BuildContext context, String type) {
     final labels = {'account': context.tr('account.account_type'), 'card': context.tr('account.card_type'), 'credit': context.tr('account.credit_type'), 'savings': context.tr('account.savings_type'), 'electronic': context.tr('account.electronic_type')};
     final label = labels[type] ?? type;
-    return Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary));
+    return Text(label, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondary));
   }
 
   Widget _buildRatesSection(BuildContext context, FinanceStore store) {
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(context.tr('home.currency_rates'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(context.tr('home.currency_rates'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -322,9 +322,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(currencySymbol(codes[r * 3 + c]), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                               const SizedBox(width: 4),
-                              Text(codes[r * 3 + c], style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                              Text(codes[r * 3 + c], style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                               const Spacer(),
-                              Text(store.rates[codes[r * 3 + c]]!.toStringAsFixed(1), style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+                              Text(store.rates[codes[r * 3 + c]]!.toStringAsFixed(1), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context))),
                             ],
                           ),
                         ),
@@ -366,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(context.tr('home.display_currency'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+        title: Text(context.tr('home.display_currency'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         content: RadioGroup<String>(
           groupValue: store.displayCurrency,
           onChanged: (v) {
@@ -380,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: codes.map((code) => RadioListTile<String>(
               title: Row(
                 children: [
-                  Text(currencySymbol(code), style: TextStyle(fontSize: 17)),
+                  Text(currencySymbol(code), style: Theme.of(context).textTheme.bodyLarge!),
                   const SizedBox(width: 8),
                   Text(code, style: TextStyle(fontSize: 16)),
                 ],
@@ -401,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setInnerState) => AlertDialog(
-          title: Text(context.tr('home.select_currencies'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          title: Text(context.tr('home.select_currencies'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           content: SizedBox(
             width: double.maxFinite,
             child: SingleChildScrollView(
@@ -412,11 +412,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: selected.contains(code),
                     title: Row(
                       children: [
-                        Text(currencySymbol(code), style: TextStyle(fontSize: 17)),
+                        Text(currencySymbol(code), style: Theme.of(context).textTheme.bodyLarge!),
                         const SizedBox(width: 8),
                         Text(code, style: TextStyle(fontSize: 16)),
                         const SizedBox(width: 8),
-                        Text(_currencyName(context, code), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                        Text(_currencyName(context, code), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                       ],
                     ),
                     onChanged: (v) {
@@ -470,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('home.recommendations'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('home.recommendations'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -492,7 +492,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Text(r.localizeTitle(context.tr(r.titleKey)), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
                       const SizedBox(height: 2),
-                      Text(r.localizeDesc(context.tr(r.descKey)), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                      Text(r.localizeDesc(context.tr(r.descKey)), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                 ),
@@ -530,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('home.month_budget'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('home.month_budget'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -548,7 +548,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Icon(Icons.sync, size: 16, color: AppColors.warning),
                 const SizedBox(width: 8),
-                Expanded(child: Text(context.tr('home.offline_pending', namedArgs: {'count': pendingCount.toString()}), style: TextStyle(fontSize: 13, color: AppColors.warning))),
+                Expanded(child: Text(context.tr('home.offline_pending', namedArgs: {'count': pendingCount.toString()}), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.warning))),
               ],
             ),
           ),
@@ -563,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(context.tr('budget.planned'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-                    Text(store.fmt(totalPlanned), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                    Text(store.fmt(totalPlanned), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -571,7 +571,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(context.tr('budget.spent_total'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-                    Text(store.fmt(totalSpent), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
+                    Text(store.fmt(totalSpent), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600,
                       color: totalSpent > totalPlanned ? AppColors.expense : AppColors.textFor(context))),
                   ],
                 ),
@@ -580,14 +580,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(context.tr('budget.remaining'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
-                    Text(store.fmt(totalRemaining), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
+                    Text(store.fmt(totalRemaining), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600,
                       color: totalRemaining < 0 ? AppColors.expense : AppColors.success)),
                   ],
                 ),
                 const SizedBox(height: 8),
                 ProgressBar(percent: budgetForecastPct, color: forecastColor),
                 const SizedBox(height: 4),
-                Text('${context.tr('budget.forecast')} ${budgetForecastPct.round()}%', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                Text('${context.tr('budget.forecast')} ${budgetForecastPct.round()}%', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
               ],
             ),
           ),
@@ -611,7 +611,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('home.goals'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('home.goals'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -630,15 +630,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        child: Text(g.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       ),
                       const SizedBox(width: 8),
-                      Text('${percent.round()}%', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                      Text('${percent.round()}%', maxLines: 1, softWrap: false, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                     ],
                   ),
                   const SizedBox(height: 8),
                   ProgressBar(percent: percent, color: parseColor(g.color)),
-                  Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                  Text('${store.fmt(bal)} / ${store.fmt(g.targetAmount)}', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                 ],
               ),
             ),
@@ -668,7 +668,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('home.upcoming_payments'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('home.upcoming_payments'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -722,10 +722,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(plannedEventTitle(e, store), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     Row(
                       children: [
-                        Text(formatDate(_fmtDate(displayDate)), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+                        Text(formatDate(_fmtDate(displayDate)), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                         if (isOverdue) ...[
                           const SizedBox(width: 6),
                           Container(
@@ -740,7 +740,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: amountColor)),
+              Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w700, color: amountColor)),
             ],
           ),
         ),
@@ -788,7 +788,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(context.tr('reports.title'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+              Text(context.tr('reports.title'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
               Icon(Icons.chevron_right, size: 20, color: AppColors.textSecondaryFor(context)),
             ],
           ),
@@ -814,7 +814,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Row(
                           children: [
-                            Expanded(child: Text(tCat(context, e.category.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, color: AppColors.textFor(context)))),
+                            Expanded(child: Text(tCat(context, e.category.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context)))),
                             const SizedBox(width: 8),
                             Text('${percent.round()}% · ${store.fmt(e.total)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                           ],
@@ -834,7 +834,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Row(
                     children: [
-                      Expanded(child: Text(context.tr('reports.other'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)))),
+                      Expanded(child: Text(context.tr('reports.other'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context)))),
                       const SizedBox(width: 8),
                       Text('${catExpense > 0 ? (otherTotal / catExpense * 100).round() : 0}% · ${store.fmt(otherTotal)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                     ],

@@ -45,11 +45,11 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(context.tr('settings.recommendations'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(context.tr('settings.recommendations'), style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 4),
                 Text(
                   'Эти настройки управляют советами в разделе «Рекомендации». Каждый ползунок задаёт порог, при котором появляется соответствующий совет. Чем ниже порог — тем чаще появляются советы.',
-                  style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)),
+                  style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textSecondaryFor(context)),
                 ),
               ],
             ),
@@ -113,14 +113,14 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(context.tr(label), style: TextStyle(fontSize: 15, color: AppColors.textFor(context)))),
-                Text(displayVal, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                Expanded(child: Text(context.tr(label), style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.textFor(context)))),
+                Text(displayVal, style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary)),
               ],
             ),
             if (hint != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 6),
-                child: Text(hint, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+                child: Text(hint, style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.textSecondaryFor(context))),
               ),
             SliderTheme(
               data: SliderThemeData(

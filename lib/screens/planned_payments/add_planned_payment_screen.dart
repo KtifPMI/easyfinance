@@ -220,7 +220,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+            Text(title, style: Theme.of(context).textTheme.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
             const SizedBox(height: 12),
             ...children,
           ],
@@ -229,12 +229,12 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
 
   Widget _hint(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 2),
-        child: Text(text, style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
+        child: Text(text, style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.textSecondaryFor(context))),
       );
 
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 4),
-        child: Text(text, style: TextStyle(fontSize: 13, color: AppColors.textFor(context))),
+        child: Text(text, style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textFor(context))),
       );
 
   Widget _dateField(BuildContext context) => Column(
@@ -254,7 +254,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.borderFor(context))),
-              child: Text(_date != null ? _fmt(_date!) : '—', style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+              child: Text(_date != null ? _fmt(_date!) : '—', style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.textFor(context))),
             ),
           ),
         ],
@@ -297,7 +297,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           builder: (ctx, setSheetState) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(context.tr('add_planned.time'), style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+              Text(context.tr('add_planned.time'), style: Theme.of(context).textTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -326,7 +326,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
                     });
                     Navigator.pop(ctx);
                   },
-                  child: Text(context.tr('common.ok'), style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600)),
+                  child: Text(context.tr('common.ok'), style: Theme.of(context).textTheme.bodyLarge.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -399,7 +399,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
             children: [
               Icon(icon, size: 22, color: active ? Colors.white : color),
               const SizedBox(height: 2),
-              Text(label, textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textFor(context))),
+              Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelSmall.copyWith(fontWeight: FontWeight.w500, color: active ? Colors.white : AppColors.textFor(context))),
             ],
           ),
         ),
@@ -520,7 +520,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           if (_commentError)
             Padding(
               padding: const EdgeInsets.only(top: 4, left: 4),
-              child: Text(context.tr('add_planned.name_required_error'), style: TextStyle(fontSize: 12, color: AppColors.danger)),
+              child: Text(context.tr('add_planned.name_required_error'), style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.danger)),
             ),
         ],
       );
@@ -588,7 +588,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
                 visualDensity: VisualDensity.compact,
                 onChanged: (v) => setState(() => _weekdays[i] = v!),
               ),
-              Text(labels[i], style: TextStyle(fontSize: 13, color: AppColors.textFor(context))),
+              Text(labels[i], style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textFor(context))),
             ],
           );
         }),

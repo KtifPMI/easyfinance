@@ -425,7 +425,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       final t = filtered[i - 1];
                       return ListTile(
                         leading: Icon(Icons.label, color: _advTagName == t ? AppColors.primary : AppColors.textSecondaryFor(context)),
-                        title: Text(t, style: TextStyle(fontSize: 15, fontWeight: _advTagName == t ? FontWeight.w600 : FontWeight.w400)),
+                        title: Text(t, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: _advTagName == t ? FontWeight.w600 : FontWeight.w400)),
                         trailing: _advTagName == t ? Icon(Icons.check, color: AppColors.primary) : null,
                         onTap: () {
                           setPickerState(() => _advTagName = _advTagName == t ? null : t);
@@ -480,13 +480,13 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                               setSheetState(() {});
                               setState(() => _resetAdvFilter());
                             },
-                            child: Text(context.tr('filters.reset'), style: TextStyle(color: AppColors.danger, fontSize: 15)),
+                            child: Text(context.tr('filters.reset'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.danger)),
                           ),
                         ],
                       ),
                       const SizedBox(height: 16),
 
-                      Text(context.tr('filters.type'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.type'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
@@ -500,7 +500,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       const SizedBox(height: 20),
 
                       if (store.accounts.length > 1) ...[
-                        Text(context.tr('filters.account'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                        Text(context.tr('filters.account'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                         const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () => _showAccountPicker(context, store, setSheetState),
@@ -522,7 +522,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                         : _advAccountIds.map((id) => store.accounts.where((a) => a.id == id).firstOrNull?.name ?? id).join(', '),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 15, color: _advAccountIds.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: _advAccountIds.isEmpty ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
                                   ),
                                 ),
                                 Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
@@ -533,7 +533,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         const SizedBox(height: 20),
                       ],
 
-                      Text(context.tr('filters.period'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.period'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -548,7 +548,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      Text(context.tr('filters.amount'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.amount'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -571,7 +571,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      Text(context.tr('filters.comment'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.comment'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       TextField(
                         decoration: InputDecoration(hintText: context.tr('filters.comment_hint'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true, prefixIcon: const Icon(Icons.search, size: 20)),
@@ -579,7 +579,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       ),
 
                       const SizedBox(height: 20),
-                      Text(context.tr('filters.tag'), style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                      Text(context.tr('filters.tag'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: () => _showTagPicker(context, tags, setSheetState),
@@ -599,7 +599,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                   _advTagName ?? context.tr('filters.all_tags'),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 15, color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: _advTagName == null ? AppColors.textSecondaryFor(context) : AppColors.textFor(context)),
                                 ),
                               ),
                               Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondaryFor(context)),
@@ -620,7 +620,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                             setState(() {});
                             Navigator.pop(ctx);
                           },
-                          child: Text(context.tr('filters.apply'), style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w600)),
+                          child: Text(context.tr('filters.apply'), style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 20),

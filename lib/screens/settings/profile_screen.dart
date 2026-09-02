@@ -37,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
           CircleAvatar(radius: 40, backgroundColor: AppColors.primaryLightFor(context), child: Icon(Icons.person, size: 40, color: AppColors.primary)),
           const SizedBox(height: 12),
           Text(name, style: TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
-          Text(email, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
+          Text(email, style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 24),
           _info(context, context.tr('profile.reg_date'), regDate),
           _info(context, context.tr('profile.tariff'), plan),
@@ -66,8 +66,8 @@ class ProfileScreen extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context))),
-            Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            Text(label, style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.textSecondaryFor(context))),
+            Text(value, style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
           ],
         ),
       ),

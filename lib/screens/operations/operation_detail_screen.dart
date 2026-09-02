@@ -63,7 +63,7 @@ class OperationDetailScreen extends StatelessWidget {
     if (opCur != display) {
       secondary.add(Text(
         formatMoneyOps(op.amount, currency: opCur),
-        style: TextStyle(fontSize: 15, color: AppColors.textSecondaryFor(context)),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondaryFor(context)),
       ));
     }
     final userCurrencies = store.currencies
@@ -74,7 +74,7 @@ class OperationDetailScreen extends StatelessWidget {
       final converted = CurrencyRateService.convert(op.amount, opCur, code, store.rates);
       secondary.add(Text(
         formatMoneyOps(converted, currency: code),
-        style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context)),
       ));
     }
 
@@ -92,7 +92,7 @@ class OperationDetailScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             tCat(context, cat?.name ?? ''),
-            style: TextStyle(fontSize: 17, color: AppColors.textSecondaryFor(context)),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondaryFor(context)),
           ),
           if (secondary.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -129,9 +129,9 @@ class OperationDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('operations.comment'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('operations.comment'), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context))),
             const SizedBox(height: 4),
-            Text(op.comment!, style: TextStyle(fontSize: 15, color: AppColors.textFor(context))),
+            Text(op.comment!, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textFor(context))),
           ],
         ),
       ),
@@ -146,7 +146,7 @@ class OperationDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(context.tr('operations.tags'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('operations.tags'), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context))),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -154,7 +154,7 @@ class OperationDetailScreen extends StatelessWidget {
               children: tags.map((t) => Chip(
                 label: Text('#${t.trim()}', style: const TextStyle(fontSize: 13)),
                 backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                labelStyle: TextStyle(color: AppColors.primary, fontSize: 13),
+                labelStyle: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.primary),
                 side: BorderSide.none,
                 padding: EdgeInsets.zero,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -203,7 +203,7 @@ class OperationDetailScreen extends StatelessWidget {
             child: Text(label, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           ),
           Expanded(
-            child: Text(value, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
+            child: Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500, color: AppColors.textFor(context))),
           ),
         ],
       ),
