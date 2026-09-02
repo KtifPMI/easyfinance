@@ -640,6 +640,8 @@
   "recommend.large_cash.desc": "{name} — {date}.",
   "recommend.goal_pacing.title": "Obiettivo «{title}» in ritardo",
   "recommend.goal_pacing.desc": "Serve {needed} ₽/mese, risparmia {current} ₽/mese.",
+  "recommend.goal_pacing_expired.title": "Obiettivo \"{title}\" scaduto",
+  "recommend.goal_pacing_expired.desc": "{remaining} ₽ rimanenti, scadenza {deadline}.",
   "common.search": "Cerca",
   "common.close": "Chiudi",
   "filters.all_time": "Tutto il tempo",

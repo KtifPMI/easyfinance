@@ -484,6 +484,8 @@
   "recommend.large_cash.desc": "«{name}» — {date}.",
   "recommend.goal_pacing.title": "Цель «{title}» отстаёт",
   "recommend.goal_pacing.desc": "Нужно {needed} ₽/мес, откладываете {current} ₽/мес.",
+  "recommend.goal_pacing_expired.title": "Цель «{title}» просрочена",
+  "recommend.goal_pacing_expired.desc": "Осталось {remaining} ₽, дедлайн {deadline}.",
   "recommend.action.create_budget": "Создать бюджет",
   "recommend.action.create_goal": "Создать цель",
   "debug.fields_added": "fields добавлены автоматом (balance, init_balance)",

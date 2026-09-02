@@ -535,6 +535,8 @@
   "recommend.large_cash.desc": "{name} — {date}.",
   "recommend.goal_pacing.title": "Goal \"{title}\" falling behind",
   "recommend.goal_pacing.desc": "Need {needed} ₽/mo, saving {current} ₽/mo.",
+  "recommend.goal_pacing_expired.title": "Goal \"{title}\" expired",
+  "recommend.goal_pacing_expired.desc": "{remaining} ₽ remaining, deadline {deadline}.",
   "recommend.action.create_budget": "Create Budget",
   "recommend.action.create_goal": "Create Goal",
   "debug.fields_added": "fields auto-added (balance, init_balance)",

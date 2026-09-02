@@ -57,6 +57,7 @@ class Recommendation {
     if (id == 'top_cats') return 'expense_structure';
     if (id == 'no_emergency') return 'emergency_fund';
     if (id == 'goal_pacing_slow') return 'goal_pacing';
+    if (id == 'goal_pacing_expired') return 'goal_pacing_expired';
     return id;
   }
 }

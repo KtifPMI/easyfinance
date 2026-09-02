@@ -955,7 +955,7 @@ class FinanceStore extends ChangeNotifier {
       final monthsLeft = (deadline.difference(now).inDays / 30).ceil();
       if (monthsLeft <= 0) {
         _recommendations.add(Recommendation(
-          id: 'goal_pacing_slow', type: 'risk', severity: 'high',
+          id: 'goal_pacing_expired', type: 'risk', severity: 'high',
           title: 'Цель «${g.title}» просрочена',
           description: 'Осталось ${fmt(remaining)} ₽, дедлайн ${deadline.day}.${deadline.month}.${deadline.year}.',
           titleArgs: {'title': g.title},

@@ -629,6 +629,8 @@
   "recommend.large_cash.desc": "{name} — {date}.",
   "recommend.goal_pacing.title": "Hedef «{title}» geride",
   "recommend.goal_pacing.desc": "{needed} ₽/ay lazım, {current} ₽/ay biriktiriliyor.",
+  "recommend.goal_pacing_expired.title": "\"{title}\" hedefi süresi doldu",
+  "recommend.goal_pacing_expired.desc": "{remaining} ₽ kaldı, son tarih {deadline}.",
   "common.search": "Ara",
   "common.close": "Kapat",
   "filters.all_time": "Tüm zamanlar",

@@ -629,6 +629,8 @@
   "recommend.large_cash.desc": "{name} — {date}.",
   "recommend.goal_pacing.title": "Meta «{title}» atrasada",
   "recommend.goal_pacing.desc": "Precisa {needed} ₽/mês, poupa {current} ₽/mês.",
+  "recommend.goal_pacing_expired.title": "Meta \"{title}\" expirada",
+  "recommend.goal_pacing_expired.desc": "{remaining} ₽ restantes, prazo {deadline}.",
   "common.search": "Pesquisar",
   "common.close": "Fechar",
   "filters.all_time": "Todo o período",
