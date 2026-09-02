@@ -1,4 +1,4 @@
-ï»¿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
@@ -45,42 +45,42 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(context.tr('settings.recommendations'), style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                Text(context.tr('settings.recommendations'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                 const SizedBox(height: 4),
                 Text(
-                  'Ð­Ñ‚Ð¸ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÑÑŽÑ‚ ÑÐ¾Ð²ÐµÑ‚Ð°Ð¼Ð¸ Ð² Ñ€Ð°Ð·Ð´ÐµÐ»Ðµ Â«Ð ÐµÐºÐ¾Ð¼ÐµÐ½Ð´Ð°Ñ†Ð¸Ð¸Â». ÐšÐ°Ð¶Ð´Ñ‹Ð¹ Ð¿Ð¾Ð»Ð·ÑƒÐ½Ð¾Ðº Ð·Ð°Ð´Ð°Ñ‘Ñ‚ Ð¿Ð¾Ñ€Ð¾Ð³, Ð¿Ñ€Ð¸ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð¼ Ð¿Ð¾ÑÐ²Ð»ÑÐµÑ‚ÑÑ ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ð¹ ÑÐ¾Ð²ÐµÑ‚. Ð§ÐµÐ¼ Ð½Ð¸Ð¶Ðµ Ð¿Ð¾Ñ€Ð¾Ð³ â€” Ñ‚ÐµÐ¼ Ñ‡Ð°Ñ‰Ðµ Ð¿Ð¾ÑÐ²Ð»ÑÑŽÑ‚ÑÑ ÑÐ¾Ð²ÐµÑ‚Ñ‹.',
-                  style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textSecondaryFor(context)),
+                  'Ýòè íàñòðîéêè óïðàâëÿþò ñîâåòàìè â ðàçäåëå «Ðåêîìåíäàöèè». Êàæäûé ïîëçóíîê çàäà¸ò ïîðîã, ïðè êîòîðîì ïîÿâëÿåòñÿ ñîîòâåòñòâóþùèé ñîâåò. ×åì íèæå ïîðîã — òåì ÷àùå ïîÿâëÿþòñÿ ñîâåòû.',
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           _sectionHeader(context.tr('rec_settings.food')),
-          _slider('rec_settings.food_high', _prefs.foodHighPct, 10, 80, (v) { setState(() { _prefs.foodHighPct = v; }); _save(); }, hint: 'Ð”Ð¾Ð»Ñ Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð² Ð½Ð° Ð¿Ñ€Ð¾Ð´ÑƒÐºÑ‚Ñ‹ Ð¸ ÐºÐ°Ñ„Ðµ Ð² Ð´Ð¾Ñ…Ð¾Ð´Ðµ Ð²Ñ‹ÑˆÐµ ÑÑ‚Ð¾Ð³Ð¾ Ð¿Ð¾Ñ€Ð¾Ð³Ð° â€” ÑÐ¾Ð²ÐµÑ‚ ÑÐ¾ÐºÑ€Ð°Ñ‚Ð¸Ñ‚ÑŒ Ñ‚Ñ€Ð°Ñ‚Ñ‹ Ð½Ð° ÐµÐ´Ñƒ.'),
-          _slider('rec_settings.food_medium', _prefs.foodMediumPct, 10, 60, (v) { setState(() { _prefs.foodMediumPct = v; }); _save(); }, hint: 'Ð‘Ð¾Ð»ÐµÐµ Ð¼ÑÐ³ÐºÐ¸Ð¹ Ð¿Ð¾Ñ€Ð¾Ð³ Ð´Ð¾Ð»Ð¸ Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð² Ð½Ð° ÐµÐ´Ñƒ Ð² Ð´Ð¾Ñ…Ð¾Ð´Ðµ Ð´Ð»Ñ Ð¼ÐµÐ½ÐµÐµ ÑÑ‚Ñ€Ð¾Ð³Ð¾Ð³Ð¾ ÑÐ¾Ð²ÐµÑ‚Ð°.'),
-          _slider('rec_settings.dining_freq', _prefs.diningFrequency.toDouble(), 2, 20, (v) { setState(() { _prefs.diningFrequency = v.round(); }); _save(); }, divisions: 18, suffix: context.tr('rec_settings.times'), hint: 'Ð§Ð¸ÑÐ»Ð¾ Ð¿Ð¾Ñ…Ð¾Ð´Ð¾Ð² Ð² ÐºÐ°Ñ„Ðµ Ð¸Ð»Ð¸ Ñ€ÐµÑÑ‚Ð¾Ñ€Ð°Ð½Ñ‹ Ð·Ð° Ð¼ÐµÑÑÑ†, Ð½Ð°Ñ‡Ð¸Ð½Ð°Ñ Ñ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð³Ð¾ Ð¿Ð¾ÑÐ²Ð»ÑÐµÑ‚ÑÑ ÑÐ¾Ð²ÐµÑ‚ Ð¾Ð± Ð¾Ð±Ñ‰ÐµÐ¿Ð¸Ñ‚Ðµ.'),
+          _slider('rec_settings.food_high', _prefs.foodHighPct, 10, 80, (v) { setState(() { _prefs.foodHighPct = v; }); _save(); }, hint: 'Äîëÿ ðàñõîäîâ íà ïðîäóêòû è êàôå â äîõîäå âûøå ýòîãî ïîðîãà — ñîâåò ñîêðàòèòü òðàòû íà åäó.'),
+          _slider('rec_settings.food_medium', _prefs.foodMediumPct, 10, 60, (v) { setState(() { _prefs.foodMediumPct = v; }); _save(); }, hint: 'Áîëåå ìÿãêèé ïîðîã äîëè ðàñõîäîâ íà åäó â äîõîäå äëÿ ìåíåå ñòðîãîãî ñîâåòà.'),
+          _slider('rec_settings.dining_freq', _prefs.diningFrequency.toDouble(), 2, 20, (v) { setState(() { _prefs.diningFrequency = v.round(); }); _save(); }, divisions: 18, suffix: context.tr('rec_settings.times'), hint: '×èñëî ïîõîäîâ â êàôå èëè ðåñòîðàíû çà ìåñÿö, íà÷èíàÿ ñ êîòîðîãî ïîÿâëÿåòñÿ ñîâåò îá îáùåïèòå.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.budgets')),
-          _slider('rec_settings.budget_near', _prefs.budgetNearPct, 50, 95, (v) { setState(() { _prefs.budgetNearPct = v; }); _save(); }, hint: 'Ð•ÑÐ»Ð¸ Ð¿Ð¾ Ð±ÑŽÐ´Ð¶ÐµÑ‚Ñƒ Ð¿Ð¾Ñ‚Ñ€Ð°Ñ‡ÐµÐ½Ð¾ Ð±Ð¾Ð»ÑŒÑˆÐµ ÑÑ‚Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾Ñ†ÐµÐ½Ñ‚Ð° Ð¾Ñ‚ Ð»Ð¸Ð¼Ð¸Ñ‚Ð° â€” ÑÐ¾Ð²ÐµÑ‚, Ñ‡Ñ‚Ð¾ Ð»Ð¸Ð¼Ð¸Ñ‚ ÑÐºÐ¾Ñ€Ð¾ Ð·Ð°ÐºÐ¾Ð½Ñ‡Ð¸Ñ‚ÑÑ.'),
-          _slider('rec_settings.no_budget_min', _prefs.noBudgetMinSpend.toDouble(), 100, 10000, (v) { setState(() { _prefs.noBudgetMinSpend = v.round(); }); _save(); }, divisions: 99, suffix: 'â‚½', hint: 'ÐšÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ð¸ Ð±ÐµÐ· Ð±ÑŽÐ´Ð¶ÐµÑ‚Ð°, Ð¿Ð¾ ÐºÐ¾Ñ‚Ð¾Ñ€Ñ‹Ð¼ Ð¿Ð¾Ñ‚Ñ€Ð°Ñ‡ÐµÐ½Ð¾ Ð±Ð¾Ð»ÑŒÑˆÐµ ÑÑ‚Ð¾Ð¹ ÑÑƒÐ¼Ð¼Ñ‹ â€” Ð¿Ñ€ÐµÐ´Ð»Ð°Ð³Ð°ÐµÐ¼ Ð·Ð°Ð²ÐµÑÑ‚Ð¸ Ð±ÑŽÐ´Ð¶ÐµÑ‚.'),
+          _slider('rec_settings.budget_near', _prefs.budgetNearPct, 50, 95, (v) { setState(() { _prefs.budgetNearPct = v; }); _save(); }, hint: 'Åñëè ïî áþäæåòó ïîòðà÷åíî áîëüøå ýòîãî ïðîöåíòà îò ëèìèòà — ñîâåò, ÷òî ëèìèò ñêîðî çàêîí÷èòñÿ.'),
+          _slider('rec_settings.no_budget_min', _prefs.noBudgetMinSpend.toDouble(), 100, 10000, (v) { setState(() { _prefs.noBudgetMinSpend = v.round(); }); _save(); }, divisions: 99, suffix: '?', hint: 'Êàòåãîðèè áåç áþäæåòà, ïî êîòîðûì ïîòðà÷åíî áîëüøå ýòîé ñóììû — ïðåäëàãàåì çàâåñòè áþäæåò.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.savings')),
-          _slider('rec_settings.savings_low', _prefs.savingsLowPct, 0, 30, (v) { setState(() { _prefs.savingsLowPct = v; }); _save(); }, hint: 'Ð•ÑÐ»Ð¸ Ð´Ð¾Ð»Ñ ÑÐ±ÐµÑ€ÐµÐ¶ÐµÐ½Ð¸Ð¹ Ð² Ð´Ð¾Ñ…Ð¾Ð´Ðµ Ð½Ð¸Ð¶Ðµ Ð¿Ð¾Ñ€Ð¾Ð³Ð° â€” ÑÐ¾Ð²ÐµÑ‚ Ð½Ð°Ñ‡Ð°Ñ‚ÑŒ Ð¾Ñ‚ÐºÐ»Ð°Ð´Ñ‹Ð²Ð°Ñ‚ÑŒ.'),
-          _slider('rec_settings.savings_good', _prefs.savingsGoodPct, 10, 50, (v) { setState(() { _prefs.savingsGoodPct = v; }); _save(); }, hint: 'Ð¦ÐµÐ»ÐµÐ²Ð°Ñ Ð´Ð¾Ð»Ñ ÑÐ±ÐµÑ€ÐµÐ¶ÐµÐ½Ð¸Ð¹ Ð² Ð´Ð¾Ñ…Ð¾Ð´Ðµ, Ð¿Ñ€Ð¸ Ð´Ð¾ÑÑ‚Ð¸Ð¶ÐµÐ½Ð¸Ð¸ ÐºÐ¾Ñ‚Ð¾Ñ€Ð¾Ð¹ Ð´Ð°Ñ‘Ð¼ Ð¿Ð¾Ð·Ð´Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ.'),
-          _slider('rec_settings.housing', _prefs.housingPct, 10, 60, (v) { setState(() { _prefs.housingPct = v; }); _save(); }, hint: 'Ð”Ð¾Ð»Ñ Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð² Ð½Ð° Ð¶Ð¸Ð»ÑŒÑ‘ Ð² Ð´Ð¾Ñ…Ð¾Ð´Ðµ Ð²Ñ‹ÑˆÐµ Ð¿Ð¾Ñ€Ð¾Ð³Ð° â€” ÑÐ¾Ð²ÐµÑ‚ Ð¿ÐµÑ€ÐµÑÐ¼Ð¾Ñ‚Ñ€ÐµÑ‚ÑŒ Ñ‚Ñ€Ð°Ñ‚Ñ‹.'),
-          _slider('rec_settings.emergency', _prefs.emergencyMonths, 1, 12, (v) { setState(() { _prefs.emergencyMonths = v; }); _save(); }, divisions: 11, suffix: context.tr('rec_settings.months'), hint: 'Ð ÐµÐºÐ¾Ð¼ÐµÐ½Ð´ÑƒÐµÐ¼Ñ‹Ð¹ Ñ€Ð°Ð·Ð¼ÐµÑ€ Ñ€ÐµÐ·ÐµÑ€Ð²Ð½Ð¾Ð³Ð¾ Ñ„Ð¾Ð½Ð´Ð° Ð² Ð¼ÐµÑÑÑ†Ð°Ñ… Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð².'),
+          _slider('rec_settings.savings_low', _prefs.savingsLowPct, 0, 30, (v) { setState(() { _prefs.savingsLowPct = v; }); _save(); }, hint: 'Åñëè äîëÿ ñáåðåæåíèé â äîõîäå íèæå ïîðîãà — ñîâåò íà÷àòü îòêëàäûâàòü.'),
+          _slider('rec_settings.savings_good', _prefs.savingsGoodPct, 10, 50, (v) { setState(() { _prefs.savingsGoodPct = v; }); _save(); }, hint: 'Öåëåâàÿ äîëÿ ñáåðåæåíèé â äîõîäå, ïðè äîñòèæåíèè êîòîðîé äà¸ì ïîçäðàâëåíèå.'),
+          _slider('rec_settings.housing', _prefs.housingPct, 10, 60, (v) { setState(() { _prefs.housingPct = v; }); _save(); }, hint: 'Äîëÿ ðàñõîäîâ íà æèëü¸ â äîõîäå âûøå ïîðîãà — ñîâåò ïåðåñìîòðåòü òðàòû.'),
+          _slider('rec_settings.emergency', _prefs.emergencyMonths, 1, 12, (v) { setState(() { _prefs.emergencyMonths = v; }); _save(); }, divisions: 11, suffix: context.tr('rec_settings.months'), hint: 'Ðåêîìåíäóåìûé ðàçìåð ðåçåðâíîãî ôîíäà â ìåñÿöàõ ðàñõîäîâ.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.cash')),
-          _slider('rec_settings.idle_cash', _prefs.idleCashMin, 10000, 200000, (v) { setState(() { _prefs.idleCashMin = v; }); _save(); }, divisions: 19, suffix: 'â‚½', hint: 'Ð¡Ð²Ð¾Ð±Ð¾Ð´Ð½Ñ‹Ðµ Ð½Ð°Ð»Ð¸Ñ‡Ð½Ñ‹Ðµ Ð¸ Ð¾ÑÑ‚Ð°Ñ‚ÐºÐ¸ Ð½Ð° ÑÑ‡ÐµÑ‚Ð°Ñ… Ð±Ð¾Ð»ÑŒÑˆÐµ ÑÑ‚Ð¾Ð¹ ÑÑƒÐ¼Ð¼Ñ‹ â€” ÑÐ¾Ð²ÐµÑ‚ Ð²Ð»Ð¾Ð¶Ð¸Ñ‚ÑŒ, Ñ‡Ñ‚Ð¾Ð±Ñ‹ Ð´ÐµÐ½ÑŒÐ³Ð¸ Ð½Ðµ Ð»ÐµÐ¶Ð°Ð»Ð¸ Ð¼Ñ‘Ñ€Ñ‚Ð²Ñ‹Ð¼ Ð³Ñ€ÑƒÐ·Ð¾Ð¼.'),
-          _slider('rec_settings.large_cash', _prefs.largeCashMin, 5000, 100000, (v) { setState(() { _prefs.largeCashMin = v; }); _save(); }, divisions: 19, suffix: 'â‚½', hint: 'ÐžÑ‚Ð´ÐµÐ»ÑŒÐ½Ð°Ñ Ñ‚Ñ€Ð°Ñ‚Ð° Ð±Ð¾Ð»ÑŒÑˆÐµ ÑÑ‚Ð¾Ð¹ ÑÑƒÐ¼Ð¼Ñ‹ â€” ÑÐ¾Ð²ÐµÑ‚ Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ ÐºÑ€ÑƒÐ¿Ð½ÑƒÑŽ Ð¿Ð¾ÐºÑƒÐ¿ÐºÑƒ.'),
+          _slider('rec_settings.idle_cash', _prefs.idleCashMin, 10000, 200000, (v) { setState(() { _prefs.idleCashMin = v; }); _save(); }, divisions: 19, suffix: '?', hint: 'Ñâîáîäíûå íàëè÷íûå è îñòàòêè íà ñ÷åòàõ áîëüøå ýòîé ñóììû — ñîâåò âëîæèòü, ÷òîáû äåíüãè íå ëåæàëè ì¸ðòâûì ãðóçîì.'),
+          _slider('rec_settings.large_cash', _prefs.largeCashMin, 5000, 100000, (v) { setState(() { _prefs.largeCashMin = v; }); _save(); }, divisions: 19, suffix: '?', hint: 'Îòäåëüíàÿ òðàòà áîëüøå ýòîé ñóììû — ñîâåò ïðîâåðèòü êðóïíóþ ïîêóïêó.'),
           const SizedBox(height: 16),
           _sectionHeader(context.tr('rec_settings.trends')),
-          _slider('rec_settings.trend_up', _prefs.trendUpPct, 5, 50, (v) { setState(() { _prefs.trendUpPct = v; }); _save(); }, hint: 'Ð Ð¾ÑÑ‚ Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð² Ð¿Ð¾ ÑÑ€Ð°Ð²Ð½ÐµÐ½Ð¸ÑŽ Ñ Ð¿Ñ€Ð¾ÑˆÐ»Ñ‹Ð¼ Ð¼ÐµÑÑÑ†ÐµÐ¼ Ð±Ð¾Ð»ÑŒÑˆÐµ Ð¿Ð¾Ñ€Ð¾Ð³Ð° â€” ÑÐ¾Ð²ÐµÑ‚ Ð¿Ñ€Ð¾ Ñ‚Ñ€ÐµÐ½Ð´ Ð²Ð²ÐµÑ€Ñ….'),
-          _slider('rec_settings.spike', _prefs.spikePct, 20, 200, (v) { setState(() { _prefs.spikePct = v; }); _save(); }, hint: 'Ð’ÑÐ¿Ð»ÐµÑÐº Ð¿Ð¾ ÐºÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ð¸ Ð²Ñ‹ÑˆÐµ ÑÑ€ÐµÐ´Ð½ÐµÐ³Ð¾ Ð½Ð° ÑÑ‚Ð¾Ñ‚ Ð¿Ñ€Ð¾Ñ†ÐµÐ½Ñ‚ â€” ÑÐ¾Ð²ÐµÑ‚ Ð¾ Ñ€Ð°Ð·Ð¾Ð²Ð¾Ð¼ ÑÐºÐ°Ñ‡ÐºÐµ.'),
-          _slider('rec_settings.recurring', _prefs.recurringMonths.toDouble(), 2, 12, (v) { setState(() { _prefs.recurringMonths = v.round(); }); _save(); }, divisions: 10, suffix: context.tr('rec_settings.months'), hint: 'Ð§Ð¸ÑÐ»Ð¾ Ð¼ÐµÑÑÑ†ÐµÐ² Ð¿Ð¾Ð´Ñ€ÑÐ´ Ñ Ð¾Ð´Ð½Ð¸Ð¼ Ð¸ Ñ‚ÐµÐ¼ Ð¶Ðµ Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½Ð¾Ð¼ Ð¸Ð»Ð¸ Ð¿Ð»Ð°Ñ‚ÐµÐ¶Ð¾Ð¼ â€” Ð¿Ð¾Ð¼ÐµÑ‡Ð°ÐµÐ¼ ÐºÐ°Ðº Ñ€ÐµÐ³ÑƒÐ»ÑÑ€Ð½Ñ‹Ð¹ Ð¿Ð»Ð°Ñ‚Ñ‘Ð¶.'),
-          _slider('rec_settings.single_cat', _prefs.singleCatDominancePct, 20, 80, (v) { setState(() { _prefs.singleCatDominancePct = v; }); _save(); }, hint: 'Ð•ÑÐ»Ð¸ Ð¾Ð´Ð½Ð° ÐºÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ñ Ð·Ð°Ð½Ð¸Ð¼Ð°ÐµÑ‚ Ð±Ð¾Ð»ÑŒÑˆÐµ ÑÑ‚Ð¾Ð³Ð¾ Ð¿Ñ€Ð¾Ñ†ÐµÐ½Ñ‚Ð° Ð²ÑÐµÑ… Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð² â€” ÑÐ¾Ð²ÐµÑ‚ Ð¾ ÑÐ¸Ð»ÑŒÐ½Ð¾Ð¹ Ð·Ð°Ð²Ð¸ÑÐ¸Ð¼Ð¾ÑÑ‚Ð¸.'),
-          _slider('rec_settings.weekend', _prefs.weekendRatioPct, 30, 90, (v) { setState(() { _prefs.weekendRatioPct = v; }); _save(); }, hint: 'Ð”Ð¾Ð»Ñ Ñ‚Ñ€Ð°Ñ‚ Ð² Ð²Ñ‹Ñ…Ð¾Ð´Ð½Ñ‹Ðµ Ð²Ñ‹ÑˆÐµ Ð¿Ð¾Ñ€Ð¾Ð³Ð° â€” ÑÐ¾Ð²ÐµÑ‚ Ð¾Ð±Ñ€Ð°Ñ‚Ð¸Ñ‚ÑŒ Ð²Ð½Ð¸Ð¼Ð°Ð½Ð¸Ðµ Ð½Ð° weekend-Ñ‚Ñ€Ð°Ñ‚Ñ‹.'),
-          _slider('rec_settings.top_cat', _prefs.topCatMinPct, 5, 40, (v) { setState(() { _prefs.topCatMinPct = v; }); _save(); }, hint: 'ÐšÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ñ, Ð¿Ñ€ÐµÐ²Ñ‹ÑˆÐ°ÑŽÑ‰Ð°Ñ ÑÑ‚Ð¾Ñ‚ Ð¿Ñ€Ð¾Ñ†ÐµÐ½Ñ‚ Ñ€Ð°ÑÑ…Ð¾Ð´Ð¾Ð² â€” Ð¿Ð¾Ð¿Ð°Ð´Ð°ÐµÑ‚ Ð² Ñ‚Ð¾Ð¿-ÐºÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ð¸.'),
+          _slider('rec_settings.trend_up', _prefs.trendUpPct, 5, 50, (v) { setState(() { _prefs.trendUpPct = v; }); _save(); }, hint: 'Ðîñò ðàñõîäîâ ïî ñðàâíåíèþ ñ ïðîøëûì ìåñÿöåì áîëüøå ïîðîãà — ñîâåò ïðî òðåíä ââåðõ.'),
+          _slider('rec_settings.spike', _prefs.spikePct, 20, 200, (v) { setState(() { _prefs.spikePct = v; }); _save(); }, hint: 'Âñïëåñê ïî êàòåãîðèè âûøå ñðåäíåãî íà ýòîò ïðîöåíò — ñîâåò î ðàçîâîì ñêà÷êå.'),
+          _slider('rec_settings.recurring', _prefs.recurringMonths.toDouble(), 2, 12, (v) { setState(() { _prefs.recurringMonths = v.round(); }); _save(); }, divisions: 10, suffix: context.tr('rec_settings.months'), hint: '×èñëî ìåñÿöåâ ïîäðÿä ñ îäíèì è òåì æå ìàãàçèíîì èëè ïëàòåæîì — ïîìå÷àåì êàê ðåãóëÿðíûé ïëàò¸æ.'),
+          _slider('rec_settings.single_cat', _prefs.singleCatDominancePct, 20, 80, (v) { setState(() { _prefs.singleCatDominancePct = v; }); _save(); }, hint: 'Åñëè îäíà êàòåãîðèÿ çàíèìàåò áîëüøå ýòîãî ïðîöåíòà âñåõ ðàñõîäîâ — ñîâåò î ñèëüíîé çàâèñèìîñòè.'),
+          _slider('rec_settings.weekend', _prefs.weekendRatioPct, 30, 90, (v) { setState(() { _prefs.weekendRatioPct = v; }); _save(); }, hint: 'Äîëÿ òðàò â âûõîäíûå âûøå ïîðîãà — ñîâåò îáðàòèòü âíèìàíèå íà weekend-òðàòû.'),
+          _slider('rec_settings.top_cat', _prefs.topCatMinPct, 5, 40, (v) { setState(() { _prefs.topCatMinPct = v; }); _save(); }, hint: 'Êàòåãîðèÿ, ïðåâûøàþùàÿ ýòîò ïðîöåíò ðàñõîäîâ — ïîïàäàåò â òîï-êàòåãîðèè.'),
           const SizedBox(height: 32),
         ],
       ),
@@ -100,8 +100,8 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
   }
 
   Widget _slider(String label, double value, double min, double max, ValueChanged<double> onChanged, {int? divisions, String? suffix, String? hint}) {
-    final displayVal = suffix == 'â‚½'
-        ? '${_formatRub(value)} â‚½'
+    final displayVal = suffix == '?'
+        ? '${_formatRub(value)} ?'
         : '${value == value.roundToDouble() ? value.round().toString() : value.toStringAsFixed(value < 100 ? 1 : 0)}${suffix != null ? ' $suffix' : '%'}';
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -113,14 +113,14 @@ class _RecommendationsSettingsScreenState extends State<RecommendationsSettingsS
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(context.tr(label), style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.textFor(context)))),
-                Text(displayVal, style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary)),
+                Expanded(child: Text(context.tr(label), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context)))),
+                Text(displayVal, style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.primary)),
               ],
             ),
             if (hint != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 6),
-                child: Text(hint, style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.textSecondaryFor(context))),
+                child: Text(hint, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
               ),
             SliderTheme(
               data: SliderThemeData(

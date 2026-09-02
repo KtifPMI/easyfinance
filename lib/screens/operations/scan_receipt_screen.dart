@@ -1,4 +1,4 @@
-п»їimport 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -67,7 +67,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   /// Converts a receipt photo to high-contrast black & white.
   /// Thermal prints and faded receipts benefit heavily from binarization
-  /// before OCR вЂ” it turns barely-visible gray text into sharp black.
+  /// before OCR — it turns barely-visible gray text into sharp black.
   File _preprocessImage(File inputFile) {
     final bytes = inputFile.readAsBytesSync();
     final original = img.decodeImage(bytes);
@@ -100,17 +100,17 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           final cloudResult = await CloudOcrService.recognize(processed);
           text = cloudResult.text;
           ocrSource = 'Yandex Vision';
-          ocrLog = 'OK: ${text.length} СЃРёРјРІРѕР»РѕРІ';
+          ocrLog = 'OK: ${text.length} символов';
         } on CloudOcrException catch (e) {
-          ocrSource = 'Yandex Vision (РѕС€РёР±РєР°)';
+          ocrSource = 'Yandex Vision (ошибка)';
           ocrLog = e.message;
-          // Cloud failed вЂ” fall through to ML Kit
+          // Cloud failed — fall through to ML Kit
         } catch (e) {
-          ocrSource = 'Yandex Vision (РёСЃРєР»СЋС‡РµРЅРёРµ)';
+          ocrSource = 'Yandex Vision (исключение)';
           ocrLog = e.toString();
         }
       } else {
-        ocrLog = 'РќРµ РЅР°СЃС‚СЂРѕРµРЅ (РєР»СЋС‡: ${CloudOcrService.apiKey.isEmpty ? "РїСѓСЃС‚РѕР№" : "РµСЃС‚СЊ"}, folder: ${CloudOcrService.folderId.isEmpty ? "РїСѓСЃС‚РѕР№" : "РµСЃС‚СЊ"})';
+        ocrLog = 'Не настроен (ключ: ${CloudOcrService.apiKey.isEmpty ? "пустой" : "есть"}, folder: ${CloudOcrService.folderId.isEmpty ? "пустой" : "есть"})';
       }
 
       // Fallback to on-device ML Kit
@@ -162,29 +162,29 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   String _normalize(String s) {
     return s
-        .replaceAll('A', 'Р°').replaceAll('a', 'Р°')
-        .replaceAll('B', 'РІ').replaceAll('b', 'РІ')
-        .replaceAll('C', 'СЃ').replaceAll('c', 'СЃ')
-        .replaceAll('E', 'Рµ').replaceAll('e', 'Рµ')
-        .replaceAll('H', 'РЅ').replaceAll('h', 'РЅ')
-        .replaceAll('I', 'Рё').replaceAll('i', 'Рё')
-        .replaceAll('K', 'Рє').replaceAll('k', 'Рє')
-        .replaceAll('M', 'Рј').replaceAll('m', 'Рј')
-        .replaceAll('O', 'Рѕ').replaceAll('o', 'Рѕ')
-        .replaceAll('P', 'СЂ').replaceAll('p', 'СЂ')
-        .replaceAll('R', 'Рі').replaceAll('r', 'Рі')
-        .replaceAll('T', 'С‚').replaceAll('t', 'С‚')
-        .replaceAll('U', 'Рё').replaceAll('u', 'Рё')
-        .replaceAll('X', 'С…').replaceAll('x', 'С…')
-        .replaceAll('Y', 'Сѓ').replaceAll('y', 'Сѓ')
+        .replaceAll('A', 'а').replaceAll('a', 'а')
+        .replaceAll('B', 'в').replaceAll('b', 'в')
+        .replaceAll('C', 'с').replaceAll('c', 'с')
+        .replaceAll('E', 'е').replaceAll('e', 'е')
+        .replaceAll('H', 'н').replaceAll('h', 'н')
+        .replaceAll('I', 'и').replaceAll('i', 'и')
+        .replaceAll('K', 'к').replaceAll('k', 'к')
+        .replaceAll('M', 'м').replaceAll('m', 'м')
+        .replaceAll('O', 'о').replaceAll('o', 'о')
+        .replaceAll('P', 'р').replaceAll('p', 'р')
+        .replaceAll('R', 'г').replaceAll('r', 'г')
+        .replaceAll('T', 'т').replaceAll('t', 'т')
+        .replaceAll('U', 'и').replaceAll('u', 'и')
+        .replaceAll('X', 'х').replaceAll('x', 'х')
+        .replaceAll('Y', 'у').replaceAll('y', 'у')
         .toLowerCase();
   }
 
   String _extractItems(List<String> lines, String storeName) {
-    final skipKeywords = ['РёС‚РѕРіРѕ', 'РёС‚РѕРі', 'СЃСѓРјРјР°', 'Рє РѕРїР»Р°С‚Рµ', 'РѕРїР»Р°С‚Р°', 'СЃРґР°С‡Р°',
-      'РЅР°Р»РёС‡РЅС‹РјРё', 'Р±РµР·РЅР°Р»', 'РєР°СЂС‚Р°', 'РєР°СЂС‚Сѓ', 'РЅРґСЃ', 'РєРєС‚', 'СЌРєР»Р·', 'С„Рї',
-      'С‡РµРє', 'РєР°СЃСЃРёСЂ', 'РїСЂРѕРґР°РІРµС†', 'РїРѕРєСѓРїР°С‚РµР»СЊ', 'СЃРїР°СЃРёР±Рѕ', 'Р¶РґС‘Рј', 'Р¶РґРµРј',
-      '---------', '=======', 'С‚РµСЂРјРёРЅР°Р»', 'СЌРєР·РµРјРїР»СЏСЂ', 'Р°РІР°РЅСЃ', 'РїСЂРµРґРѕРїР»Р°С‚'];
+    final skipKeywords = ['итого', 'итог', 'сумма', 'к оплате', 'оплата', 'сдача',
+      'наличными', 'безнал', 'карта', 'карту', 'ндс', 'ккт', 'эклз', 'фп',
+      'чек', 'кассир', 'продавец', 'покупатель', 'спасибо', 'ждём', 'ждем',
+      '---------', '=======', 'терминал', 'экземпляр', 'аванс', 'предоплат'];
     final amountPattern = RegExp(r'[\d]+[.,]\d{2}');
     final items = <String>[];
 
@@ -205,8 +205,8 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       // Clean up: remove trailing amounts and quantities
       var cleaned = line
           .replaceAll(RegExp(r'\s+[\d]+[.,]\d{2}\s*$'), '')
-          .replaceAll(RegExp(r'\s+\d+\s*С€С‚\.?\s*$'), '')
-          .replaceAll(RegExp(r'\s+\d+[.,]\d+\s*РєРі\.?\s*$'), '')
+          .replaceAll(RegExp(r'\s+\d+\s*шт\.?\s*$'), '')
+          .replaceAll(RegExp(r'\s+\d+[.,]\d+\s*кг\.?\s*$'), '')
           .replaceAll(RegExp(r'\s+x\d+\s*$'), '')
           .replaceAll(RegExp(r'\s+\*\s*\d+\s*$'), '')
           .trim();
@@ -221,18 +221,18 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   String _findStoreName(List<String> lines) {
-    final skipExact = ['СЌРєР»Р·', 'РєРєС‚', 'СЂРЅ РєРєС‚', 'С„Рґ', 'С„Рї', 'Р·РЅ РєРєС‚', 'Р·РЅ РєС‚',
-      'СЃРёСЃС‚РµРјР°', 'РјРµСЂРєСѓСЂРёР№', 'С€С‚СЂРёС…', 'Р°С‚РѕР»', 'СЌРІРѕС‚РѕСЂ',
-      'РєР°С‚Р°Р»РѕРі', 'catalog', 'easyfinance', 'untitled', 'figma', 'telegram', 'explorer'];
+    final skipExact = ['эклз', 'ккт', 'рн ккт', 'фд', 'фп', 'зн ккт', 'зн кт',
+      'система', 'меркурий', 'штрих', 'атол', 'эвотор',
+      'каталог', 'catalog', 'easyfinance', 'untitled', 'figma', 'telegram', 'explorer'];
 
-    final headerWords = ['РєР°СЃСЃРѕРІС‹Р№', 'С‡РµРєР°', 'С‡РµРєРѕРј', 'СЃР°Р№С‚', 'С‚РµР»', 'Р°РґСЂРµСЃ',
-      'РѕРіСЂРЅ', 'СЌР»', 'СЂРёСЃСѓРЅРѕРє', 'СЏРЅРґРµРєСЃ', 'РєР°СЂС‚РёРЅРє'];
+    final headerWords = ['кассовый', 'чека', 'чеком', 'сайт', 'тел', 'адрес',
+      'огрн', 'эл', 'рисунок', 'яндекс', 'картинк'];
 
-    final storeClues = ['СЂРµСЃС‚РѕСЂР°РЅ', 'РјР°РіР°Р·РёРЅ', 'РєР°С„Рµ', 'Р±Р°СЂ', 'СЃС‚РѕР»РѕРІР°СЏ',
-      'РєР°Р»СЊСЏРЅРЅР°СЏ', 'РєРѕС„РµР№РЅ', 'РїРёС†С†РµСЂ', 'Р°РїС‚РµРє', 'СЃРїРѕСЂС‚', 'fix', 'РјРµРіР°',
-      'Р»РµРЅС‚Р°', 'Р°С€Р°РЅ', 'РїСЏС‚РµСЂРѕС‡Рє', 'РјР°РіРЅРёС‚', 'РІРєСѓСЃРІРёР»Р»', 'РїРµСЂРµРєСЂС‘СЃС‚РѕРє',
-      'РѕРєРµР№', 'СЃРІРµС‚РѕС„РѕСЂ', 'РґРёРєСЃРё', 'match', 'РІР±', 'РјРІРёРґРµРѕ', 'dns',
-      'СЃР°РјРѕРєР°С‚', 'СЏРЅРґРµРєСЃ'];
+    final storeClues = ['ресторан', 'магазин', 'кафе', 'бар', 'столовая',
+      'кальянная', 'кофейн', 'пиццер', 'аптек', 'спорт', 'fix', 'мега',
+      'лента', 'ашан', 'пятерочк', 'магнит', 'вкусвилл', 'перекрёсток',
+      'окей', 'светофор', 'дикси', 'match', 'вб', 'мвидео', 'dns',
+      'самокат', 'яндекс'];
 
     for (final line in lines) {
       final lower = line.toLowerCase();
@@ -248,33 +248,33 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       if (line.length < 3) continue;
       if (skipExact.any((w) => lower == w || norm == w)) continue;
       if (headerWords.any((w) => lower.contains(w))) continue;
-      if (RegExp(r'[Р°-СЏС‘]{3,}').hasMatch(norm)) return _cleanStoreName(line);
+      if (RegExp(r'[а-яё]{3,}').hasMatch(norm)) return _cleanStoreName(line);
     }
     for (final line in lines) {
       final lower = line.toLowerCase();
       if (line.length < 5) continue;
       if (headerWords.any((w) => lower.contains(w))) continue;
-      if (lower.contains('РёРї ') || lower.contains('РѕРѕРѕ')) return _cleanStoreName(line);
+      if (lower.contains('ип ') || lower.contains('ооо')) return _cleanStoreName(line);
     }
     return '';
   }
 
   String _cleanStoreName(String line) {
     var s = line.replaceAll(RegExp(r'^[\d\s./*#:-]+'), '').trim();
-    s = s.replaceAll(RegExp(r'["В«В»""]'), '').trim();
+    s = s.replaceAll(RegExp(r'["«»""]'), '').trim();
     if (s.length > 40) s = s.substring(0, 40);
     return s;
   }
 
   String? _detectCategory(String normalizedText, List<dynamic> categories) {
     final categoryClues = {
-      'РїРёС‚Р°РЅРёРµ': ['СЂРµСЃС‚РѕСЂР°РЅ', 'РєР°С„Рµ', 'СЃС‚РѕР»РѕРІР°СЏ', 'Р±Р°СЂ', 'РєРѕС„РµР№РЅ', 'РїРёС†С†РµСЂ', 'РµРґР°', 'РїСЂРѕРґСѓРєС‚', 'Р±Р»СЋРґРѕ', 'РїРѕСЂС†Рё', 'РІРёРЅРѕ', 'РїРёРІРѕ', 'РєРѕС„Рµ', 'С‡Р°Р№', 'РјСЏСЃРѕ', 'СЂС‹Р±Р°', 'СЃР°Р»Р°С‚', 'СЃСѓРї', 'С…Р»РµР±', 'РјРѕР»РѕРєРѕ', 'СЃС‹СЂ', 'РєРѕР»Р±Р°СЃ', 'РЅР°РїРёС‚РѕРє', 'СЃРѕРє', 'РґРµСЃРµСЂС‚', 'РїРёС†С†Р°', 'СЂРѕР»Р»', 'СЃСѓС€Рё', 'Р±СѓСЂРіРµСЂ', 'РєР°СЂС‚РѕС„', 'СЃРІРёРЅРёРЅ', 'РєСѓСЂРёС†Р°', 'РєРѕС‚Р»РµС‚', 'РїРµР»СЊРјРµРЅ', 'Р±Р»РёРЅС‹', 'РјРѕСЂРѕР¶РµРЅ', 'С€РѕРєРѕР»Р°Рґ', 'С‚РѕСЂС‚', 'РїРёСЂРѕР¶РЅ', 'Р±СѓС‚РµСЂР±СЂРѕРґ', 'Р°Р·Сѓ', 'РїР°СЃС‚Р°', 'РјР°РєР°СЂРѕРЅ', 'РјР°СЃР»Рѕ', 'С‚РІРѕСЂРѕРі', 'СЏРёС†', 'РіРѕРІСЏРґРёРЅ', 'Р»РѕСЃРѕСЃСЊ', 'РєСЂРµРІРµС‚Рє', 'РєР°Р»СЊРјР°СЂ'],
-      'Р°РІС‚РѕРјРѕР±РёР»СЊ': ['Р°РІС‚Рѕ', 'Р·Р°РїСЂР°РІРє', 'Р°СЌСЂРѕ', 'Р°Р·СЃ', 'С€РёРЅРѕРјРѕРЅС‚Р°Р¶', 'СЃС‚Рѕ', 'Р±РµРЅР·РёРЅ', 'РґРёР·РµР»', 'С‚РѕРїР»РёРІ', 'Р°Рё-95', 'Р°Рё-92'],
-      'РґРѕСЃСѓРі Рё РѕС‚РґС‹С…': ['РєРёРЅРѕ', 'С‚РµР°С‚СЂ', 'РєРѕРЅС†РµСЂС‚', 'РїР°СЂРє', 'СЂР°Р·РІР»РµРє', 'Р±РёР»РµС‚'],
-      'РґРѕРјР°С€РЅРµРµ С…РѕР·СЏР№СЃС‚РІРѕ': ['РјР°РіР°Р·РёРЅ', 'С…РѕР·', 'СЃС‚СЂРѕР№РјР°С‚РµСЂ', 'РјРµР±РµР»СЊ', 'РѕР±РѕРё', 'РєСЂР°СЃРє', 'Р»Р°РјРёРЅР°С‚'],
-      'РїСЂРѕРµР·Рґ, С‚СЂР°РЅСЃРїРѕСЂС‚': ['С‚Р°РєСЃРё', 'РјРµС‚СЂРѕ', 'Р°РІС‚РѕР±СѓСЃ', 'С‚СЂР°РЅСЃРїРѕСЂС‚', 'Р±РёР»РµС‚'],
-      'РѕРґРµР¶РґР°, РѕР±СѓРІСЊ, Р°РєСЃРµСЃСЃСѓР°СЂС‹': ['РѕРґРµР¶Рґ', 'РѕР±СѓРІСЊ', 'Р°РєСЃРµСЃСЃСѓР°СЂ', 'С„СѓС‚Р±РѕР»Рє', 'С€С‚Р°РЅ', 'РєСѓСЂС‚Рє', 'РґР¶РёРЅСЃ', 'С€Р°РїРє'],
-      'РјРµРґРёС†РёРЅР°': ['Р»РµРєР°СЂСЃС‚РІ', 'С‚Р°Р±Р»РµС‚Рє', 'Р°РїС‚РµС‡', 'РєР°РїРµР»', 'РјРёРєСЃС‚СѓСЂ', 'РїР»Р°СЃС‚С‹СЂ', 'РІРёС‚Р°РјРёРЅ', 'Р°РЅС‚РёР±РёРѕС‚РёРє'],
+      'питание': ['ресторан', 'кафе', 'столовая', 'бар', 'кофейн', 'пиццер', 'еда', 'продукт', 'блюдо', 'порци', 'вино', 'пиво', 'кофе', 'чай', 'мясо', 'рыба', 'салат', 'суп', 'хлеб', 'молоко', 'сыр', 'колбас', 'напиток', 'сок', 'десерт', 'пицца', 'ролл', 'суши', 'бургер', 'картоф', 'свинин', 'курица', 'котлет', 'пельмен', 'блины', 'морожен', 'шоколад', 'торт', 'пирожн', 'бутерброд', 'азу', 'паста', 'макарон', 'масло', 'творог', 'яиц', 'говядин', 'лосось', 'креветк', 'кальмар'],
+      'автомобиль': ['авто', 'заправк', 'аэро', 'азс', 'шиномонтаж', 'сто', 'бензин', 'дизел', 'топлив', 'аи-95', 'аи-92'],
+      'досуг и отдых': ['кино', 'театр', 'концерт', 'парк', 'развлек', 'билет'],
+      'домашнее хозяйство': ['магазин', 'хоз', 'стройматер', 'мебель', 'обои', 'краск', 'ламинат'],
+      'проезд, транспорт': ['такси', 'метро', 'автобус', 'транспорт', 'билет'],
+      'одежда, обувь, аксессуары': ['одежд', 'обувь', 'аксессуар', 'футболк', 'штан', 'куртк', 'джинс', 'шапк'],
+      'медицина': ['лекарств', 'таблетк', 'аптеч', 'капел', 'микстур', 'пластыр', 'витамин', 'антибиотик'],
     };
     for (final entry in categoryClues.entries) {
       if (entry.value.any((c) => normalizedText.contains(c))) {
@@ -306,7 +306,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   String _findAmount(List<String> lines) {
-    final kwNorm = ['РёС‚РѕРі', 'РёС‚РѕРіРѕ', 'СЃСѓРјРјР°', 'СЃСѓРјРјС‹', 'Рє РѕРїР»Р°С‚Рµ', 'Рє onlate', 'РІСЃРµРіРѕ', 'РІcРµРіРѕ', 'РјС‚РѕРі'];
+    final kwNorm = ['итог', 'итого', 'сумма', 'суммы', 'к оплате', 'к onlate', 'всего', 'вcего', 'мтог'];
     final kwRaw = ['mtor', 'cymma', 'k onlate', 'itorg'];
 
     for (int i = lines.length - 1; i >= 0; i--) {
@@ -355,7 +355,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   }
 
   List<double> _extractSignificantNumbers(String s) {
-    var prepared = s.replaceAll('Рћ', '0').replaceAll('Рѕ', '0');
+    var prepared = s.replaceAll('О', '0').replaceAll('о', '0');
     final regex = RegExp(r'\d[\d\s.,]*\d|\d+');
     final matches = regex.allMatches(prepared);
     final result = <double>[];
@@ -373,7 +373,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   List<double> _extractNumbersAfterKeyword(String line) {
     final norm = _normalize(line);
-    final keywords = ['РёС‚РѕРі', 'РёС‚РѕРіРѕ', 'СЃСѓРјРјР°', 'Рє РѕРїР»Р°С‚Рµ', 'РІСЃРµРіРѕ'];
+    final keywords = ['итог', 'итого', 'сумма', 'к оплате', 'всего'];
     int pos = -1;
     for (final kw in keywords) {
       final idx = norm.indexOf(kw);
@@ -390,7 +390,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
     final after = line.substring(pos);
     final numPart = after.replaceAll(RegExp(r'^[^0-9]*'), '');
-    var cleaned = numPart.replaceAll(' ', '').replaceAll(',', '.').replaceAll('Рћ', '0').replaceAll('Рѕ', '0');
+    var cleaned = numPart.replaceAll(' ', '').replaceAll(',', '.').replaceAll('О', '0').replaceAll('о', '0');
     if (cleaned.contains('.')) {
       final parts = cleaned.split('.');
       if (parts.length > 2) cleaned = parts.join('');
@@ -483,7 +483,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: AppColors.expense.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-            child: Text(_error!, style: Theme.of(context).textTheme.bodyMedium.copyWith(color: AppColors.expense)),
+            child: Text(_error!, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.expense)),
           ),
           const SizedBox(height: 16),
         ],
@@ -546,7 +546,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
               ),
               child: Text(
                 'OCR: $_ocrSource${_ocrLog != null ? '\n$_ocrLog' : ''}',
-                style: Theme.of(context).textTheme.labelSmall.copyWith(color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
+                style: Theme.of(context).textTheme.labelSmall!.copyWith(color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
               ),
             ),
             const SizedBox(height: 8),
@@ -560,7 +560,7 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.borderFor(context)),
               ),
-              child: Text(_recognizedText!, style: Theme.of(context).textTheme.bodySmall.copyWith(color: AppColors.textSecondaryFor(context))),
+              child: Text(_recognizedText!, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
             ),
             const SizedBox(height: 16),
           ],

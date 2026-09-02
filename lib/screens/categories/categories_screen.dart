@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_card.dart';
@@ -182,14 +182,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tCat(context, p.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                    Text(tCat(context, p.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                   ],
                 ),
               ),
               if (childCount > 0)
                 Padding(
                   padding: const EdgeInsets.only(right: 4),
-                  child: Text('$childCount', style: Theme.of(context).textTheme.labelSmall.copyWith(color: AppColors.textSecondaryFor(context))),
+                  child: Text('$childCount', style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                 ),
               Icon(expanded ? Icons.expand_less : Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
               const SizedBox(width: 4),
@@ -235,7 +235,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(tCat(context, c.name), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                   ],
                 ),
               ),
@@ -587,7 +587,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(context.tr('categories.icon'), style: Theme.of(context).textTheme.bodySmall.copyWith(fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
+        Text(context.tr('categories.icon'), style: Theme.of(context).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,

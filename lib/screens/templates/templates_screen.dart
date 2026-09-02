@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
 import '../../components/common/app_button.dart';
@@ -45,7 +45,7 @@ class TemplatesScreen extends StatelessWidget {
                     ),
                     title: Text(t.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     subtitle: Text(
-                      t.amount > 0 ? '$typeLabel · ${store.fmt(t.amount)}' : typeLabel,
+                      t.amount > 0 ? '$typeLabel � ${store.fmt(t.amount)}' : typeLabel,
                       maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)),
                     ),
@@ -55,7 +55,7 @@ class TemplatesScreen extends StatelessWidget {
                         if (t.amount > 0)
                           Text('${t.type == 'income' ? '+' : '-'}${store.fmt(t.amount)}',
                               maxLines: 1, softWrap: false,
-                              style: Theme.of(context).textTheme.bodyMedium.copyWith(fontWeight: FontWeight.w600,
+                              style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w600,
                                   color: t.type == 'income' ? AppColors.income : AppColors.expense)),
                         const SizedBox(width: 4),
                         IconButton(
@@ -219,7 +219,7 @@ class _AddTemplateScreenState extends State<AddTemplateScreen> {
             children: [
               Icon(icon, size: 18, color: active ? Colors.white : AppColors.textFor(context)),
               const SizedBox(width: 6),
-              Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium.copyWith(
+              Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 fontWeight: FontWeight.w600,
                 color: active ? Colors.white : AppColors.textFor(context),
               )),

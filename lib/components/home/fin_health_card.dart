@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
@@ -59,7 +59,7 @@ class FinHealthCard extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: Text(context.tr(item.$1), style: Theme.of(context).textTheme.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+                        title: Text(context.tr(item.$1), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600)),
                         content: SingleChildScrollView(child: Text(context.tr(item.$5), style: Theme.of(context).textTheme.bodyMedium)),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
