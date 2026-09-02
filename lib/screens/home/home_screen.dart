@@ -14,6 +14,7 @@ import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/color_utils.dart';
+import '../../utils/account_utils.dart';
 import '../../utils/translate_category.dart';
 import '../../utils/category_icons.dart';
 import '../../utils/planned_event_title.dart';
@@ -235,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final accounts = store.accounts.where((a) => !a.isArchived).toList();
     if (accounts.isEmpty) return const SizedBox.shrink();
 
-    final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
+    final iconMap = accountIconMap;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

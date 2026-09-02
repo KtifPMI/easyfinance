@@ -8,6 +8,7 @@ import '../../models/account.dart';
 import '../../services/currency_rate_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/account_utils.dart';
 import '../../utils/format.dart';
 
 class AddAccountScreen extends StatefulWidget {
@@ -464,39 +465,4 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   }
 }
 
-String _typeKeyFromId(int id) {
-  switch (id) {
-    case 1: return 'cash';
-    case 2: return 'card';
-    case 5: return 'deposit';
-    case 6: return 'loan_given';
-    case 7: return 'loan_received';
-    case 8: return 'credit_card';
-    case 9: return 'credit';
-    case 10: return 'oms';
-    case 11: return 'stocks';
-    case 12: return 'pif';
-    case 13: return 'ofbu';
-    case 14: return 'pension';
-    case 15: return 'electronic';
-    case 16: return 'bank_account';
-    case 17: return 'real_estate';
-    case 18: return 'car';
-    case 19: return 'other_securities';
-    case 20: return 'fund';
-    case 21: return 'insurance_savings';
-    case 22: return 'savings_plan';
-    case 23: return 'npf';
-    case 24: return 'water_transport';
-    case 25: return 'art';
-    case 26: return 'business';
-    case 27: return 'other_property';
-    case 28: return 'air_transport';
-    case 29: return 'motorcycle';
-    case 30: return 'bonds';
-    case 31: return 'pamm';
-    case 32: return 'broker';
-    case 33: return 'bonus_card';
-    default: return 'cash';
-  }
-}
+String _typeKeyFromId(int id) => accountTypeFromId(id);

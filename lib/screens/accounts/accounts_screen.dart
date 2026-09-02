@@ -9,6 +9,7 @@ import '../../theme/theme.dart';
 import '../../utils/currency_utils.dart';
 import '../../services/currency_rate_service.dart';
 import '../../utils/color_utils.dart';
+import '../../utils/account_utils.dart';
 import '../../utils/format.dart';
 import 'add_account_screen.dart';
 
@@ -164,7 +165,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
 
   Widget _accountTile(BuildContext context, FinanceStore store, Account a) {
-    final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.account_balance_wallet, 'payments': Icons.payments};
+    final iconMap = accountIconMap;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: AppCard(
@@ -223,42 +224,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  String _typeToId(String type) {
-    switch (type) {
-      case 'cash': return '1';
-      case 'card': return '2';
-      case 'deposit': return '5';
-      case 'loan_given': return '6';
-      case 'loan_received': return '7';
-      case 'credit_card': return '8';
-      case 'credit': return '9';
-      case 'oms': return '10';
-      case 'stocks': return '11';
-      case 'pif': return '12';
-      case 'ofbu': return '13';
-      case 'pension': return '14';
-      case 'electronic': return '15';
-      case 'bank_account': return '16';
-      case 'real_estate': return '17';
-      case 'car': return '18';
-      case 'other_securities': return '19';
-      case 'fund': return '20';
-      case 'insurance_savings': return '21';
-      case 'savings_plan': return '22';
-      case 'npf': return '23';
-      case 'water_transport': return '24';
-      case 'art': return '25';
-      case 'business': return '26';
-      case 'other_property': return '27';
-      case 'air_transport': return '28';
-      case 'motorcycle': return '29';
-      case 'bonds': return '30';
-      case 'pamm': return '31';
-      case 'broker': return '32';
-      case 'bonus_card': return '33';
-      default: return '1';
-    }
-  }
+  String _typeToId(String type) => accountTypeToId(type);
 
   Widget _buildCurrencyRow(BuildContext context, FinanceStore store) {
     final byCurrency = <String, double>{};

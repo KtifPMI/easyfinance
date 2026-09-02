@@ -6,6 +6,7 @@ import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/color_utils.dart';
+import '../../utils/account_utils.dart';
 import '../accounts/add_account_screen.dart';
 
 class BankScreen extends StatelessWidget {
@@ -15,7 +16,7 @@ class BankScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        final iconMap = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.wallet, 'payments': Icons.payments};
+        final iconMap = accountIconMap;
 
         return ScreenScaffold(
           title: 'EasyBank',
