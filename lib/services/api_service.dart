@@ -32,7 +32,32 @@ class ApiService {
     if (from != null) params['from'] = from;
     if (to != null) params['to'] = to;
     final json = await _client.get('operations.get', params: params);
-    return _parseList(json, 'operations', Operation.fromJson);
+    final result = <Operation>[];
+    final accounts = json['accounts'];
+    if (accounts is List) {
+      for (final acc in accounts) {
+        final ops = acc is Map ? (acc['operations']) : null;
+        if (ops is List) {
+          result.addAll(ops.cast<Map<String, dynamic>>().map(Operation.fromJson));
+        }
+      }
+    } else if (accounts is Map) {
+      final accList = accounts['account'];
+      if (accList is List) {
+        for (final acc in accList) {
+          final ops = acc is Map ? (acc['operations']) : null;
+          if (ops is List) {
+            result.addAll(ops.cast<Map<String, dynamic>>().map(Operation.fromJson));
+          } else if (ops is Map) {
+            final opList = ops['operation'];
+            if (opList is List) {
+              result.addAll(opList.cast<Map<String, dynamic>>().map(Operation.fromJson));
+            }
+          }
+        }
+      }
+    }
+    return result;
   }
 
   Future<List<cat.Category>> getCategories() async {
