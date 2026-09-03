@@ -65,6 +65,8 @@ class FinanceStore extends ChangeNotifier {
   double _cachedMoneyBalance = 0;
   double _cachedMonthIncome = 0;
   double _cachedMonthExpense = 0;
+  List<Operation>? _cachedFilteredOps;
+  bool _opsDirty = true;
 
   FinanceStore({required this.authService, required this.apiClient, PlannedPaymentStore? plannedPayments})
       : _plannedPayments = plannedPayments {
@@ -121,6 +123,7 @@ class FinanceStore extends ChangeNotifier {
     }
     try {
       _operations = await OperationsDb.getAll();
+      _opsDirty = true;
       if (_operations.isNotEmpty) _useMock = false;
     } catch (_) {}
     if (categoriesRaw != null) {
@@ -210,6 +213,7 @@ class FinanceStore extends ChangeNotifier {
     _currentUser = null;
     _accounts = [];
     _operations = [];
+    _opsDirty = true;
     _categories = [];
     _budgets = [];
     _goals = [];
@@ -223,7 +227,13 @@ class FinanceStore extends ChangeNotifier {
   bool get allOperationsLoaded => _allOperationsLoaded;
   User? get currentUser => _currentUser;
   List<Account> get accounts => _accounts;
-  List<Operation> get operations => _operations.where((o) => !o.isDeleted).toList();
+  List<Operation> get operations {
+    if (_opsDirty || _cachedFilteredOps == null) {
+      _cachedFilteredOps = _operations.where((o) => !o.isDeleted).toList();
+      _opsDirty = false;
+    }
+    return _cachedFilteredOps!;
+  }
   List<cat.Category> get categories => _categories;
   List<Budget> get budgets => _budgets.where((b) => !b.isDeleted).toList();
   List<Goal> get goals => _goals;
@@ -418,6 +428,7 @@ class FinanceStore extends ChangeNotifier {
         from: DateTime.now().subtract(const Duration(days: 90)).toIso8601String().substring(0, 10),
       ).then((ops) {
         _operations = ops;
+        _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
         _allOperationsLoaded = false;
@@ -515,6 +526,7 @@ class FinanceStore extends ChangeNotifier {
       final newOps = serverOps.where((o) => !existingIds.contains(o.id)).toList();
       if (newOps.isNotEmpty) {
         _operations.addAll(newOps);
+        _opsDirty = true;
         _recalcAccountBalances();
         _recalcBudgetSpent();
         notifyListeners();
@@ -533,6 +545,7 @@ class FinanceStore extends ChangeNotifier {
       final existingIds = _operations.map((o) => o.id).toSet();
       final newOps = allOps.where((o) => !existingIds.contains(o.id)).toList();
       _operations = [...allOps, ..._operations.where((o) => !allOps.any((a) => a.id == o.id))];
+      _opsDirty = true;
       _allOperationsLoaded = true;
       _recalcAccountBalances();
       _recalcBudgetSpent();
@@ -569,6 +582,14 @@ class FinanceStore extends ChangeNotifier {
       debugPrint('getGoalTemplates error: $e');
     }
     notifyListeners();
+  }
+
+  static DateTime? _lastRecsAt;
+  void _scheduleRecommendations() {
+    final now = DateTime.now();
+    if (_lastRecsAt != null && now.difference(_lastRecsAt!).inSeconds < 2) return;
+    _lastRecsAt = now;
+    _generateRecommendations();
   }
 
   void _generateRecommendations() {
@@ -1087,9 +1108,10 @@ class FinanceStore extends ChangeNotifier {
     }
     op = op.copyWith(updatedAt: formatApiDateTime());
     _operations.insert(0, op);
+    _opsDirty = true;
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    _generateRecommendations();
+    _scheduleRecommendations();
     await _registerTags(op.tags);
     await _saveCache();
     if (_rates.isNotEmpty) {
@@ -1121,6 +1143,7 @@ class FinanceStore extends ChangeNotifier {
     final pending = _operations.where((op) => op.isPending).toList();
     try {
       _operations = await authService.apiService.getOperations();
+      _opsDirty = true;
     } on ApiException catch (e) {
       _error = e.message;
     } catch (e) {
@@ -1157,6 +1180,7 @@ class FinanceStore extends ChangeNotifier {
         if (idx >= 0) {
           if (isDel) {
             _operations.removeAt(idx);
+            _opsDirty = true;
           } else if (serverId != null && serverId.isNotEmpty) {
             _operations[idx] = _operations[idx].copyWith(id: serverId, isPending: false, clientId: withClient.clientId);
           }
@@ -1167,7 +1191,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    _generateRecommendations();
+    _scheduleRecommendations();
     notifyListeners();
   }
 
@@ -1221,7 +1245,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    _generateRecommendations();
+    _scheduleRecommendations();
     await _registerTags(op.tags);
     await _saveCache();
     notifyListeners();
@@ -1234,9 +1258,10 @@ class FinanceStore extends ChangeNotifier {
     final op = _operations[opIdx];
     if (op.isPending) {
       _operations.removeAt(opIdx);
+      _opsDirty = true;
       _recalcAccountBalances();
       _recalcBudgetSpent();
-      _generateRecommendations();
+      _scheduleRecommendations();
       await _saveCache();
       notifyListeners();
       return;
@@ -1268,7 +1293,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    _generateRecommendations();
+    _scheduleRecommendations();
     await _saveCache();
     notifyListeners();
   }
@@ -1278,7 +1303,7 @@ class FinanceStore extends ChangeNotifier {
     _operations[idx] = op.copyWith(isPending: true, isDeleted: true, updatedAt: now);
     _recalcAccountBalances();
     _recalcBudgetSpent();
-    _generateRecommendations();
+    _scheduleRecommendations();
     _saveCache();
     notifyListeners();
   }
@@ -1673,7 +1698,7 @@ class FinanceStore extends ChangeNotifier {
           limit: b.limit, spent: spent, period: b.period,
         ));
         await _saveBudgets();
-        _generateRecommendations();
+        _scheduleRecommendations();
         notifyListeners();
         return;
       } on ApiException catch (e) {
@@ -1686,7 +1711,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _budgets.add(b.copyWith(spent: spent));
     await _saveBudgets();
-    _generateRecommendations();
+    _scheduleRecommendations();
     notifyListeners();
   }
 
@@ -1813,7 +1838,7 @@ class FinanceStore extends ChangeNotifier {
     final idx = _budgets.indexWhere((b) => b.id == id);
     if (idx >= 0) _budgets[idx] = _budgets[idx].copyWith(isDeleted: true);
     await _saveBudgets();
-    _generateRecommendations();
+    _scheduleRecommendations();
     notifyListeners();
   }
 
