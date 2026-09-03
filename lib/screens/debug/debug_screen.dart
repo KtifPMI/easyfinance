@@ -347,13 +347,23 @@ class _DebugScreenState extends State<DebugScreen> {
       _response = null;
     });
     try {
+      final now = DateTime.now();
+      final from = now.subtract(const Duration(days: 2));
+      final tz = now.timeZoneOffset;
+      final tzStr = '${tz.isNegative ? '-' : '+'}${tz.inHours.abs().toString().padLeft(2, '0')}:${(tz.inMinutes % 60).abs().toString().padLeft(2, '0')}';
+      final fromStr = '${from.year}-${from.month.toString().padLeft(2, '0')}-${from.day.toString().padLeft(2, '0')}T00:00:00$tzStr';
+      final toStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}T23:59:59$tzStr';
       final api = context.read<FinanceStore>().apiClient;
-      final resp = await api.getRaw('operations.get');
+      final resp = await api.getRaw('operations.get', params: {
+        'from': fromStr,
+        'to': toStr,
+        'interval_field': 'date',
+      });
       if (mounted) {
         setState(() {
           _response = resp;
           _selectedMethod = 'operations.get';
-          _testResult = 'No from/to params (server rejects them)';
+          _testResult = 'from=$fromStr  to=$toStr  interval_field=date';
         });
       }
     } catch (e) {
