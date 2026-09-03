@@ -447,7 +447,10 @@ class FinanceStore extends ChangeNotifier {
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) {
-          if (!serverIds.contains(p.id) && !p.date.isBefore(from3m)) _operations.insert(0, p);
+          if (!serverIds.contains(p.id)) {
+            final pd = DateTime.tryParse(p.date);
+            if (pd != null && !pd.isBefore(from3m)) _operations.insert(0, p);
+          }
         }
         debugPrint('Operations loaded: ${_operations.length} (server ${ops.length} + pending in window)');
         return ops;
@@ -549,8 +552,9 @@ class FinanceStore extends ChangeNotifier {
       final existingIds = _operations.map((o) => o.id).toSet();
       final newOps = serverOps.where((o) => !existingIds.contains(o.id)).toList();
       for (final p in pendingOps) {
-        if (!existingIds.contains(p.id) && !p.date.isBefore(from) && !p.date.isAfter(to)) {
-          newOps.add(p);
+        if (!existingIds.contains(p.id)) {
+          final pd = DateTime.tryParse(p.date);
+          if (pd != null && !pd.isBefore(from) && !pd.isAfter(to)) newOps.add(p);
         }
       }
       if (newOps.isNotEmpty) {
