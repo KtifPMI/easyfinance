@@ -440,15 +440,13 @@ class FinanceStore extends ChangeNotifier {
     _recalcCachedTotals();
     notifyListeners();
 
-    final fromStr = DateTime.now().subtract(const Duration(days: 90)).toIso8601String().substring(0, 10);
-
     final results = await Future.wait([
-      api.getOperations(from: fromStr).then((ops) {
+      api.getOperations().then((ops) {
         _operations = ops;
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
-        debugPrint('Operations loaded: ${_operations.length} (from: $fromStr)');
+        debugPrint('Operations loaded: ${_operations.length}');
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
