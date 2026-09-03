@@ -29,7 +29,11 @@ class ApiService {
   }
 
   Future<List<Operation>> getOperations({String? from, String? to}) async {
-    final json = await _client.get('operations.get');
+    final params = <String, String>{};
+    if (from != null) params['from'] = from;
+    if (to != null) params['to'] = to;
+    if (from != null || to != null) params['interval_field'] = 'date';
+    final json = await _client.get('operations.get', params: params.isEmpty ? null : params);
     final result = <Operation>[];
 
     void extractOps(dynamic node) {

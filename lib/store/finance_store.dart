@@ -441,11 +441,9 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
 
     final results = await Future.wait([
-      api.getOperations().then((ops) {
+      api.getOperations(from: _iso8601Date(DateTime.now().subtract(const Duration(days: 90)))).then((ops) {
         _operations = ops;
         _opsDirty = true;
-        final serverIds = _operations.map((o) => o.id).toSet();
-        for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
         debugPrint('Operations loaded: ${_operations.length}');
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
@@ -539,8 +537,8 @@ class FinanceStore extends ChangeNotifier {
     if (!authService.isAuthenticated) return;
     final api = authService.apiService;
     try {
-      final fromStr = from.toIso8601String().substring(0, 10);
-      final toStr = to.toIso8601String().substring(0, 10);
+      final fromStr = _iso8601Date(from);
+      final toStr = _iso8601Date(to);
       final serverOps = await api.getOperations(from: fromStr, to: toStr);
       final existingIds = _operations.map((o) => o.id).toSet();
       final newOps = serverOps.where((o) => !existingIds.contains(o.id)).toList();
@@ -1839,6 +1837,14 @@ class FinanceStore extends ChangeNotifier {
     _cachedMonthExpense = _operations
         .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
         .fold(0.0, (s, o) => s + _amountInRub(o));
+  }
+
+  String _iso8601Date(DateTime dt) {
+    final tz = dt.timeZoneOffset;
+    final sign = tz.isNegative ? '-' : '+';
+    final hours = tz.inHours.abs().toString().padLeft(2, '0');
+    final minutes = (tz.inMinutes % 60).abs().toString().padLeft(2, '0');
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}T00:00:00$sign$hours:$minutes';
   }
 
   Future<void> deleteBudget(String id) async {
