@@ -448,6 +448,7 @@ class FinanceStore extends ChangeNotifier {
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
+        debugPrint('Operations loaded: ${_operations.length} (from: $fromStr)');
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
@@ -522,6 +523,7 @@ class FinanceStore extends ChangeNotifier {
 
     _recalcBudgetSpent();
     _recalcAccountBalances();
+    _recalcCachedTotals();
     _generateRecommendations();
 
     _useMock = !authService.isAuthenticated;
