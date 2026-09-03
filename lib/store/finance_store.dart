@@ -318,7 +318,14 @@ class FinanceStore extends ChangeNotifier {
   bool get useMock => _useMock;
   String? get error => _error;
 
-  cat.Category? getCategory(String? id) => id == null ? null : _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
+  cat.Category? getCategory(String? id) {
+    if (id == null) return null;
+    final result = _categories.cast<cat.Category?>().firstWhere((c) => c!.id == id, orElse: () => null);
+    if (result == null && _categories.isNotEmpty) {
+      debugPrint('Category not found for id=$id. Sample IDs: ${_categories.take(3).map((c) => c!.id).join(', ')}');
+    }
+    return result;
+  }
   Account? getAccount(String? id) => id == null ? null : _accounts.cast<Account?>().firstWhere((a) => a!.id == id, orElse: () => null);
 
   double get totalBalance => _cachedTotalBalance;
@@ -410,7 +417,8 @@ class FinanceStore extends ChangeNotifier {
     final pendingOps = _operations.where((op) => op.isPending).toList();
 
     final api = authService.apiService;
-    final results = await Future.wait([
+
+    final fastResults = await Future.wait([
       api.getUser().then((u) {
         _currentUser = u;
         if (u.id.isNotEmpty && apiClient.userId != u.id) {
@@ -426,13 +434,19 @@ class FinanceStore extends ChangeNotifier {
         for (final p in pendingAcc) { if (!accIds.contains(p.id)) _accounts.add(p); }
         return accs;
       }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <Account>[]; }),
+    ], eagerError: false);
 
-      api.getOperations().then((ops) {
+    _recalcCachedTotals();
+    notifyListeners();
+
+    final fromStr = DateTime.now().subtract(const Duration(days: 90)).toIso8601String().substring(0, 10);
+
+    final results = await Future.wait([
+      api.getOperations(from: fromStr).then((ops) {
         _operations = ops;
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
-        _allOperationsLoaded = true;
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
@@ -441,6 +455,10 @@ class FinanceStore extends ChangeNotifier {
         final pendingCats = _categories.where((c) => c.isPending).toList();
         _categories = rawCats.map((j) => cat.Category.fromJson(j)).toList();
         if (_categories.isEmpty) _categories = [...mockCategories];
+        debugPrint('Categories loaded: ${_categories.length}');
+        if (_categories.isNotEmpty) {
+          debugPrint('First 3 cat IDs: ${_categories.take(3).map((c) => c.id).join(', ')}');
+        }
         final catIds = _categories.map((c) => c.id).toSet();
         for (final p in pendingCats) { if (!catIds.contains(p.id)) _categories.add(p); }
         return rawCats;
@@ -487,8 +505,8 @@ class FinanceStore extends ChangeNotifier {
       _plannedPayments?.syncFromServer().catchError((e) { debugPrint('planned payments sync error: $e'); }) ?? Future.value(),
     ]);
 
-    final targets = results[11] as List<dynamic>? ?? [];
-    final templateGoals = results[12] as List<dynamic>? ?? [];
+    final targets = results[9] as List<dynamic>? ?? [];
+    final templateGoals = results[10] as List<dynamic>? ?? [];
     final existingGoalIds = _goals.map((g) => g.id).toSet();
     final targetIds = targets.map((t) => t['id']?.toString()).whereType<String>().toSet();
     _goals.removeWhere((g) => targetIds.contains(g.id));

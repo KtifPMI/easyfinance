@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../models/account.dart';
 import '../models/operation.dart';
 import '../models/category.dart' as cat;
@@ -31,6 +32,7 @@ class ApiService {
     final params = <String, String>{};
     if (from != null) params['from'] = from;
     if (to != null) params['to'] = to;
+    params['interval_field'] = 'date';
     final json = await _client.get('operations.get', params: params);
     final result = <Operation>[];
 
@@ -48,7 +50,11 @@ class ApiService {
       }
     }
 
-    extractOps(json);
+    try {
+      extractOps(json);
+    } catch (e) {
+      debugPrint('extractOps error: $e');
+    }
     return result;
   }
 
