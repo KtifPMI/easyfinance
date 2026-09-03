@@ -158,6 +158,8 @@
   "operations.income": "Income",
   "operations.expense": "Expenses",
   "operations.empty": "No operations",
+  "operations.load_all_hint": "Showing last 3 months of operations",
+  "operations.load_all": "All history",
   "operations.no_category": "No category",
   "operations.add": "New Operation",
   "operations.edit": "Edit",

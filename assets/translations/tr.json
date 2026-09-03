@@ -143,6 +143,8 @@
   "operations.income": "Gelirler",
   "operations.expense": "Giderler",
   "operations.empty": "İşlem yok",
+  "operations.load_all_hint": "Son 3 aylık işlemler gösteriliyor",
+  "operations.load_all": "Tüm geçmiş",
   "operations.no_category": "Kategori yok",
   "operations.add": "Yeni İşlem",
   "operations.edit": "Düzenle",

@@ -143,6 +143,8 @@
   "operations.income": "Entrate",
   "operations.expense": "Uscite",
   "operations.empty": "Nessuna operazione",
+  "operations.load_all_hint": "Mostra le operazioni degli ultimi 3 mesi",
+  "operations.load_all": "Tutta la cronologia",
   "operations.no_category": "Nessuna categoria",
   "operations.add": "Nuova Operazione",
   "operations.edit": "Modifica",

@@ -203,6 +203,32 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                     ],
                   ),
                 ),
+              if (!store.allOperationsLoaded && !_hasAdvFilter && _reportCategoryId == null)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          context.tr('operations.load_all_hint'),
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textFor(context)),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => store.loadAllOperations(),
+                        child: Text(context.tr('operations.load_all')),
+                      ),
+                    ],
+                  ),
+                ),
               if (ops.isEmpty && !_hasAdvFilter && _reportCategoryId == null)
                 Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
               else if (_sortByInputTime || _sortByUpdated)

@@ -164,6 +164,8 @@
   "operations.income": "Доходы",
   "operations.expense": "Расходы",
   "operations.empty": "Нет операций",
+  "operations.load_all_hint": "Загружены операции за последние 3 месяца",
+  "operations.load_all": "Вся история",
   "operations.no_category": "Без категории",
   "operations.add": "Новая операция",
   "operations.edit": "Редактировать",

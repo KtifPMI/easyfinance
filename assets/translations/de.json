@@ -143,6 +143,8 @@
   "operations.income": "Einnahmen",
   "operations.expense": "Ausgaben",
   "operations.empty": "Keine Umsätze",
+  "operations.load_all_hint": "Letzte 3 Monate der Umsätze werden angezeigt",
+  "operations.load_all": "Gesamte Historie",
   "operations.no_category": "Keine Kategorie",
   "operations.add": "Neuer Umsatz",
   "operations.edit": "Bearbeiten",

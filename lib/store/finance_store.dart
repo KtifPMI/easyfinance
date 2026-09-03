@@ -50,6 +50,7 @@ class FinanceStore extends ChangeNotifier {
   String _displayCurrency = 'RUB';
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
+  bool _allOperationsLoaded = false;
   bool _useMock = true;
   bool showKopeks = true;
   bool showKopeksInOps = true;
@@ -222,6 +223,7 @@ class FinanceStore extends ChangeNotifier {
   }
 
   bool get isAuthenticated => authService.isAuthenticated;
+  bool get allOperationsLoaded => _allOperationsLoaded;
   User? get currentUser => _currentUser;
   List<Account> get accounts => _accounts;
   List<Operation> get operations => _operations.where((o) => !o.isDeleted).toList();
@@ -415,10 +417,13 @@ class FinanceStore extends ChangeNotifier {
         return accs;
       }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <Account>[]; }),
 
-      api.getOperations().then((ops) {
+      api.getOperations(
+        from: DateTime.now().subtract(const Duration(days: 90)).toIso8601String().substring(0, 10),
+      ).then((ops) {
         _operations = ops;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
+        _allOperationsLoaded = false;
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
@@ -520,6 +525,26 @@ class FinanceStore extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('loadMoreOperations error: $e');
+    }
+  }
+
+  Future<void> loadAllOperations() async {
+    if (!authService.isAuthenticated || _allOperationsLoaded) return;
+    final api = authService.apiService;
+    try {
+      final allOps = await api.getOperations();
+      final existingIds = _operations.map((o) => o.id).toSet();
+      final newOps = allOps.where((o) => !existingIds.contains(o.id)).toList();
+      _operations = [...allOps, ..._operations.where((o) => !allOps.any((a) => a.id == o.id))];
+      _allOperationsLoaded = true;
+      _recalcAccountBalances();
+      _recalcBudgetSpent();
+      _recalcCachedTotals();
+      _generateRecommendations();
+      notifyListeners();
+      await _saveCache();
+    } catch (e) {
+      debugPrint('loadAllOperations error: $e');
     }
   }
 
