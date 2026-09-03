@@ -32,6 +32,7 @@ class _DebugScreenState extends State<DebugScreen> {
   final _webPassCtrl = TextEditingController();
   bool _webLoggedIn = false;
   String _postMethod = 'operations.post';
+  String? _testResult;
 
   static const methods = [
     _MethodItem('accounts.get', 'accounts.get'),
@@ -339,6 +340,37 @@ class _DebugScreenState extends State<DebugScreen> {
     return map;
   }
 
+  Future<void> _testOpsLast2Days() async {
+    setState(() {
+      _loading = true;
+      _testResult = null;
+      _response = null;
+    });
+    try {
+      final now = DateTime.now();
+      final from = now.subtract(const Duration(days: 2));
+      final fromStr = '${from.year}-${from.month.toString().padLeft(2, '0')}-${from.day.toString().padLeft(2, '0')}';
+      final toStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final api = context.read<FinanceStore>().apiClient;
+      final resp = await api.getRaw('operations.get', params: {
+        'from': fromStr,
+        'to': toStr,
+        'interval_field': 'date',
+      });
+      if (mounted) {
+        setState(() {
+          _response = resp;
+          _selectedMethod = 'operations.get';
+          _testResult = 'from=$fromStr to=$toStr interval_field=date';
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _response = DebugResponse(statusCode: 0, body: 'Exception: $e', url: ''));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   Future<void> _callMethod(String method) async {
     setState(() {
       _selectedMethod = method;
@@ -538,6 +570,25 @@ class _DebugScreenState extends State<DebugScreen> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: SizedBox(
+              width: double.infinity,
+              child: MaterialButton(
+                onPressed: _loading ? null : _testOpsLast2Days,
+                color: Colors.teal,
+                textColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                child: Text(_loading && _testResult != null ? 'Testing...' : 'TEST: operations.get (last 2 days)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ),
+          if (_testResult != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              child: Text(_testResult!, style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: Colors.tealAccent)),
+            ),
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.all(12),
