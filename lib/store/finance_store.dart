@@ -8,6 +8,7 @@ import '../models/goal.dart';
 import '../models/operation.dart';
 import '../models/operation_template.dart';
 import '../models/recommendation.dart';
+import '../services/operations_db.dart';
 import '../models/recommendation_prefs.dart';
 import '../models/tag.dart';
 import '../models/user.dart';
@@ -107,7 +108,6 @@ class FinanceStore extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
     final accountsRaw = prefs.getString('easyfinance_cached_accounts');
-    final operationsRaw = prefs.getString('easyfinance_cached_operations');
     final categoriesRaw = prefs.getString('easyfinance_cached_categories');
     final tagsRaw = prefs.getString('easyfinance_cached_tags');
     final userRaw = prefs.getString('easyfinance_cached_user');
@@ -119,13 +119,10 @@ class FinanceStore extends ChangeNotifier {
         _useMock = false;
       } catch (_) {}
     }
-    if (operationsRaw != null) {
-      try {
-        final list = jsonDecode(operationsRaw) as List<dynamic>;
-        _operations = list.map((e) => Operation.fromLocalJson(e as Map<String, dynamic>)).toList();
-        _useMock = false;
-      } catch (_) {}
-    }
+    try {
+      _operations = await OperationsDb.getAll();
+      if (_operations.isNotEmpty) _useMock = false;
+    } catch (_) {}
     if (categoriesRaw != null) {
       try {
         final list = jsonDecode(categoriesRaw) as List<dynamic>;
@@ -169,9 +166,9 @@ class FinanceStore extends ChangeNotifier {
     if (_accounts.isNotEmpty) {
       await prefs.setString('easyfinance_cached_accounts', jsonEncode(_accounts.map((a) => a.toJson()).toList()));
     }
-    if (_operations.isNotEmpty) {
-      await prefs.setString('easyfinance_cached_operations', jsonEncode(_operations.map((o) => o.toJson()).toList()));
-    }
+    try {
+      if (_operations.isNotEmpty) await OperationsDb.saveAll(_operations);
+    } catch (_) {}
     if (_categories.isNotEmpty) {
       await prefs.setString('easyfinance_cached_categories', jsonEncode(_categories.map((c) => c.toJson()).toList()));
     }

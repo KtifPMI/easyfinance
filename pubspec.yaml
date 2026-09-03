@@ -1,7 +1,7 @@
 name: easyfinance_app
 description: EasyFinance - personal finance management app
 publish_to: 'none'
-version: 1.41.14+173
+version: 1.41.15+174
 
 environment:
   sdk: '>=3.1.0 <4.0.0'
@@ -32,6 +32,8 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.4
   workmanager: ^0.9.0+3
+  sqflite: ^2.4.1
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:
