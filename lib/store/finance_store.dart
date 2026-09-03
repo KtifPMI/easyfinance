@@ -418,6 +418,7 @@ class FinanceStore extends ChangeNotifier {
     final pendingOps = _operations.where((op) => op.isPending).toList();
 
     final api = authService.apiService;
+    final from3m = DateTime.now().subtract(const Duration(days: 90));
 
     final fastResults = await Future.wait([
       api.getUser().then((u) {
@@ -441,10 +442,14 @@ class FinanceStore extends ChangeNotifier {
     notifyListeners();
 
     final results = await Future.wait([
-      api.getOperations(from: _iso8601Date(DateTime.now().subtract(const Duration(days: 90)))).then((ops) {
+      api.getOperations(from: _iso8601Date(from3m)).then((ops) {
         _operations = ops;
         _opsDirty = true;
-        debugPrint('Operations loaded: ${_operations.length}');
+        final serverIds = _operations.map((o) => o.id).toSet();
+        for (final p in pendingOps) {
+          if (!serverIds.contains(p.id) && !p.date.isBefore(from3m)) _operations.insert(0, p);
+        }
+        debugPrint('Operations loaded: ${_operations.length} (server ${ops.length} + pending in window)');
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
@@ -536,12 +541,18 @@ class FinanceStore extends ChangeNotifier {
   Future<void> loadMoreOperations(DateTime from, DateTime to) async {
     if (!authService.isAuthenticated) return;
     final api = authService.apiService;
+    final pendingOps = _operations.where((op) => op.isPending).toList();
     try {
       final fromStr = _iso8601Date(from);
       final toStr = _iso8601Date(to);
       final serverOps = await api.getOperations(from: fromStr, to: toStr);
       final existingIds = _operations.map((o) => o.id).toSet();
       final newOps = serverOps.where((o) => !existingIds.contains(o.id)).toList();
+      for (final p in pendingOps) {
+        if (!existingIds.contains(p.id) && !p.date.isBefore(from) && !p.date.isAfter(to)) {
+          newOps.add(p);
+        }
+      }
       if (newOps.isNotEmpty) {
         _operations.addAll(newOps);
         _opsDirty = true;
