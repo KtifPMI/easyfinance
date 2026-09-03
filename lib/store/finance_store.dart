@@ -427,14 +427,12 @@ class FinanceStore extends ChangeNotifier {
         return accs;
       }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <Account>[]; }),
 
-      api.getOperations(
-        from: DateTime.now().subtract(const Duration(days: 90)).toIso8601String().substring(0, 10),
-      ).then((ops) {
+      api.getOperations().then((ops) {
         _operations = ops;
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
-        _allOperationsLoaded = false;
+        _allOperationsLoaded = true;
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
