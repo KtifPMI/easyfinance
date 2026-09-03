@@ -209,6 +209,7 @@ class FinanceStore extends ChangeNotifier {
     for (final k in favKeys) {
       await prefs.remove(k);
     }
+    await OperationsDb.deleteAll();
     await authService.logout();
     _currentUser = null;
     _accounts = [];
