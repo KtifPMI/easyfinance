@@ -325,30 +325,33 @@ class FinanceStore extends ChangeNotifier {
   double get moneyBalance => _cachedMoneyBalance;
 
   double accountActualBalance(Account a) {
-    double sum = a.initBalance;
-    for (final op in _operations) {
-      if (op.isDeleted) continue;
-      if (op.type == 'income' && op.accountId == a.id) {
-        sum += op.amount;
-      } else if (op.type == 'expense' && op.accountId == a.id) {
-        sum -= op.amount;
-      } else if (op.type == 'transfer') {
-        if (op.accountId == a.id) sum -= op.amount;
-        if (op.toAccountId == a.id) {
-          if (op.transferAmount != null && op.transferAmount! > 0) {
-            sum += op.transferAmount!;
-          } else {
-            final src = getAccount(op.accountId);
-            if (src != null && src.currency != a.currency) {
-              sum += CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op));
+    if (_allOperationsLoaded) {
+      double sum = a.initBalance;
+      for (final op in _operations) {
+        if (op.isDeleted) continue;
+        if (op.type == 'income' && op.accountId == a.id) {
+          sum += op.amount;
+        } else if (op.type == 'expense' && op.accountId == a.id) {
+          sum -= op.amount;
+        } else if (op.type == 'transfer') {
+          if (op.accountId == a.id) sum -= op.amount;
+          if (op.toAccountId == a.id) {
+            if (op.transferAmount != null && op.transferAmount! > 0) {
+              sum += op.transferAmount!;
             } else {
-              sum += op.amount;
+              final src = getAccount(op.accountId);
+              if (src != null && src.currency != a.currency) {
+                sum += CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op));
+              } else {
+                sum += op.amount;
+              }
             }
           }
         }
       }
+      return sum;
     }
-    return sum;
+    return a.balance;
   }
   double _amountInRub(Operation o) {
     final acc = getAccount(o.accountId);
@@ -424,14 +427,12 @@ class FinanceStore extends ChangeNotifier {
         return accs;
       }).catchError((e) { _error ??= 'Ошибка загрузки счетов: $e'; return <Account>[]; }),
 
-      api.getOperations(
-        from: DateTime.now().subtract(const Duration(days: 90)).toIso8601String().substring(0, 10),
-      ).then((ops) {
+      api.getOperations().then((ops) {
         _operations = ops;
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) { if (!serverIds.contains(p.id)) _operations.insert(0, p); }
-        _allOperationsLoaded = false;
+        _allOperationsLoaded = true;
         return ops;
       }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
 
@@ -1770,6 +1771,7 @@ class FinanceStore extends ChangeNotifier {
   }
 
   void _recalcAccountBalances() {
+    if (!_allOperationsLoaded) return;
     for (var i = 0; i < _accounts.length; i++) {
       final a = _accounts[i];
       double balance = a.initBalance;
