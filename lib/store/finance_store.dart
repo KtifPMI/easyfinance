@@ -51,6 +51,7 @@ class FinanceStore extends ChangeNotifier {
   String _displayCurrency = 'RUB';
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
+  bool _balanceLoaded = false;
   bool _allOperationsLoaded = false;
   bool _useMock = true;
   bool showKopeks = true;
@@ -331,6 +332,7 @@ class FinanceStore extends ChangeNotifier {
 
   double get totalBalance => _cachedTotalBalance;
   double get moneyBalance => _cachedMoneyBalance;
+  bool get balanceLoaded => _balanceLoaded;
 
   double accountActualBalance(Account a) {
     if (_allOperationsLoaded) {
@@ -407,6 +409,7 @@ class FinanceStore extends ChangeNotifier {
       _isLoading = true;
     }
     _error = null;
+    _balanceLoaded = false;
     notifyListeners();
 
     await Future.wait([
@@ -439,6 +442,7 @@ class FinanceStore extends ChangeNotifier {
     ], eagerError: false);
 
     _recalcCachedTotals();
+    _balanceLoaded = true;
     notifyListeners();
 
     final results = await Future.wait([
