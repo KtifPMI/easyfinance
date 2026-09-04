@@ -289,15 +289,117 @@ deleted_at = 2012-12-12T00:57:58+0200
 ### 4.2. operations.* — операции
 
 #### operations.get
-**GET.** Параметры (опц.): `operation_list` (ids), `date_from`, `date_to`,
-`limit`, `fields`, `interval_field` (`created_at`/`updated_at`/`deleted_at`/`date`).
-Через `options=init_balance,balance` можно получить эмуляцию журнала балансов.
-**Ответ:** `response_data.operations[]`. Поля: `id`, `account_id`, `amount`
-(положительное число; знак определяется `type`), `date`, `time`, `category_id`,
-`comment`, `accepted` (`0`/`1`), `tags` (строка через запятую или JSON-массив),
-`type` (`0` расход, `1` доход, `2` перевод), `transfer_account_id`,
-`transfer_amount`, `created_at`, `updated_at`, `deleted_at`, `client_id`,
-`mcc_code`, `merchant_name`.
+**GET.** Получение списка операций пользователя.
+
+**Параметры (все опциональные):**
+
+| Параметр | Тип | Описание |
+|---|---|---|
+| `operation_list` | string | Списки id операций через запятую (для выборочной выгрузки) |
+| `from` | string | Начальная дата периода. Формат **ISO 8601**: `YYYY-MM-DDTHH:MM:SS+HH:MM` |
+| `to` | string | Конечная дата периода. Формат **ISO 8601**: `YYYY-MM-DDTHH:MM:SS+HH:MM` |
+| `interval_field` | string | Какое поле даты фильтровать. Допустимые значения: `date` (дата операции), `created_at`, `updated_at`, `deleted_at` |
+| `fields` | string | Список полей через запятую (по умолчанию — все) |
+| `options` | string | Опции: `client` (вернуть `client_id`), `init_balance,balance` (эмуляция журнала балансов) |
+
+**Важные правила:**
+- Параметры `from` и `to` передаются **вместе** — если задан только один, сервер вернёт ошибку
+- `interval_field` обязателен при использовании `from`/`to`
+- Формат даты строго ISO 8601 с таймзоной (например, `2026-09-01T00:00:00+03:00`)
+- Если `from`/`to` не заданы — сервер возвращает **все** операции пользователя
+- Валидация `from`/`to` выполняется в `BasicRequestForm.class.php` через валидатор `myValidatorDatetimeIso8601`
+
+**Пример запроса (операции за последние 3 месяца):**
+```
+GET https://api.easyfinance.ru/v2/
+    ?method=operations.get
+    &app_id=APP_ID
+    &access_token=TOKEN
+    &from=2026-06-01T00:00:00+03:00
+    &to=2026-09-04T23:59:59+03:00
+    &interval_field=date
+    &sig=SIG
+```
+
+**Пример запроса (все операции, без фильтрации):**
+```
+GET https://api.easyfinance.ru/v2/
+    ?method=operations.get
+    &app_id=APP_ID
+    &access_token=TOKEN
+    &sig=SIG
+```
+
+**Ответ:** `response_data.operations[]`. Поля операции:
+
+| Поле | Тип | Описание |
+|---|---|---|
+| `id` | int | Идентификатор операции |
+| `account_id` | int | ID счёта |
+| `amount` | decimal | Сумма (положительное; знак определяется `type`) |
+| `date` | string | Дата операции (`YYYY-MM-DD`) |
+| `time` | string | Время операции (`HH:MM:SS`) |
+| `category_id` | int | ID категории (у перевода — служебная категория «Перевод») |
+| `comment` | string | Комментарий |
+| `accepted` | 0/1 | Подтверждена ли операция |
+| `tags` | string | Теги через запятую или JSON-массив |
+| `type` | int | `0` — расход, `1` — доход, `2` — перевод |
+| `transfer_account_id` | int | ID счёта получателя (для перевода) |
+| `transfer_amount` | decimal | Сумма перевода на счёт получателя |
+| `created_at` | string | Дата/время создания (ISO 8601) |
+| `updated_at` | string | Дата/время обновления (ISO 8601) |
+| `deleted_at` | string | Дата/время удаления (ISO 8601, soft-delete) |
+| `client_id` | string | ID объекта в стороннем приложении (через `options=client`) |
+| `mcc_code` | string | MCC-код мерчанта |
+| `merchant_name` | string | Название мерчанта |
+
+**Структура ответа (пример):**
+```json
+{
+  "response": {
+    "response_data": {
+      "operations": [
+        {
+          "id": "123456",
+          "account_id": "789",
+          "amount": "1500.00",
+          "date": "2026-09-01",
+          "time": "14:30:00",
+          "category_id": "456",
+          "comment": "Покупка",
+          "accepted": 1,
+          "tags": "еда,магазин",
+          "type": 0,
+          "transfer_account_id": null,
+          "transfer_amount": null,
+          "created_at": "2026-09-01T14:30:00+03:00",
+          "updated_at": "2026-09-01T14:30:00+03:00"
+        }
+      ]
+    }
+  }
+}
+```
+
+**Обработка ошибок валидации:**
+```json
+{
+  "response": {
+    "response_data": {
+      "errors": [
+        {"code": 46, "text": "Invalid field 'from'"},
+        {"code": 48, "text": "Invalid field 'to'"}
+      ]
+    }
+  }
+}
+```
+
+Коды ошибок для `operations.get`:
+| Код | Значение |
+|---|---|
+| `46` (`invalid_field_from`) | Неверный формат параметра `from` |
+| `48` (`invalid_field_to`) | Неверный формат параметра `to` |
 
 #### operations.post
 **POST.** Query: `transact_key`, `options=client`.
@@ -620,6 +722,8 @@ deleted_at = 2012-12-12T00:57:58+0200
 | `operation_required_user_id` | user_id обязателен |
 | `operation_invalid_id` | Неверный id |
 | `operation_required_id` | id обязателен |
+| `46` (`invalid_field_from`) | Неверный формат параметра `from` (ожидается ISO 8601) |
+| `48` (`invalid_field_to`) | Неверный формат параметра `to` (ожидается ISO 8601) |
 
 ### Шаблоны операций (operationPattern)
 | Код | Значение |
