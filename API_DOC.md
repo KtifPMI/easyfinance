@@ -1,40 +1,51 @@
 <style>
   @page {
     size: A4;
-    margin: 20mm 15mm 20mm 15mm;
+    margin: 22mm 18mm 22mm 18mm;
   }
+  @page :first { margin-top: 0; margin-bottom: 0; margin-left: 0; margin-right: 0; }
   body {
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    font-size: 11pt;
-    line-height: 1.6;
-    color: #1a1a2e;
+    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: #1e293b;
+    letter-spacing: 0.01em;
   }
-  h1 { color: #1a5276; font-size: 22pt; margin-top: 30px; border-bottom: 2px solid #1a5276; padding-bottom: 8px; }
-  h2 { color: #2e86c1; font-size: 16pt; margin-top: 25px; border-bottom: 1px solid #aed6f1; padding-bottom: 5px; }
-  h3 { color: #1a5276; font-size: 13pt; margin-top: 18px; }
-  h4 { color: #2e86c1; font-size: 11pt; margin-top: 14px; }
-  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; }
-  th { background: #1a5276; color: white; padding: 8px 10px; text-align: left; font-weight: 600; }
-  td { border: 1px solid #d5dbdb; padding: 6px 10px; }
-  tr:nth-child(even) { background: #f4f6f7; }
-  code { background: #eaf2f8; padding: 2px 5px; border-radius: 3px; font-size: 10pt; font-family: 'Consolas', 'Courier New', monospace; }
-  pre { background: #2d2d2d; color: #f8f8f2; padding: 14px; border-radius: 6px; font-size: 9pt; overflow-x: auto; line-height: 1.5; }
-  pre code { background: none; color: inherit; padding: 0; }
-  blockquote { border-left: 4px solid #2e86c1; margin: 12px 0; padding: 8px 16px; background: #eaf2f8; color: #1a1a2e; }
-  hr { border: none; border-top: 1px solid #aed6f1; margin: 20px 0; }
-  a { color: #2e86c1; }
 
-  .cover { text-align: center; padding: 60px 0 40px 0; page-break-after: always; }
-  .cover-logo { width: 120px; margin-bottom: 30px; }
-  .cover-title { font-size: 32pt; font-weight: 800; color: #1a5276; margin-bottom: 10px; }
-  .cover-subtitle { font-size: 14pt; color: #555; margin-bottom: 20px; }
-  .cover-api { font-size: 16pt; font-family: monospace; color: #2e86c1; background: #eaf2f8; display: inline-block; padding: 8px 20px; border-radius: 6px; margin-bottom: 30px; }
-  .cover-foot { font-size: 10pt; color: #888; margin-top: 40px; }
+  h1 { color: #0f172a; font-size: 20pt; font-weight: 700; margin-top: 36px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2.5px solid #0ea5e9; letter-spacing: -0.02em; }
+  h2 { color: #0f172a; font-size: 14pt; font-weight: 700; margin-top: 30px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; letter-spacing: -0.01em; }
+  h3 { color: #334155; font-size: 11.5pt; font-weight: 600; margin-top: 20px; margin-bottom: 6px; }
+  h4 { color: #475569; font-size: 10.5pt; font-weight: 600; margin-top: 16px; margin-bottom: 4px; }
 
-  .toc-page { page-break-after: always; }
-  .toc-title { color: #1a5276; font-size: 20pt; margin-bottom: 20px; }
-  #toc { font-size: 11pt; }
-  #toc a { color: #2e86c1; text-decoration: none; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 9.5pt; }
+  th { background: #0f172a; color: #f8fafc; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { border: 1px solid #e2e8f0; padding: 8px 12px; vertical-align: top; }
+  tr:nth-child(even) { background: #f8fafc; }
+  tr:hover { background: #f1f5f9; }
+
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 9.5pt; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; color: #0f172a; border: 1px solid #e2e8f0; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 18px 20px; border-radius: 10px; font-size: 9pt; line-height: 1.6; margin: 14px 0; border: 1px solid #1e293b; }
+  pre code { background: none; color: inherit; padding: 0; border: none; font-size: 9pt; }
+
+  blockquote { border-left: 3px solid #0ea5e9; margin: 14px 0; padding: 12px 18px; background: #f0f9ff; color: #1e293b; border-radius: 0 8px 8px 0; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  a { color: #0ea5e9; text-decoration: none; }
+  strong { color: #0f172a; }
+  p { margin: 6px 0; }
+
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); color: white; page-break-after: always; margin: -22mm -18mm; padding: 60px 40px; }
+  .cover-logo { width: 100px; margin-bottom: 40px; filter: brightness(0) invert(1); }
+  .cover-title { font-size: 38pt; font-weight: 800; color: white; margin-bottom: 12px; letter-spacing: -0.03em; line-height: 1.1; }
+  .cover-subtitle { font-size: 13pt; color: #94a3b8; margin-bottom: 32px; font-weight: 400; letter-spacing: 0.01em; }
+  .cover-api { font-size: 14pt; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: #0ea5e9; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); display: inline-block; padding: 10px 28px; border-radius: 8px; margin-bottom: 40px; letter-spacing: 0.02em; }
+  .cover-foot { font-size: 9pt; color: #64748b; margin-top: auto; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .toc-page { page-break-after: always; padding-top: 10px; }
+  .toc-title { color: #0f172a; font-size: 18pt; font-weight: 700; margin-bottom: 24px; padding-bottom: 10px; border-bottom: 2.5px solid #0ea5e9; letter-spacing: -0.02em; }
+  #toc { font-size: 10pt; line-height: 2.2; }
+  #toc a { color: #334155; text-decoration: none; transition: color 0.2s; }
+  #toc a:hover { color: #0ea5e9; }
+  #toc p { margin: 0; padding: 0; }
 </style>
 
 <div class="cover">
@@ -50,28 +61,13 @@
   <div id="toc">
     <p><a href="#introduction">1. Введение</a></p>
     <p><a href="#auth">2. Аутентификация и авторизация</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.1. Регистрация приложения</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.2. OAuth (authorization code)</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.3. Login / password</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.4. Регистрация пользователя</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.5. Получение uid</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.6. Подпись запроса (sig)</a></p>
-    <p style="padding-left:20px"><a href="#auth">2.7. Принцип последнего изменения</a></p>
+    <p style="padding-left:24px; color:#64748b; font-size:9.5pt">Регистрация приложения · OAuth · Login/password · Регистрация пользователя · uid · Подпись запроса · Принцип последнего изменения</p>
     <p><a href="#request-format">3. Формат запросов и ответов</a></p>
+    <p style="padding-left:24px; color:#64748b; font-size:9.5pt">GET · POST · Общие параметры · Структура ответа · Удаление объектов</p>
     <p><a href="#methods">4. Методы API</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.1. accounts.* — счета</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.2. operations.* — операции</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.3. categories.* — категории</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.4. tags.* — теги</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.5. targets.* — цели</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.6. budget.* — бюджет</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.7. calendar.* — календарь</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.8. operationPatterns.* — шаблоны</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.9. currencies.get — валюты</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.10. systemCategories.get</a></p>
-    <p style="padding-left:20px"><a href="#methods">4.11. users.get — данные пользователя</a></p>
+    <p style="padding-left:24px; color:#64748b; font-size:9.5pt">accounts · operations · categories · tags · targets · budget · calendar · operationPatterns · currencies · systemCategories · users</p>
     <p><a href="#web">5. Веб-эндпоинты (сайт)</a></p>
-    <p><a href="#tariffs">6. Тарифы и ограничения</a></p>
+    <p><a href="#tariffs">6. Тарифы и ограничения синхронизации</a></p>
     <p><a href="#errors">7. Коды ошибок</a></p>
     <p><a href="#checklist">8. Чек-лист методов</a></p>
   </div>
