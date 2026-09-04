@@ -162,6 +162,7 @@ class FinanceStore extends ChangeNotifier {
       } catch (_) {}
     }
     _recalcCachedTotals();
+    _balanceLoaded = true;
     notifyListeners();
 
     Future.delayed(Duration.zero, () async {
@@ -425,15 +426,19 @@ class FinanceStore extends ChangeNotifier {
       _isLoading = true;
     }
     _error = null;
-    _balanceLoaded = false;
+    if (!hasCache) {
+      _balanceLoaded = false;
+    }
     notifyListeners();
 
+    try {
     await Future.wait([
       syncPendingOperations(),
       syncPendingAccounts(),
       syncPendingCategories(),
       syncPendingTemplates(),
     ]);
+    } catch (_) {}
     final pendingOps = _operations.where((op) => op.isPending).toList();
 
     final api = authService.apiService;
