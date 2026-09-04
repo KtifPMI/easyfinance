@@ -3,7 +3,7 @@
     size: A4;
     margin: 22mm 18mm 22mm 18mm;
   }
-  @page :first { margin-top: 0; margin-bottom: 0; margin-left: 0; margin-right: 0; }
+  @page :first { margin: 0; }
   body {
     font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: 10.5pt;
@@ -21,7 +21,6 @@
   th { background: #0f172a; color: #f8fafc; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; }
   td { border: 1px solid #e2e8f0; padding: 8px 12px; vertical-align: top; }
   tr:nth-child(even) { background: #f8fafc; }
-  tr:hover { background: #f1f5f9; }
 
   code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 9.5pt; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; color: #0f172a; border: 1px solid #e2e8f0; }
   pre { background: #0f172a; color: #e2e8f0; padding: 18px 20px; border-radius: 10px; font-size: 9pt; line-height: 1.6; margin: 14px 0; border: 1px solid #1e293b; }
@@ -33,19 +32,21 @@
   strong { color: #0f172a; }
   p { margin: 6px 0; }
 
-  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: linear-gradient(160deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); color: white; page-break-after: always; margin: -22mm -18mm; padding: 60px 40px; }
-  .cover-logo { width: 100px; margin-bottom: 40px; filter: brightness(0) invert(1); }
-  .cover-title { font-size: 38pt; font-weight: 800; color: white; margin-bottom: 12px; letter-spacing: -0.03em; line-height: 1.1; }
-  .cover-subtitle { font-size: 13pt; color: #94a3b8; margin-bottom: 32px; font-weight: 400; letter-spacing: 0.01em; }
-  .cover-api { font-size: 14pt; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: #0ea5e9; background: rgba(14, 165, 233, 0.1); border: 1px solid rgba(14, 165, 233, 0.3); display: inline-block; padding: 10px 28px; border-radius: 8px; margin-bottom: 40px; letter-spacing: 0.02em; }
-  .cover-foot { font-size: 9pt; color: #64748b; margin-top: auto; letter-spacing: 0.05em; text-transform: uppercase; }
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; page-break-after: always; }
+  .cover-logo { width: 110px; margin-bottom: 36px; }
+  .cover-title { font-size: 42pt; font-weight: 800; color: #0f172a; margin-bottom: 14px; letter-spacing: -0.03em; line-height: 1.1; }
+  .cover-subtitle { font-size: 14pt; color: #64748b; margin-bottom: 36px; font-weight: 400; }
+  .cover-api { font-size: 15pt; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: #0ea5e9; display: inline-block; padding: 10px 28px; border: 1.5px solid #e2e8f0; border-radius: 8px; margin-bottom: 40px; }
+  .cover-foot { font-size: 9pt; color: #94a3b8; margin-top: auto; letter-spacing: 0.06em; text-transform: uppercase; }
 
-  .toc-page { page-break-after: always; padding-top: 10px; }
-  .toc-title { color: #0f172a; font-size: 18pt; font-weight: 700; margin-bottom: 24px; padding-bottom: 10px; border-bottom: 2.5px solid #0ea5e9; letter-spacing: -0.02em; }
-  #toc { font-size: 10pt; line-height: 2.2; }
-  #toc a { color: #334155; text-decoration: none; transition: color 0.2s; }
-  #toc a:hover { color: #0ea5e9; }
-  #toc p { margin: 0; padding: 0; }
+  .toc-page { page-break-after: always; padding-top: 20px; }
+  .toc-title { color: #0f172a; font-size: 20pt; font-weight: 700; margin-bottom: 28px; padding-bottom: 12px; border-bottom: 2.5px solid #0ea5e9; }
+  .toc-item { display: flex; align-items: baseline; margin: 0; padding: 7px 0; font-size: 12pt; line-height: 1.4; }
+  .toc-item a { color: #1e293b; text-decoration: none; white-space: nowrap; }
+  .toc-item .toc-dots { flex: 1; border-bottom: 1.5px dotted #cbd5e1; margin: 0 8px; min-width: 20px; }
+  .toc-item .toc-page-num { color: #64748b; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .toc-sub { padding-left: 28px; font-size: 10.5pt; }
+  .toc-sub a { color: #475569; }
 </style>
 
 <div class="cover">
@@ -58,19 +59,42 @@
 
 <div class="toc-page">
   <h1 class="toc-title">Содержание</h1>
-  <div id="toc">
-    <p><a href="#introduction">1. Введение</a></p>
-    <p><a href="#auth">2. Аутентификация и авторизация</a></p>
-    <p style="padding-left:24px; color:#64748b; font-size:9.5pt">Регистрация приложения · OAuth · Login/password · Регистрация пользователя · uid · Подпись запроса · Принцип последнего изменения</p>
-    <p><a href="#request-format">3. Формат запросов и ответов</a></p>
-    <p style="padding-left:24px; color:#64748b; font-size:9.5pt">GET · POST · Общие параметры · Структура ответа · Удаление объектов</p>
-    <p><a href="#methods">4. Методы API</a></p>
-    <p style="padding-left:24px; color:#64748b; font-size:9.5pt">accounts · operations · categories · tags · targets · budget · calendar · operationPatterns · currencies · systemCategories · users</p>
-    <p><a href="#web">5. Веб-эндпоинты (сайт)</a></p>
-    <p><a href="#tariffs">6. Тарифы и ограничения синхронизации</a></p>
-    <p><a href="#errors">7. Коды ошибок</a></p>
-    <p><a href="#checklist">8. Чек-лист методов</a></p>
-  </div>
+
+  <p class="toc-item"><a href="#introduction">1. Введение</a><span class="toc-dots"></span><span class="toc-page-num">3</span></p>
+
+  <p class="toc-item"><a href="#auth">2. Аутентификация и авторизация</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.1. Регистрация приложения</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.2. OAuth (authorization code)</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.3. Login / password</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.4. Регистрация пользователя</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.5. Получение uid</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.6. Подпись запроса (sig)</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
+  <p class="toc-item toc-sub"><a href="#auth">2.7. Принцип последнего изменения</a><span class="toc-dots"></span><span class="toc-page-num">7</span></p>
+
+  <p class="toc-item"><a href="#request-format">3. Формат запросов и ответов</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
+  <p class="toc-item toc-sub"><a href="#request-format">3.1. GET</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
+  <p class="toc-item toc-sub"><a href="#request-format">3.2. POST</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
+  <p class="toc-item toc-sub"><a href="#request-format">3.3. Общие параметры</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
+  <p class="toc-item toc-sub"><a href="#request-format">3.4. Структура ответа</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
+  <p class="toc-item toc-sub"><a href="#request-format">3.5. Удаление объектов</a><span class="toc-dots"></span><span class="toc-page-num">10</span></p>
+
+  <p class="toc-item"><a href="#methods">4. Методы API</a><span class="toc-dots"></span><span class="toc-page-num">11</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.1. accounts.* — счета</a><span class="toc-dots"></span><span class="toc-page-num">11</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.2. operations.* — операции</a><span class="toc-dots"></span><span class="toc-page-num">13</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.3. categories.* — категории</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.4. tags.* — теги</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.5. targets.* — цели</a><span class="toc-dots"></span><span class="toc-page-num">19</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.6. budget.* — бюджет</a><span class="toc-dots"></span><span class="toc-page-num">20</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.7. calendar.* — календарь</a><span class="toc-dots"></span><span class="toc-page-num">21</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.8. operationPatterns.* — шаблоны</a><span class="toc-dots"></span><span class="toc-page-num">22</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.9. currencies.get — валюты</a><span class="toc-dots"></span><span class="toc-page-num">23</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.10. systemCategories.get</a><span class="toc-dots"></span><span class="toc-page-num">23</span></p>
+  <p class="toc-item toc-sub"><a href="#methods">4.11. users.get — данные пользователя</a><span class="toc-dots"></span><span class="toc-page-num">24</span></p>
+
+  <p class="toc-item"><a href="#web">5. Веб-эндпоинты (сайт)</a><span class="toc-dots"></span><span class="toc-page-num">25</span></p>
+  <p class="toc-item"><a href="#tariffs">6. Тарифы и ограничения синхронизации</a><span class="toc-dots"></span><span class="toc-page-num">26</span></p>
+  <p class="toc-item"><a href="#errors">7. Коды ошибок</a><span class="toc-dots"></span><span class="toc-page-num">28</span></p>
+  <p class="toc-item"><a href="#checklist">8. Чек-лист методов</a><span class="toc-dots"></span><span class="toc-page-num">32</span></p>
 </div>
 
 # EasyFinance API — Полная документация разработчика
