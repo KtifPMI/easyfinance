@@ -47,33 +47,35 @@
 
 <div class="toc-page">
   <h1 class="toc-title">Содержание</h1>
-  <div id="toc"></div>
+  <div id="toc">
+    <p><a href="#introduction">1. Введение</a></p>
+    <p><a href="#auth">2. Аутентификация и авторизация</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.1. Регистрация приложения</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.2. OAuth (authorization code)</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.3. Login / password</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.4. Регистрация пользователя</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.5. Получение uid</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.6. Подпись запроса (sig)</a></p>
+    <p style="padding-left:20px"><a href="#auth">2.7. Принцип последнего изменения</a></p>
+    <p><a href="#request-format">3. Формат запросов и ответов</a></p>
+    <p><a href="#methods">4. Методы API</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.1. accounts.* — счета</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.2. operations.* — операции</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.3. categories.* — категории</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.4. tags.* — теги</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.5. targets.* — цели</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.6. budget.* — бюджет</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.7. calendar.* — календарь</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.8. operationPatterns.* — шаблоны</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.9. currencies.get — валюты</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.10. systemCategories.get</a></p>
+    <p style="padding-left:20px"><a href="#methods">4.11. users.get — данные пользователя</a></p>
+    <p><a href="#web">5. Веб-эндпоинты (сайт)</a></p>
+    <p><a href="#tariffs">6. Тарифы и ограничения</a></p>
+    <p><a href="#errors">7. Коды ошибок</a></p>
+    <p><a href="#checklist">8. Чек-лист методов</a></p>
+  </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  var headings = document.querySelectorAll('h2, h3, h4');
-  var toc = document.getElementById('toc');
-  if (!toc) return;
-  headings.forEach(function(h) {
-    if (!h.id) {
-      h.id = h.textContent.trim().toLowerCase()
-        .replace(/[^\w\u0400-\u04FF\s-]/g, '')
-        .replace(/\s+/g, '-');
-    }
-    var a = document.createElement('a');
-    a.href = '#' + h.id;
-    a.textContent = h.textContent;
-    a.style.display = 'block';
-    a.style.padding = '2px 0';
-    a.style.color = '#2e86c1';
-    a.style.textDecoration = 'none';
-    if (h.tagName === 'H3') a.style.paddingLeft = '20px';
-    if (h.tagName === 'H4') a.style.paddingLeft = '40px';
-    toc.appendChild(a);
-  });
-});
-</script>
 
 # EasyFinance API — Полная документация разработчика
 
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ---
 
-## 1. Введение
+<h2 id="introduction">1. Введение</h2>
 
 - **Base URL:** `https://api.easyfinance.ru/v2/`
 - **Формат данных:** JSON. Все ответы обёрнуты в `{"response": {...}}`.
@@ -99,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 ---
 
-## 2. Аутентификация и авторизация
+<h2 id="auth">2. Аутентификация и авторизация</h2>
 
 ### 2.1. Регистрация приложения (app_id, secret_key)
 
@@ -218,7 +220,7 @@ https://api.easyfinance.ru/v2/?method=accounts.get&app_id=423004&access_token=be
 
 ---
 
-## 3. Формат запросов и ответов
+<h2 id="request-format">3. Формат запросов и ответов</h2>
 
 ### 3.1. GET
 
@@ -292,7 +294,7 @@ deleted_at = 2012-12-12T00:57:58+0200
 
 ---
 
-## 4. Методы API
+<h2 id="methods">4. Методы API</h2>
 
 ### 4.1. accounts.* — счета
 
@@ -651,7 +653,7 @@ GET https://api.easyfinance.ru/v2/
 
 ---
 
-## 5. Веб-эндпоинты (сайт)
+<h2 id="web">5. Веб-эндпоинты (сайт)</h2>
 
 Не используют схему `method=` и требуют cookie `PHPSESSID` (выдаётся при
 веб-логине, см. раздел 2.3).
@@ -665,7 +667,7 @@ GET https://api.easyfinance.ru/v2/
 
 ---
 
-## 6. Тарифы и ограничения синхронизации
+<h2 id="tariffs">6. Тарифы и ограничения синхронизации</h2>
 
 На сервисе EasyFinance.ru действует тарифная система; набор доступных
 возможностей зависит от тарифа пользователя. Синхронизация с мобильным
@@ -697,7 +699,7 @@ GET https://api.easyfinance.ru/v2/
 
 ---
 
-## 7. Коды ошибок
+<h2 id="errors">7. Коды ошибок</h2>
 
 Ошибки валидации возвращаются в `response_data.errors[]` (или в
 `response_error`). Ниже — основные коды ошибок.
@@ -804,7 +806,7 @@ GET https://api.easyfinance.ru/v2/
 
 ---
 
-## 8. Чек-лист методов
+<h2 id="checklist">8. Чек-лист методов</h2>
 
 Методы, реально вызываемые приложением (полный список):
 `accounts.get`, `accounts.post`, `accounts.set`, `operations.get`,
