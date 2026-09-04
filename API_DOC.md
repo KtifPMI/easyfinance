@@ -32,12 +32,13 @@
   strong { color: #0f172a; }
   p { margin: 6px 0; }
 
-  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; page-break-after: always; }
-  .cover-logo { width: 110px; margin-bottom: 36px; }
-  .cover-title { font-size: 42pt; font-weight: 800; color: #0f172a; margin-bottom: 14px; letter-spacing: -0.03em; line-height: 1.1; }
-  .cover-subtitle { font-size: 14pt; color: #64748b; margin-bottom: 36px; font-weight: 400; }
-  .cover-api { font-size: 15pt; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: #0ea5e9; display: inline-block; padding: 10px 28px; border: 1.5px solid #e2e8f0; border-radius: 8px; margin-bottom: 40px; }
-  .cover-foot { font-size: 9pt; color: #94a3b8; margin-top: auto; letter-spacing: 0.06em; text-transform: uppercase; }
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; page-break-after: always; padding: 60px 40px; }
+  .cover-logo { width: 160px; margin-bottom: 44px; }
+  .cover-title { font-size: 52pt; font-weight: 800; color: #0f172a; margin-bottom: 8px; letter-spacing: -0.04em; line-height: 1.05; }
+  .cover-divider { width: 80px; height: 3px; background: #0ea5e9; border-radius: 2px; margin: 20px auto 24px auto; }
+  .cover-subtitle { font-size: 16pt; color: #64748b; margin-bottom: 0; font-weight: 400; line-height: 1.5; }
+  .cover-api { font-size: 16pt; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: #0ea5e9; display: inline-block; padding: 12px 32px; border: 1.5px solid #e2e8f0; border-radius: 8px; margin-top: 32px; }
+  .cover-foot { font-size: 9pt; color: #94a3b8; margin-top: auto; letter-spacing: 0.08em; text-transform: uppercase; }
 
   .toc-page { page-break-after: always; padding-top: 20px; }
   .toc-title { color: #0f172a; font-size: 20pt; font-weight: 700; margin-bottom: 28px; padding-bottom: 12px; border-bottom: 2.5px solid #0ea5e9; }
@@ -51,8 +52,9 @@
 
 <div class="cover">
   <img class="cover-logo" src="assets/images/logo.png" alt="EasyFinance" />
-  <div class="cover-title">EasyFinance API</div>
-  <div class="cover-subtitle">Справочник разработчика по API v2 мобильного приложения</div>
+  <div class="cover-title">EasyFinance</div>
+  <div class="cover-divider"></div>
+  <div class="cover-subtitle">Справочник разработчика<br/>по API v2 мобильного приложения</div>
   <div class="cover-api">api.easyfinance.ru/v2</div>
   <div class="cover-foot">Документация по интеграции, аутентификации и методам API</div>
 </div>
