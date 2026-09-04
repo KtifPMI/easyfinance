@@ -1,5 +1,44 @@
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 15mm 20mm 15mm;
+  }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #1a1a2e;
+  }
+  h1 { color: #1a5276; font-size: 22pt; margin-top: 30px; border-bottom: 2px solid #1a5276; padding-bottom: 8px; }
+  h2 { color: #2e86c1; font-size: 16pt; margin-top: 25px; border-bottom: 1px solid #aed6f1; padding-bottom: 5px; }
+  h3 { color: #1a5276; font-size: 13pt; margin-top: 18px; }
+  h4 { color: #2e86c1; font-size: 11pt; margin-top: 14px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 10pt; }
+  th { background: #1a5276; color: white; padding: 8px 10px; text-align: left; font-weight: 600; }
+  td { border: 1px solid #d5dbdb; padding: 6px 10px; }
+  tr:nth-child(even) { background: #f4f6f7; }
+  code { background: #eaf2f8; padding: 2px 5px; border-radius: 3px; font-size: 10pt; font-family: 'Consolas', 'Courier New', monospace; }
+  pre { background: #2d2d2d; color: #f8f8f2; padding: 14px; border-radius: 6px; font-size: 9pt; overflow-x: auto; line-height: 1.5; }
+  pre code { background: none; color: inherit; padding: 0; }
+  blockquote { border-left: 4px solid #2e86c1; margin: 12px 0; padding: 8px 16px; background: #eaf2f8; color: #1a1a2e; }
+  hr { border: none; border-top: 1px solid #aed6f1; margin: 20px 0; }
+  a { color: #2e86c1; }
+
+  .cover { text-align: center; padding: 60px 0 40px 0; page-break-after: always; }
+  .cover-logo { width: 120px; margin-bottom: 30px; }
+  .cover-title { font-size: 32pt; font-weight: 800; color: #1a5276; margin-bottom: 10px; }
+  .cover-subtitle { font-size: 14pt; color: #555; margin-bottom: 20px; }
+  .cover-api { font-size: 16pt; font-family: monospace; color: #2e86c1; background: #eaf2f8; display: inline-block; padding: 8px 20px; border-radius: 6px; margin-bottom: 30px; }
+  .cover-foot { font-size: 10pt; color: #888; margin-top: 40px; }
+
+  .toc-page { page-break-after: always; }
+  .toc-title { color: #1a5276; font-size: 20pt; margin-bottom: 20px; }
+  #toc { font-size: 11pt; }
+  #toc a { color: #2e86c1; text-decoration: none; }
+</style>
+
 <div class="cover">
-  <img class="cover-logo" src="logo.png" alt="EasyFinance" />
+  <img class="cover-logo" src="assets/images/logo.png" alt="EasyFinance" />
   <div class="cover-title">EasyFinance API</div>
   <div class="cover-subtitle">Справочник разработчика по API v2 мобильного приложения</div>
   <div class="cover-api">api.easyfinance.ru/v2</div>
