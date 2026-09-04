@@ -152,6 +152,16 @@ class FinanceStore extends ChangeNotifier {
     await _loadGoals();
     await _loadDisplayCurrency();
     _watchedCurrencies = await _loadWatchedCurrencies();
+    final ratesRaw = prefs.getString('easyfinance_cached_rates');
+    if (ratesRaw != null) {
+      try {
+        final decoded = jsonDecode(ratesRaw) as Map<String, dynamic>;
+        _rates = {'RUB': 1.0, ...decoded.map((k, v) => MapEntry(k, (v as num).toDouble()))};
+        final ratesAtRaw = prefs.getString('easyfinance_cached_rates_at');
+        if (ratesAtRaw != null) _ratesUpdatedAt = DateTime.tryParse(ratesAtRaw);
+      } catch (_) {}
+    }
+    _recalcCachedTotals();
     notifyListeners();
 
     Future.delayed(Duration.zero, () async {
@@ -184,6 +194,12 @@ class FinanceStore extends ChangeNotifier {
     }
     if (_currentUser != null) {
       await prefs.setString('easyfinance_cached_user', jsonEncode(_currentUser!.toJson()));
+    }
+    if (_rates.isNotEmpty) {
+      await prefs.setString('easyfinance_cached_rates', jsonEncode(_rates));
+      if (_ratesUpdatedAt != null) {
+        await prefs.setString('easyfinance_cached_rates_at', _ratesUpdatedAt!.toIso8601String());
+      }
     }
     await _saveBudgets();
     await _saveGoals();
@@ -444,7 +460,9 @@ class FinanceStore extends ChangeNotifier {
     _recalcCachedTotals();
     notifyListeners();
 
-    final results = await Future.wait([
+    List<dynamic> results = [];
+    try {
+    results = await Future.wait([
       api.getOperations(from: _iso8601Date(from3m)).then((ops) {
         _operations = ops;
         _opsDirty = true;
@@ -457,7 +475,11 @@ class FinanceStore extends ChangeNotifier {
         }
         debugPrint('Operations loaded: ${_operations.length} (server ${ops.length} + pending in window)');
         return ops;
-      }).catchError((e) { _error ??= 'Ошибка загрузки операций: $e'; return <Operation>[]; }),
+      }).catchError((e) {
+        debugPrint('getOperations error (keeping cache): $e');
+        _error ??= 'Ошибка загрузки операций: $e';
+        return <Operation>[];
+      }),
 
       apiClient.getCategoriesV2().then((rawCats) {
         _buildSystemIconMap(rawCats);
@@ -507,6 +529,7 @@ class FinanceStore extends ChangeNotifier {
       api.getTargets().catchError((e) { debugPrint('getTargets error: $e'); return <Map<String, dynamic>>[]; }),
       api.getGoalTemplates().catchError((e) { debugPrint('getGoalTemplates error: $e'); return <Map<String, dynamic>>[]; }),
     ], eagerError: false);
+    } catch (_) {}
 
     _recalcCachedTotals();
     _balanceLoaded = true;

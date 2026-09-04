@@ -1,0 +1,1503 @@
+<!DOCTYPE html><html><head><title></title><meta charset="utf-8"><style>* {
+	box-sizing: border-box;
+}
+
+html {
+	font-size: 100%;
+}
+
+body {
+	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+		'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+	line-height: 1.6;
+	font-size: 0.6875em; /* 11 pt */
+	color: #111;
+	margin: 0;
+}
+
+body > :first-child {
+	padding-top: 0;
+	margin-top: 0;
+}
+
+body > :last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 0;
+	padding: 0.5em 0 0.25em;
+}
+
+h5,
+h6 {
+	padding: 0;
+}
+
+h5 {
+	font-size: 1em;
+}
+
+h6 {
+	font-size: 0.875em;
+	text-transform: uppercase;
+}
+
+p {
+	margin: 0.25em 0 1em;
+}
+
+blockquote {
+	margin: 0.5em 0 1em;
+	padding-left: 0.5em;
+	padding-right: 1em;
+	border-left: 4px solid gainsboro;
+	font-style: italic;
+}
+
+ul,
+ol {
+	margin: 0;
+	margin-left: 1em;
+	padding: 0 1.5em 0.5em;
+}
+
+pre {
+	white-space: pre-wrap;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code,
+p code,
+li code,
+pre code {
+	background-color: #f8f8f8;
+	padding: 0.1em 0.375em;
+	border: 1px solid #f8f8f8;
+	border-radius: 0.25em;
+	font-family: monospace;
+	font-size: 1.2em;
+}
+
+pre code {
+	display: block;
+	padding: 0.5em;
+}
+
+.page-break {
+	page-break-after: always;
+}
+
+img {
+	max-width: 100%;
+	margin: 1em 0;
+}
+
+table {
+	border-spacing: 0;
+	border-collapse: collapse;
+	display: block;
+	margin: 0 0 1em;
+	width: 100%;
+	overflow: auto;
+}
+
+table th,
+table td {
+	padding: 0.5em 1em;
+	border: 1px solid gainsboro;
+}
+
+table th {
+	font-weight: 600;
+}
+
+table tr {
+	background-color: white;
+	border-top: 1px solid gainsboro;
+}
+
+table tr:nth-child(2n) {
+	background-color: whitesmoke;
+}
+/*# sourceURL=C:\Users\lehag\AppData\Roaming\npm\node_modules\md-to-pdf\markdown.css*/</style><style>pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em
+}
+code.hljs {
+  padding: 3px 5px
+}
+/*!
+  Theme: GitHub
+  Description: Light theme as seen on github.com
+  Author: github.com
+  Maintainer: @Hirse
+  Updated: 2021-05-15
+
+  Outdated base version: https://github.com/primer/github-syntax-light
+  Current colors taken from GitHub's CSS
+*/
+.hljs {
+  color: #24292e;
+  background: #ffffff
+}
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+  /* prettylights-syntax-keyword */
+  color: #d73a49
+}
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+  /* prettylights-syntax-entity */
+  color: #6f42c1
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+  /* prettylights-syntax-constant */
+  color: #005cc5
+}
+.hljs-regexp,
+.hljs-string,
+.hljs-meta .hljs-string {
+  /* prettylights-syntax-string */
+  color: #032f62
+}
+.hljs-built_in,
+.hljs-symbol {
+  /* prettylights-syntax-variable */
+  color: #e36209
+}
+.hljs-comment,
+.hljs-code,
+.hljs-formula {
+  /* prettylights-syntax-comment */
+  color: #6a737d
+}
+.hljs-name,
+.hljs-quote,
+.hljs-selector-tag,
+.hljs-selector-pseudo {
+  /* prettylights-syntax-entity-tag */
+  color: #22863a
+}
+.hljs-subst {
+  /* prettylights-syntax-storage-modifier-import */
+  color: #24292e
+}
+.hljs-section {
+  /* prettylights-syntax-markup-heading */
+  color: #005cc5;
+  font-weight: bold
+}
+.hljs-bullet {
+  /* prettylights-syntax-markup-list */
+  color: #735c0f
+}
+.hljs-emphasis {
+  /* prettylights-syntax-markup-italic */
+  color: #24292e;
+  font-style: italic
+}
+.hljs-strong {
+  /* prettylights-syntax-markup-bold */
+  color: #24292e;
+  font-weight: bold
+}
+.hljs-addition {
+  /* prettylights-syntax-markup-inserted */
+  color: #22863a;
+  background-color: #f0fff4
+}
+.hljs-deletion {
+  /* prettylights-syntax-markup-deleted */
+  color: #b31d28;
+  background-color: #ffeef0
+}
+.hljs-char.escape_,
+.hljs-link,
+.hljs-params,
+.hljs-property,
+.hljs-punctuation,
+.hljs-tag {
+  /* purposely ignored */
+  
+}/*# sourceURL=C:\Users\lehag\AppData\Roaming\npm\node_modules\md-to-pdf\node_modules\highlight.js\styles\github.css*/</style></head>
+	<body class="">
+		<style>
+  @page {
+    size: A4;
+    margin: 22mm 18mm 22mm 18mm;
+  }
+  @page :first { margin: 0; }
+  @page { @bottom-center { content: counter(page); font-size: 9pt; color: #94a3b8; } }
+  body {
+    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: #1e293b;
+    letter-spacing: 0.01em;
+  }
+
+  h1 { color: #0f172a; font-size: 20pt; font-weight: 700; margin-top: 36px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2.5px solid #0ea5e9; letter-spacing: -0.02em; }
+  h2 { color: #0f172a; font-size: 14pt; font-weight: 700; margin-top: 30px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #e2e8f0; letter-spacing: -0.01em; }
+  h3 { color: #334155; font-size: 11.5pt; font-weight: 600; margin-top: 20px; margin-bottom: 6px; }
+  h4 { color: #475569; font-size: 10.5pt; font-weight: 600; margin-top: 16px; margin-bottom: 4px; }
+
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 9.5pt; }
+  th { background: #0f172a; color: #f8fafc; padding: 9px 12px; text-align: left; font-weight: 600; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; }
+  td { border: 1px solid #e2e8f0; padding: 8px 12px; vertical-align: top; }
+  tr:nth-child(even) { background: #f8fafc; }
+
+  code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 9.5pt; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; color: #0f172a; border: 1px solid #e2e8f0; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 18px 20px; border-radius: 10px; font-size: 9pt; line-height: 1.6; margin: 14px 0; border: 1px solid #1e293b; }
+  pre code { background: none; color: inherit; padding: 0; border: none; font-size: 9pt; }
+
+  blockquote { border-left: 3px solid #0ea5e9; margin: 14px 0; padding: 12px 18px; background: #f0f9ff; color: #1e293b; border-radius: 0 8px 8px 0; }
+  hr { border: none; border-top: 1px solid #e2e8f0; margin: 24px 0; }
+  a { color: #0ea5e9; text-decoration: none; }
+  strong { color: #0f172a; }
+  p { margin: 6px 0; }
+
+  .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; page-break-after: always; }
+  .cover-logo { width: 110px; margin-bottom: 36px; }
+  .cover-title { font-size: 42pt; font-weight: 800; color: #0f172a; margin-bottom: 14px; letter-spacing: -0.03em; line-height: 1.1; }
+  .cover-subtitle { font-size: 14pt; color: #64748b; margin-bottom: 36px; font-weight: 400; }
+  .cover-api { font-size: 15pt; font-family: 'JetBrains Mono', 'Fira Code', monospace; color: #0ea5e9; display: inline-block; padding: 10px 28px; border: 1.5px solid #e2e8f0; border-radius: 8px; margin-bottom: 40px; }
+  .cover-foot { font-size: 9pt; color: #94a3b8; margin-top: auto; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .toc-page { page-break-after: always; padding-top: 20px; }
+  .toc-title { color: #0f172a; font-size: 20pt; font-weight: 700; margin-bottom: 28px; padding-bottom: 12px; border-bottom: 2.5px solid #0ea5e9; }
+  .toc-item { display: flex; align-items: baseline; margin: 0; padding: 7px 0; font-size: 12pt; line-height: 1.4; }
+  .toc-item a { color: #1e293b; text-decoration: none; white-space: nowrap; }
+  .toc-item .toc-dots { flex: 1; border-bottom: 1.5px dotted #cbd5e1; margin: 0 8px; min-width: 20px; }
+  .toc-item .toc-page-num { color: #64748b; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .toc-sub { padding-left: 28px; font-size: 10.5pt; }
+  .toc-sub a { color: #475569; }
+</style>
+
+<div class="cover">
+  <img class="cover-logo" src="assets/images/logo.png" alt="EasyFinance">
+  <div class="cover-title">EasyFinance API</div>
+  <div class="cover-subtitle">Справочник разработчика по API v2 мобильного приложения</div>
+  <div class="cover-api">api.easyfinance.ru/v2</div>
+  <div class="cover-foot">Документация по интеграции, аутентификации и методам API</div>
+</div>
+
+<div class="toc-page">
+  <h1 class="toc-title">Содержание</h1>
+
+  <p class="toc-item"><a href="#introduction">1. Введение</a><span class="toc-dots"></span><span class="toc-page-num">3</span></p>
+
+  <p class="toc-item"><a href="#auth">2. Аутентификация и авторизация</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#s21">2.1. Регистрация приложения</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#s22">2.2. OAuth (authorization code)</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#s23">2.3. Login / password</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#s24">2.4. Регистрация пользователя</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#s25">2.5. Получение uid</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
+  <p class="toc-item toc-sub"><a href="#s26">2.6. Подпись запроса (sig)</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
+  <p class="toc-item toc-sub"><a href="#s27">2.7. Принцип последнего изменения</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
+
+  <p class="toc-item"><a href="#request-format">3. Формат запросов и ответов</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
+  <p class="toc-item toc-sub"><a href="#s31">3.1. GET</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
+  <p class="toc-item toc-sub"><a href="#s32">3.2. POST</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
+  <p class="toc-item toc-sub"><a href="#s33">3.3. Общие параметры</a><span class="toc-dots"></span><span class="toc-page-num">10</span></p>
+  <p class="toc-item toc-sub"><a href="#s34">3.4. Структура ответа</a><span class="toc-dots"></span><span class="toc-page-num">11</span></p>
+  <p class="toc-item toc-sub"><a href="#s35">3.5. Удаление объектов</a><span class="toc-dots"></span><span class="toc-page-num">11</span></p>
+
+  <p class="toc-item"><a href="#methods">4. Методы API</a><span class="toc-dots"></span><span class="toc-page-num">12</span></p>
+  <p class="toc-item toc-sub"><a href="#s41">4.1. accounts.* — счета</a><span class="toc-dots"></span><span class="toc-page-num">12</span></p>
+  <p class="toc-item toc-sub"><a href="#s42">4.2. operations.* — операции</a><span class="toc-dots"></span><span class="toc-page-num">14</span></p>
+  <p class="toc-item toc-sub"><a href="#s43">4.3. categories.* — категории</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
+  <p class="toc-item toc-sub"><a href="#s44">4.4. tags.* — теги</a><span class="toc-dots"></span><span class="toc-page-num">19</span></p>
+  <p class="toc-item toc-sub"><a href="#s45">4.5. targets.* — цели</a><span class="toc-dots"></span><span class="toc-page-num">20</span></p>
+  <p class="toc-item toc-sub"><a href="#s46">4.6. budget.* — бюджет</a><span class="toc-dots"></span><span class="toc-page-num">21</span></p>
+  <p class="toc-item toc-sub"><a href="#s47">4.7. calendar.* — календарь</a><span class="toc-dots"></span><span class="toc-page-num">22</span></p>
+  <p class="toc-item toc-sub"><a href="#s48">4.8. operationPatterns.* — шаблоны</a><span class="toc-dots"></span><span class="toc-page-num">24</span></p>
+  <p class="toc-item toc-sub"><a href="#s49">4.9. currencies.get — валюты</a><span class="toc-dots"></span><span class="toc-page-num">25</span></p>
+  <p class="toc-item toc-sub"><a href="#s410">4.10. systemCategories.get</a><span class="toc-dots"></span><span class="toc-page-num">25</span></p>
+  <p class="toc-item toc-sub"><a href="#s411">4.11. users.get — данные пользователя</a><span class="toc-dots"></span><span class="toc-page-num">26</span></p>
+
+  <p class="toc-item"><a href="#web">5. Веб-эндпоинты (сайт)</a><span class="toc-dots"></span><span class="toc-page-num">27</span></p>
+  <p class="toc-item"><a href="#tariffs">6. Тарифы и ограничения синхронизации</a><span class="toc-dots"></span><span class="toc-page-num">28</span></p>
+  <p class="toc-item"><a href="#errors">7. Коды ошибок</a><span class="toc-dots"></span><span class="toc-page-num">30</span></p>
+  <p class="toc-item"><a href="#checklist">8. Чек-лист методов</a><span class="toc-dots"></span><span class="toc-page-num">34</span></p>
+</div>
+
+<h1 id="easyfinance-api--полная-документация-разработчика">EasyFinance API — Полная документация разработчика</h1>
+<p>Настоящий документ — полное описание API <code>api.easyfinance.ru/v2</code> мобильного
+приложения EasyFinance. В нём приведены актуальные правила аутентификации и
+подписи запросов, все используемые методы с точными параметрами запросов и
+полями ответов, а также коды ошибок и поведенческие правила синхронизации данных.</p>
+<hr>
+<h2 id="introduction">1. Введение</h2>
+
+<ul>
+<li><strong>Base URL:</strong> <code>https://api.easyfinance.ru/v2/</code></li>
+<li><strong>Формат данных:</strong> JSON. Все ответы обёрнуты в <code>{"response": {...}}</code>.</li>
+<li><strong>Кодировка:</strong> UTF-8.</li>
+<li><strong>Формат дат:</strong> строки вида <code>YYYY-MM-DDTHH:MM:SS+HH:MM</code>
+(например, <code>2026-08-26T15:04:05+03:00</code>).</li>
+<li><strong>Типы данных в API:</strong> операции, счета, категории, шаблоны операций, валюты,
+теги, бюджет пользователя.</li>
+<li><strong>Полная синхронизация:</strong> за один запрос <code>users.get</code> можно получить все данные,
+но есть ограничение — операции возвращаются только за интервал ±14 дней от даты
+запроса. Рекомендуется запрашивать каждый тип данных отдельным методом.</li>
+</ul>
+<hr>
+<h2 id="auth">2. Аутентификация и авторизация</h2>
+
+<h3 id="s21">2.1. Регистрация приложения (app_id, secret_key)</h3>
+
+<p>Каждое стороннее приложение получает при регистрации:</p>
+<ul>
+<li><code>app_id</code> — идентификатор приложения;</li>
+<li><code>secret_key</code> — секретный ключ для расчёта подписи <code>sig</code>.</li>
+</ul>
+<p>Оба параметра передаются в каждом запросе (см. раздел 3).</p>
+<h3 id="s22">2.2. OAuth (authorization code) — используется приложением</h3>
+
+<p>Приложение EasyFinance авторизует пользователя по OAuth-флоу:</p>
+<ol>
+<li><p><strong>Получение URL авторизации</strong> — <code>buildOAuthCodeUrl()</code>:</p>
+<pre><code>GET https://api.easyfinance.ru/v2/
+    ?app_id=APP_ID
+    &amp;response_type=code
+    &amp;sig=SIG
+</code></pre>
+<p>(без <code>method</code> и <code>access_token</code>; <code>sig</code> строится <strong>без</strong> <code>uid</code>).</p>
+<p>Открыть URL в браузере/WebView. Пользователь логинится на сайте и получает <code>code</code>.</p>
+</li>
+<li><p><strong>Обмен <code>code</code> на токен</strong> — <code>exchangeCodeForToken(code)</code>:</p>
+<pre><code>GET https://api.easyfinance.ru/v2/
+    ?app_id=APP_ID
+    &amp;code=CODE
+    &amp;grant_type=authorization_code
+    &amp;response_type=token
+    &amp;sig=SIG
+</code></pre>
+<p>(без <code>method</code>; <code>sig</code> строится <strong>без</strong> <code>uid</code>). Сервер возвращает <code>access_token</code>
+и <code>uid</code> (в заголовке <code>location</code> редиректа или в теле ответа).</p>
+</li>
+<li><p>Далее во всех запросах передаются <code>access_token</code> и <code>uid</code> (для подписи <code>sig</code>).</p>
+</li>
+</ol>
+<h3 id="s23">2.3. Login / password + получение access_token</h3>
+
+<p>Альтернативный флоу (партнёрские приложения):</p>
+<ul>
+<li><code>POST</code> на сайт <code>https://easyfinance.ru/login/</code> с параметрами <code>login</code>, <code>pass</code>
+возвращает cookie <code>PHPSESSID</code> (используется веб-эндпоинтами, см. раздел 5).</li>
+<li>Для API v2 приложение обменивает связку <code>app_id</code> + <code>secret_key</code> на <code>access_token</code>
+и <code>uid</code> (параметры <code>app_id</code>, <code>secret_key</code> обмениваются на <code>access_token</code> и <code>uid</code>).</li>
+</ul>
+<h3 id="s24">2.4. Регистрация пользователя (users.post)</h3>
+
+<p>Нового пользователя можно создать через API методом <code>users.post</code> (HTTP POST).
+В URL — стандартные параметры и подпись, в теле — обязательные поля:</p>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Тип</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>login</code></td>
+<td>string</td>
+<td>Логин (используется для авторизации)</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>string</td>
+<td>Пароль (макс. длина — 40)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td>Имя пользователя</td>
+</tr>
+<tr>
+<td><code>mail</code></td>
+<td>string</td>
+<td>Электронная почта</td>
+</tr>
+</tbody></table>
+<p>Для партнёрских приложений может быть включён режим, при котором сервер сразу
+возвращает <code>access_token</code> в ответе на регистрацию (оговаривается отдельно для
+каждого приложения, по умолчанию выключен).</p>
+<h3 id="s25">2.5. Получение uid (users.get)</h3>
+
+<p>После получения <code>access_token</code> идентификатор пользователя <code>uid</code> извлекается из
+ответа <code>users.get</code> (поле <code>id</code>). <code>uid</code> необходим для расчёта подписи всех
+последующих запросов.</p>
+<h3 id="s26">2.6. Подпись запроса (sig)</h3>
+
+<p><code>secret_key</code> — секрет приложения. Формула (конкатенация строк <strong>без</strong>
+разделителей, не точка):</p>
+<ul>
+<li>До получения <code>uid</code> (обмен code→token, шаги 2.2):
+<code>sig = md5(secret_key + params_string)</code></li>
+<li>После получения <code>uid</code> (все остальные запросы):
+<code>sig = md5(secret_key + uid + params_string)</code></li>
+</ul>
+<p>Где <code>params_string</code> — строка всех параметров запроса (без самого <code>sig</code>), значения
+которых URL-кодируются; порядок параметров важен только для расчёта подписи.</p>
+<p><strong>Подробный пример расчёта подписи:</strong></p>
+<p>Запрос на получение счётов:</p>
+<pre><code>https://api.easyfinance.ru/v2/?method=accounts.get&amp;app_id=423004&amp;access_token=be6ef89965d58e56dec21acb9b62bda
+</code></pre>
+<p>Параметры для подписи (<code>params</code>):</p>
+<pre><code>method=accounts.get&amp;app_id=423004&amp;access_token=be6ef89965d58e56dec21acb9b62bda
+</code></pre>
+<p>Идентификатор пользователя: <code>uid = 46732644</code>
+Секретный ключ: <code>secret_key = hf78g6f6gf6467f7f77ff7f7f77f</code></p>
+<p>Формула:</p>
+<pre><code>sig = md5( hf78g6f6gf6467f7f77ff7f7f77f 46732644 method=accounts.get&amp;app_id=423004&amp;access_token=be6ef89965d58e56dec21acb9b62bd )
+</code></pre>
+<p>Результат:</p>
+<pre><code>sig = b9cc2e5c047d54e96c74adbfa8d43abe
+</code></pre>
+<p>Итоговый URL:</p>
+<pre><code>https://api.easyfinance.ru/v2/?method=accounts.get&amp;app_id=423004&amp;access_token=be6ef89965d58e56dec21acb9b62bda&amp;sig=b9cc2e5c047d54e96c74adbfa8d43abe
+</code></pre>
+<h3 id="s27">2.7. Принцип последнего изменения</h3>
+
+<p>Все изменения данных происходят согласно «последнему изменению». Время
+фиксируется в поле <code>updated_at</code>, которое есть у каждого объекта (кроме тегов).
+Сервер сравнивает <code>updated_at</code> присланных данных с данными на сервере — у кого
+<code>updated_at</code> больше, те и приоритетнее. Если пользователь менял данные в приложении,
+но не синхронизировал их, а затем изменил их же на сайте, то при последующей
+синхронизации приоритет останется у серверной версии.</p>
+<hr>
+<h2 id="request-format">3. Формат запросов и ответов</h2>
+
+<h3 id="s31">3.1. GET</h3>
+
+<p>Параметры в query-строке: <code>method</code>, <code>app_id</code>, <code>access_token</code>, <code>&lt;доп. параметры&gt;</code>,
+<code>sig</code>. Все они (включая дополнительные) входят в <code>params_string</code> для подписи.</p>
+<pre><code>GET https://api.easyfinance.ru/v2/
+    ?method=accounts.get
+    &amp;app_id=APP_ID
+    &amp;access_token=TOKEN
+    &amp;fields=id,name
+    &amp;sig=SIG
+</code></pre>
+<h3 id="s32">3.2. POST</h3>
+
+<ul>
+<li>Параметры в query: <code>method</code>, <code>app_id</code>, <code>access_token</code>, <code>transact_key</code>,
+<code>&lt;id-параметры: operation_id / chain_id / category_id / tag_id / target_id / operation_pattern_id&gt;</code> (все входят в подпись), <code>sig</code>.</li>
+<li>Тело запроса — JSON в <code>Content-Type: application/json</code>:<pre><code class="hljs json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"request"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"request_data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-string">"&lt;объект или массив записей&gt;"</span> <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+Конкретные обёртки (<code>operations</code>, <code>accounts</code>, <code>categories</code>, <code>tags</code>, <code>targets</code>,
+<code>operationPatterns</code>, <code>calendar</code>, <code>budgets</code>) указаны в каждом методе.</li>
+</ul>
+<h3 id="s33">3.3. Общие параметры</h3>
+
+<ul>
+<li><code>fields</code> — список возвращаемых полей через запятую (по умолчанию — все). Для
+счётов/операций через <code>fields</code> можно запросить <code>init_balance,balance</code>.</li>
+<li><code>options</code> — опции: <code>client</code> (вернуть <code>client_id</code>), <code>noresponse</code> (не возвращать
+тело). Для POST передаётся в query.</li>
+<li><code>transact_key</code> — обязателен для всех POST; уникальный ключ идемпотентности,
+сгенерированный клиентом (при повторе с тем же ключом сервер не создаёт дубль).</li>
+<li><code>client_id</code> — идентификатор объекта в стороннем приложении (используется для
+сопоставления при создании счетов/операций/категорий/шаблонов).</li>
+<li><code>account_list</code> / <code>operation_list</code> / <code>category_list</code> / <code>tags_list</code> /
+<code>operation_pattern_list</code> — списки id через запятую для выборочной выгрузки.</li>
+</ul>
+<h3 id="s34">3.4. Структура ответа</h3>
+
+<p>Успех:</p>
+<pre><code class="hljs json"><span class="hljs-punctuation">{</span> <span class="hljs-attr">"response"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"response_data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"accounts"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span> ... <span class="hljs-punctuation">]</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Ошибка (вложенная):</p>
+<pre><code class="hljs json"><span class="hljs-punctuation">{</span> <span class="hljs-attr">"response"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"response_error"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"error_code"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"..."</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"error_message"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"..."</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Или список ошибок валидации:</p>
+<pre><code class="hljs json"><span class="hljs-punctuation">{</span> <span class="hljs-attr">"response"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"response_data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"errors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span> <span class="hljs-punctuation">{</span> <span class="hljs-attr">"code"</span><span class="hljs-punctuation">:</span> ...<span class="hljs-punctuation">,</span> <span class="hljs-attr">"text"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"..."</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">]</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span> <span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="s35">3.5. Удаление объектов</h3>
+
+<p>У большинства объектов <strong>нет</strong> выделенного метода <code>*.delete</code> — удаление
+выполняется через соответствующий <code>*.set</code> с проставленным полем <code>deleted_at</code>,
+равным времени удаления (исключение — счета, где также используется <code>state = "2"</code>):</p>
+<pre><code>deleted_at = 2012-12-12T00:57:58+0200
+</code></pre>
+<p>Сервер делает soft-delete. <strong>Исключение:</strong> у календаря/планировщика есть
+собственный метод <strong><code>calendar.delete</code></strong> (см. §4.7) — для удаления запланированного
+события им и следует пользоваться.</p>
+<hr>
+<h2 id="methods">4. Методы API</h2>
+
+<h3 id="s41">4.1. accounts.* — счета</h3>
+
+<h4 id="accountsget">accounts.get</h4>
+<p><strong>GET.</strong> Параметры: <code>account_list</code> (ids, опц.), <code>fields</code> (опц., напр.
+<code>init_balance,balance</code>).
+<strong>Ответ:</strong> <code>response_data.accounts[]</code>. Поля счёта:</p>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Тип</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>int</td>
+<td>Идентификатор счёта</td>
+</tr>
+<tr>
+<td><code>name</code> / <code>title</code></td>
+<td>string</td>
+<td>Название</td>
+</tr>
+<tr>
+<td><code>balance</code></td>
+<td>decimal</td>
+<td>Текущий баланс</td>
+</tr>
+<tr>
+<td><code>init_balance</code></td>
+<td>decimal</td>
+<td>Начальный баланс</td>
+</tr>
+<tr>
+<td><code>currency_id</code></td>
+<td>int</td>
+<td>ID валюты (1=RUB, 2=USD, 3=EUR, 4=GBP, 5=CHF, 6=CNY, 7=JPY, 8=BYN, 9=UAH, 10=KZT, 11=PLN, 12=CZK, 13=SEK, 14=NOK)</td>
+</tr>
+<tr>
+<td><code>currency_char_code</code></td>
+<td>string</td>
+<td>Код валюты (RUB, USD, …)</td>
+</tr>
+<tr>
+<td><code>type_id</code></td>
+<td>int</td>
+<td>Тип счёта (см. маппинг ниже)</td>
+</tr>
+<tr>
+<td><code>state</code></td>
+<td>int</td>
+<td><code>1</code> — избранный, <code>2</code> — в архиве</td>
+</tr>
+<tr>
+<td><code>icon</code></td>
+<td>string</td>
+<td>Код иконки <code>accountimageN</code></td>
+</tr>
+<tr>
+<td><code>include_in_total</code></td>
+<td>0/1</td>
+<td>Учитывать в общем балансе</td>
+</tr>
+<tr>
+<td><code>created_at</code>, <code>updated_at</code></td>
+<td>datetime</td>
+<td>Даты</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>Описание (кредиты)</td>
+</tr>
+<tr>
+<td><code>bank_id</code></td>
+<td>int</td>
+<td>ID банка (кредиты)</td>
+</tr>
+<tr>
+<td><code>annual_rate</code></td>
+<td>decimal</td>
+<td>Годовая ставка (кредиты)</td>
+</tr>
+<tr>
+<td><code>payment_type</code></td>
+<td>string</td>
+<td>Тип платежа (кредиты)</td>
+</tr>
+<tr>
+<td><code>open_date</code>, <code>close_date</code></td>
+<td>date</td>
+<td>Даты (кредиты)</td>
+</tr>
+<tr>
+<td><code>commission_one_time</code>, <code>commission_monthly</code></td>
+<td>decimal</td>
+<td>Комиссии (кредиты)</td>
+</tr>
+<tr>
+<td><code>payment_day</code></td>
+<td>int</td>
+<td>День платежа (кредиты)</td>
+</tr>
+<tr>
+<td><code>credit_limit</code></td>
+<td>decimal</td>
+<td>Кредитный лимит (кредиты)</td>
+</tr>
+</tbody></table>
+<p><strong>Маппинг <code>type_id</code> → тип:</strong> <code>1</code> cash, <code>2</code> card, <code>5</code> deposit, <code>6</code> loan_given,
+<code>7</code> loan_received, <code>8</code> credit_card, <code>9</code> credit, <code>10</code> oms, <code>11</code> stocks, <code>12</code> pif,
+<code>13</code> ofbu, <code>14</code> pension, <code>15</code> electronic, <code>16</code> bank_account, <code>17</code> real_estate,
+<code>18</code> car, <code>19</code> other_securities, <code>20</code> fund, <code>21</code> insurance_savings, <code>22</code> savings_plan,
+<code>23</code> npf, <code>24</code> water_transport, <code>25</code> art, <code>26</code> business, <code>27</code> other_property,
+<code>28</code> air_transport, <code>29</code> motorcycle, <code>30</code> bonds, <code>31</code> pamm, <code>32</code> broker, <code>33</code> bonus_card.</p>
+<p><strong>Иконки:</strong> <code>accountimage1</code> cash, <code>accountimage2</code> credit_card, <code>accountimage3</code> savings,
+<code>accountimage4</code> account_balance, <code>accountimage5</code> wallet, <code>accountimage6</code> payments,
+<code>accountimage7</code> currency_ruble, <code>accountimage8</code> card_giftcard.</p>
+<h4 id="accountspost">accounts.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code> (и опц. <code>options=client</code>).
+<strong>Тело:</strong> <code>{"request":{"request_data":{"accounts":[{ ... }]}}}</code>.
+Поля записи: <code>name</code>, <code>init_balance</code> (строка, 2 знака), <code>type_id</code>, <code>state</code> (<code>"0"</code>),
+<code>currency_id</code> (<code>"1"</code> если не задан), <code>icon</code> (<code>accountimageN</code>), <code>include_in_total</code>
+(<code>"1"</code>/<code>"0"</code>), <code>created_at</code>, <code>updated_at</code>; для кредитных — опц. <code>description</code>,
+<code>bank_id</code>, <code>annual_rate</code>, <code>payment_type</code>, <code>open_date</code>, <code>close_date</code>,
+<code>commission_one_time</code>, <code>commission_monthly</code>, <code>payment_day</code>, <code>credit_limit</code>.
+<strong>Ответ:</strong> <code>response_data.accounts[0].id</code>.</p>
+<h4 id="accountsset">accounts.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>account_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"accounts":[{ "id": "...", те же поля, что у post, + "updated_at" }]}}}</code>.
+Используется для редактирования, отметки «избранный» (<code>state="1"</code>) и архивации/
+удаления (<code>state="2"</code>, либо <code>deleted_at</code>). Одним запросом — любое количество счетов.</p>
+<h3 id="s42">4.2. operations.* — операции</h3>
+
+<h4 id="operationsget">operations.get</h4>
+<p><strong>GET.</strong> Получение списка операций пользователя.</p>
+<p><strong>Параметры (все опциональные):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Тип</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>operation_list</code></td>
+<td>string</td>
+<td>Списки id операций через запятую (для выборочной выгрузки)</td>
+</tr>
+<tr>
+<td><code>from</code></td>
+<td>string</td>
+<td>Начальная дата периода. Формат <strong>ISO 8601</strong>: <code>YYYY-MM-DDTHH:MM:SS+HH:MM</code></td>
+</tr>
+<tr>
+<td><code>to</code></td>
+<td>string</td>
+<td>Конечная дата периода. Формат <strong>ISO 8601</strong>: <code>YYYY-MM-DDTHH:MM:SS+HH:MM</code></td>
+</tr>
+<tr>
+<td><code>interval_field</code></td>
+<td>string</td>
+<td>Какое поле даты фильтровать. Допустимые значения: <code>date</code> (дата операции), <code>created_at</code>, <code>updated_at</code>, <code>deleted_at</code></td>
+</tr>
+<tr>
+<td><code>fields</code></td>
+<td>string</td>
+<td>Список полей через запятую (по умолчанию — все)</td>
+</tr>
+<tr>
+<td><code>options</code></td>
+<td>string</td>
+<td>Опции: <code>client</code> (вернуть <code>client_id</code>), <code>init_balance,balance</code> (эмуляция журнала балансов)</td>
+</tr>
+</tbody></table>
+<p><strong>Важные правила:</strong></p>
+<ul>
+<li>Параметры <code>from</code> и <code>to</code> передаются <strong>вместе</strong> — если задан только один, сервер вернёт ошибку</li>
+<li><code>interval_field</code> обязателен при использовании <code>from</code>/<code>to</code></li>
+<li>Формат даты строго ISO 8601 с таймзоной (например, <code>2026-09-01T00:00:00+03:00</code>)</li>
+<li>Если <code>from</code>/<code>to</code> не заданы — сервер возвращает <strong>все</strong> операции пользователя</li>
+<li>Валидация <code>from</code>/<code>to</code> выполняется в <code>BasicRequestForm.class.php</code> через валидатор <code>myValidatorDatetimeIso8601</code></li>
+</ul>
+<p><strong>Пример запроса (операции за последние 3 месяца):</strong></p>
+<pre><code>GET https://api.easyfinance.ru/v2/
+    ?method=operations.get
+    &amp;app_id=APP_ID
+    &amp;access_token=TOKEN
+    &amp;from=2026-06-01T00:00:00+03:00
+    &amp;to=2026-09-04T23:59:59+03:00
+    &amp;interval_field=date
+    &amp;sig=SIG
+</code></pre>
+<p><strong>Пример запроса (все операции, без фильтрации):</strong></p>
+<pre><code>GET https://api.easyfinance.ru/v2/
+    ?method=operations.get
+    &amp;app_id=APP_ID
+    &amp;access_token=TOKEN
+    &amp;sig=SIG
+</code></pre>
+<p><strong>Ответ:</strong> <code>response_data.operations[]</code>. Поля операции:</p>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Тип</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>id</code></td>
+<td>int</td>
+<td>Идентификатор операции</td>
+</tr>
+<tr>
+<td><code>account_id</code></td>
+<td>int</td>
+<td>ID счёта</td>
+</tr>
+<tr>
+<td><code>amount</code></td>
+<td>decimal</td>
+<td>Сумма (положительное; знак определяется <code>type</code>)</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td>string</td>
+<td>Дата операции (<code>YYYY-MM-DD</code>)</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td>string</td>
+<td>Время операции (<code>HH:MM:SS</code>)</td>
+</tr>
+<tr>
+<td><code>category_id</code></td>
+<td>int</td>
+<td>ID категории (у перевода — служебная категория «Перевод»)</td>
+</tr>
+<tr>
+<td><code>comment</code></td>
+<td>string</td>
+<td>Комментарий</td>
+</tr>
+<tr>
+<td><code>accepted</code></td>
+<td>0/1</td>
+<td>Подтверждена ли операция</td>
+</tr>
+<tr>
+<td><code>tags</code></td>
+<td>string</td>
+<td>Теги через запятую или JSON-массив</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>int</td>
+<td><code>0</code> — расход, <code>1</code> — доход, <code>2</code> — перевод</td>
+</tr>
+<tr>
+<td><code>transfer_account_id</code></td>
+<td>int</td>
+<td>ID счёта получателя (для перевода)</td>
+</tr>
+<tr>
+<td><code>transfer_amount</code></td>
+<td>decimal</td>
+<td>Сумма перевода на счёт получателя</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>string</td>
+<td>Дата/время создания (ISO 8601)</td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>string</td>
+<td>Дата/время обновления (ISO 8601)</td>
+</tr>
+<tr>
+<td><code>deleted_at</code></td>
+<td>string</td>
+<td>Дата/время удаления (ISO 8601, soft-delete)</td>
+</tr>
+<tr>
+<td><code>client_id</code></td>
+<td>string</td>
+<td>ID объекта в стороннем приложении (через <code>options=client</code>)</td>
+</tr>
+<tr>
+<td><code>mcc_code</code></td>
+<td>string</td>
+<td>MCC-код мерчанта</td>
+</tr>
+<tr>
+<td><code>merchant_name</code></td>
+<td>string</td>
+<td>Название мерчанта</td>
+</tr>
+</tbody></table>
+<p><strong>Структура ответа (пример):</strong></p>
+<pre><code class="hljs json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"response"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"response_data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"operations"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+          <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"123456"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"account_id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"789"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"amount"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"1500.00"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"date"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2026-09-01"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"time"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"14:30:00"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"category_id"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"456"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"comment"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Покупка"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"accepted"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"tags"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"еда,магазин"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"type"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">0</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"transfer_account_id"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">null</span></span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"transfer_amount"</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">null</span></span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"created_at"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2026-09-01T14:30:00+03:00"</span><span class="hljs-punctuation">,</span>
+          <span class="hljs-attr">"updated_at"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"2026-09-01T14:30:00+03:00"</span>
+        <span class="hljs-punctuation">}</span>
+      <span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p><strong>Обработка ошибок валидации:</strong></p>
+<pre><code class="hljs json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">"response"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"response_data"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">"errors"</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span><span class="hljs-attr">"code"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">46</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"text"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Invalid field 'from'"</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-punctuation">{</span><span class="hljs-attr">"code"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">48</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">"text"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">"Invalid field 'to'"</span><span class="hljs-punctuation">}</span>
+      <span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Коды ошибок для <code>operations.get</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>46</code> (<code>invalid_field_from</code>)</td>
+<td>Неверный формат параметра <code>from</code></td>
+</tr>
+<tr>
+<td><code>48</code> (<code>invalid_field_to</code>)</td>
+<td>Неверный формат параметра <code>to</code></td>
+</tr>
+</tbody></table>
+<h4 id="operationspost">operations.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>options=client</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"operations":[{ ... }]}}}</code>.
+Поля записи:</p>
+<ul>
+<li><code>type</code> — <code>0</code>/<code>1</code>/<code>2</code>.</li>
+<li><code>user_id</code> — id пользователя.</li>
+<li><code>account_id</code> — счёт списания.</li>
+<li><code>category_id</code> — категория (для перевода — служебная категория «Перевод»).</li>
+<li><code>currency_id</code> — валюта счёта.</li>
+<li><code>amount</code> — <strong>знаковое</strong> число: расход и перевод — отрицательное, доход —
+положительное, формат с 2 знаками.</li>
+<li><code>date</code> (<code>YYYY-MM-DDTHH:MM:SS+HH:MM</code>), <code>time</code> (<code>HH:MM:SS</code>).</li>
+<li><code>transfer_account_id</code>, <code>transfer_amount</code> — для перевода (<code>transfer_amount</code>
+положительное).</li>
+<li><code>comment</code>, <code>tags</code> (опц.).</li>
+<li><code>accepted</code> — <code>true</code>.</li>
+<li><code>client_id</code> — для сопоставления с серверным <code>id</code>.</li>
+<li><code>created_at</code>, <code>updated_at</code>.</li>
+</ul>
+<p><strong>ВАЖНО:</strong> тип категории операции должен соответствовать типу операции. У расхода —
+расходная категория, у дохода — доходная, у перевода — категория «Перевод»
+(её приложение добавляет автоматически, пользователю не показывает).</p>
+<h4 id="operationsset">operations.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>operation_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"operations":[{ "id": "...", те же поля, что у post, + "updated_at", "deleted_at": null }]}}}</code>.
+Для удаления — <code>deleted_at</code> (либо <code>state="2"</code>). У перевода категорию нельзя
+изменить. Одним запросом — любое количество операций.</p>
+<h3 id="s43">4.3. categories.* — категории</h3>
+
+<h4 id="categoriesget">categories.get</h4>
+<p><strong>GET.</strong> Параметры (опц.): <code>category_list</code>, <code>fields</code>.
+<strong>Ответ:</strong> <code>response_data.categories[]</code>. Поля: <code>id</code>, <code>system_id</code>, <code>name</code>,
+<code>type</code> (<code>-1</code> расход, <code>1</code> доход), <code>custom</code> (<code>0</code> системная, <code>1</code> пользовательская),
+<code>icon</code> (<code>catimgN</code>, catimg1..catimg33), <code>parent_id</code>, <code>is_hidden</code> (<code>0</code>/<code>1</code>),
+<code>created_at</code>, <code>updated_at</code>, <code>deleted_at</code>, <code>client_id</code>.</p>
+<h4 id="categoriespost">categories.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"categories":[{ "name", "type":"-1"|"1", "icon":"catimgN", "system_id":"0", "custom":"1", "parent_id":"0", "is_hidden":"0", "created_at", "updated_at" }]}}}</code>.
+При создании новой категории системная категория должна соответствовать её типу
+(расход → системные только с <code>type=-1</code>). <strong>Ответ:</strong> <code>response_data.categories[0].id</code>.</p>
+<h4 id="categoriesset">categories.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>category_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"categories":[{ "id", "name", "type", "icon":"catimgN", "system_id", "custom":"0"|"1", "parent_id", "is_hidden":"0", "created_at", "updated_at", "deleted_at" (для удаления) }]}}}</code>.
+Удаление — через <code>deleted_at</code>. Одним запросом — любое количество категорий.</p>
+<blockquote>
+<p><strong>Системная категория «Перевод»</strong> (<code>is_public=0</code>) — добавляется ко всем операциям
+перевода, но не показывается пользователю.</p>
+</blockquote>
+<h3 id="s44">4.4. tags.* — теги</h3>
+
+<h4 id="tagsget">tags.get</h4>
+<p><strong>GET.</strong> Параметры (опц.): <code>fields</code>, <code>tags_list</code>.
+<strong>Ответ:</strong> <code>response_data.tags[]</code>. Поля тега: <code>id</code>, <code>user_id</code>, <code>text</code> (текст тега —
+<strong>поле называется <code>text</code>, не <code>name</code></strong>), <code>operation_id</code> (опц.).</p>
+<h4 id="tagspost">tags.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"tags":[{ "name": "&lt;текст&gt;" }]}}}</code>.
+При <strong>записи</strong> поле — <code>name</code>, при <strong>чтении</strong> сервер возвращает <code>text</code>.
+<strong>Ответ:</strong> созданный тег с <code>id</code>.</p>
+<h4 id="tagsset">tags.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>tag_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"tags":[{ "id", "name", "deleted_at":"&lt;дата&gt;" }]}}}</code>.
+Используется для «мягкого» удаления тега (проставить <code>deleted_at</code>). Отдельного
+<code>tags.delete</code> нет.</p>
+<h3 id="s45">4.5. targets.* — цели</h3>
+
+<h4 id="targetsget">targets.get</h4>
+<p><strong>GET.</strong> <strong>Ответ:</strong> <code>response_data.targets[]</code>. Поля: <code>id</code>, <code>title</code>, <code>type</code> (<code>0</code>),
+<code>state</code> (<code>0</code>), <code>amount</code> (цель, строкой), <code>amount_done</code> (накоплено, строкой),
+<code>currency_id</code> (<code>1</code> RUB), <code>account_id</code>, <code>category_id</code>, <code>date_begin</code>, <code>date_end</code>,
+<code>comment</code>, <code>photo</code>, <code>url</code>, <code>visible</code> (<code>1</code>/<code>0</code>), <code>close</code>, <code>done</code>.
+Сервер возвращает ВСЕ цели, включая <code>visible=0</code>; клиент фильтрует скрытые сам.</p>
+<h4 id="targetspost">targets.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>options=client</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"targets":[{ "title", "amount", "amount_done":"0.00", "end":"YYYY-MM-DD" (необяз.), "currency_id":"1", "date_begin", "date_end", "account_id", "category_id", "comment", "visible":"1" }]}}}</code>.
+<strong>Ответ:</strong> созданная цель с <code>id</code>.</p>
+<h4 id="targetsset">targets.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>target_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"targets":[{ "id": "&lt;target_id&gt;", ...поля цели }]}}}</code>.
+Для скрытия/удаления достаточно <code>{"id": "&lt;target_id&gt;", "visible": "0"}</code>.</p>
+<h3 id="s46">4.6. budget.* — бюджет</h3>
+
+<h4 id="budgetget">budget.get</h4>
+<p><strong>GET.</strong> <strong>Ответ:</strong> <code>response_data.budget</code> (объект, не массив). Поля: <code>planned</code>
+(плановая сумма на период), <code>spent</code> (фактически потрачено), <code>date_start</code>,
+<code>date_end</code>.</p>
+<h4 id="budgetcategoriesget--имя-метода--слитно-без-точки">budget.categoriesget  (имя метода — слитно, без точки)</h4>
+<p><strong>GET.</strong> <strong>Ответ:</strong> <code>response_data.budgets[]</code>. Поля: <code>id</code>, <code>category_id</code>
+(к какой категории план), <code>planned</code> (план на период, строкой), <code>spent</code>
+(фактически потрачено за период).</p>
+<h4 id="budgetcategoriespost">budget.categoriespost</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>options=client</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{ "category_id": "&lt;id&gt;", "planned": "&lt;сумма&gt;" }}}</code>.</p>
+<h4 id="budgetcategoriesset">budget.categoriesset</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{ "id": "&lt;id плана&gt;", "category_id": "&lt;id&gt;", "planned": "&lt;сумма&gt;" }}}</code>.</p>
+<h3 id="s47">4.7. calendar.* — календарь / планировщик</h3>
+
+<h4 id="calendarget">calendar.get</h4>
+<p><strong>GET.</strong> Параметры (опц.): <code>from</code>, <code>to</code>, <code>options</code> (<code>accepted</code> — только
+подтверждённые вхождения). <strong>Ответ:</strong> <code>response_data.calendar[]</code>. Поля события:
+<code>id</code>, <code>operation_id</code>, <code>chain_id</code>, <code>account_id</code>, <code>transfer_account_id</code>,
+<code>category_id</code>, <code>amount</code>, <code>date</code>, <code>time</code>, <code>comment</code>, <code>type</code> (<code>0</code> расход, <code>1</code> доход,
+<code>2</code> перевод), <code>accepted</code>, <code>every_day</code> (<code>1</code>/<code>7</code>/<code>30</code>/<code>90</code>/<code>365</code>), <code>repeat</code>
+(<code>"1"</code> разовый, <code>"0"</code> до <code>date_end</code>, иначе — число вхождений), <code>date_start</code>,
+<code>date_end</code>, <code>week_days</code> (маска 7 символов Пн..Вс), <code>tags</code>.</p>
+<h4 id="calendarpost">calendar.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{ &lt;объект события&gt; }}}</code> (без массива). Поля:
+<code>account_id</code>, <code>category_id</code>, <code>amount</code>, <code>date</code>, <code>time</code>, <code>comment</code>, <code>type</code>,
+<code>transfer_account_id</code>, <code>transfer_amount</code>, <code>accepted</code>, <code>every_day</code>, <code>date_start</code>,
+<code>date_end</code>, <code>repeat</code>, <code>week_days</code>. <strong>Ответ:</strong> созданное событие с <code>id</code> и <code>chain_id</code>.</p>
+<h4 id="calendarset">calendar.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>operation_id</code>, <code>chain_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{ &lt;объект события&gt; }}}</code>.</p>
+<h4 id="calendardelete">calendar.delete</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>operation_id</code>, <code>chain_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{}}}</code>.</p>
+<h4 id="calendaraccept">calendar.accept</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>operation_id</code>, <code>chain_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"date":"YYYY-MM-DD", "accepted":1}}}</code>.</p>
+<h3 id="s48">4.8. operationPatterns.* — шаблоны операций</h3>
+
+<p>Шаблоны операций доступны только для стороннего приложения (на сайте их нет).</p>
+<h4 id="operationpatternsget">operationPatterns.get</h4>
+<p><strong>GET.</strong> Параметры (опц.): <code>operation_pattern_list</code>, <code>fields</code>.
+<strong>Ответ:</strong> <code>response_data.operationPatterns[]</code>. Поля: <code>id</code>, <code>type</code> (<code>0</code> расход,
+<code>1</code> доход, <code>2</code> перевод, <code>3</code> начальный остаток, <code>4</code> перевод на цель), <code>account_id</code>,
+<code>transfer_account_id</code>, <code>transfer_amount</code>, <code>category_id</code>, <code>user_id</code>, <code>amount</code>,
+<code>name</code>, <code>icon</code> (<code>{ "code": "catimgN" }</code>), <code>comment</code>, <code>tags</code>, <code>created_at</code>,
+<code>updated_at</code>, <code>deleted_at</code>, <code>client_id</code>.</p>
+<h4 id="operationpatternspost">operationPatterns.post</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>options=client</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"operationPatterns":[{ "client_id", "user_id", "name", "type" (int), "icon":{"code":"catimgN"}, "amount", "account_id" (опц.), "category_id" (опц.), "transfer_account_id" (опц.), "comment" (опц.), "tags" (опц.), "created_at", "updated_at" }]}}}</code>.
+<strong>Ответ:</strong> <code>response_data.operationPatterns[0].id</code>.</p>
+<h4 id="operationpatternsset">operationPatterns.set</h4>
+<p><strong>POST.</strong> Query: <code>transact_key</code>, <code>operation_pattern_id</code>.
+<strong>Тело:</strong> <code>{"request":{"request_data":{"operationPatterns":[{ "id", "deleted_at":"&lt;дата&gt;" (для удаления) | полный рекорд для редактирования }]}}}</code>.
+Удаление шаблона — через <code>deleted_at</code>.</p>
+<h3 id="s49">4.9. currencies.get — валюты</h3>
+
+<p><strong>GET.</strong> <strong>Ответ:</strong> <code>response_data.currencies[]</code>. Поля: <code>id</code>, <code>char_code</code>
+(например, <code>RUB</code>), <code>currency_char_code</code>, <code>name</code>, <code>rate</code> (опц.), <code>symbol</code> (опц.).</p>
+<h3 id="s410">4.10. systemCategories.get — системные категории</h3>
+
+<p><strong>GET.</strong> <strong>Ответ:</strong> <code>response_data.systemCategories[]</code> — те же поля, что у
+<code>categories.get</code> (встроенные системные категории, <code>custom=0</code>). Используются как
+основа при создании пользовательских категорий (тип должен совпадать).</p>
+<h3 id="s411">4.11. users.get — данные пользователя</h3>
+
+<p><strong>GET.</strong> Параметры (опц.): <code>fields</code> (например, <code>goals</code>).
+<strong>Ответ:</strong> поля на уровне <code>response_data</code>: <code>id</code>, <code>name</code>/<code>title</code>, <code>login</code>,
+<code>mail</code>/<code>email</code>, <code>account_type</code>, <code>default_currency</code> (id валюты → код),
+<code>tariff_duration</code> (дата окончания тарифа), <code>created_at</code>. При <code>fields=goals</code>
+дополнительно <code>response_data.goals[]</code> — список целей пользователя.</p>
+<p>Для полной синхронизации всех данных за один запрос используйте <code>users.get</code> с
+параметром <code>fields</code>, перечисляющим нужные типы данных.</p>
+<hr>
+<h2 id="web">5. Веб-эндпоинты (сайт)</h2>
+
+<p>Не используют схему <code>method=</code> и требуют cookie <code>PHPSESSID</code> (выдаётся при
+веб-логине, см. раздел 2.3).</p>
+<ul>
+<li><strong>Веб-логин:</strong> <code>POST https://easyfinance.ru/login/</code> с телом <code>login</code>, <code>pass</code> →
+cookie <code>PHPSESSID</code>.</li>
+<li><strong>События календаря (сайт):</strong> <code>GET https://easyfinance.ru/calendar/events/?responseMode=json</code></li>
+<li><strong>Создание события календаря (сайт):</strong> <code>POST https://easyfinance.ru/calendar/add/?responseMode=json</code> (form-urlencoded)</li>
+<li><strong>Удаление события календаря (сайт):</strong> <code>POST https://easyfinance.ru/calendar/delete/?responseMode=json</code> (form-urlencoded: <code>id</code>, <code>chain</code>)</li>
+<li><strong>Обратная связь:</strong> <code>POST https://easyfinance.ru/feedback/add_message/?responseMode=json</code> (form-urlencoded: <code>title</code>, <code>msg</code>, <code>email</code>)</li>
+</ul>
+<hr>
+<h2 id="tariffs">6. Тарифы и ограничения синхронизации</h2>
+
+<p>На сервисе EasyFinance.ru действует тарифная система; набор доступных
+возможностей зависит от тарифа пользователя. Синхронизация с мобильным
+приложением доступна, в том числе на бесплатном тарифе. Тариф пользователя
+определяется по полю <code>tariff_duration</code> в ответе <code>users.get</code> (см. раздел 4.11):
+если дата окончания тарифа задана и ещё не наступила, пользователь считается
+платным (<code>User.isPremium == true</code>), иначе — бесплатным.</p>
+<p><strong>Ограничение количества операций.</strong> На бесплатном тарифе доступно хранение до
+1000 операций. Проверка выполняется на стороне клиента приложения
+(<code>FinanceStore.addOperation</code>): когда число загруженных операций достигает 1000,
+попытка добавить следующую (1001-ю) операцию блокируется <strong>до обращения к API</strong>,
+и пользователю показывается диалог:</p>
+<ul>
+<li>заголовок: «Лимит операций»;</li>
+<li>текст: «Достигнут лимит в 1000 операций. Обновите тарифный план, чтобы
+добавить больше.»;</li>
+<li>кнопка «Обновить тариф», которая открывает страницу оплаты
+<code>https://easyfinance.ru/my/shop</code> (переход выполняется средствами <code>url_launcher</code>
+— ссылка открывается во внешнем браузере).</li>
+</ul>
+<p>У пользователей с активным платным тарифом (<code>isPremium == true</code>) это ограничение
+не применяется — они могут добавлять операции без лимита в 1000 штук. Сам лимит
+(1000) жёстко задан в коде; если сервер накладывает собственные ограничения для
+платных тарифов, они проверяются отдельно на стороне API.</p>
+<p>В объекте пользователя (<code>users.get</code>) есть поле <code>tariff_duration</code> — дата окончания
+тарифа; приложение должно информировать пользователя о его окончании.</p>
+<hr>
+<h2 id="errors">7. Коды ошибок</h2>
+
+<p>Ошибки валидации возвращаются в <code>response_data.errors[]</code> (или в
+<code>response_error</code>). Ниже — основные коды ошибок.</p>
+<h3 id="пользователь-user">Пользователь (user)</h3>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>user_invalid_login</code></td>
+<td>Неверный логин</td>
+</tr>
+<tr>
+<td><code>user_required_login</code></td>
+<td>Логин обязателен</td>
+</tr>
+<tr>
+<td><code>user_invalid_name</code></td>
+<td>Неверное имя</td>
+</tr>
+<tr>
+<td><code>user_required_name</code></td>
+<td>Имя обязательно</td>
+</tr>
+<tr>
+<td><code>user_invalid_user_mail</code></td>
+<td>Неверный email</td>
+</tr>
+<tr>
+<td><code>user_required_user_mail</code></td>
+<td>Email обязателен</td>
+</tr>
+<tr>
+<td><code>user_invalid_password</code></td>
+<td>Неверный пароль (макс. длина — 40)</td>
+</tr>
+<tr>
+<td><code>user_required_password</code></td>
+<td>Пароль обязателен</td>
+</tr>
+</tbody></table>
+<h3 id="счета-account">Счета (account)</h3>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>account_invalid_type_id</code></td>
+<td>Неверный type_id</td>
+</tr>
+<tr>
+<td><code>account_required_type_id</code></td>
+<td>type_id обязателен</td>
+</tr>
+<tr>
+<td><code>account_invalid_currency_id</code></td>
+<td>Неверный currency_id</td>
+</tr>
+<tr>
+<td><code>account_required_currency_id</code></td>
+<td>currency_id обязателен</td>
+</tr>
+<tr>
+<td><code>account_invalid_name</code></td>
+<td>Неверное имя</td>
+</tr>
+<tr>
+<td><code>account_required_name</code></td>
+<td>Имя обязательно</td>
+</tr>
+<tr>
+<td><code>account_invalid_description</code></td>
+<td>Неверное описание</td>
+</tr>
+<tr>
+<td><code>account_required_description</code></td>
+<td>Описание обязательно</td>
+</tr>
+<tr>
+<td><code>account_invalid_init_balance</code></td>
+<td>Неверный init_balance</td>
+</tr>
+<tr>
+<td><code>account_required_init_balance</code></td>
+<td>init_balance обязателен</td>
+</tr>
+<tr>
+<td><code>account_invalid_state</code></td>
+<td>Неверный state</td>
+</tr>
+<tr>
+<td><code>account_required_state</code></td>
+<td>state обязателен</td>
+</tr>
+<tr>
+<td><code>account_invalid_created_at</code></td>
+<td>Неверный created_at</td>
+</tr>
+<tr>
+<td><code>account_required_created_at</code></td>
+<td>created_at обязателен</td>
+</tr>
+<tr>
+<td><code>account_invalid_updated_at</code></td>
+<td>Неверный updated_at</td>
+</tr>
+<tr>
+<td><code>account_required_updated_at</code></td>
+<td>updated_at обязателен</td>
+</tr>
+<tr>
+<td><code>account_invalid_deleted_at</code></td>
+<td>Неверный deleted_at</td>
+</tr>
+<tr>
+<td><code>account_required_deleted_at</code></td>
+<td>deleted_at обязателен</td>
+</tr>
+<tr>
+<td><code>account_required_id</code></td>
+<td>id обязателен</td>
+</tr>
+</tbody></table>
+<h3 id="категории-category">Категории (category)</h3>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>category_invalid_system_id</code></td>
+<td>Неверный system_id</td>
+</tr>
+<tr>
+<td><code>category_required_system_id</code></td>
+<td>system_id обязателен</td>
+</tr>
+<tr>
+<td><code>category_invalid_parent_id</code></td>
+<td>Неверный parent_id</td>
+</tr>
+<tr>
+<td><code>category_required_parent_id</code></td>
+<td>parent_id обязателен</td>
+</tr>
+<tr>
+<td><code>category_invalid_name</code></td>
+<td>Неверное имя</td>
+</tr>
+<tr>
+<td><code>category_required_name</code></td>
+<td>Имя обязательно</td>
+</tr>
+<tr>
+<td><code>category_invalid_type</code></td>
+<td>Неверный type</td>
+</tr>
+<tr>
+<td><code>category_required_type</code></td>
+<td>type обязателен</td>
+</tr>
+<tr>
+<td><code>category_invalid_created_at</code></td>
+<td>Неверный created_at</td>
+</tr>
+<tr>
+<td><code>category_required_created_at</code></td>
+<td>created_at обязателен</td>
+</tr>
+<tr>
+<td><code>category_invalid_updated_at</code></td>
+<td>Неверный updated_at</td>
+</tr>
+<tr>
+<td><code>category_required_updated_at</code></td>
+<td>updated_at обязателен</td>
+</tr>
+<tr>
+<td><code>category_invalid_deleted_at</code></td>
+<td>Неверный deleted_at</td>
+</tr>
+<tr>
+<td><code>category_required_deleted_at</code></td>
+<td>deleted_at обязателен</td>
+</tr>
+</tbody></table>
+<h3 id="операции-operation">Операции (operation)</h3>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>operation_invalid_amount</code></td>
+<td>Неверная сумма</td>
+</tr>
+<tr>
+<td><code>operation_required_amount</code></td>
+<td>Сумма обязательна</td>
+</tr>
+<tr>
+<td><code>operation_invalid_date</code></td>
+<td>Неверная дата</td>
+</tr>
+<tr>
+<td><code>operation_required_date</code></td>
+<td>Дата обязательна</td>
+</tr>
+<tr>
+<td><code>operation_invalid_time</code></td>
+<td>Неверное время</td>
+</tr>
+<tr>
+<td><code>operation_required_time</code></td>
+<td>Время обязательно</td>
+</tr>
+<tr>
+<td><code>operation_invalid_type</code></td>
+<td>Неверный тип</td>
+</tr>
+<tr>
+<td><code>operation_required_type</code></td>
+<td>Тип обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_comment</code></td>
+<td>Неверный комментарий</td>
+</tr>
+<tr>
+<td><code>operation_required_comment</code></td>
+<td>Комментарий обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_tags</code></td>
+<td>Неверные теги</td>
+</tr>
+<tr>
+<td><code>operation_required_tags</code></td>
+<td>Теги обязательны</td>
+</tr>
+<tr>
+<td><code>operation_invalid_acceptedt</code></td>
+<td>Неверный accepted (опечатка в API)</td>
+</tr>
+<tr>
+<td><code>operation_required_accepted</code></td>
+<td>accepted обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_transfer_account_id</code></td>
+<td>Неверный transfer_account_id</td>
+</tr>
+<tr>
+<td><code>operation_required_transfer_account_id</code></td>
+<td>transfer_account_id обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_transfer_amountt</code></td>
+<td>Неверный transfer_amount (опечатка в API)</td>
+</tr>
+<tr>
+<td><code>operation_required_transfer_amount</code></td>
+<td>transfer_amount обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_created_at</code></td>
+<td>Неверный created_at</td>
+</tr>
+<tr>
+<td><code>operation_required_created_at</code></td>
+<td>created_at обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_updated_at</code></td>
+<td>Неверный updated_at</td>
+</tr>
+<tr>
+<td><code>operation_required_updated_at</code></td>
+<td>updated_at обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_deleted_at</code></td>
+<td>Неверный deleted_at</td>
+</tr>
+<tr>
+<td><code>operation_required_deleted_at</code></td>
+<td>deleted_at обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_user_id</code></td>
+<td>Неверный user_id</td>
+</tr>
+<tr>
+<td><code>operation_required_user_id</code></td>
+<td>user_id обязателен</td>
+</tr>
+<tr>
+<td><code>operation_invalid_id</code></td>
+<td>Неверный id</td>
+</tr>
+<tr>
+<td><code>operation_required_id</code></td>
+<td>id обязателен</td>
+</tr>
+<tr>
+<td><code>46</code> (<code>invalid_field_from</code>)</td>
+<td>Неверный формат параметра <code>from</code> (ожидается ISO 8601)</td>
+</tr>
+<tr>
+<td><code>48</code> (<code>invalid_field_to</code>)</td>
+<td>Неверный формат параметра <code>to</code> (ожидается ISO 8601)</td>
+</tr>
+</tbody></table>
+<h3 id="шаблоны-операций-operationpattern">Шаблоны операций (operationPattern)</h3>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>operationPattern_invalid_type</code></td>
+<td>Неверный тип</td>
+</tr>
+<tr>
+<td><code>operationPattern_invalid_deleted_at</code></td>
+<td>Неверный deleted_at</td>
+</tr>
+<tr>
+<td><code>operationPattern_required_deleted_at</code></td>
+<td>deleted_at обязателен</td>
+</tr>
+</tbody></table>
+<h3 id="общие">Общие</h3>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>account_have_operations</code></td>
+<td>Счёт нельзя удалить — есть операции</td>
+</tr>
+<tr>
+<td><code>category_have_operations</code></td>
+<td>Категорию нельзя удалить — есть операции</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="checklist">8. Чек-лист методов</h2>
+
+<p>Методы, реально вызываемые приложением (полный список):
+<code>accounts.get</code>, <code>accounts.post</code>, <code>accounts.set</code>, <code>operations.get</code>,
+<code>operations.post</code>, <code>operations.set</code>, <code>categories.get</code>, <code>categories.post</code>,
+<code>categories.set</code>, <code>tags.get</code>, <code>tags.post</code>, <code>tags.set</code>, <code>targets.get</code>,
+<code>targets.post</code>, <code>targets.set</code>, <code>budget.get</code>, <code>budget.categoriesget</code>,
+<code>budget.categoriespost</code>, <code>budget.categoriesset</code>, <code>calendar.get</code>, <code>calendar.post</code>,
+<code>calendar.set</code>, <code>calendar.delete</code>, <code>calendar.accept</code>, <code>operationPatterns.get</code>,
+<code>operationPatterns.post</code>, <code>operationPatterns.set</code>, <code>currencies.get</code>,
+<code>systemCategories.get</code>, <code>users.get</code>. А также OAuth (<code>buildOAuthCodeUrl</code>,
+<code>exchangeCodeForToken</code>) и веб-эндпоинты (раздел 5).</p>
+<p><strong>Выделенного метода <code>*.delete</code> нет у большинства объектов</strong> — удаление
+accounts/categories/tags/operationPatterns/operations выполняется через <code>*.set</code> с
+<code>deleted_at</code> (или <code>state="2"</code> для счетов). Исключение: у календаря есть собственный
+метод <code>calendar.delete</code> (§4.7).</p>
+
+	
+
+</body></html>
