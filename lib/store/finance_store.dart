@@ -442,7 +442,6 @@ class FinanceStore extends ChangeNotifier {
     ], eagerError: false);
 
     _recalcCachedTotals();
-    _balanceLoaded = true;
     notifyListeners();
 
     final results = await Future.wait([
@@ -508,6 +507,10 @@ class FinanceStore extends ChangeNotifier {
       api.getTargets().catchError((e) { debugPrint('getTargets error: $e'); return <Map<String, dynamic>>[]; }),
       api.getGoalTemplates().catchError((e) { debugPrint('getGoalTemplates error: $e'); return <Map<String, dynamic>>[]; }),
     ], eagerError: false);
+
+    _recalcCachedTotals();
+    _balanceLoaded = true;
+    notifyListeners();
 
     await Future.wait([
       _applyFavoriteStates(),
