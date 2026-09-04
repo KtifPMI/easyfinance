@@ -62,39 +62,39 @@
 
   <p class="toc-item"><a href="#introduction">1. Введение</a><span class="toc-dots"></span><span class="toc-page-num">3</span></p>
 
-  <p class="toc-item"><a href="#auth">2. Аутентификация и авторизация</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.1. Регистрация приложения</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.2. OAuth (authorization code)</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.3. Login / password</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.4. Регистрация пользователя</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.5. Получение uid</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.6. Подпись запроса (sig)</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
-  <p class="toc-item toc-sub"><a href="#auth">2.7. Принцип последнего изменения</a><span class="toc-dots"></span><span class="toc-page-num">7</span></p>
+  <p class="toc-item"><a href="#auth">2. Аутентификация и авторизация</a><span class="toc-dots"></span><span class="toc-page-num">3</span></p>
+  <p class="toc-item toc-sub"><a href="#s21">2.1. Регистрация приложения</a><span class="toc-dots"></span><span class="toc-page-num">3</span></p>
+  <p class="toc-item toc-sub"><a href="#s22">2.2. OAuth (authorization code)</a><span class="toc-dots"></span><span class="toc-page-num">3</span></p>
+  <p class="toc-item toc-sub"><a href="#s23">2.3. Login / password</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#s24">2.4. Регистрация пользователя</a><span class="toc-dots"></span><span class="toc-page-num">4</span></p>
+  <p class="toc-item toc-sub"><a href="#s25">2.5. Получение uid</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#s26">2.6. Подпись запроса (sig)</a><span class="toc-dots"></span><span class="toc-page-num">5</span></p>
+  <p class="toc-item toc-sub"><a href="#s27">2.7. Принцип последнего изменения</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
 
-  <p class="toc-item"><a href="#request-format">3. Формат запросов и ответов</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
-  <p class="toc-item toc-sub"><a href="#request-format">3.1. GET</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
-  <p class="toc-item toc-sub"><a href="#request-format">3.2. POST</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
-  <p class="toc-item toc-sub"><a href="#request-format">3.3. Общие параметры</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
-  <p class="toc-item toc-sub"><a href="#request-format">3.4. Структура ответа</a><span class="toc-dots"></span><span class="toc-page-num">9</span></p>
-  <p class="toc-item toc-sub"><a href="#request-format">3.5. Удаление объектов</a><span class="toc-dots"></span><span class="toc-page-num">10</span></p>
+  <p class="toc-item"><a href="#request-format">3. Формат запросов и ответов</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
+  <p class="toc-item toc-sub"><a href="#s31">3.1. GET</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
+  <p class="toc-item toc-sub"><a href="#s32">3.2. POST</a><span class="toc-dots"></span><span class="toc-page-num">6</span></p>
+  <p class="toc-item toc-sub"><a href="#s33">3.3. Общие параметры</a><span class="toc-dots"></span><span class="toc-page-num">7</span></p>
+  <p class="toc-item toc-sub"><a href="#s34">3.4. Структура ответа</a><span class="toc-dots"></span><span class="toc-page-num">7</span></p>
+  <p class="toc-item toc-sub"><a href="#s35">3.5. Удаление объектов</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
 
-  <p class="toc-item"><a href="#methods">4. Методы API</a><span class="toc-dots"></span><span class="toc-page-num">11</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.1. accounts.* — счета</a><span class="toc-dots"></span><span class="toc-page-num">11</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.2. operations.* — операции</a><span class="toc-dots"></span><span class="toc-page-num">13</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.3. categories.* — категории</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.4. tags.* — теги</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.5. targets.* — цели</a><span class="toc-dots"></span><span class="toc-page-num">19</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.6. budget.* — бюджет</a><span class="toc-dots"></span><span class="toc-page-num">20</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.7. calendar.* — календарь</a><span class="toc-dots"></span><span class="toc-page-num">21</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.8. operationPatterns.* — шаблоны</a><span class="toc-dots"></span><span class="toc-page-num">22</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.9. currencies.get — валюты</a><span class="toc-dots"></span><span class="toc-page-num">23</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.10. systemCategories.get</a><span class="toc-dots"></span><span class="toc-page-num">23</span></p>
-  <p class="toc-item toc-sub"><a href="#methods">4.11. users.get — данные пользователя</a><span class="toc-dots"></span><span class="toc-page-num">24</span></p>
+  <p class="toc-item"><a href="#methods">4. Методы API</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
+  <p class="toc-item toc-sub"><a href="#s41">4.1. accounts.* — счета</a><span class="toc-dots"></span><span class="toc-page-num">8</span></p>
+  <p class="toc-item toc-sub"><a href="#s42">4.2. operations.* — операции</a><span class="toc-dots"></span><span class="toc-page-num">10</span></p>
+  <p class="toc-item toc-sub"><a href="#s43">4.3. categories.* — категории</a><span class="toc-dots"></span><span class="toc-page-num">13</span></p>
+  <p class="toc-item toc-sub"><a href="#s44">4.4. tags.* — теги</a><span class="toc-dots"></span><span class="toc-page-num">14</span></p>
+  <p class="toc-item toc-sub"><a href="#s45">4.5. targets.* — цели</a><span class="toc-dots"></span><span class="toc-page-num">15</span></p>
+  <p class="toc-item toc-sub"><a href="#s46">4.6. budget.* — бюджет</a><span class="toc-dots"></span><span class="toc-page-num">15</span></p>
+  <p class="toc-item toc-sub"><a href="#s47">4.7. calendar.* — календарь</a><span class="toc-dots"></span><span class="toc-page-num">16</span></p>
+  <p class="toc-item toc-sub"><a href="#s48">4.8. operationPatterns.* — шаблоны</a><span class="toc-dots"></span><span class="toc-page-num">16</span></p>
+  <p class="toc-item toc-sub"><a href="#s49">4.9. currencies.get — валюты</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
+  <p class="toc-item toc-sub"><a href="#s410">4.10. systemCategories.get</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
+  <p class="toc-item toc-sub"><a href="#s411">4.11. users.get — данные пользователя</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
 
-  <p class="toc-item"><a href="#web">5. Веб-эндпоинты (сайт)</a><span class="toc-dots"></span><span class="toc-page-num">25</span></p>
-  <p class="toc-item"><a href="#tariffs">6. Тарифы и ограничения синхронизации</a><span class="toc-dots"></span><span class="toc-page-num">26</span></p>
-  <p class="toc-item"><a href="#errors">7. Коды ошибок</a><span class="toc-dots"></span><span class="toc-page-num">28</span></p>
-  <p class="toc-item"><a href="#checklist">8. Чек-лист методов</a><span class="toc-dots"></span><span class="toc-page-num">32</span></p>
+  <p class="toc-item"><a href="#web">5. Веб-эндпоинты (сайт)</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
+  <p class="toc-item"><a href="#tariffs">6. Тарифы и ограничения синхронизации</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
+  <p class="toc-item"><a href="#errors">7. Коды ошибок</a><span class="toc-dots"></span><span class="toc-page-num">19</span></p>
+  <p class="toc-item"><a href="#checklist">8. Чек-лист методов</a><span class="toc-dots"></span><span class="toc-page-num">22</span></p>
 </div>
 
 # EasyFinance API — Полная документация разработчика
@@ -123,7 +123,7 @@
 
 <h2 id="auth">2. Аутентификация и авторизация</h2>
 
-### 2.1. Регистрация приложения (app_id, secret_key)
+<h3 id="s21">2.1. Регистрация приложения (app_id, secret_key)</h3>
 
 Каждое стороннее приложение получает при регистрации:
 - `app_id` — идентификатор приложения;
@@ -131,7 +131,7 @@
 
 Оба параметра передаются в каждом запросе (см. раздел 3).
 
-### 2.2. OAuth (authorization code) — используется приложением
+<h3 id="s22">2.2. OAuth (authorization code) — используется приложением</h3>
 
 Приложение EasyFinance авторизует пользователя по OAuth-флоу:
 
@@ -160,7 +160,7 @@
 
 3. Далее во всех запросах передаются `access_token` и `uid` (для подписи `sig`).
 
-### 2.3. Login / password + получение access_token
+<h3 id="s23">2.3. Login / password + получение access_token</h3>
 
 Альтернативный флоу (партнёрские приложения):
 - `POST` на сайт `https://easyfinance.ru/login/` с параметрами `login`, `pass`
@@ -168,7 +168,7 @@
 - Для API v2 приложение обменивает связку `app_id` + `secret_key` на `access_token`
   и `uid` (параметры `app_id`, `secret_key` обмениваются на `access_token` и `uid`).
 
-### 2.4. Регистрация пользователя (users.post)
+<h3 id="s24">2.4. Регистрация пользователя (users.post)</h3>
 
 Нового пользователя можно создать через API методом `users.post` (HTTP POST).
 В URL — стандартные параметры и подпись, в теле — обязательные поля:
@@ -184,13 +184,13 @@
 возвращает `access_token` в ответе на регистрацию (оговаривается отдельно для
 каждого приложения, по умолчанию выключен).
 
-### 2.5. Получение uid (users.get)
+<h3 id="s25">2.5. Получение uid (users.get)</h3>
 
 После получения `access_token` идентификатор пользователя `uid` извлекается из
 ответа `users.get` (поле `id`). `uid` необходим для расчёта подписи всех
 последующих запросов.
 
-### 2.6. Подпись запроса (sig)
+<h3 id="s26">2.6. Подпись запроса (sig)</h3>
 
 `secret_key` — секрет приложения. Формула (конкатенация строк **без**
 разделителей, не точка):
@@ -229,7 +229,7 @@ sig = b9cc2e5c047d54e96c74adbfa8d43abe
 https://api.easyfinance.ru/v2/?method=accounts.get&app_id=423004&access_token=be6ef89965d58e56dec21acb9b62bda&sig=b9cc2e5c047d54e96c74adbfa8d43abe
 ```
 
-### 2.7. Принцип последнего изменения
+<h3 id="s27">2.7. Принцип последнего изменения</h3>
 
 Все изменения данных происходят согласно «последнему изменению». Время
 фиксируется в поле `updated_at`, которое есть у каждого объекта (кроме тегов).
@@ -242,7 +242,7 @@ https://api.easyfinance.ru/v2/?method=accounts.get&app_id=423004&access_token=be
 
 <h2 id="request-format">3. Формат запросов и ответов</h2>
 
-### 3.1. GET
+<h3 id="s31">3.1. GET</h3>
 
 Параметры в query-строке: `method`, `app_id`, `access_token`, `<доп. параметры>`,
 `sig`. Все они (включая дополнительные) входят в `params_string` для подписи.
@@ -256,7 +256,7 @@ GET https://api.easyfinance.ru/v2/
     &sig=SIG
 ```
 
-### 3.2. POST
+<h3 id="s32">3.2. POST</h3>
 
 - Параметры в query: `method`, `app_id`, `access_token`, `transact_key`,
   `<id-параметры: operation_id / chain_id / category_id / tag_id / target_id /
@@ -272,7 +272,7 @@ GET https://api.easyfinance.ru/v2/
   Конкретные обёртки (`operations`, `accounts`, `categories`, `tags`, `targets`,
   `operationPatterns`, `calendar`, `budgets`) указаны в каждом методе.
 
-### 3.3. Общие параметры
+<h3 id="s33">3.3. Общие параметры</h3>
 
 - `fields` — список возвращаемых полей через запятую (по умолчанию — все). Для
   счётов/операций через `fields` можно запросить `init_balance,balance`.
@@ -285,7 +285,7 @@ GET https://api.easyfinance.ru/v2/
 - `account_list` / `operation_list` / `category_list` / `tags_list` /
   `operation_pattern_list` — списки id через запятую для выборочной выгрузки.
 
-### 3.4. Структура ответа
+<h3 id="s34">3.4. Структура ответа</h3>
 
 Успех:
 ```json
@@ -300,7 +300,7 @@ GET https://api.easyfinance.ru/v2/
 { "response": { "response_data": { "errors": [ { "code": ..., "text": "..." } ] } } }
 ```
 
-### 3.5. Удаление объектов
+<h3 id="s35">3.5. Удаление объектов</h3>
 
 У большинства объектов **нет** выделенного метода `*.delete` — удаление
 выполняется через соответствующий `*.set` с проставленным полем `deleted_at`,
@@ -316,7 +316,7 @@ deleted_at = 2012-12-12T00:57:58+0200
 
 <h2 id="methods">4. Методы API</h2>
 
-### 4.1. accounts.* — счета
+<h3 id="s41">4.1. accounts.* — счета</h3>
 
 #### accounts.get
 **GET.** Параметры: `account_list` (ids, опц.), `fields` (опц., напр.
@@ -372,7 +372,7 @@ deleted_at = 2012-12-12T00:57:58+0200
 Используется для редактирования, отметки «избранный» (`state="1"`) и архивации/
 удаления (`state="2"`, либо `deleted_at`). Одним запросом — любое количество счетов.
 
-### 4.2. operations.* — операции
+<h3 id="s42">4.2. operations.* — операции</h3>
 
 #### operations.get
 **GET.** Получение списка операций пользователя.
@@ -516,7 +516,7 @@ GET https://api.easyfinance.ru/v2/
 Для удаления — `deleted_at` (либо `state="2"`). У перевода категорию нельзя
 изменить. Одним запросом — любое количество операций.
 
-### 4.3. categories.* — категории
+<h3 id="s43">4.3. categories.* — категории</h3>
 
 #### categories.get
 **GET.** Параметры (опц.): `category_list`, `fields`.
@@ -539,7 +539,7 @@ GET https://api.easyfinance.ru/v2/
 > **Системная категория «Перевод»** (`is_public=0`) — добавляется ко всем операциям
 > перевода, но не показывается пользователю.
 
-### 4.4. tags.* — теги
+<h3 id="s44">4.4. tags.* — теги</h3>
 
 #### tags.get
 **GET.** Параметры (опц.): `fields`, `tags_list`.
@@ -558,7 +558,7 @@ GET https://api.easyfinance.ru/v2/
 Используется для «мягкого» удаления тега (проставить `deleted_at`). Отдельного
 `tags.delete` нет.
 
-### 4.5. targets.* — цели
+<h3 id="s45">4.5. targets.* — цели</h3>
 
 #### targets.get
 **GET.** **Ответ:** `response_data.targets[]`. Поля: `id`, `title`, `type` (`0`),
@@ -577,7 +577,7 @@ GET https://api.easyfinance.ru/v2/
 **Тело:** `{"request":{"request_data":{"targets":[{ "id": "<target_id>", ...поля цели }]}}}`.
 Для скрытия/удаления достаточно `{"id": "<target_id>", "visible": "0"}`.
 
-### 4.6. budget.* — бюджет
+<h3 id="s46">4.6. budget.* — бюджет</h3>
 
 #### budget.get
 **GET.** **Ответ:** `response_data.budget` (объект, не массив). Поля: `planned`
@@ -597,7 +597,7 @@ GET https://api.easyfinance.ru/v2/
 **POST.** Query: `transact_key`.
 **Тело:** `{"request":{"request_data":{ "id": "<id плана>", "category_id": "<id>", "planned": "<сумма>" }}}`.
 
-### 4.7. calendar.* — календарь / планировщик
+<h3 id="s47">4.7. calendar.* — календарь / планировщик</h3>
 
 #### calendar.get
 **GET.** Параметры (опц.): `from`, `to`, `options` (`accepted` — только
@@ -627,7 +627,7 @@ GET https://api.easyfinance.ru/v2/
 **POST.** Query: `transact_key`, `operation_id`, `chain_id`.
 **Тело:** `{"request":{"request_data":{"date":"YYYY-MM-DD", "accepted":1}}}`.
 
-### 4.8. operationPatterns.* — шаблоны операций
+<h3 id="s48">4.8. operationPatterns.* — шаблоны операций</h3>
 
 Шаблоны операций доступны только для стороннего приложения (на сайте их нет).
 
@@ -649,18 +649,18 @@ GET https://api.easyfinance.ru/v2/
 **Тело:** `{"request":{"request_data":{"operationPatterns":[{ "id", "deleted_at":"<дата>" (для удаления) | полный рекорд для редактирования }]}}}`.
 Удаление шаблона — через `deleted_at`.
 
-### 4.9. currencies.get — валюты
+<h3 id="s49">4.9. currencies.get — валюты</h3>
 
 **GET.** **Ответ:** `response_data.currencies[]`. Поля: `id`, `char_code`
 (например, `RUB`), `currency_char_code`, `name`, `rate` (опц.), `symbol` (опц.).
 
-### 4.10. systemCategories.get — системные категории
+<h3 id="s410">4.10. systemCategories.get — системные категории</h3>
 
 **GET.** **Ответ:** `response_data.systemCategories[]` — те же поля, что у
 `categories.get` (встроенные системные категории, `custom=0`). Используются как
 основа при создании пользовательских категорий (тип должен совпадать).
 
-### 4.11. users.get — данные пользователя
+<h3 id="s411">4.11. users.get — данные пользователя</h3>
 
 **GET.** Параметры (опц.): `fields` (например, `goals`).
 **Ответ:** поля на уровне `response_data`: `id`, `name`/`title`, `login`,
