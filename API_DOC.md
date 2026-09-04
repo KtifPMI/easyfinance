@@ -50,6 +50,31 @@
   <div id="toc"></div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var headings = document.querySelectorAll('h2, h3, h4');
+  var toc = document.getElementById('toc');
+  if (!toc) return;
+  headings.forEach(function(h) {
+    if (!h.id) {
+      h.id = h.textContent.trim().toLowerCase()
+        .replace(/[^\w\u0400-\u04FF\s-]/g, '')
+        .replace(/\s+/g, '-');
+    }
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = h.textContent;
+    a.style.display = 'block';
+    a.style.padding = '2px 0';
+    a.style.color = '#2e86c1';
+    a.style.textDecoration = 'none';
+    if (h.tagName === 'H3') a.style.paddingLeft = '20px';
+    if (h.tagName === 'H4') a.style.paddingLeft = '40px';
+    toc.appendChild(a);
+  });
+});
+</script>
+
 # EasyFinance API — Полная документация разработчика
 
 Настоящий документ — полное описание API `api.easyfinance.ru/v2` мобильного
@@ -119,7 +144,7 @@
 - `POST` на сайт `https://easyfinance.ru/login/` с параметрами `login`, `pass`
   возвращает cookie `PHPSESSID` (используется веб-эндпоинтами, см. раздел 5).
 - Для API v2 приложение обменивает связку `app_id` + `secret_key` на `access_token`
-  и `uid` (см. оригинальное руководство, §12–§17).
+  и `uid` (параметры `app_id`, `secret_key` обмениваются на `access_token` и `uid`).
 
 ### 2.4. Регистрация пользователя (users.post)
 
@@ -156,7 +181,7 @@
 Где `params_string` — строка всех параметров запроса (без самого `sig`), значения
 которых URL-кодируются; порядок параметров важен только для расчёта подписи.
 
-**Подробный пример (из оригинального руководства, §17):**
+**Подробный пример расчёта подписи:**
 
 Запрос на получение счётов:
 ```
@@ -675,7 +700,7 @@ GET https://api.easyfinance.ru/v2/
 ## 7. Коды ошибок
 
 Ошибки валидации возвращаются в `response_data.errors[]` (или в
-`response_error`). Ниже — коды из руководства.
+`response_error`). Ниже — основные коды ошибок.
 
 ### Пользователь (user)
 | Код | Значение |
