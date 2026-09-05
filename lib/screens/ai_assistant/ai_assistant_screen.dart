@@ -89,12 +89,12 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     final accs = store.accounts.where((a) => !a.isArchived).toList();
 
     // ---- BALANCE ----
-    if (_match(q, ['Р±Р°Р»Р°РЅСЃ', 'СЃРєРѕР»СЊРєРѕ РґРµРЅРµРі', 'СЃРєРѕР»СЊРєРѕ РІСЃРµРіРѕ', 'РјРѕР№ Р±Р°Р»Р°РЅСЃ', 'РјРѕРё РґРµРЅСЊРіРё', 'РѕР±С‰РёР№ СЃС‡С‘С‚', 'balance', 'how much money', 'total'])) {
+    if (_match(q, ['баланс', 'сколько денег', 'сколько всего', 'мой баланс', 'мои деньги', 'общий счёт', 'balance', 'how much money', 'total'])) {
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.balance_title')}\n\n${accs.map((a) => 'вЂў ${a.name}: ${store.fmt(a.balance, fromCurrency: a.currency)}').join('\n')}\n\n${context.tr('ai.total')}: ${store.fmt(accountsTotal)}', navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
     }
 
     // ---- INCOME ----
-    if (_match(q, ['РґРѕС…РѕРґ', 'РґРѕС…РѕРґС‹', 'Р·Р°СЂР°Р±РѕС‚Р°Р»', 'Р·Р°СЂР°Р±РѕС‚РѕРє', 'РїСЂРёС…РѕРґ', 'СЃРєРѕР»СЊРєРѕ РїРѕР»СѓС‡РёР»', 'income', 'earned', 'earnings', 'revenue', 'РїРѕСЃС‚СѓРїР»РµРЅРёСЏ'])) {
+    if (_match(q, ['доход', 'доходы', 'заработал', 'заработок', 'приход', 'сколько получил', 'income', 'earned', 'earnings', 'revenue', 'поступления'])) {
       final incomes = store.operations.where((o) => o.type == 'income' && inRange(o)).toList()..sort((a, b) => b.date.compareTo(a.date));
       final top = incomes.take(5).map((o) {
         final cat = store.categories.where((c) => c.id == o.categoryId).firstOrNull;
@@ -104,25 +104,25 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     }
 
     // ---- EXPENSES ----
-    if (_match(q, ['СЂР°СЃС…РѕРґ', 'СЂР°СЃС…РѕРґС‹', 'С‚СЂР°С‚', 'РїРѕС‚СЂР°С‚РёР»', 'СѓС€Р»Рѕ', 'СЃРїРёСЃР°РЅРёРµ', 'expense', 'spent', 'spending', 'cost', 'costs'])) {
+    if (_match(q, ['расход', 'расходы', 'трат', 'потратил', 'ушло', 'списание', 'expense', 'spent', 'spending', 'cost', 'costs'])) {
       final top5 = topCat.take(5).map((e) => 'вЂў ${e.key}: ${store.fmt(e.value)} (${(e.value / mexp * 100).round()}%)').join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.month_expense', namedArgs: {'amount': store.fmt(mexp)})}\n\n$top5', navLabel: context.tr('ai.nav_reports'), navRoute: '/reports');
     }
 
     // ---- CATEGORIES ----
-    if (_match(q, ['РєР°С‚РµРіРѕСЂ', 'СЃС‚СЂСѓРєС‚СѓСЂР°', 'РЅР° С‡С‚Рѕ', 'РєСѓРґР° СѓС…РѕРґСЏС‚', 'СЂР°Р·Р±РёРІРєР°', 'category', 'categories', 'breakdown', 'break down', 'where'])) {
+    if (_match(q, ['категор', 'структура', 'на что', 'куда уходят', 'разбивка', 'category', 'categories', 'breakdown', 'break down', 'where'])) {
       final all = topCat.map((e) => 'вЂў ${e.key}: ${store.fmt(e.value)} (${(e.value / mexp * 100).round()}%)').join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.expense_categories')}\n\n${all.isNotEmpty ? all : context.tr('ai.no_category_data')}', navLabel: context.tr('ai.nav_reports'), navRoute: '/reports');
     }
 
     // ---- SAVINGS ----
-    if (_match(q, ['СЃР±РµСЂРµР¶РµРЅ', 'РЅР°РєРѕРїР»РµРЅ', 'РѕС‚Р»РѕР¶РёР»', 'РѕСЃС‚Р°С‚РѕРє', 'СЌРєРѕРЅРѕРјРёСЏ', 'СЃРІРѕР±РѕРґРЅ', 'saving', 'savings', 'leftover', 'remain', 'surplus'])) {
+    if (_match(q, ['сбережен', 'накоплен', 'отложил', 'остаток', 'экономия', 'свободн', 'saving', 'savings', 'leftover', 'remain', 'surplus'])) {
       final rate = mi > 0 ? (sav / mi * 100).round() : 0;
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.savings_info', namedArgs: {'savings': store.fmt(sav), 'rate': '$rate', 'income': store.fmt(mi)})}\n\n${rate < 10 ? context.tr('ai.savings_low') : rate < 30 ? context.tr('ai.savings_ok') : context.tr('ai.savings_great')}', navLabel: context.tr('ai.nav_budget'), navRoute: '/plan');
     }
 
     // ---- BUDGETS ----
-    if (_match(q, ['Р±СЋРґР¶РµС‚', 'Р»РёРјРёС‚', 'РїР»Р°РЅ', 'РїСЂРµРІС‹С€РµРЅ', 'РїРµСЂРµСЂР°СЃС…РѕРґ', 'budget', 'limit', 'over', 'planned'])) {
+    if (_match(q, ['бюджет', 'лимит', 'план', 'превышен', 'перерасход', 'budget', 'limit', 'over', 'planned'])) {
       if (budgets.isEmpty) return _ChatMessage(role: 'assistant', text: context.tr('ai.no_budgets'), navLabel: context.tr('ai.nav_budget'), navRoute: '/plan');
       final parts = budgets.map((b) {
         final cat = store.categories.where((c) => c.id == b.categoryId).firstOrNull;
@@ -134,7 +134,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     }
 
     // ---- GOALS ----
-    if (_match(q, ['С†РµР»', 'РјРµС‡С‚', 'РєРѕРїР»СЋ', 'РєРѕРїРёС‚СЊ', 'РЅР°РєРѕРїРёС‚СЊ', 'goal', 'target', 'dream', 'saving for'])) {
+    if (_match(q, ['цел', 'мечт', 'коплю', 'копить', 'накопить', 'goal', 'target', 'dream', 'saving for'])) {
       if (goals.isEmpty) return _ChatMessage(role: 'assistant', text: context.tr('ai.no_goals'), navLabel: context.tr('ai.nav_goals'), navRoute: '/plan');
       final active = goals.where((g) => !g.isCompleted).toList();
       final done = goals.where((g) => g.isCompleted).toList();
@@ -148,52 +148,52 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     }
 
     // ---- RECOMMENDATIONS / TIPS ----
-    if (_match(q, ['СЃРѕРІРµС‚', 'СЂРµРєРѕРјРµРЅРґР°С†', 'СѓР»СѓС‡С€', 'РѕРїС‚РёРјРёР·', 'РїРѕРјРѕС‰', 'РїСЂРµРґР»РѕР¶', 'tip', 'recommend', 'advice', 'improve', 'suggest', 'help me'])) {
+    if (_match(q, ['совет', 'рекомендац', 'улучш', 'оптимиз', 'помощ', 'предлож', 'tip', 'recommend', 'advice', 'improve', 'suggest', 'help me'])) {
       if (recs.isEmpty) return _ChatMessage(role: 'assistant', text: context.tr('ai.no_recommendations'));
       final items = recs.map((r) => 'вЂў ${r.localizeTitle(context.tr(r.titleKey))}\n  ${r.localizeDesc(context.tr(r.descKey))}').join('\n\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.recommendations_title')}\n\n$items', navLabel: context.tr('ai.nav_recommendations'), navRoute: '/recommendations');
     }
 
     // ---- ACCOUNTS ----
-    if (_match(q, ['СЃС‡С‘С‚', 'СЃС‡РµС‚', 'СЃС‡РµС‚Р°', 'РєР°СЂС‚', 'РєРѕС€РµР»', 'account', 'accounts', 'card', 'wallet'])) {
+    if (_match(q, ['счёт', 'счет', 'счета', 'карт', 'кошел', 'account', 'accounts', 'card', 'wallet'])) {
       final aText = accs.map((a) => 'вЂў ${a.name} (${a.type == 'credit' ? context.tr('accounts.type.credit') : context.tr('accounts.type.cash')}): ${store.fmt(a.balance, fromCurrency: a.currency)}${a.isFavorite ? ' ?' : ''}').join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.accounts_count', namedArgs: {'count': accs.length.toString(), 'total': store.fmt(accountsTotal)})}\n\n$aText', navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
     }
 
     // ---- TOTAL / SUMMARY ----
-    if (_match(q, ['РёС‚РѕРі', 'РѕР±Р·РѕСЂ', 'СЃРІРѕРґРєР°', 'РІСЃС‘', 'РІСЃРµ', 'СЂРµР·СЋРјРµ', 'summary', 'overview', 'total', 'everything', 'all'])) {
+    if (_match(q, ['итог', 'обзор', 'сводка', 'всё', 'все', 'резюме', 'summary', 'overview', 'total', 'everything', 'all'])) {
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.greeting')}\n\n${context.tr('ai.summary', namedArgs: {'balance': store.fmt(accountsTotal), 'income': store.fmt(mi), 'expense': store.fmt(mexp)})}\n\n${context.tr('ai.nav_help')}', navLabel: context.tr('ai.nav_home'), navRoute: '/main');
     }
 
     // ---- DEBTS ----
-    if (_match(q, ['РґРѕР»Рі', 'РєСЂРµРґРёС‚', 'Р·Р°РґРѕР»Р¶Р°Р»', 'РґРѕР»Р¶РµРЅ', 'СЂР°СЃСЃСЂРѕС‡Рє', 'РёРїРѕС‚РµРє', 'debt', 'credit', 'loan', 'mortgage', 'owe'])) {
+    if (_match(q, ['долг', 'кредит', 'задолжал', 'должен', 'рассрочк', 'ипотек', 'debt', 'credit', 'loan', 'mortgage', 'owe'])) {
       final debts = store.operations.where((o) => o.type == 'transfer' && inRange(o) && store.accounts.where((a) => a.id == o.toAccountId && a.type == 'credit').isNotEmpty).toList();
       final totalDebt = debts.fold(0.0, (s, o) => s + o.amount);
       return _ChatMessage(role: 'assistant', text: context.tr('ai.debt_info', namedArgs: {'amount': store.fmt(totalDebt), 'income': store.fmt(mi)}), navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
     }
 
     // ---- CALENDAR / PLANNED ----
-    if (_match(q, ['РєР°Р»РµРЅРґР°СЂ', 'РїР»Р°РЅ', 'Р·Р°РїР»Р°РЅРёСЂРѕРІР°РЅ', 'РЅР°РїРѕРјРёРЅ', 'РїР»Р°С‚РµР¶', 'РїСЂРµРґСЃС‚Рѕ', 'calendar', 'plan', 'schedule', 'upcoming', 'reminder', 'next payment'])) {
+    if (_match(q, ['календар', 'план', 'запланирован', 'напомин', 'платеж', 'предсто', 'calendar', 'plan', 'schedule', 'upcoming', 'reminder', 'next payment'])) {
       return _ChatMessage(role: 'assistant', text: context.tr('ai.calendar_hint'), navLabel: context.tr('ai.nav_calendar'), navRoute: '/calendar');
     }
 
     // ---- REPORT ----
-    if (_match(q, ['РѕС‚С‡С‘С‚', 'РѕС‚С‡РµС‚', 'Р°РЅР°Р»РёС‚РёРє', 'СЃС‚Р°С‚РёСЃС‚РёРє', 'РіСЂР°С„РёРє', 'РґРёР°РіСЂР°Рј', 'report', 'analysis', 'stats', 'chart', 'graph'])) {
+    if (_match(q, ['отчёт', 'отчет', 'аналитик', 'статистик', 'график', 'диаграм', 'report', 'analysis', 'stats', 'chart', 'graph'])) {
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.report_hint')}\n\n${context.tr('ai.month_expense', namedArgs: {'amount': store.fmt(mexp)})}', navLabel: context.tr('ai.nav_reports'), navRoute: '/reports');
     }
 
     // ---- SETTINGS ----
-    if (_match(q, ['РЅР°СЃС‚СЂРѕР№Рє', 'СЏР·С‹Рє', 'С‚РµРјР°', 'С‚С‘РјРЅ', 'С‚РµРјРЅ', 'РїРёРЅ', 'РїР°СЂРѕР»', 'РІР°Р»СЋС‚', 'РїСЂРѕС„РёР»', 'settings', 'language', 'theme', 'dark', 'pin', 'password', 'profile', 'account info'])) {
+    if (_match(q, ['настр', 'язык', 'тема', 'тёмн', 'темн', 'пин', 'парол', 'валют', 'профил', 'settings', 'language', 'theme', 'dark', 'pin', 'password', 'profile', 'account info'])) {
       return _ChatMessage(role: 'assistant', text: context.tr('ai.settings_hint'), navLabel: context.tr('ai.nav_settings'), navRoute: '/settings');
     }
 
     // ---- SCAN ----
-    if (_match(q, ['СЃРєР°РЅ', 'С‡РµРє', 'СЂР°СЃРїРѕР·РЅР°', 'С„РѕС‚Рѕ', 'РєР°РјРµСЂ', 'scan', 'receipt', 'photo', 'camera', 'ocr'])) {
+    if (_match(q, ['скан', 'чек', 'распозна', 'фото', 'камер', 'scan', 'receipt', 'photo', 'camera', 'ocr'])) {
       return _ChatMessage(role: 'assistant', text: context.tr('ai.scan_hint'), navLabel: context.tr('ai.nav_scan'), navRoute: '/scan-receipt');
     }
 
     // ---- GREETING ----
-    if (_match(q, ['РїСЂРёРІРµС‚', 'Р·РґСЂР°РІСЃС‚РІСѓР№', 'РґРѕР±СЂ', 'hello', 'hi', 'hey', 'good morning', 'good evening'])) {
+    if (_match(q, ['привет', 'здравствуй', 'добр', 'hello', 'hi', 'hey', 'good morning', 'good evening'])) {
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.greeting')}\n\n${context.tr('ai.summary', namedArgs: {'balance': store.fmt(accountsTotal), 'income': store.fmt(mi), 'expense': store.fmt(mexp)})}\n\n${context.tr('ai.nav_help')}');
     }
 

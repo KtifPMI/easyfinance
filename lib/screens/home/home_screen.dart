@@ -503,6 +503,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBudgetsSection(BuildContext context, FinanceStore store) {
+    if (store.budgets.isEmpty) return const SizedBox.shrink();
     final pendingCount = store.operations.where((op) => op.isPending).length;
 
     final expenseBudgets = store.budgets.where((b) {
@@ -656,7 +657,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final next = e.nextOccurrence();
       return next == null || !e.isAcceptedOn('${next.year}-${next.month.toString().padLeft(2, '0')}-${next.day.toString().padLeft(2, '0')}');
     }).toList();
-    final combined = <FinancialEvent>[...overdue, ...upcoming];
+    final maxOverdue = 3;
+    final shownOverdue = overdue.take(maxOverdue).toList();
+    final shownUpcoming = upcoming.take(8 - shownOverdue.length).toList();
+    final combined = <FinancialEvent>[...shownOverdue, ...shownUpcoming];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -677,8 +681,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(context.tr('calendar.empty'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           )
         else
-          ...combined.take(8).map((e) {
-            final isOverdue = overdue.contains(e);
+          ...combined.map((e) {
+            final isOverdue = shownOverdue.contains(e);
             final displayDate = isOverdue ? (e.lastOccurrence(before: today) ?? today) : (e.nextOccurrence() ?? today);
             return GestureDetector(
               onTap: () => Navigator.pushNamed(context, '/calendar'),

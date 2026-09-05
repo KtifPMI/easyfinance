@@ -22,7 +22,7 @@ class AccountsScreen extends StatefulWidget {
 
 class _AccountsScreenState extends State<AccountsScreen> {
   String _search = '';
-  final Set<String> _revealed = {};
+  bool _archiveExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -96,9 +96,23 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                ..._buildGrouped(context, store, grouped),
                                if (hidden.isNotEmpty) ...[
                                  const SizedBox(height: 16),
-                                 Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
-                                 const SizedBox(height: 8),
-                                 ...hidden.map((a) => _accountTile(context, store, a)),
+                                 GestureDetector(
+                                   onTap: () => setState(() => _archiveExpanded = !_archiveExpanded),
+                                   child: Row(
+                                     children: [
+                                       Icon(_archiveExpanded ? Icons.expand_less : Icons.expand_more, size: 20, color: AppColors.textSecondaryFor(context)),
+                                       const SizedBox(width: 4),
+                                       Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+                                       const Spacer(),
+                                       Text(store.fmt(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, store.displayCurrency, store.rates))),
+                                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
+                                     ],
+                                   ),
+                                 ),
+                                 if (_archiveExpanded) ...[
+                                   const SizedBox(height: 8),
+                                   ...hidden.map((a) => _accountTile(context, store, a)),
+                                 ],
                                ],
                             ],
                           ),
@@ -185,26 +199,15 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   children: [
                     Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     Text(context.tr(accountTypeLabels[int.tryParse(_typeToId(a.type)) ?? 1] ?? 'accounts.type.cash'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
-                    if (a.isArchived)
-                      Text(context.tr('accounts.hidden'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.warning)),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              GestureDetector(
-                onTap: a.isArchived ? () => setState(() {
-                  if (_revealed.contains(a.id)) {
-                    _revealed.remove(a.id);
-                  } else {
-                    _revealed.add(a.id);
-                  }
-                }) : null,
-                child: Text(
-                  a.isArchived && !_revealed.contains(a.id) ? '***' : formatMoney(store.accountActualBalance(a), currency: a.currency),
+              Text(
+                  formatMoney(store.accountActualBalance(a), currency: a.currency),
                   maxLines: 1, softWrap: false,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
                     color: store.accountActualBalance(a) >= 0 ? AppColors.textFor(context) : AppColors.expense),
-                ),
               ),
               const SizedBox(width: 4),
               GestureDetector(
