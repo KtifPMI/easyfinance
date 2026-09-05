@@ -115,6 +115,26 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (store.budgets.isEmpty) ...[
+              const SizedBox(height: 48),
+              Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.account_balance_wallet_outlined, size: 56, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.4)),
+                    const SizedBox(height: 16),
+                    Text(context.tr('budget.empty_title'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    const SizedBox(height: 8),
+                    Text(context.tr('budget.empty_subtitle'), textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context))),
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddBudgetScreen())),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(context.tr('budget.empty_button')),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (incomeBudgets.isNotEmpty || expenseBudgets.isNotEmpty) ...[
             AppCard(
               child: Column(
@@ -259,6 +279,26 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       child: SingleChildScrollView(
         child: Column(
           children: [
+            if (store.goals.isEmpty) ...[
+              const SizedBox(height: 48),
+              Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.flag_outlined, size: 56, color: AppColors.textSecondaryFor(context).withValues(alpha: 0.4)),
+                    const SizedBox(height: 16),
+                    Text(context.tr('goals.empty_title'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    const SizedBox(height: 8),
+                    Text(context.tr('goals.empty_subtitle'), textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context))),
+                    const SizedBox(height: 20),
+                    FilledButton.icon(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(context.tr('goals.empty_button')),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             ...store.goals.map((g) {
             final balances = {for (final a in store.accounts) a.id: store.accountActualBalance(a)};
             final bal = g.balanceFrom(balances);
