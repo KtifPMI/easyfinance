@@ -672,8 +672,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _invalidateOpCaches();
         _recalcAccountBalances();
         _recalcBudgetSpent();
-        _scheduleNotify();
         await _saveCache();
+        _scheduleNotify();
       }
     } catch (e) {
       debugPrint('loadMoreOperations error: $e');
@@ -692,8 +692,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       _recalcBudgetSpent();
       _recalcCachedTotals();
       _generateRecommendations();
-      _scheduleNotify();
       await _saveCache();
+      _scheduleNotify();
     } catch (e) {
       debugPrint('loadAllOperations error: $e');
     }
