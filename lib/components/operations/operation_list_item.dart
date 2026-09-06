@@ -1,3 +1,4 @@
+import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 import '../../theme/theme.dart';
 
@@ -73,7 +74,7 @@ class OperationListItem extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Text('$_amountPrefix$formattedAmount', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _amountColor(context))),
+            Text('$_amountPrefix$formattedAmount', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _amountColor(context), fontFeatures: const [FontFeature.tabularFigures()])),
             if (isPending) ...[
               const SizedBox(width: 4),
               Icon(Icons.sync, size: 14, color: AppColors.textSecondary),

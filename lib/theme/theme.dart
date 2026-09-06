@@ -1,3 +1,4 @@
+import 'dart:ui' show FontFeature;
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -109,15 +110,15 @@ class AppTheme {
       trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? AppColors.primary.withValues(alpha: 0.5) : null),
     ),
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(fontSize: 17),
-      bodyMedium: TextStyle(fontSize: 15),
-      bodySmall: TextStyle(fontSize: 13),
-      titleLarge: TextStyle(fontSize: 21),
-      titleMedium: TextStyle(fontSize: 18),
-      titleSmall: TextStyle(fontSize: 15),
-      labelLarge: TextStyle(fontSize: 15),
-      labelMedium: TextStyle(fontSize: 13),
-      labelSmall: TextStyle(fontSize: 12),
+      bodyLarge: TextStyle(fontSize: 17, fontFeatures: [FontFeature.tabularFigures()]),
+      bodyMedium: TextStyle(fontSize: 15, fontFeatures: [FontFeature.tabularFigures()]),
+      bodySmall: TextStyle(fontSize: 13, fontFeatures: [FontFeature.tabularFigures()]),
+      titleLarge: TextStyle(fontSize: 21, fontFeatures: [FontFeature.tabularFigures()]),
+      titleMedium: TextStyle(fontSize: 18, fontFeatures: [FontFeature.tabularFigures()]),
+      titleSmall: TextStyle(fontSize: 15, fontFeatures: [FontFeature.tabularFigures()]),
+      labelLarge: TextStyle(fontSize: 15, fontFeatures: [FontFeature.tabularFigures()]),
+      labelMedium: TextStyle(fontSize: 13, fontFeatures: [FontFeature.tabularFigures()]),
+      labelSmall: TextStyle(fontSize: 12, fontFeatures: [FontFeature.tabularFigures()]),
     ),
   );
 
@@ -165,15 +166,15 @@ class AppTheme {
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.primary),
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(fontSize: 17),
-      bodyMedium: TextStyle(fontSize: 15),
-      bodySmall: TextStyle(fontSize: 13),
-      titleLarge: TextStyle(fontSize: 21),
-      titleMedium: TextStyle(fontSize: 18),
-      titleSmall: TextStyle(fontSize: 15),
-      labelLarge: TextStyle(fontSize: 15),
-      labelMedium: TextStyle(fontSize: 13),
-      labelSmall: TextStyle(fontSize: 12),
+      bodyLarge: TextStyle(fontSize: 17, fontFeatures: [FontFeature.tabularFigures()]),
+      bodyMedium: TextStyle(fontSize: 15, fontFeatures: [FontFeature.tabularFigures()]),
+      bodySmall: TextStyle(fontSize: 13, fontFeatures: [FontFeature.tabularFigures()]),
+      titleLarge: TextStyle(fontSize: 21, fontFeatures: [FontFeature.tabularFigures()]),
+      titleMedium: TextStyle(fontSize: 18, fontFeatures: [FontFeature.tabularFigures()]),
+      titleSmall: TextStyle(fontSize: 15, fontFeatures: [FontFeature.tabularFigures()]),
+      labelLarge: TextStyle(fontSize: 15, fontFeatures: [FontFeature.tabularFigures()]),
+      labelMedium: TextStyle(fontSize: 13, fontFeatures: [FontFeature.tabularFigures()]),
+      labelSmall: TextStyle(fontSize: 12, fontFeatures: [FontFeature.tabularFigures()]),
     ),
   );
 }
