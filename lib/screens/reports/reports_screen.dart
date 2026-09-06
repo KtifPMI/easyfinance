@@ -388,8 +388,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
         months.add(DateTime(selectedMonth.year, selectedMonth.month - i, 1));
       }
     }
+    final activeOps = store.operations.where((o) => !o.isDeleted).toList();
     for (final m in months) {
-      final ops = store.operations.where((o) => !o.isDeleted && store.isInMonth(o.date, m)).toList();
+      final ops = activeOps.where((o) => store.isInMonth(o.date, m)).toList();
       double amtRub(o) {
         final acc = store.getAccount(o.accountId);
         return CurrencyRateService.convert(o.amount, acc?.currency ?? o.currency, 'RUB', store.rates);

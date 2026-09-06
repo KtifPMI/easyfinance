@@ -80,5 +80,12 @@ class _PiePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _PiePainter old) {
+    if (old.total != total) return true;
+    if (old.slices.length != slices.length) return true;
+    for (int i = 0; i < slices.length; i++) {
+      if (old.slices[i].value != slices[i].value || old.slices[i].label != slices[i].label) return true;
+    }
+    return false;
+  }
 }

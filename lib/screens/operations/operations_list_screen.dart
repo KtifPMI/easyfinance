@@ -300,8 +300,12 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: ops.map((op) {
+      child: ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: ops.length,
+        itemBuilder: (context, i) {
+          final op = ops[i];
           final cat = store.getCategory(op.categoryId);
           final acc = store.getAccount(op.accountId);
           final toAcc = store.getAccount(op.toAccountId);
@@ -328,7 +332,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
             onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
             isPending: op.isPending,
           );
-        }).toList(),
+        },
       ),
     );
   }

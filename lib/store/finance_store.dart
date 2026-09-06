@@ -60,6 +60,8 @@ class FinanceStore extends ChangeNotifier {
   bool _authExpired = false;
   String? _error;
   bool _notifyScheduled = false;
+  final Set<String> _changedOpIds = {};
+  final Set<String> _deletedOpIds = {};
   Future<void> _cacheReady = Future.value();
   Future<void> _templatesReady = Future.value();
   PlannedPaymentStore? _plannedPayments;
@@ -184,7 +186,14 @@ class FinanceStore extends ChangeNotifier {
       await prefs.setString('easyfinance_cached_accounts', jsonEncode(_accounts.map((a) => a.toJson()).toList()));
     }
     try {
-      if (_operations.isNotEmpty) await OperationsDb.saveAll(_operations);
+      if (_changedOpIds.isNotEmpty || _deletedOpIds.isNotEmpty) {
+        final changedOps = _operations.where((op) => _changedOpIds.contains(op.id)).toList();
+        await OperationsDb.saveDelta(changedOps, deletedIds: _deletedOpIds.toList());
+        _changedOpIds.clear();
+        _deletedOpIds.clear();
+      } else if (_opsDirty && _operations.isNotEmpty) {
+        await OperationsDb.saveAll(_operations);
+      }
     } catch (_) {}
     if (_categories.isNotEmpty) {
       await prefs.setString('easyfinance_cached_categories', jsonEncode(_categories.map((c) => c.toJson()).toList()));
@@ -674,10 +683,14 @@ class FinanceStore extends ChangeNotifier {
   }
 
   static DateTime? _lastRecsAt;
+  static int _lastRecsHash = 0;
   void _scheduleRecommendations() {
     final now = DateTime.now();
     if (_lastRecsAt != null && now.difference(_lastRecsAt!).inSeconds < 2) return;
     _lastRecsAt = now;
+    final hash = _operations.length ^ _budgets.length ^ _goals.length ^ _categories.length;
+    if (hash == _lastRecsHash && _recommendations.isNotEmpty) return;
+    _lastRecsHash = hash;
     _generateRecommendations();
   }
 
@@ -1198,6 +1211,7 @@ class FinanceStore extends ChangeNotifier {
     op = op.copyWith(updatedAt: formatApiDateTime());
     _operations.insert(0, op);
     _opsDirty = true;
+    _changedOpIds.add(op.id);
     _recalcAccountBalances();
     _recalcBudgetSpent();
     _scheduleRecommendations();
@@ -1332,6 +1346,7 @@ class FinanceStore extends ChangeNotifier {
     if (idx >= 0) {
       _operations[idx] = op.copyWith(updatedAt: formatApiDateTime());
     }
+    _changedOpIds.add(op.id);
     _recalcAccountBalances();
     _recalcBudgetSpent();
     _scheduleRecommendations();
@@ -1348,6 +1363,7 @@ class FinanceStore extends ChangeNotifier {
     if (op.isPending) {
       _operations.removeAt(opIdx);
       _opsDirty = true;
+      _deletedOpIds.add(id);
       _recalcAccountBalances();
       _recalcBudgetSpent();
       _scheduleRecommendations();
@@ -1380,6 +1396,7 @@ class FinanceStore extends ChangeNotifier {
     if (!op.isDeleted) {
       _operations[opIdx] = _operations[opIdx].copyWith(isDeleted: true);
     }
+    _changedOpIds.add(op.id);
     _recalcAccountBalances();
     _recalcBudgetSpent();
     _scheduleRecommendations();
