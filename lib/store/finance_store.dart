@@ -1958,15 +1958,18 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         balances[op.accountId] = (balances[op.accountId] ?? 0) + op.amount;
       } else if (op.type == 'transfer') {
         balances[op.accountId] = (balances[op.accountId] ?? 0) - op.amount;
-        final dstCurrency = _accountById[op.toAccountId]?.currency;
-        final srcCurrency = _accountById[op.accountId]?.currency;
-        if (op.transferAmount != null && op.transferAmount! > 0) {
-          balances[op.toAccountId] = (balances[op.toAccountId] ?? 0) + op.transferAmount!;
-        } else if (dstCurrency != null && srcCurrency != null && srcCurrency != dstCurrency) {
-          final converted = CurrencyRateService.convert(op.amount, srcCurrency!, dstCurrency!, _ratesForOp(op));
-          balances[op.toAccountId] = (balances[op.toAccountId] ?? 0) + converted;
-        } else {
-          balances[op.toAccountId] = (balances[op.toAccountId] ?? 0) + op.amount;
+        final toId = op.toAccountId;
+        if (toId != null) {
+          final dstCurrency = _accountById[toId]?.currency;
+          final srcCurrency = _accountById[op.accountId]?.currency;
+          if (op.transferAmount != null && op.transferAmount! > 0) {
+            balances[toId] = (balances[toId] ?? 0) + op.transferAmount!;
+          } else if (dstCurrency != null && srcCurrency != null && srcCurrency != dstCurrency) {
+            final converted = CurrencyRateService.convert(op.amount, srcCurrency, dstCurrency, _ratesForOp(op));
+            balances[toId] = (balances[toId] ?? 0) + converted;
+          } else {
+            balances[toId] = (balances[toId] ?? 0) + op.amount;
+          }
         }
       }
     }
