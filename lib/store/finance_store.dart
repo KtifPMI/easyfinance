@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/account.dart';
@@ -25,7 +25,7 @@ import '../utils/format.dart';
 import '../utils/currency_utils.dart';
 
 class FinanceStore extends ChangeNotifier {
-  void refresh() => notifyListeners();
+  void refresh() => _scheduleNotify();
   final AuthService authService;
   final ApiClient apiClient;
   User? _currentUser;
@@ -48,6 +48,7 @@ class FinanceStore extends ChangeNotifier {
   DateTime? _ratesUpdatedAt;
   List<String> _watchedCurrencies = [];
   final Map<String, Map<String, double>> _histRates = {};
+  static const int _maxHistRates = 90;
   String _displayCurrency = 'RUB';
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
@@ -58,6 +59,7 @@ class FinanceStore extends ChangeNotifier {
   bool showKopeksInOps = true;
   bool _authExpired = false;
   String? _error;
+  bool _notifyScheduled = false;
   Future<void> _cacheReady = Future.value();
   Future<void> _templatesReady = Future.value();
   PlannedPaymentStore? _plannedPayments;
@@ -86,13 +88,13 @@ class FinanceStore extends ChangeNotifier {
   void markAuthExpired() {
     if (_authExpired) return;
     _authExpired = true;
-    notifyListeners();
+    _scheduleNotify();
   }
 
   void clearAuthExpired() {
     if (!_authExpired) return;
     _authExpired = false;
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> _loadRecPrefs() async {
@@ -163,13 +165,13 @@ class FinanceStore extends ChangeNotifier {
     }
     _recalcCachedTotals();
     _balanceLoaded = true;
-    notifyListeners();
+    _scheduleNotify();
 
     Future.delayed(Duration.zero, () async {
       _recalcBudgetSpent();
       _generateRecommendations();
       await _preloadHistoricalRates();
-      if (hasListeners) notifyListeners();
+      if (hasListeners) _scheduleNotify();
     });
   } catch (_) {
       // Ignore a corrupt cache and continue with server data.
@@ -208,7 +210,7 @@ class FinanceStore extends ChangeNotifier {
 
   void saveUser(User user) {
     _currentUser = user;
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> logout() async {
@@ -239,7 +241,7 @@ class FinanceStore extends ChangeNotifier {
     _tags = [];
     _templates = [];
     _useMock = true;
-    notifyListeners();
+    _scheduleNotify();
   }
 
   bool get isAuthenticated => authService.isAuthenticated;
@@ -271,7 +273,7 @@ class FinanceStore extends ChangeNotifier {
     _recPrefs = newPrefs;
     await _recPrefs.save();
     _generateRecommendations();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<List<String>> _loadWatchedCurrencies() async {
@@ -284,7 +286,7 @@ class FinanceStore extends ChangeNotifier {
   Future<void> setWatchedCurrencies(List<String> codes) async {
     _watchedCurrencies = codes;
     await CurrencyPrefsService.save(codes);
-    notifyListeners();
+    _scheduleNotify();
   }
 
   String get displayCurrency => _displayCurrency;
@@ -295,7 +297,7 @@ class FinanceStore extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('display_currency', code);
     _recalcCachedTotals();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> _loadDisplayCurrency() async {
@@ -313,6 +315,24 @@ class FinanceStore extends ChangeNotifier {
     showKopeks = prefs.getBool('easyfinance_show_kopeks') ?? true;
     showKopeksInOps = prefs.getBool('easyfinance_show_kopeks_ops') ?? true;
     bindFormatSettings(showKopeks, showKopeksInOps);
+  }
+
+  void _scheduleNotify() {
+    if (_notifyScheduled) return;
+    _notifyScheduled = true;
+    Future.microtask(() {
+      _notifyScheduled = false;
+      if (hasListeners) notifyListeners();
+    });
+  }
+
+  void _trimHistRates() {
+    if (_histRates.length <= _maxHistRates) return;
+    final sortedKeys = _histRates.keys.toList()..sort();
+    final toRemove = sortedKeys.take(_histRates.length - _maxHistRates);
+    for (final key in toRemove) {
+      _histRates.remove(key);
+    }
   }
 
   String fmt(double amount, {String fromCurrency = 'RUB', String? date}) {
@@ -416,6 +436,7 @@ class FinanceStore extends ChangeNotifier {
         _histRates[dateStr] = rates;
       }
     }
+    _trimHistRates();
   }
 
   Future<void> fetchAllData() async {
@@ -429,7 +450,7 @@ class FinanceStore extends ChangeNotifier {
     if (!hasCache) {
       _balanceLoaded = false;
     }
-    notifyListeners();
+    _scheduleNotify();
 
     try {
     await Future.wait([
@@ -463,7 +484,7 @@ class FinanceStore extends ChangeNotifier {
     ], eagerError: false);
 
     _recalcCachedTotals();
-    notifyListeners();
+    _scheduleNotify();
 
     List<dynamic> results = [];
     try {
@@ -538,7 +559,7 @@ class FinanceStore extends ChangeNotifier {
 
     _recalcCachedTotals();
     _balanceLoaded = true;
-    notifyListeners();
+    _scheduleNotify();
 
     await Future.wait([
       _applyFavoriteStates(),
@@ -568,11 +589,11 @@ class FinanceStore extends ChangeNotifier {
     _useMock = !authService.isAuthenticated;
     _isLoading = false;
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
 
     Future.delayed(Duration.zero, () async {
       await _preloadHistoricalRates();
-      if (hasListeners) notifyListeners();
+      if (hasListeners) _scheduleNotify();
     });
   }
 
@@ -597,7 +618,7 @@ class FinanceStore extends ChangeNotifier {
         _opsDirty = true;
         _recalcAccountBalances();
         _recalcBudgetSpent();
-        notifyListeners();
+        _scheduleNotify();
         await _saveCache();
       }
     } catch (e) {
@@ -619,7 +640,7 @@ class FinanceStore extends ChangeNotifier {
       _recalcBudgetSpent();
       _recalcCachedTotals();
       _generateRecommendations();
-      notifyListeners();
+      _scheduleNotify();
       await _saveCache();
     } catch (e) {
       debugPrint('loadAllOperations error: $e');
@@ -649,7 +670,7 @@ class FinanceStore extends ChangeNotifier {
     } catch (e) {
       debugPrint('getGoalTemplates error: $e');
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   static DateTime? _lastRecsAt;
@@ -1140,7 +1161,7 @@ class FinanceStore extends ChangeNotifier {
     final isFreeUser = _currentUser == null || !_currentUser!.isPremium;
     if (isFreeUser && _operations.length >= 1000) {
       _error = 'LIMIT';
-      notifyListeners();
+      _scheduleNotify();
       return;
     }
     final clientId = op.clientId ?? op.id;
@@ -1165,7 +1186,7 @@ class FinanceStore extends ChangeNotifier {
           op = op.copyWith(isPending: true, clientId: clientId);
         } else {
           _error = e.message;
-          notifyListeners();
+          _scheduleNotify();
           return;
         }
       } catch (_) {
@@ -1186,7 +1207,7 @@ class FinanceStore extends ChangeNotifier {
       final opDate = DateTime.tryParse(op.date) ?? DateTime.now();
       await RateHistoryStorage.saveRates(opDate, _rates);
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   String _typeToApi(String type) {
@@ -1221,7 +1242,7 @@ class FinanceStore extends ChangeNotifier {
     for (final p in pending) {
       if (!serverIds.contains(p.id)) _operations.insert(0, p);
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> syncPendingOperations() async {
@@ -1260,7 +1281,7 @@ class FinanceStore extends ChangeNotifier {
     _recalcAccountBalances();
     _recalcBudgetSpent();
     _scheduleRecommendations();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   bool _isNetworkError(ApiException e) {
@@ -1316,7 +1337,7 @@ class FinanceStore extends ChangeNotifier {
     _scheduleRecommendations();
     await _registerTags(op.tags);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> deleteOperation(String id) async {
@@ -1331,7 +1352,7 @@ class FinanceStore extends ChangeNotifier {
       _recalcBudgetSpent();
       _scheduleRecommendations();
       await _saveCache();
-      notifyListeners();
+      _scheduleNotify();
       return;
     }
     if (authService.isAuthenticated) {
@@ -1363,7 +1384,7 @@ class FinanceStore extends ChangeNotifier {
     _recalcBudgetSpent();
     _scheduleRecommendations();
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   void _queuePendingDelete(Operation op, int idx) {
@@ -1373,7 +1394,7 @@ class FinanceStore extends ChangeNotifier {
     _recalcBudgetSpent();
     _scheduleRecommendations();
     _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> refundOperation(Operation op) async {
@@ -1419,7 +1440,7 @@ class FinanceStore extends ChangeNotifier {
           if (serverId != null && serverId.isNotEmpty) {
             _accounts.add(newAccount.copyWith(id: serverId));
             await _saveCache();
-            notifyListeners();
+            _scheduleNotify();
             return;
           }
         }
@@ -1439,7 +1460,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _accounts.add(toAdd);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> updateAccount(Account account, {String state = '0'}) async {
@@ -1479,7 +1500,7 @@ class FinanceStore extends ChangeNotifier {
     if (idx >= 0) _accounts[idx] = acc; else _accounts.add(acc);
     _recalcAccountBalances();
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   void updateAccountFavorite(String accountId, bool isFavorite) async {
@@ -1487,7 +1508,7 @@ class FinanceStore extends ChangeNotifier {
     if (idx < 0) return;
     _accounts[idx] = _accounts[idx].copyWith(isFavorite: isFavorite);
     _saveCache();
-    notifyListeners();
+    _scheduleNotify();
     if (authService.isAuthenticated) {
       try {
         await authService.apiService.setAccount({
@@ -1508,7 +1529,7 @@ class FinanceStore extends ChangeNotifier {
         final account = _accounts.where((a) => a.id == id).firstOrNull;
         if (account == null) {
           _error = 'Счёт не найден';
-          notifyListeners();
+          _scheduleNotify();
           return;
         }
         final now = formatApiDateTime();
@@ -1535,7 +1556,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _accounts.removeWhere((a) => a.id == id);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   // --- Categories ---
@@ -1591,7 +1612,7 @@ class FinanceStore extends ChangeNotifier {
               parentId: c.parentId, isDefault: false, systemId: sid,
             ));
             await _saveCache();
-            notifyListeners();
+            _scheduleNotify();
             return;
           }
         }
@@ -1611,7 +1632,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _categories.add(toAdd);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> updateCategory(cat.Category c) async {
@@ -1650,7 +1671,7 @@ class FinanceStore extends ChangeNotifier {
     final idx = _categories.indexWhere((x) => x.id == catToSave.id);
     if (idx >= 0) _categories[idx] = catToSave; else _categories.add(catToSave);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> deleteCategory(String id) async {
@@ -1662,7 +1683,7 @@ class FinanceStore extends ChangeNotifier {
     if (c.isPending) {
       _categories.removeAt(idx);
       await _saveCache();
-      notifyListeners();
+      _scheduleNotify();
       return;
     }
     // Server-backed categories: delete on the server FIRST (mirrors
@@ -1690,17 +1711,17 @@ class FinanceStore extends ChangeNotifier {
         await apiClient.setCategoryV2(c.id, record);
       } on ApiException catch (e) {
         _error = e.message;
-        notifyListeners();
+        _scheduleNotify();
         return;
       } catch (e) {
         _error = 'Ошибка удаления категории: $e';
-        notifyListeners();
+        _scheduleNotify();
         return;
       }
     }
     _categories.removeWhere((x) => x.id == id);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   String _categoryIconToApi(String icon) {
@@ -1767,7 +1788,7 @@ class FinanceStore extends ChangeNotifier {
         ));
         await _saveBudgets();
         _scheduleRecommendations();
-        notifyListeners();
+        _scheduleNotify();
         return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -1780,7 +1801,7 @@ class FinanceStore extends ChangeNotifier {
     _budgets.add(b.copyWith(spent: spent));
     await _saveBudgets();
     _scheduleRecommendations();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> updateBudget(Budget b) async {
@@ -1804,7 +1825,7 @@ class FinanceStore extends ChangeNotifier {
     final idx = _budgets.indexWhere((x) => x.id == b.id);
     if (idx >= 0) _budgets[idx] = b;
     await _saveBudgets();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   double _calcSpentForMonth(String categoryId) {
@@ -1916,7 +1937,7 @@ class FinanceStore extends ChangeNotifier {
     if (idx >= 0) _budgets[idx] = _budgets[idx].copyWith(isDeleted: true);
     await _saveBudgets();
     _scheduleRecommendations();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> _saveBudgets() async {
@@ -1995,7 +2016,7 @@ class FinanceStore extends ChangeNotifier {
               isCompleted: g.isCompleted, accountId: g.accountId, accountIds: g.accountIds,
             ));
             await _saveGoals();
-            notifyListeners();
+            _scheduleNotify();
             return;
           }
         }
@@ -2033,7 +2054,7 @@ class FinanceStore extends ChangeNotifier {
               goalType: g.goalType, goalState: g.goalState,
             ));
             await _saveGoals();
-            notifyListeners();
+            _scheduleNotify();
             return;
           }
         }
@@ -2047,7 +2068,7 @@ class FinanceStore extends ChangeNotifier {
     if (authService.isAuthenticated) return;
     _goals.add(g);
     await _saveGoals();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> updateGoal(String id, {double? currentAmount, bool? isCompleted, String? title, double? targetAmount, String? deadline, String? startDate, String? accountId, List<String>? accountIds, String? currencyId, String? comment, String? category, int? goalType, int? goalState}) async {
@@ -2086,7 +2107,7 @@ class FinanceStore extends ChangeNotifier {
         }, targetId: id);
         _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, accountIds: newAccountIds, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
         await _saveGoals();
-        notifyListeners();
+        _scheduleNotify();
         return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -2112,7 +2133,7 @@ class FinanceStore extends ChangeNotifier {
         _error = null;
         _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, accountIds: newAccountIds, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
         await _saveGoals();
-        notifyListeners();
+        _scheduleNotify();
         return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -2124,7 +2145,7 @@ class FinanceStore extends ChangeNotifier {
     if (authService.isAuthenticated) return;
     _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, accountIds: newAccountIds, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
     await _saveGoals();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> depositToGoal(String goalId, double amount, String accountId) async {
@@ -2190,7 +2211,7 @@ class FinanceStore extends ChangeNotifier {
       final operationError = _error;
       await updateGoal(goalId, currentAmount: previousAmount, isCompleted: previousCompleted);
       _error = operationError;
-      notifyListeners();
+      _scheduleNotify();
     }
   }
 
@@ -2203,7 +2224,7 @@ class FinanceStore extends ChangeNotifier {
         }, targetId: id);
         _goals.removeWhere((g) => g.id == id);
         await _saveGoals();
-        notifyListeners();
+        _scheduleNotify();
         return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -2221,7 +2242,7 @@ class FinanceStore extends ChangeNotifier {
         _error = null;
         _goals.removeWhere((g) => g.id == id);
         await _saveGoals();
-        notifyListeners();
+        _scheduleNotify();
         return;
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
@@ -2232,7 +2253,7 @@ class FinanceStore extends ChangeNotifier {
     if (authService.isAuthenticated) return;
     _goals.removeWhere((g) => g.id == id);
     await _saveGoals();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> _saveGoals() async {
@@ -2294,7 +2315,7 @@ class FinanceStore extends ChangeNotifier {
               comment: t.comment, tags: t.tags, createdAt: now, updatedAt: now,
             ));
             await _saveTemplates();
-            notifyListeners();
+            _scheduleNotify();
             return;
           }
         }
@@ -2314,7 +2335,7 @@ class FinanceStore extends ChangeNotifier {
     }
     _templates.add(toAdd);
     await _saveTemplates();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> deleteTemplate(String id) async {
@@ -2323,7 +2344,7 @@ class FinanceStore extends ChangeNotifier {
     _deletedTemplateIds.add(id);
     _templates.removeWhere((t) => t.id == id);
     await _saveTemplates();
-    notifyListeners();
+    _scheduleNotify();
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
@@ -2369,7 +2390,7 @@ class FinanceStore extends ChangeNotifier {
         debugPrint('Sync pending account ${a.id} failed: $e');
       }
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> syncPendingCategories() async {
@@ -2395,7 +2416,7 @@ class FinanceStore extends ChangeNotifier {
         debugPrint('Sync pending category ${c.id} failed: $e');
       }
     }
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> syncPendingTemplates() async {
@@ -2434,7 +2455,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     await _saveTemplates();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   Future<void> _saveTemplates() async {
@@ -2457,7 +2478,7 @@ class FinanceStore extends ChangeNotifier {
         final list = jsonDecode(delRaw) as List<dynamic>;
         _deletedTemplateIds.addAll(list.map((e) => e.toString()));
       }
-      notifyListeners();
+      _scheduleNotify();
     } catch (_) {
       _templates = [];
     }
@@ -2504,7 +2525,7 @@ class FinanceStore extends ChangeNotifier {
           if (serverId != null && serverId.isNotEmpty) {
             _tags.add(Tag(id: serverId, name: tag.name));
             await _saveCache();
-            notifyListeners();
+            _scheduleNotify();
             return;
           }
         }
@@ -2515,7 +2536,7 @@ class FinanceStore extends ChangeNotifier {
     // Local fallback
     _tags.add(tag);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   List<Operation> operationsUsingTag(String name) {
@@ -2566,7 +2587,7 @@ class FinanceStore extends ChangeNotifier {
 
     _tags.removeWhere((t) => t.id == tag.id || t.name.toLowerCase() == key);
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   String _rebuildTagsString(String? original, List<String> kept) {
@@ -2586,7 +2607,7 @@ class FinanceStore extends ChangeNotifier {
       }
       _tags = merged;
       await _saveCache();
-      notifyListeners();
+      _scheduleNotify();
     } catch (e) {
       debugPrint('refreshTags error: $e');
     }
@@ -2623,7 +2644,7 @@ class FinanceStore extends ChangeNotifier {
       }
     }
     await _saveCache();
-    notifyListeners();
+    _scheduleNotify();
   }
 
   List<String> getTagsForOperation(Operation op) {

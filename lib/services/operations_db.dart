@@ -16,7 +16,7 @@ class OperationsDb {
     final path = p.join(dbPath, 'easyfinance_operations.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE operations (
@@ -39,6 +39,14 @@ class OperationsDb {
         ''');
         await db.execute('CREATE INDEX idx_operations_date ON operations(date)');
         await db.execute('CREATE INDEX idx_operations_account ON operations(account_id)');
+        await db.execute('CREATE INDEX idx_operations_type ON operations(type)');
+        await db.execute('CREATE INDEX idx_operations_deleted ON operations(is_deleted)');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('CREATE INDEX IF NOT EXISTS idx_operations_type ON operations(type)');
+          await db.execute('CREATE INDEX IF NOT EXISTS idx_operations_deleted ON operations(is_deleted)');
+        }
       },
     );
   }
@@ -56,9 +64,39 @@ class OperationsDb {
     await batch.commit(noResult: true);
   }
 
+  static Future<void> saveDelta(List<Operation> operations, {List<String>? deletedIds}) async {
+    final db = await database;
+    final batch = db.batch();
+    for (final op in operations) {
+      batch.insert(
+        'operations',
+        _opToMap(op),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    if (deletedIds != null && deletedIds.isNotEmpty) {
+      for (final id in deletedIds) {
+        batch.delete('operations', where: 'id = ?', whereArgs: [id]);
+      }
+    }
+    await batch.commit(noResult: true);
+  }
+
   static Future<List<Operation>> getAll() async {
     final db = await database;
     final rows = await db.query('operations', orderBy: 'date DESC');
+    return rows.map(_mapToOp).toList();
+  }
+
+  static Future<List<Operation>> getRecent({int limit = 200}) async {
+    final db = await database;
+    final rows = await db.query('operations', orderBy: 'date DESC', limit: limit);
+    return rows.map(_mapToOp).toList();
+  }
+
+  static Future<List<Operation>> getPage({required int offset, int limit = 200}) async {
+    final db = await database;
+    final rows = await db.query('operations', orderBy: 'date DESC', limit: limit, offset: offset);
     return rows.map(_mapToOp).toList();
   }
 

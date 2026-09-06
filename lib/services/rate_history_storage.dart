@@ -2,28 +2,27 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RateHistoryStorage {
-  static const _prefix = 'rate_';
-
-  static String _key(DateTime date) => '$_prefix${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-
-  static DateTime? _dateFromKey(String key) {
-    if (!key.startsWith(_prefix)) return null;
-    return DateTime.tryParse(key.substring(_prefix.length));
-  }
+  static const _collectionKey = 'easyfinance_rate_history';
 
   static Future<void> saveRates(DateTime date, Map<String, double> rates) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key(date), jsonEncode(rates));
-    _cleanOld(prefs);
+    final raw = prefs.getString(_collectionKey);
+    final Map<String, dynamic> all = raw != null ? jsonDecode(raw) as Map<String, dynamic> : {};
+    final key = _dateKey(date);
+    all[key] = rates;
+    _cleanOld(all);
+    await prefs.setString(_collectionKey, jsonEncode(all));
   }
 
   static Future<Map<String, double>?> getRates(DateTime date) async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key(date));
+    final raw = prefs.getString(_collectionKey);
     if (raw == null) return null;
     try {
-      final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      return decoded.map((k, v) => MapEntry(k, (v as num).toDouble()));
+      final all = jsonDecode(raw) as Map<String, dynamic>;
+      final entry = all[_dateKey(date)];
+      if (entry == null) return null;
+      return (entry as Map<String, dynamic>).map((k, v) => MapEntry(k, (v as num).toDouble()));
     } catch (_) {
       return null;
     }
@@ -40,14 +39,20 @@ class RateHistoryStorage {
     return fallback;
   }
 
-  static Future<void> _cleanOld(SharedPreferences prefs) async {
+  static String _dateKey(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+  static void _cleanOld(Map<String, dynamic> all) {
     final cutoff = DateTime.now().subtract(const Duration(days: 365));
-    final keys = prefs.getKeys().where((k) => k.startsWith(_prefix)).toList();
-    for (final key in keys) {
-      final d = _dateFromKey(key);
-      if (d != null && d.isBefore(cutoff)) {
-        await prefs.remove(key);
+    final cutoffStr = _dateKey(cutoff);
+    final keysToRemove = <String>[];
+    for (final key in all.keys) {
+      if (key.compareTo(cutoffStr) < 0) {
+        keysToRemove.add(key);
       }
+    }
+    for (final key in keysToRemove) {
+      all.remove(key);
     }
   }
 }
