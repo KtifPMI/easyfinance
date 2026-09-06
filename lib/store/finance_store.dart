@@ -24,7 +24,7 @@ import '../store/planned_payment_store.dart';
 import '../utils/format.dart';
 import '../utils/currency_utils.dart';
 
-class FinanceStore extends ChangeNotifier {
+class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   void refresh() => _scheduleNotify();
   final AuthService authService;
   final ApiClient apiClient;
@@ -60,6 +60,7 @@ class FinanceStore extends ChangeNotifier {
   bool _authExpired = false;
   String? _error;
   bool _notifyScheduled = false;
+  bool _dataLoaded = false;
   final Set<String> _changedOpIds = {};
   final Set<String> _deletedOpIds = {};
   Future<void> _cacheReady = Future.value();
@@ -81,6 +82,22 @@ class FinanceStore extends ChangeNotifier {
     _templatesReady = _loadTemplates();
     _loadRecPrefs();
     _loadFormatPrefs();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && authService.isAuthenticated && !_isLoading) {
+      if (!_dataLoaded || _accounts.isEmpty) {
+        fetchAllData();
+      }
+    }
   }
 
   void setPlannedPaymentStore(PlannedPaymentStore store) => _plannedPayments = store;
@@ -448,8 +465,12 @@ class FinanceStore extends ChangeNotifier {
     _trimHistRates();
   }
 
+  bool _fetching = false;
   Future<void> fetchAllData() async {
     if (!authService.isAuthenticated) return;
+    if (_fetching) return;
+    _fetching = true;
+    try {
     await Future.wait([_cacheReady, _templatesReady]);
     final bool hasCache = _accounts.isNotEmpty || _operations.isNotEmpty;
     if (!hasCache) {
@@ -597,6 +618,8 @@ class FinanceStore extends ChangeNotifier {
 
     _useMock = !authService.isAuthenticated;
     _isLoading = false;
+    _dataLoaded = true;
+    _fetching = false;
     await _saveCache();
     _scheduleNotify();
 
@@ -604,6 +627,7 @@ class FinanceStore extends ChangeNotifier {
       await _preloadHistoricalRates();
       if (hasListeners) _scheduleNotify();
     });
+    } catch (_) { _fetching = false; }
   }
 
   Future<void> loadMoreOperations(DateTime from, DateTime to) async {
