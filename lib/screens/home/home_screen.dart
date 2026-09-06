@@ -10,7 +10,6 @@ import '../../components/common/app_logo.dart';
 import '../../store/finance_store.dart';
 import '../../models/financial_event.dart';
 import '../../theme/theme.dart';
-import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/color_utils.dart';
@@ -54,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
             store.refreshGoals();
           });
         }
-        final indicators = calcFinHealth(store.accounts, store.operations, store.budgets, store.rates);
+        final indicators = store.finHealth;
         final accountType = store.currentUser?.accountType ?? 'individual';
 
         return ScreenScaffold(

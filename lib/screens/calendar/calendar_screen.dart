@@ -24,6 +24,8 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   late DateTime _currentMonth;
   DateTime? _selectedDate;
+  List<Operation> _cachedOps = const [];
+  Map<DateTime, List<Operation>> _opsByDate = const {};
 
   @override
   void initState() {
@@ -48,7 +50,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 8, height: 8, decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle)),
+            const SizedBox(width: 8, height: 8, child: DecoratedBox(decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle))),
             const SizedBox(width: 6),
             Text(context.tr('calendar.legend_planned'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
           ],
@@ -56,7 +58,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.danger, shape: BoxShape.circle)),
+            const SizedBox(width: 8, height: 8, child: DecoratedBox(decoration: BoxDecoration(color: AppColors.danger, shape: BoxShape.circle))),
             const SizedBox(width: 6),
             Text(context.tr('calendar.legend_overdue'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
           ],
@@ -64,7 +66,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 8, height: 8, decoration: BoxDecoration(color: AppColors.transfer, shape: BoxShape.circle)),
+            const SizedBox(width: 8, height: 8, child: DecoratedBox(decoration: BoxDecoration(color: AppColors.transfer, shape: BoxShape.circle))),
             const SizedBox(width: 6),
             Text(context.tr('calendar.legend_confirmed'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
           ],
@@ -95,16 +97,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final monthName = context.tr('month.long.${_currentMonth.month}');
         final monthLabel = '${monthName[0].toUpperCase()}${monthName.substring(1)} ${_currentMonth.year}';
 
-        final opsByDate = <DateTime, List<Operation>>{};
-        for (final op in store.operations) {
-          if (op.isDeleted) continue;
-          final d = DateTime.tryParse(op.date.substring(0, 10));
-          if (d != null) {
-            final key = DateTime(d.year, d.month, d.day);
-            opsByDate.putIfAbsent(key, () => []);
-            opsByDate[key]!.add(op);
+        if (!identical(store.operations, _cachedOps)) {
+          _cachedOps = store.operations;
+          final map = <DateTime, List<Operation>>{};
+          for (final op in store.operations) {
+            if (op.isDeleted) continue;
+            final d = DateTime.tryParse(op.date.substring(0, 10));
+            if (d != null) {
+              final key = DateTime(d.year, d.month, d.day);
+              map.putIfAbsent(key, () => []);
+              map[key]!.add(op);
+            }
           }
+          _opsByDate = map;
         }
+        final opsByDate = _opsByDate;
 
         final plannedByDate = <DateTime, List<FinancialEvent>>{};
         for (final e in plannedStore.events) {
@@ -222,23 +229,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
     if (plannedItems.isEmpty && monthOps.isEmpty) {
       return Center(child: Text(context.tr('calendar.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))));
     }
-    return ListView(
-      children: [
-        if (plannedItems.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text('calendar.planned_operations'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
-          ),
-          ...plannedItems.map((m) => _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime)),
-        ],
-        if (monthOps.isNotEmpty) ...[
-          Padding(
+
+    final headerStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context));
+    final hasPlanned = plannedItems.isNotEmpty;
+    final hasOps = monthOps.isNotEmpty;
+    final totalCount = (hasPlanned ? 1 + plannedItems.length : 0) + (hasOps ? 1 + monthOps.length : 0);
+
+    return ListView.builder(
+      itemCount: totalCount,
+      itemBuilder: (context, index) {
+        if (hasPlanned) {
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text('calendar.planned_operations'.tr(), style: headerStyle),
+            );
+          }
+          index--;
+          if (index < plannedItems.length) {
+            final m = plannedItems[index];
+            return _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime);
+          }
+          index -= plannedItems.length;
+        }
+        if (index == 0) {
+          return Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
-            child: Text('calendar.actual_operations'.tr(), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context))),
-          ),
-          ...monthOps.map((op) => _operationTile(context, store, op)),
-        ],
-      ],
+            child: Text('calendar.actual_operations'.tr(), style: headerStyle),
+          );
+        }
+        index--;
+        return _operationTile(context, store, monthOps[index]);
+      },
     );
   }
 

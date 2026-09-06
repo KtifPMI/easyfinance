@@ -11,14 +11,22 @@ class SkeletonLoader extends StatefulWidget {
 }
 
 class _SkeletonLoaderState extends State<SkeletonLoader> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _anim;
+  late final AnimationController _ctrl;
+  late final Animation<double> _anim;
 
   @override
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
     _anim = Tween<double>(begin: -2, end: 2).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  void stop() {
+    _ctrl.stop();
+  }
+
+  void resume() {
+    if (mounted && !_ctrl.isAnimating) _ctrl.repeat();
   }
 
   @override

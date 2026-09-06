@@ -51,11 +51,17 @@ class _CategoryPickerWidget extends StatefulWidget {
 class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
   String _search = '';
   String _typeFilter = '';
+  Map<String, int> _usageCountsCache = {};
 
   @override
   void initState() {
     super.initState();
     _typeFilter = widget.type ?? 'expense';
+    final counts = <String, int>{};
+    for (final op in widget.store.operations.where((o) => !o.isDeleted)) {
+      if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
+    }
+    _usageCountsCache = counts;
   }
 
   List<dynamic> _filteredCategories() {
@@ -85,7 +91,7 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
   Widget build(BuildContext context) {
     final filtered = _filteredCategories();
     final searching = _search.isNotEmpty;
-    final counts = _usageCounts();
+    final counts = _usageCountsCache;
 
     Widget sectionHeader(String text) => Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),

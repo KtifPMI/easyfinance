@@ -28,6 +28,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
   String _chartType = 'pie';
   String _incomeChartType = 'pie';
   String? _preset;
+  List<String> _trendLabels = [];
+  List<double> _trendExpense = [];
+  List<double> _trendIncome = [];
+  List<double> _trendNet = [];
+  List<dynamic>? _cachedTrendOps;
+  DateTime? _cachedTrendMonth;
+  DateTime? _cachedTrendFrom;
+  DateTime? _cachedTrendTo;
 
   @override
   void initState() {
@@ -95,10 +103,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
         }
         final monthIncome = opsInMonth.where((o) => o.type == 'income').fold<double>(0, (s, o) => s + amtRub(o));
         final monthExpense = opsInMonth.where((o) => o.type == 'expense').fold<double>(0, (s, o) => s + amtRub(o));
+        final catAmounts = <String, double>{};
+        final incomeCatAmounts = <String, double>{};
+        for (final o in opsInMonth) {
+          final amt = amtRub(o);
+          if (o.type == 'expense' && o.categoryId != null) {
+            catAmounts[o.categoryId!] = (catAmounts[o.categoryId!] ?? 0) + amt;
+          } else if (o.type == 'income' && o.categoryId != null) {
+            incomeCatAmounts[o.categoryId!] = (incomeCatAmounts[o.categoryId!] ?? 0) + amt;
+          }
+        }
+
         final catTotals = store.categories
-            .where((c) => c.type == 'expense')
-            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + amtRub(o))))
-            .where((e) => e.total > 0)
+            .where((c) => c.type == 'expense' && (catAmounts[c.id] ?? 0) > 0)
+            .map((c) => (category: c, total: catAmounts[c.id]!))
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));
 
@@ -113,9 +131,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
         }
 
         final incomeCatTotals = store.categories
-            .where((c) => c.type == 'income')
-            .map((c) => (category: c, total: opsInMonth.where((o) => o.categoryId == c.id).fold<double>(0, (s, o) => s + amtRub(o))))
-            .where((e) => e.total > 0)
+            .where((c) => c.type == 'income' && (incomeCatAmounts[c.id] ?? 0) > 0)
+            .map((c) => (category: c, total: incomeCatAmounts[c.id]!))
             .toList()
           ..sort((a, b) => b.total.compareTo(a.total));
 
@@ -388,20 +405,52 @@ class _ReportsScreenState extends State<ReportsScreen> {
         months.add(DateTime(selectedMonth.year, selectedMonth.month - i, 1));
       }
     }
-    final activeOps = store.operations.where((o) => !o.isDeleted).toList();
-    for (final m in months) {
-      final ops = activeOps.where((o) => store.isInMonth(o.date, m)).toList();
-      double amtRub(o) {
-        final acc = store.getAccount(o.accountId);
-        return CurrencyRateService.convert(o.amount, acc?.currency ?? o.currency, 'RUB', store.rates);
-      }
-      final inc = ops.where((o) => o.type == 'income').fold(0.0, (s, o) => s + amtRub(o));
-      final exp = ops.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + amtRub(o));
-      labels.add(context.tr('month.short.${m.month}'));
-      income.add(inc);
-      expense.add(exp);
-      net.add(inc - exp);
+    double amtRub(o) {
+      final acc = store.getAccount(o.accountId);
+      return CurrencyRateService.convert(o.amount, acc?.currency ?? o.currency, 'RUB', store.rates);
     }
+
+    if (!identical(_cachedTrendOps, store.operations) ||
+        _cachedTrendMonth != selectedMonth ||
+        _cachedTrendFrom != customFrom ||
+        _cachedTrendTo != customTo) {
+      _cachedTrendOps = store.operations;
+      _cachedTrendMonth = selectedMonth;
+      _cachedTrendFrom = customFrom;
+      _cachedTrendTo = customTo;
+
+      final monthlyData = <String, (double, double)>{};
+      for (final o in store.operations.where((o) => !o.isDeleted)) {
+        final d = DateTime.tryParse(o.date);
+        if (d == null) continue;
+        final key = '${d.year}-${d.month}';
+        final current = monthlyData[key] ?? (0.0, 0.0);
+        final amt = amtRub(o);
+        if (o.type == 'income') {
+          monthlyData[key] = (current.$1 + amt, current.$2);
+        } else {
+          monthlyData[key] = (current.$1, current.$2 + amt);
+        }
+      }
+
+      _trendLabels = [];
+      _trendExpense = [];
+      _trendIncome = [];
+      _trendNet = [];
+      for (final m in months) {
+        final key = '${m.year}-${m.month}';
+        final data = monthlyData[key] ?? (0.0, 0.0);
+        _trendLabels.add(context.tr('month.short.${m.month}'));
+        _trendIncome.add(data.$1);
+        _trendExpense.add(data.$2);
+        _trendNet.add(data.$1 - data.$2);
+      }
+    }
+
+    labels.addAll(_trendLabels);
+    expense.addAll(_trendExpense);
+    income.addAll(_trendIncome);
+    net.addAll(_trendNet);
     final expenseColor = AppColors.expense;
     final incomeColor = AppColors.income;
     final netColor = AppColors.transfer;
@@ -610,13 +659,20 @@ class _ComboChartPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ComboChartPainter old) =>
-      old.labels != labels ||
-      old.expense != expense ||
-      old.income != income ||
-      old.net != net ||
-      old.expenseColor != expenseColor ||
-      old.incomeColor != incomeColor ||
-      old.netColor != netColor ||
-      old.textColor != textColor;
+  bool shouldRepaint(covariant _ComboChartPainter old) {
+    if (old.labels.length != labels.length ||
+        old.expense.length != expense.length ||
+        old.income.length != income.length ||
+        old.net.length != net.length) return true;
+    for (int i = 0; i < labels.length; i++) {
+      if (old.labels[i] != labels[i] ||
+          old.expense[i] != expense[i] ||
+          old.income[i] != income[i] ||
+          old.net[i] != net[i]) return true;
+    }
+    return old.expenseColor != expenseColor ||
+        old.incomeColor != incomeColor ||
+        old.netColor != netColor ||
+        old.textColor != textColor;
+  }
 }

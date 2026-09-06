@@ -132,6 +132,12 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         }
 
         final grouped = groupByDay(ops);
+        final items = <dynamic>[
+          for (final entry in grouped) ...[
+            _DayHeader(entry.key),
+            for (final op in entry.value) _OpItem(op),
+          ],
+        ];
 
         return Stack(
           children: [
@@ -198,7 +204,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           _sortByInputTime = false;
                           _sortByUpdated = false;
                         }),
-                        child: Text(context.tr('filters.reset'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                        child: Text(context.tr('filters.reset'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
                       ),
                     ],
                   ),
@@ -234,50 +240,53 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               else if (_sortByInputTime || _sortByUpdated)
                 _buildFlatList(context, store, ops)
               else
-                ...grouped.map((entry) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12, bottom: 4),
-                      child: Text(formatDayLabel(entry.key, context), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(12)),
-                      child: Column(
-                        children: entry.value.map((op) {
-                          final cat = store.getCategory(op.categoryId);
-                          final acc = store.getAccount(op.accountId);
-                          final toAcc = store.getAccount(op.toAccountId);
-                          final IconData iconData;
-                          final Color iconColor;
-                          if (op.type == 'transfer') {
-                            iconData = Icons.swap_horiz;
-                            iconColor = AppColors.transfer;
-                          } else {
-                            iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
-                            iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
-                          }
-                          final title = op.type == 'transfer'
-                              ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
-                              : tCat(context, cat?.name ?? context.tr('operations.no_category'));
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: items.length,
+                    itemBuilder: (context, i) {
+                      final item = items[i];
+                      if (item is _DayHeader) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
+                          child: Text(item.label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        );
+                      }
+                      final op = (item as _OpItem).op;
+                      final cat = store.getCategory(op.categoryId);
+                      final acc = store.getAccount(op.accountId);
+                      final toAcc = store.getAccount(op.toAccountId);
+                      final IconData iconData;
+                      final Color iconColor;
+                      if (op.type == 'transfer') {
+                        iconData = Icons.swap_horiz;
+                        iconColor = AppColors.transfer;
+                      } else {
+                        iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
+                        iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
+                      }
+                      final title = op.type == 'transfer'
+                          ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
+                          : tCat(context, cat?.name ?? context.tr('operations.no_category'));
 
-                          return OperationListItem(
-                            title: title,
-                            subtitle: op.comment ?? acc?.name ?? '',
-                            tags: store.getTagsForOperation(op),
-                            formattedAmount: store.fmtOps(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
-                            type: op.type,
-                            icon: iconData,
-                            iconColor: iconColor,
-                            onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-                            isPending: op.isPending,
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                )),
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        child: OperationListItem(
+                          key: ValueKey(op.id),
+                          title: title,
+                          subtitle: op.comment ?? acc?.name ?? '',
+                          tags: store.getTagsForOperation(op),
+                          formattedAmount: store.fmtOps(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
+                          type: op.type,
+                          icon: iconData,
+                          iconColor: iconColor,
+                          onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+                          isPending: op.isPending,
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ),
@@ -322,6 +331,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
               : tCat(context, cat?.name ?? context.tr('operations.no_category'));
           return OperationListItem(
+            key: ValueKey(op.id),
             title: title,
             subtitle: op.comment ?? acc?.name ?? '',
             tags: store.getTagsForOperation(op),
@@ -709,4 +719,14 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
     const map = {'cash': Icons.money, 'credit_card': Icons.credit_card, 'savings': Icons.savings, 'account_balance': Icons.account_balance, 'wallet': Icons.account_balance_wallet, 'payments': Icons.payments, 'currency_ruble': Icons.currency_ruble, 'card_giftcard': Icons.card_giftcard};
     return map[icon] ?? Icons.account_balance_wallet;
   }
+}
+
+class _DayHeader {
+  final String label;
+  const _DayHeader(this.label);
+}
+
+class _OpItem {
+  final dynamic op;
+  const _OpItem(this.op);
 }

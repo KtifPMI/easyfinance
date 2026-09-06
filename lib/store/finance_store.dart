@@ -24,6 +24,7 @@ import '../services/rate_history_storage.dart';
 import '../store/planned_payment_store.dart';
 import '../utils/format.dart';
 import '../utils/currency_utils.dart';
+import '../utils/calc.dart';
 
 class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   void refresh() => _scheduleNotify();
@@ -74,6 +75,21 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   double _cachedMonthExpense = 0;
   List<Operation>? _cachedFilteredOps;
   bool _opsDirty = true;
+  final Map<String, List<String>> _tagsCache = {};
+  Map<String, cat.Category> _catById = {};
+  Map<String, Account> _accountById = {};
+  List<Operation>? _cachedCurOps;
+  List<Operation>? _cachedPrevOps;
+  FinHealthIndicators? _cachedFinHealth;
+
+  void _rebuildLookups() {
+    _catById = {for (final c in _categories) c.id: c};
+    _accountById = {for (final a in _accounts) a.id: a};
+    _tagsCache.clear();
+    _cachedCurOps = null;
+    _cachedPrevOps = null;
+    _cachedFinHealth = null;
+  }
 
   FinanceStore({required this.authService, required this.apiClient, PlannedPaymentStore? plannedPayments})
       : _plannedPayments = plannedPayments {
@@ -183,6 +199,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         if (ratesAtRaw != null) _ratesUpdatedAt = DateTime.tryParse(ratesAtRaw);
       } catch (_) {}
     }
+    _rebuildLookups();
     _recalcCachedTotals();
     _balanceLoaded = true;
     _scheduleNotify();
@@ -398,6 +415,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   double get moneyBalance => _cachedMoneyBalance;
   bool get balanceLoaded => _balanceLoaded;
 
+  FinHealthIndicators get finHealth => _cachedFinHealth ??= calcFinHealth(_accounts, _operations, _budgets, _rates);
+
   double accountActualBalance(Account a) {
     if (_allOperationsLoaded) {
       double sum = a.initBalance;
@@ -612,6 +631,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       if (!existingGoalIds.contains(g.id)) { _goals.add(g); existingGoalIds.add(g.id); }
     }
 
+    _rebuildLookups();
     _recalcBudgetSpent();
     _recalcAccountBalances();
     _recalcCachedTotals();
@@ -727,13 +747,20 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final prevMonthStart = DateTime(now.year, now.month - 1, 1);
     final prevMonthEnd = DateTime(now.year, now.month, 0);
 
-    bool inRange(Operation o, DateTime start, DateTime end) {
-      final d = DateTime.tryParse(o.date);
-      return d != null && !d.isBefore(start) && !d.isAfter(end);
+    if (_cachedCurOps == null) {
+      _cachedCurOps = _operations.where((o) {
+        final d = DateTime.tryParse(o.date);
+        return d != null && !d.isBefore(monthStart) && !d.isAfter(monthEnd);
+      }).toList();
     }
-
-    final curOps = _operations.where((o) => inRange(o, monthStart, monthEnd)).toList();
-    final prevOps = _operations.where((o) => inRange(o, prevMonthStart, prevMonthEnd)).toList();
+    if (_cachedPrevOps == null) {
+      _cachedPrevOps = _operations.where((o) {
+        final d = DateTime.tryParse(o.date);
+        return d != null && !d.isBefore(prevMonthStart) && !d.isAfter(prevMonthEnd);
+      }).toList();
+    }
+    final curOps = _cachedCurOps!;
+    final prevOps = _cachedPrevOps!;
 
     final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + _amountInRub(o));
     final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
@@ -751,7 +778,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
     // 1 — budget overspent or near limit
     for (final b in _budgets.where((b) => !b.isDeleted)) {
-      final cat = _categories.where((c) => c.id == b.categoryId).firstOrNull;
+      final cat = _catById[b.categoryId];
       final name = cat?.name ?? b.name ?? '';
       if (b.spent > b.limit) {
         _recommendations.add(Recommendation(
@@ -783,7 +810,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       double diningTotal = 0;
       int diningCount = 0;
       for (final o in curOps.where((o) => o.type == 'expense' && foodCats.contains(o.categoryId))) {
-        final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
+        final cat = _catById[o.categoryId];
         final amt = _amountInRub(o);
         if (cat != null && (cat.name.contains('кафе') || cat.name.contains('ресторан') || cat.name.contains('cafe') || cat.name.contains('restaurant'))) {
           diningTotal += amt;
@@ -832,7 +859,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final sortedCats = topSpend.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
     for (final entry in sortedCats.take(3)) {
       if (!budgetedCats.contains(entry.key)) {
-        final cat = _categories.where((c) => c.id == entry.key).firstOrNull;
+        final cat = _catById[entry.key];
         if (cat != null && entry.value > _recPrefs.noBudgetMinSpend) {
           _recommendations.add(Recommendation(
             id: 'no_budget_${entry.key}', type: 'optimization', severity: 'medium',
@@ -901,12 +928,12 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     // 6 — biggest expense categories
     if (monthExpense > 0) {
       final topCatList = sortedCats.take(5).where((e) {
-        final cat = _categories.where((c) => c.id == e.key).firstOrNull;
+        final cat = _catById[e.key];
         return cat != null && e.value > monthExpense * _recPrefs.topCatMinPct / 100;
       }).toList();
       if (topCatList.length >= 2) {
         final parts = topCatList.map((e) {
-          final cat = _categories.where((c) => c.id == e.key).firstOrNull;
+          final cat = _catById[e.key];
           final p = (e.value / monthExpense * 100).round();
           return '${cat?.name ?? e.key} ${fmt(e.value)} ₽ ($p%)';
         }).join(', ');
@@ -1002,7 +1029,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     for (final entry in catExpenses.entries) {
       final curTotal = entry.value.fold(0.0, (s, v) => s + v);
-      final cat3m = _categories.where((c) => c.id == entry.key).firstOrNull;
+      final cat3m = _catById[entry.key];
       if (cat3m == null || curTotal < 500) continue;
       final prevTotals = <double>[];
       for (int m = 1; m <= 3; m++) {
@@ -1050,7 +1077,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     if (subCats.isNotEmpty) {
       final catNames = subCats.map((id) {
-        final c = _categories.where((cat) => cat.id == id).firstOrNull;
+        final c = _catById[id];
         return c?.name ?? id;
       }).join(', ');
       final totalSub = subCats.fold(0.0, (s, id) {
@@ -1070,7 +1097,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       final top = sortedCats.first;
       final topPct = top.value / monthExpense * 100;
       if (topPct > _recPrefs.singleCatDominancePct) {
-        final catName = _categories.where((c) => c.id == top.key).firstOrNull?.name ?? top.key;
+        final catName = _catById[top.key]?.name ?? top.key;
         _recommendations.add(Recommendation(
           id: 'dominant_${top.key}', type: 'optimization', severity: 'medium',
           title: '«$catName» — ${topPct.round()}% расходов',
@@ -1104,7 +1131,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     for (final o in curOps.where((o) => o.type == 'expense')) {
       final convertedAmt = _amountInRub(o);
       if (convertedAmt > _recPrefs.largeCashMin) {
-        final cat = _categories.where((c) => c.id == o.categoryId).firstOrNull;
+        final cat = _catById[o.categoryId];
         final name = cat?.name ?? 'Без категории';
         _recommendations.add(Recommendation(
           id: 'large_cash_${o.id}', type: 'risk', severity: 'medium',
@@ -1882,10 +1909,20 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _recalcBudgetSpent() {
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, 1);
+    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final catSpent = <String, double>{};
+    for (final o in _operations) {
+      if (o.isDeleted || o.type != 'expense' || o.categoryId == null) continue;
+      if (_inPeriod(o.date, start, end)) {
+        catSpent[o.categoryId!] = (catSpent[o.categoryId!] ?? 0) + o.amount;
+      }
+    }
     for (var i = 0; i < _budgets.length; i++) {
       final b = _budgets[i];
       if (b.isDeleted) continue;
-      final spent = _calcSpentForMonth(b.categoryId);
+      final spent = catSpent[b.categoryId] ?? 0.0;
       if ((spent - b.spent).abs() > 0.01) {
         _budgets[i] = b.copyWith(spent: spent);
       }
@@ -1902,31 +1939,33 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
   void _recalcAccountBalances() {
     if (!_allOperationsLoaded) return;
-    for (var i = 0; i < _accounts.length; i++) {
-      final a = _accounts[i];
-      double balance = a.initBalance;
-      for (final op in _operations.where((o) => !o.isDeleted)) {
-        if (op.type == 'expense' && op.accountId == a.id) {
-          balance -= op.amount;
-        } else if (op.type == 'income' && op.accountId == a.id) {
-          balance += op.amount;
-        } else if (op.type == 'transfer') {
-          if (op.accountId == a.id) {
-            balance -= op.amount;
-          }
-          if (op.toAccountId == a.id) {
-            if (op.transferAmount != null && op.transferAmount! > 0) {
-              balance += op.transferAmount!;
-            } else {
-              final src = getAccount(op.accountId);
-              final converted = src != null && src.currency != a.currency
-                  ? CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op))
-                  : op.amount;
-              balance += converted;
-            }
-          }
+    final balances = <String, double>{};
+    for (final a in _accounts) {
+      balances[a.id] = a.initBalance;
+    }
+    for (final op in _operations) {
+      if (op.isDeleted) continue;
+      if (op.type == 'expense') {
+        balances[op.accountId] = (balances[op.accountId] ?? 0) - op.amount;
+      } else if (op.type == 'income') {
+        balances[op.accountId] = (balances[op.accountId] ?? 0) + op.amount;
+      } else if (op.type == 'transfer') {
+        balances[op.accountId] = (balances[op.accountId] ?? 0) - op.amount;
+        final dstCurrency = _accountById[op.toAccountId]?.currency;
+        final srcCurrency = _accountById[op.accountId]?.currency;
+        if (op.transferAmount != null && op.transferAmount! > 0) {
+          balances[op.toAccountId] = (balances[op.toAccountId] ?? 0) + op.transferAmount!;
+        } else if (dstCurrency != null && srcCurrency != null && srcCurrency != dstCurrency) {
+          final converted = CurrencyRateService.convert(op.amount, srcCurrency, dstCurrency, _ratesForOp(op));
+          balances[op.toAccountId] = (balances[op.toAccountId] ?? 0) + converted;
+        } else {
+          balances[op.toAccountId] = (balances[op.toAccountId] ?? 0) + op.amount;
         }
       }
+    }
+    for (var i = 0; i < _accounts.length; i++) {
+      final a = _accounts[i];
+      final balance = balances[a.id] ?? a.initBalance;
       if ((balance - a.balance).abs() > 0.01) {
         _accounts[i] = a.copyWith(balance: balance);
       }
@@ -2690,18 +2729,25 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   List<String> getTagsForOperation(Operation op) {
+    final cached = _tagsCache[op.id];
+    if (cached != null) return cached;
     final raw = op.tags;
-    if (raw == null || raw.isEmpty) return [];
+    if (raw == null || raw.isEmpty) { _tagsCache[op.id] = const []; return const []; }
     final s = raw.trim();
+    List<String> result;
     if (s.startsWith('[')) {
       try {
         final decoded = jsonDecode(s);
         if (decoded is List) {
-          return decoded.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
+          result = decoded.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
+          _tagsCache[op.id] = result;
+          return result;
         }
       } catch (_) {}
     }
-    return s.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    result = s.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    _tagsCache[op.id] = result;
+    return result;
   }
 
   /// All tags: server catalog (tags.get) merged with tag names used directly on operations.
