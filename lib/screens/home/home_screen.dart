@@ -10,6 +10,7 @@ import '../../components/common/app_logo.dart';
 import '../../store/finance_store.dart';
 import '../../models/financial_event.dart';
 import '../../theme/theme.dart';
+import '../../utils/calc.dart';
 import '../../utils/format.dart';
 import '../../utils/currency_utils.dart';
 import '../../utils/color_utils.dart';

@@ -79,14 +79,6 @@ class _CategoryPickerWidgetState extends State<_CategoryPickerWidget> {
     return cats;
   }
 
-  Map<String, int> _usageCounts() {
-    final counts = <String, int>{};
-    for (final op in widget.store.operations.where((o) => !o.isDeleted)) {
-      if (op.categoryId != null) counts[op.categoryId!] = (counts[op.categoryId!] ?? 0) + 1;
-    }
-    return counts;
-  }
-
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredCategories();
