@@ -240,8 +240,9 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               else if (_sortByInputTime || _sortByUpdated)
                 _buildFlatList(context, store, ops)
               else
-                Expanded(
-                  child: ListView.builder(
+                ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.only(bottom: 80),
                     itemCount: items.length,
                     itemBuilder: (context, i) {
@@ -286,7 +287,6 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       );
                     },
                   ),
-                ),
             ],
           ),
         ),
