@@ -1,7 +1,7 @@
 name: easyfinance_app
 description: EasyFinance - personal finance management app
 publish_to: 'none'
-version: 1.41.41+200
+version: 1.41.42+201
 
 environment:
   sdk: '>=3.1.0 <4.0.0'
