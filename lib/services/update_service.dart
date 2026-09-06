@@ -23,6 +23,7 @@ class UpdateService {
 
   static const _cacheKey = 'update_cache_v1';
   static const _pendingKey = 'update_pending_download';
+  static const _pendingVersionKey = 'update_pending_version';
   static const _ttl = Duration(minutes: 15);
 
   static bool _downloading = false;
@@ -43,12 +44,14 @@ class UpdateService {
         }
         if (newer) return cached;
         await _writeCache(null);
+        await _cleanupApk();
         return null;
       }
     }
     try {
       final result = await _fetch();
       await _writeCache(result);
+      if (result == null) await _cleanupApk();
       return result;
     } catch (_) {
       rethrow;
@@ -146,13 +149,24 @@ class UpdateService {
     return l.length > c.length;
   }
 
-  static Future<void> _savePendingUrl(String? url) async {
+  static Future<void> _cleanupApk() async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/easyfinance.apk');
+      if (await file.exists()) await file.delete();
+      await _savePendingUrl(null);
+    } catch (_) {}
+  }
+
+  static Future<void> _savePendingUrl(String? url, {String? version}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       if (url == null) {
         await prefs.remove(_pendingKey);
+        await prefs.remove(_pendingVersionKey);
       } else {
         await prefs.setString(_pendingKey, url);
+        if (version != null) await prefs.setString(_pendingVersionKey, version);
       }
     } catch (_) {}
   }
@@ -166,22 +180,46 @@ class UpdateService {
     }
   }
 
+  static Future<bool> _isApkNewerThanCurrent() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pendingVersion = prefs.getString(_pendingVersionKey);
+      if (pendingVersion == null) return false;
+      final info = await PackageInfo.fromPlatform();
+      final currentBuild = int.tryParse(info.buildNumber) ?? 0;
+      final tagParts = pendingVersion.split('+');
+      final pendingBuild = tagParts.length > 1 ? (int.tryParse(tagParts.last) ?? 0) : 0;
+      if (pendingBuild > 0 && currentBuild > 0) return pendingBuild > currentBuild;
+      return _isNewer(tagParts.first, info.version.split('+').first);
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<void> resumeIfNeeded(BuildContext context) async {
     if (_downloading) return;
     final url = await _getPendingUrl();
     if (url != null) {
-      _downloadWithProgress(context, url);
+      final prefs = await SharedPreferences.getInstance();
+      final version = prefs.getString(_pendingVersionKey);
+      _downloadWithProgress(context, url, version: version);
       return;
     }
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/easyfinance.apk');
-    if (await file.exists() && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr('update.apk_ready')),
-          action: SnackBarAction(label: context.tr('update.install'), onPressed: () => OpenFilex.open(file.path)),
-        ),
-      );
+    if (await file.exists()) {
+      if (!await _isApkNewerThanCurrent()) {
+        await _cleanupApk();
+        return;
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr('update.apk_ready')),
+            action: SnackBarAction(label: context.tr('update.install'), onPressed: () => OpenFilex.open(file.path)),
+          ),
+        );
+      }
     }
   }
 
@@ -273,7 +311,7 @@ class UpdateService {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              _downloadWithProgress(context, info.downloadUrl);
+              _downloadWithProgress(context, info.downloadUrl, version: info.version);
             },
             child: Text(context.tr('update.update_now')),
           ),
@@ -282,10 +320,10 @@ class UpdateService {
     );
   }
 
-  static void _downloadWithProgress(BuildContext context, String url) async {
+  static void _downloadWithProgress(BuildContext context, String url, {String? version}) async {
     if (_downloading) return;
     _downloading = true;
-    await _savePendingUrl(url);
+    await _savePendingUrl(url, version: version);
     double progress = 0;
     StateSetter? setDialogState;
     showDialog(
