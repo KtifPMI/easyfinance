@@ -588,6 +588,7 @@
   "update.later": "Después",
   "update.update_now": "Actualizar",
   "update.apk_ready": "APK descargado, abriendo instalador...",
+  "update.install": "Instalar",
   "update.error": "Error al descargar actualización",
   "account.account_type": "Cuenta",
   "account.card_type": "Tarjeta",

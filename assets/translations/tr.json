@@ -577,6 +577,7 @@
   "update.later": "Sonra",
   "update.update_now": "Güncelle",
   "update.apk_ready": "APK indirildi, yükleyici açılıyor...",
+  "update.install": "Yükle",
   "update.error": "Güncelleme indirme hatası",
   "account.account_type": "Hesap",
   "account.card_type": "Kart",

@@ -21,7 +21,7 @@ class MainTabs extends StatefulWidget {
   State<MainTabs> createState() => _MainTabsState();
 }
 
-class _MainTabsState extends State<MainTabs> {
+class _MainTabsState extends State<MainTabs> with WidgetsBindingObserver {
   late int _index;
 
   final _screens = const [
@@ -40,10 +40,25 @@ class _MainTabsState extends State<MainTabs> {
   void initState() {
     super.initState();
     _index = widget.initialIndex.clamp(0, _screens.length - 1);
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateService.checkAndShow(context);
+      UpdateService.resumeIfNeeded(context);
       if (mounted) context.read<PlannedPaymentStore>().syncFromServer();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      UpdateService.resumeIfNeeded(context);
+    }
   }
 
   @override

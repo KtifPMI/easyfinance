@@ -729,6 +729,7 @@
   "update.update_now": "Update now",
   "scan.error_recognize": "Could not recognize text. Try another photo.",
   "update.apk_ready": "APK downloaded, opening installer...",
+  "update.install": "Install",
   "account.savings_type": "Savings",
   "budget.edit": "Edit budget",
   "scan.gallery": "Gallery",

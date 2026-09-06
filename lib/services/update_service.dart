@@ -22,7 +22,10 @@ class UpdateService {
   static const _apiUrl = 'https://api.github.com/repos/$_repo/releases/latest';
 
   static const _cacheKey = 'update_cache_v1';
+  static const _pendingKey = 'update_pending_download';
   static const _ttl = Duration(minutes: 15);
+
+  static bool _downloading = false;
 
   static Future<UpdateInfo?> check({bool force = false}) async {
     if (!force) {
@@ -143,18 +146,73 @@ class UpdateService {
     return l.length > c.length;
   }
 
+  static Future<void> _savePendingUrl(String? url) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (url == null) {
+        await prefs.remove(_pendingKey);
+      } else {
+        await prefs.setString(_pendingKey, url);
+      }
+    } catch (_) {}
+  }
+
+  static Future<String?> _getPendingUrl() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_pendingKey);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> resumeIfNeeded(BuildContext context) async {
+    if (_downloading) return;
+    final url = await _getPendingUrl();
+    if (url != null) {
+      _downloadWithProgress(context, url);
+      return;
+    }
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/easyfinance.apk');
+    if (await file.exists() && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.tr('update.apk_ready')),
+          action: SnackBarAction(label: context.tr('update.install'), onPressed: () => OpenFilex.open(file.path)),
+        ),
+      );
+    }
+  }
+
   static Future<void> downloadAndInstall(String url, BuildContext context, {void Function(double)? onProgress}) async {
     final dir = await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/easyfinance.apk');
 
     final client = http.Client();
     try {
-      final request = http.Request('GET', Uri.parse(url));
-      final response = await client.send(request).timeout(const Duration(minutes: 5));
-      final total = (response.contentLength ?? 0).toDouble();
-      int received = 0;
+      int existingBytes = 0;
+      if (await file.exists()) {
+        existingBytes = await file.length();
+      }
 
-      final sink = file.openWrite();
+      final request = http.Request('GET', Uri.parse(url));
+      if (existingBytes > 0) {
+        request.headers['Range'] = 'bytes=$existingBytes-';
+      }
+      final response = await client.send(request).timeout(const Duration(minutes: 5));
+
+      final isPartial = response.statusCode == 206;
+      final total = isPartial
+          ? existingBytes + (response.contentLength ?? 0)
+          : (response.contentLength ?? 0).toDouble();
+
+      if (!isPartial && existingBytes > 0) {
+        await file.delete();
+      }
+
+      final sink = file.openWrite(mode: isPartial ? FileMode.append : FileMode.write);
+      int received = existingBytes;
       await for (final chunk in response.stream) {
         sink.add(chunk);
         received += chunk.length;
@@ -225,6 +283,9 @@ class UpdateService {
   }
 
   static void _downloadWithProgress(BuildContext context, String url) async {
+    if (_downloading) return;
+    _downloading = true;
+    await _savePendingUrl(url);
     double progress = 0;
     StateSetter? setDialogState;
     showDialog(
@@ -257,6 +318,7 @@ class UpdateService {
         progress = p;
         setDialogState?.call(() {});
       });
+      await _savePendingUrl(null);
     } catch (_) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -264,6 +326,7 @@ class UpdateService {
         );
       }
     } finally {
+      _downloading = false;
       if (context.mounted) Navigator.of(context, rootNavigator: true).pop();
     }
   }
