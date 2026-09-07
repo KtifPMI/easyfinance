@@ -689,7 +689,9 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final api = authService.apiService;
     try {
       final allOps = await api.getOperations();
-      _operations = [...allOps, ..._operations.where((o) => !allOps.any((a) => a.id == o.id))];
+      final serverIds = allOps.map((o) => o.id).toSet();
+      final localOnly = _operations.where((o) => !serverIds.contains(o.id) && !o.isDeleted).toList();
+      _operations = [...allOps, ...localOnly];
       _invalidateOpCaches();
       _allOperationsLoaded = true;
       _recalcAccountBalances();

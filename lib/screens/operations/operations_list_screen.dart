@@ -362,49 +362,6 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
 );
   }
 
-  Widget _buildFlatList(BuildContext context, FinanceStore store, List<dynamic> ops) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: AppColors.cardFor(context), borderRadius: BorderRadius.circular(12)),
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: ops.length,
-        itemBuilder: (context, i) {
-          final op = ops[i];
-          final cat = store.getCategory(op.categoryId);
-          final acc = store.getAccount(op.accountId);
-          final toAcc = store.getAccount(op.toAccountId);
-          final IconData iconData;
-          final Color iconColor;
-          if (op.type == 'transfer') {
-            iconData = Icons.swap_horiz;
-            iconColor = AppColors.transfer;
-          } else {
-            iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
-            iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
-          }
-          final title = op.type == 'transfer'
-              ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
-              : tCat(context, cat?.name ?? context.tr('operations.no_category'));
-          return OperationListItem(
-            key: ValueKey(op.id),
-            title: title,
-            subtitle: op.comment ?? acc?.name ?? '',
-            tags: store.getTagsForOperation(op),
-            formattedAmount: store.fmtOps(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
-            type: op.type,
-            icon: iconData,
-            iconColor: iconColor,
-            onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-            isPending: op.isPending,
-          );
-        },
-      ),
-    );
-  }
-
   void _showAccountPicker(BuildContext context, FinanceStore store, void Function(void Function()) setSheetState) {
     final searchCtrl = TextEditingController();
     showModalBottomSheet(
