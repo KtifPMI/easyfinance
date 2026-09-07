@@ -53,6 +53,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   String _displayCurrency = 'RUB';
   BudgetInfo? _serverBudget;
   bool _isLoading = false;
+  bool _loadingAllOps = false;
   bool _balanceLoaded = false;
   bool _allOperationsLoaded = false;
   bool _useMock = true;
@@ -294,6 +295,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
   bool get isAuthenticated => authService.isAuthenticated;
   bool get allOperationsLoaded => _allOperationsLoaded;
+  bool get loadingAllOps => _loadingAllOps;
   User? get currentUser => _currentUser;
   List<Account> get accounts => _accounts;
   List<Operation> get operations {
@@ -681,7 +683,9 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> loadAllOperations() async {
-    if (!authService.isAuthenticated || _allOperationsLoaded) return;
+    if (!authService.isAuthenticated || _allOperationsLoaded || _loadingAllOps) return;
+    _loadingAllOps = true;
+    _scheduleNotify();
     final api = authService.apiService;
     try {
       final allOps = await api.getOperations();
@@ -693,9 +697,11 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       _recalcCachedTotals();
       _generateRecommendations();
       await _saveCache();
-      _scheduleNotify();
     } catch (e) {
       debugPrint('loadAllOperations error: $e');
+    } finally {
+      _loadingAllOps = false;
+      _scheduleNotify();
     }
   }
 

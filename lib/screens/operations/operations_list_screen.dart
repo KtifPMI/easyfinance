@@ -142,6 +142,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
         return Stack(
           children: [
             ScreenScaffold(
+              scrollable: false,
               title: context.tr('operations.title'),
               showBackButton: widget.showBackButton,
               actions: [
@@ -153,143 +154,200 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                   tooltip: context.tr('filters.advanced_filter'),
                 ),
               ],
-              onRefresh: () => store.fetchAllData(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  ChoiceChip(
-                    label: Text(context.tr('operations.sort_date')),
-                    selected: !_sortByUpdated,
-                    onSelected: (_) => setState(() => _sortByUpdated = false),
-                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.update, size: 16, color: _sortByUpdated ? AppColors.primary : AppColors.textSecondaryFor(context)),
-                        const SizedBox(width: 4),
-                        Text(context.tr('operations.sort_updated')),
-                      ],
+              child: RefreshIndicator(
+                onRefresh: () => store.fetchAllData(),
+                child: CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ScreenHint(hintId: 'operations', text: context.tr('hints.operations')),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                ChoiceChip(
+                                  label: Text(context.tr('operations.sort_date')),
+                                  selected: !_sortByUpdated,
+                                  onSelected: (_) => setState(() => _sortByUpdated = false),
+                                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                                ),
+                                const SizedBox(width: 8),
+                                ChoiceChip(
+                                  label: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.update, size: 16, color: _sortByUpdated ? AppColors.primary : AppColors.textSecondaryFor(context)),
+                                      const SizedBox(width: 4),
+                                      Text(context.tr('operations.sort_updated')),
+                                    ],
+                                  ),
+                                  selected: _sortByUpdated,
+                                  onSelected: (_) => setState(() => _sortByUpdated = true),
+                                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            if (_hasAdvFilter || _reportCategoryId != null)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        ops.isEmpty
+                                            ? context.tr('filters.no_results')
+                                            : context.tr('filters.count', namedArgs: {'count': ops.length.toString()}),
+                                        style: TextStyle(fontSize: 14, color: ops.isEmpty ? AppColors.warning : AppColors.textSecondaryFor(context)),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () => setState(() {
+                                        _resetAdvFilter();
+                                        _reportCategoryId = null;
+                                        _sortByInputTime = false;
+                                        _sortByUpdated = false;
+                                      }),
+                                      child: Text(context.tr('filters.reset'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (!store.allOperationsLoaded && !_hasAdvFilter && _reportCategoryId == null)
+                              Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 4),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  children: [
+                                    if (store.loadingAllOps)
+                                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                                    else
+                                      Icon(Icons.info_outline, size: 16, color: AppColors.primary),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        context.tr('operations.load_all_hint'),
+                                        style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textFor(context)),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: store.loadingAllOps ? null : () => store.loadAllOperations(),
+                                      child: store.loadingAllOps
+                                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                                          : Text(context.tr('operations.load_all')),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
-                    selected: _sortByUpdated,
-                    onSelected: (_) => setState(() => _sortByUpdated = true),
-                    selectedColor: AppColors.primary.withValues(alpha: 0.15),
-                  ),
-                ],
+                    if (ops.isEmpty && !_hasAdvFilter && _reportCategoryId == null)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context))))),
+                      )
+                    else ...[
+                      if (_sortByInputTime || _sortByUpdated)
+                        SliverPadding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          sliver: SliverList.builder(
+                            itemCount: ops.length,
+                            itemBuilder: (context, i) {
+                              final op = ops[i];
+                              final cat = store.getCategory(op.categoryId);
+                              final acc = store.getAccount(op.accountId);
+                              final toAcc = store.getAccount(op.toAccountId);
+                              final IconData iconData;
+                              final Color iconColor;
+                              if (op.type == 'transfer') {
+                                iconData = Icons.swap_horiz;
+                                iconColor = AppColors.transfer;
+                              } else {
+                                iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
+                                iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
+                              }
+                              final title = op.type == 'transfer'
+                                  ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
+                                  : tCat(context, cat?.name ?? context.tr('operations.no_category'));
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 2),
+                                child: OperationListItem(
+                                  key: ValueKey(op.id),
+                                  title: title,
+                                  subtitle: op.comment ?? acc?.name ?? '',
+                                  tags: store.getTagsForOperation(op),
+                                  formattedAmount: store.fmtOps(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
+                                  type: op.type,
+                                  icon: iconData,
+                                  iconColor: iconColor,
+                                  onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+                                  isPending: op.isPending,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      else
+                        SliverList.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, i) {
+                            final item = items[i];
+                            if (item is _DayHeader) {
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
+                                child: Text(item.label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                              );
+                            }
+                            final op = (item as _OpItem).op;
+                            final cat = store.getCategory(op.categoryId);
+                            final acc = store.getAccount(op.accountId);
+                            final toAcc = store.getAccount(op.toAccountId);
+                            final IconData iconData;
+                            final Color iconColor;
+                            if (op.type == 'transfer') {
+                              iconData = Icons.swap_horiz;
+                              iconColor = AppColors.transfer;
+                            } else {
+                              iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
+                              iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
+                            }
+                            final title = op.type == 'transfer'
+                                ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
+                                : tCat(context, cat?.name ?? context.tr('operations.no_category'));
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 12),
+                              child: OperationListItem(
+                                key: ValueKey(op.id),
+                                title: title,
+                                subtitle: op.comment ?? acc?.name ?? '',
+                                tags: store.getTagsForOperation(op),
+                                formattedAmount: store.fmtOps(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
+                                type: op.type,
+                                icon: iconData,
+                                iconColor: iconColor,
+                                onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
+                                isPending: op.isPending,
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                    const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              if (_hasAdvFilter || _reportCategoryId != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          ops.isEmpty
-                              ? context.tr('filters.no_results')
-                              : context.tr('filters.count', namedArgs: {'count': ops.length.toString()}),
-                          style: TextStyle(fontSize: 14, color: ops.isEmpty ? AppColors.warning : AppColors.textSecondaryFor(context)),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          _resetAdvFilter();
-                          _reportCategoryId = null;
-                          _sortByInputTime = false;
-                          _sortByUpdated = false;
-                        }),
-                        child: Text(context.tr('filters.reset'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
-                      ),
-                    ],
-                  ),
-                ),
-              if (!store.allOperationsLoaded && !_hasAdvFilter && _reportCategoryId == null)
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, size: 16, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          context.tr('operations.load_all_hint'),
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textFor(context)),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => store.loadAllOperations(),
-                        child: Text(context.tr('operations.load_all')),
-                      ),
-                    ],
-                  ),
-                ),
-              if (ops.isEmpty && !_hasAdvFilter && _reportCategoryId == null)
-                Center(child: Padding(padding: const EdgeInsets.all(40), child: Text(context.tr('operations.empty'), style: TextStyle(color: AppColors.textSecondaryFor(context)))))
-              else if (_sortByInputTime || _sortByUpdated)
-                _buildFlatList(context, store, ops)
-              else
-                ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(bottom: 80),
-                    itemCount: items.length,
-                    itemBuilder: (context, i) {
-                      final item = items[i];
-                      if (item is _DayHeader) {
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 4),
-                          child: Text(item.label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                        );
-                      }
-                      final op = (item as _OpItem).op;
-                      final cat = store.getCategory(op.categoryId);
-                      final acc = store.getAccount(op.accountId);
-                      final toAcc = store.getAccount(op.toAccountId);
-                      final IconData iconData;
-                      final Color iconColor;
-                      if (op.type == 'transfer') {
-                        iconData = Icons.swap_horiz;
-                        iconColor = AppColors.transfer;
-                      } else {
-                        iconData = cat != null ? categoryIconFor(cat, allCategories: store.categories) : (op.type == 'income' ? Icons.trending_up : Icons.trending_down);
-                        iconColor = op.type == 'income' ? AppColors.income : AppColors.expense;
-                      }
-                      final title = op.type == 'transfer'
-                          ? '${acc?.name ?? ''} → ${toAcc?.name ?? ''}'
-                          : tCat(context, cat?.name ?? context.tr('operations.no_category'));
-
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 12),
-                        child: OperationListItem(
-                          key: ValueKey(op.id),
-                          title: title,
-                          subtitle: op.comment ?? acc?.name ?? '',
-                          tags: store.getTagsForOperation(op),
-                          formattedAmount: store.fmtOps(op.amount, fromCurrency: acc?.currency ?? 'RUB', date: op.date),
-                          type: op.type,
-                          icon: iconData,
-                          iconColor: iconColor,
-                          onTap: () => Navigator.pushNamed(context, '/operation-detail', arguments: {'operationId': op.id}),
-                          isPending: op.isPending,
-                        ),
-                      );
-                    },
-                  ),
-            ],
-          ),
-        ),
+            ),
         ExpandableFab(
           actions: [
             FabAction(icon: Icons.remove_circle_outline, label: context.tr('quick_actions.expense'), color: AppColors.expense, onTap: () => Navigator.pushNamed(context, '/add-operation', arguments: {'type': 'expense'})),
