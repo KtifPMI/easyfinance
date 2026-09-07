@@ -511,6 +511,7 @@
   "home.no_expenses": "Sin gastos este mes",
   "reports.today": "Hoy",
   "reports.other": "Otros",
+  "reports.loading_history": "Cargando historial de operaciones…",
   "budget.edit": "Editar presupuesto",
   "budget.limit_label": "Límite",
   "goals.edit_goal": "Editar objetivo",

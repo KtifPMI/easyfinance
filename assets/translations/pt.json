@@ -502,6 +502,7 @@
   "home.no_expenses": "Sem despesas neste mês",
   "reports.today": "Hoje",
   "reports.other": "Outros",
+  "reports.loading_history": "Carregando histórico de operações…",
   "budget.edit": "Editar orçamento",
   "budget.limit_label": "Limite",
   "goals.edit_goal": "Editar objetivo",

@@ -688,6 +688,7 @@
   "account.account_type": "Account",
   "scan.title": "Scan receipt",
   "reports.other": "Other",
+  "reports.loading_history": "Loading operation history for report…",
   "currency.czk_name": "Czech Koruna",
   "currency.byn_name": "Belarusian Ruble",
   "budget.limit_label": "Limit",

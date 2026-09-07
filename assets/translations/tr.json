@@ -502,6 +502,7 @@
   "home.no_expenses": "Bu ay harcama yok",
   "reports.today": "Bugün",
   "reports.other": "Diğer",
+  "reports.loading_history": "Rapor için işlem geçmişi yükleniyor…",
   "budget.edit": "Bütçeyi düzenle",
   "budget.limit_label": "Limit",
   "goals.edit_goal": "Hedefi düzenle",

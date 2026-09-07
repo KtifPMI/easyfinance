@@ -511,6 +511,7 @@
   "home.no_expenses": "Keine Ausgaben in diesem Monat",
   "reports.today": "Heute",
   "reports.other": "Sonstiges",
+  "reports.loading_history": "Lade Vorgangshistorie für Bericht…",
   "budget.edit": "Budget bearbeiten",
   "budget.limit_label": "Limit",
   "goals.edit_goal": "Ziel bearbeiten",

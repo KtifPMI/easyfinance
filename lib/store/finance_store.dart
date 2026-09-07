@@ -205,6 +205,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       } catch (_) {}
     }
     _rebuildLookups();
+    _allOperationsLoaded = prefs.getBool('easyfinance_all_ops_loaded') ?? false;
     _recalcCachedTotals();
     _balanceLoaded = true;
     _scheduleNotify();
@@ -290,6 +291,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _tags = [];
     _templates = [];
     _useMock = true;
+    _allOperationsLoaded = false;
+    await prefs.remove('easyfinance_all_ops_loaded');
     _scheduleNotify();
   }
 
@@ -694,6 +697,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       _operations = [...allOps, ...localOnly];
       _invalidateOpCaches();
       _allOperationsLoaded = true;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('easyfinance_all_ops_loaded', true);
       _recalcAccountBalances();
       _recalcBudgetSpent();
       _recalcCachedTotals();

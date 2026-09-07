@@ -37,6 +37,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
   DateTime? _cachedTrendFrom;
   DateTime? _cachedTrendTo;
 
+  bool _needsFullHistory() {
+    final from3m = DateTime(DateTime.now().year, DateTime.now().month - 2, 1);
+    if (_isCustomPeriod && _customFrom != null && _customFrom!.isBefore(from3m)) return true;
+    if (!_isCustomPeriod && _selectedMonth.isBefore(from3m)) return true;
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -95,6 +102,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
+        final needFull = _needsFullHistory() && !store.allOperationsLoaded;
+        if (needFull && !store.loadingAllOps) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) store.loadAllOperations();
+          });
+        }
         final opsInMonth = store.operations.where((o) => _inPeriod(o, store) && !o.isDeleted).toList();
         double amtRub(o) {
           final acc = store.getAccount(o.accountId);
@@ -153,6 +166,28 @@ class _ReportsScreenState extends State<ReportsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ScreenHint(hintId: 'reports', text: context.tr('hints.reports')),
+              if (store.loadingAllOps)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          context.tr('reports.loading_history'),
+                          style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textFor(context)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               Row(
                 children: [
                   if (!_isCustomPeriod) IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prevMonth, padding: EdgeInsets.zero, constraints: const BoxConstraints()),

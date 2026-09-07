@@ -576,6 +576,7 @@
   "home.no_expenses": "Нет расходов за этот месяц",
   "reports.today": "Сегодня",
   "reports.other": "Остальное",
+  "reports.loading_history": "Загружаем историю операций для отчёта…",
   "budget.edit": "Редактировать бюджет",
   "budget.limit_label": "Лимит",
   "goals.edit_goal": "Редактировать цель",
