@@ -350,6 +350,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('display_currency', code);
     _recalcCachedTotals();
+    _generateRecommendations();
     _scheduleNotify();
   }
 
