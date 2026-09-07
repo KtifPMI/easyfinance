@@ -104,7 +104,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                        const SizedBox(width: 4),
                                        Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                        const Spacer(),
-                                       Text(store.fmt(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, store.displayCurrency, store.rates))),
+                                        Text(store.fmt(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, 'RUB', store.rates))),
                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                      ],
                                    ),
