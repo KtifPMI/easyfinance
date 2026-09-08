@@ -1,7 +1,7 @@
 const Map<String, String> currencyIdToCode = {
   '1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF',
   '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT',
-  '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK',
+  '11': 'CNY', '12': 'CZK', '13': 'SEK', '14': 'NOK',
 };
 
 const Map<String, String> currencyCodeToId = {
@@ -14,6 +14,7 @@ const Map<String, String> currencySymbols = {
   'RUB': '₽', 'USD': '\$', 'EUR': '€', 'GBP': '£', 'CHF': '₣',
   'CNY': '¥', 'JPY': '¥', 'BYN': 'Br', 'UAH': '₴', 'KZT': '₸',
   'PLN': 'zł', 'CZK': 'Kč', 'SEK': 'kr', 'NOK': 'kr',
+  'XAG': 'Ag', 'XAU': 'Au',
 };
 
 const List<String> allCurrencyCodes = [

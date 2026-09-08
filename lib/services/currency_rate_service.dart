@@ -60,7 +60,7 @@ class CurrencyRateService {
     final fromRate = from == 'RUB' ? 1.0 : rates[from];
     final toRate = to == 'RUB' ? 1.0 : rates[to];
     if (fromRate == null || fromRate <= 0 || toRate == null || toRate <= 0) {
-      return amount;
+      return 0;
     }
     return amount * fromRate / toRate;
   }

@@ -168,7 +168,7 @@ class Account {
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? json['title']?.toString() ?? '',
       balance: double.tryParse(json['balance']?.toString() ?? '0') ?? 0,
-      currency: currencyIdToCode[currencyId] ?? json['currency_char_code']?.toString() ?? 'RUB',
+      currency: json['currency_char_code']?.toString() ?? currencyIdToCode[currencyId] ?? 'RUB',
       currencyId: currencyId,
       icon: _iconMap[icon] ?? 'credit_card',
       color: _iconColor[icon] ?? '#16A34A',
