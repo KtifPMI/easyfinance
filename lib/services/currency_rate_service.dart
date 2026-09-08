@@ -5,8 +5,11 @@ import 'rate_history_storage.dart';
 
 class CurrencyRateService {
   static const _cbrUrl = 'https://www.cbr.ru/scripts/XML_daily.asp';
+  static const _metalsUrl = 'https://www.cbr.ru/scripts/XML_metall.asp';
   static const _cacheKey = 'currency_rates';
   static const _cacheDateKey = 'currency_rates_date';
+  static const _troyOzGrams = 31.1035;
+  static const _metalCodes = {'1': 'XAU', '2': 'XAG', '3': 'XPT', '4': 'XPD'};
 
   static Future<Map<String, double>> fetchRates() async {
     final cached = await _loadCached();
@@ -24,6 +27,10 @@ class CurrencyRateService {
       if (response.statusCode != 200) return await _loadCache() ?? {};
 
       final rates = _parseXml(response.body);
+      try {
+        final metals = await _fetchMetals();
+        rates.addAll(metals);
+      } catch (_) {}
       if (rates.isNotEmpty) {
         await _saveCache(rates);
         await RateHistoryStorage.saveRates(DateTime.now(), rates);
@@ -33,6 +40,40 @@ class CurrencyRateService {
       final cached = await _loadCache();
       return cached ?? {};
     }
+  }
+
+  static Future<Map<String, double>> _fetchMetals() async {
+    final today = DateTime.now();
+    final dateStr =
+        '${today.day.toString().padLeft(2, '0')}.${today.month.toString().padLeft(2, '0')}.${today.year}';
+    final uri = Uri.parse('$_metalsUrl?date_req1=$dateStr&date_req2=$dateStr');
+    final response = await http
+        .get(uri, headers: {'User-Agent': 'EasyFinance/1.0'})
+        .timeout(const Duration(seconds: 10));
+    if (response.statusCode != 200) return {};
+    return _parseMetalsXml(response.body);
+  }
+
+  static Map<String, double> _parseMetalsXml(String xml) {
+    final rates = <String, double>{};
+    final recordRegex = RegExp(
+      r'<Record\s+Date="[^"]*"\s+Code="(\d+)">\s*<Buy>([\d,.]+)</Buy>\s*<Sell>([\d,.]+)</Sell>\s*</Record>',
+      dotAll: true,
+    );
+    for (final m in recordRegex.allMatches(xml)) {
+      final code = m.group(1) ?? '';
+      final currencyCode = _metalCodes[code];
+      if (currencyCode == null) continue;
+      final buyStr = (m.group(2) ?? '0').replaceAll(',', '.');
+      final sellStr = (m.group(3) ?? '0').replaceAll(',', '.');
+      final buy = double.tryParse(buyStr) ?? 0;
+      final sell = double.tryParse(sellStr) ?? 0;
+      if (buy > 0 && sell > 0) {
+        final pricePerGram = (buy + sell) / 2;
+        rates[currencyCode] = pricePerGram * _troyOzGrams;
+      }
+    }
+    return rates;
   }
 
   static Map<String, double> _parseXml(String xml) {
