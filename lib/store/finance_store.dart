@@ -773,12 +773,13 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + _amountInRub(o));
     final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
 
+    final sym = currencySymbol(_displayCurrency);
     String fmt(double v) {
       final converted = CurrencyRateService.convert(v, 'RUB', _displayCurrency, _rates);
       final sign = converted < 0 ? '-' : '';
       final intPart = converted.abs().toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
-      return '$sign$intPart';
+      return '$sign$intPart $sym';
     }
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
 
@@ -790,7 +791,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'b_overspent_${b.id}', type: 'risk', severity: 'high',
           title: 'Лимит превышен: $name',
-          description: 'Потрачено ${fmt(b.spent)} ₽ при лимите ${fmt(b.limit)} ₽.',
+          description: 'Потрачено ${fmt(b.spent)} при лимите ${fmt(b.limit)}.',
           titleArgs: {'name': name},
           descArgs: {'spent': fmt(b.spent), 'limit': fmt(b.limit), 'overspent': fmt(b.spent - b.limit), 'pct': pct(b.spent, b.limit)},
         ));
@@ -799,7 +800,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'b_near_${b.id}', type: 'optimization', severity: 'medium',
           title: 'Близок к лимиту: $name',
-          description: 'Использовано ${fmt(b.spent)} ₽ из ${fmt(b.limit)} ₽.',
+          description: 'Использовано ${fmt(b.spent)} из ${fmt(b.limit)}.',
           titleArgs: {'name': name},
           descArgs: {'spent': fmt(b.spent), 'limit': fmt(b.limit), 'pct': pct(b.spent, b.limit), 'remaining': fmt(remaining)},
         ));
@@ -839,7 +840,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           _recommendations.add(Recommendation(
             id: 'food_warning', type: 'optimization', severity: 'medium',
             title: 'Питание отнимает ${foodRatio.round()}% дохода',
-            description: 'Потрачено ${fmt(allFood)} ₽ из ${fmt(monthIncome)} ₽.',
+            description: 'Потрачено ${fmt(allFood)} из ${fmt(monthIncome)}.',
             titleArgs: {'pct': foodRatio.round().toString()},
             descArgs: {'amount': fmt(allFood), 'income': fmt(monthIncome), 'limit': _recPrefs.foodMediumPct.round().toString()},
           ));
@@ -849,7 +850,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'dining_freq', type: 'optimization', severity: 'low',
           title: '$diningCount раз(а) в кафе за месяц',
-          description: 'На кафе и рестораны ушло ${fmt(diningTotal)} ₽.',
+          description: 'На кафе и рестораны ушло ${fmt(diningTotal)}.',
           titleArgs: {'count': diningCount.toString()},
           descArgs: {'amount': fmt(diningTotal), 'pct': pct(diningTotal, monthIncome)},
         ));
@@ -870,7 +871,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           _recommendations.add(Recommendation(
             id: 'no_budget_${entry.key}', type: 'optimization', severity: 'medium',
             title: 'Нет бюджета для «${cat.name}»',
-            description: 'Потрачено ${fmt(entry.value)} ₽.',
+            description: 'Потрачено ${fmt(entry.value)}.',
             actionType: 'create_budget',
             actionPayload: entry.key,
             titleArgs: {'name': cat.name},
@@ -895,7 +896,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           _recommendations.add(Recommendation(
             id: 'high_housing', type: 'risk', severity: 'high',
             title: 'Жильё — ${housingRatio.round()}% от дохода',
-            description: 'На жильё уходит ${fmt(housingTotal)} ₽ из ${fmt(monthIncome)} ₽.',
+            description: 'На жильё уходит ${fmt(housingTotal)} из ${fmt(monthIncome)}.',
             titleArgs: {'pct': housingRatio.round().toString()},
             descArgs: {'amount': fmt(housingTotal), 'income': fmt(monthIncome), 'pct': housingRatio.round().toString(), 'limit': _recPrefs.housingPct.round().toString()},
           ));
@@ -909,7 +910,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'negative_savings', type: 'risk', severity: 'high',
           title: 'Расходы превышают доходы',
-          description: 'Доход ${fmt(monthIncome)} ₽, расходы ${fmt(monthExpense)} ₽.',
+          description: 'Доход ${fmt(monthIncome)}, расходы ${fmt(monthExpense)}.',
           descArgs: {'income': fmt(monthIncome), 'expense': fmt(monthExpense), 'deficit': fmt(monthExpense - monthIncome)},
         ));
       } else if (savingsRate < _recPrefs.savingsLowPct) {
@@ -917,7 +918,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'low_savings', type: 'risk', severity: 'medium',
           title: 'Низкая норма сбережения',
-          description: 'Откладывается ${fmt(saveAmt)} ₽ (${savingsRate.round()}%).',
+          description: 'Откладывается ${fmt(saveAmt)} (${savingsRate.round()}%).',
           descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome), 'good_pct': _recPrefs.savingsGoodPct.round().toString(), 'target': fmt(monthIncome * _recPrefs.savingsGoodPct / 100)},
         ));
       } else if (savingsRate >= _recPrefs.savingsGoodPct) {
@@ -925,7 +926,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'good_savings', type: 'tip', severity: 'low',
           title: 'Хорошая норма сбережения',
-          description: 'Отложено ${fmt(saveAmt)} ₽ (${savingsRate.round()}).',
+          description: 'Отложено ${fmt(saveAmt)} (${savingsRate.round()}).',
           descArgs: {'amount': fmt(saveAmt), 'pct': savingsRate.round().toString(), 'income': fmt(monthIncome)},
         ));
       }
@@ -941,7 +942,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         final parts = topCatList.map((e) {
           final cat = _catById[e.key];
           final p = (e.value / monthExpense * 100).round();
-          return '${cat?.name ?? e.key} ${fmt(e.value)} ₽ ($p%)';
+          return '${cat?.name ?? e.key} ${fmt(e.value)} ($p%)';
         }).join(', ');
         _recommendations.add(Recommendation(
           id: 'top_cats', type: 'tip', severity: 'low',
@@ -957,11 +958,11 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       !g.isCompleted && (g.title.contains('подушк') || g.title.contains('безопасн') || g.title.contains('сбережен') ||
                          g.title.contains('emergency') || g.title.contains('safety') || g.title.contains('cushion'))
     ).isEmpty) {
-      final suggested = monthExpense > 0 ? (monthExpense * _recPrefs.emergencyMonths).toStringAsFixed(0) : '—';
+      final suggested = monthExpense > 0 ? '${(monthExpense * _recPrefs.emergencyMonths).toStringAsFixed(0)} $sym' : '—';
       _recommendations.add(Recommendation(
         id: 'no_emergency', type: 'tip', severity: 'low',
         title: 'Создайте финансовую подушку',
-        description: 'Рекомендуется резерв ${_recPrefs.emergencyMonths.round()}–${(_recPrefs.emergencyMonths * 2).round()} месячных расходов ($suggested ₽).',
+        description: 'Рекомендуется резерв ${_recPrefs.emergencyMonths.round()}–${(_recPrefs.emergencyMonths * 2).round()} месячных расходов ($suggested).',
         actionType: 'create_goal',
         actionPayload: 'emergency',
         descArgs: {'amount': suggested, 'months': _recPrefs.emergencyMonths.round().toString()},
@@ -973,8 +974,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       if (a.icon == 'cash' && a.balance > _recPrefs.idleCashMin) {
         _recommendations.add(Recommendation(
           id: 'idle_cash_${a.id}', type: 'optimization', severity: 'low',
-          title: '${fmt(a.balance)} ₽ наличными без движения',
-          description: 'На счету «${a.name}» ${fmt(a.balance)} ₽.',
+          title: '${fmt(a.balance)} наличными без движения',
+          description: 'На счету «${a.name}» ${fmt(a.balance)}.',
           titleArgs: {'amount': fmt(a.balance)},
           descArgs: {'name': a.name, 'amount': fmt(a.balance)},
         ));
@@ -988,7 +989,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'goal_close_${g.id}', type: 'tip', severity: 'low',
           title: 'Цель «${g.title}» почти достигнута',
-          description: 'Накоплено ${fmt(g.currentAmount)} ₽ из ${fmt(g.targetAmount)} ₽.',
+          description: 'Накоплено ${fmt(g.currentAmount)} из ${fmt(g.targetAmount)}.',
           titleArgs: {'title': g.title},
           descArgs: {'current': fmt(g.currentAmount), 'target': fmt(g.targetAmount), 'pct': progress.round().toString(), 'remaining': fmt(g.targetAmount - g.currentAmount)},
         ));
@@ -1002,7 +1003,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'expense_trend_up', type: 'risk', severity: 'medium',
           title: 'Расходы выросли на ${expChange.round()}%',
-          description: 'Было ${fmt(prevExpense)} ₽, стало ${fmt(monthExpense)} ₽.',
+          description: 'Было ${fmt(prevExpense)}, стало ${fmt(monthExpense)}.',
           titleArgs: {'pct': expChange.round().toString()},
           descArgs: {'pct': expChange.round().toString(), 'prev': fmt(prevExpense), 'curr': fmt(monthExpense)},
         ));
@@ -1016,7 +1017,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'income_trend_down', type: 'risk', severity: 'medium',
           title: 'Доход упал на ${incChange.abs().round()}%',
-          description: 'Было ${fmt(prevIncome)} ₽, стало ${fmt(monthIncome)} ₽.',
+          description: 'Было ${fmt(prevIncome)}, стало ${fmt(monthIncome)}.',
           titleArgs: {'pct': incChange.abs().round().toString()},
           descArgs: {'pct': incChange.abs().round().toString(), 'prev': fmt(prevIncome), 'curr': fmt(monthIncome)},
         ));
@@ -1053,7 +1054,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           _recommendations.add(Recommendation(
             id: 'category_spike_${entry.key}', type: 'risk', severity: 'medium',
             title: 'Рост «${cat3m.name}» на ${((curTotal - avg3m) / avg3m * 100).round()}%',
-            description: 'Было ${fmt(avg3m)} ₽/мес, стало ${fmt(curTotal)} ₽.',
+            description: 'Было ${fmt(avg3m)}/мес, стало ${fmt(curTotal)}.',
             titleArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString()},
             descArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString(), 'avg': fmt(avg3m), 'curr': fmt(curTotal)},
           ));
@@ -1092,7 +1093,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       _recommendations.add(Recommendation(
         id: 'recurring_subscriptions', type: 'optimization', severity: 'low',
         title: 'Возможные подписки: $catNames',
-        description: 'Ежемесячно ~${fmt(totalSub)} ₽. Проверьте, нужны ли они.',
+        description: 'Ежемесячно ~${fmt(totalSub)}. Проверьте, нужны ли они.',
         titleArgs: {'categories': catNames},
         descArgs: {'categories': catNames, 'amount': fmt(totalSub)},
       ));
@@ -1107,7 +1108,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'dominant_${top.key}', type: 'optimization', severity: 'medium',
           title: '«$catName» — ${topPct.round()}% расходов',
-          description: 'Потрачено ${fmt(top.value)} ₽ из ${fmt(monthExpense)} ₽.',
+          description: 'Потрачено ${fmt(top.value)} из ${fmt(monthExpense)}.',
           titleArgs: {'name': catName, 'pct': topPct.round().toString()},
           descArgs: {'name': catName, 'pct': topPct.round().toString(), 'amount': fmt(top.value), 'total': fmt(monthExpense)},
         ));
@@ -1126,7 +1127,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'weekend_splurge', type: 'optimization', severity: 'low',
           title: '${weekendPct.round()}% расходов на выходных',
-          description: 'Потрачено ${fmt(weekendExp)} ₽ за субботу и воскресенье.',
+          description: 'Потрачено ${fmt(weekendExp)} за субботу и воскресенье.',
           titleArgs: {'pct': weekendPct.round().toString()},
           descArgs: {'pct': weekendPct.round().toString(), 'amount': fmt(weekendExp)},
         ));
@@ -1141,7 +1142,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         final name = cat?.name ?? 'Без категории';
         _recommendations.add(Recommendation(
           id: 'large_cash_${o.id}', type: 'risk', severity: 'medium',
-          title: 'Крупная трата: ${fmt(convertedAmt)} ₽',
+          title: 'Крупная трата: ${fmt(convertedAmt)}',
           description: '«$name» — ${o.date.substring(0, 10)}.',
           titleArgs: {'amount': fmt(convertedAmt)},
           descArgs: {'amount': fmt(convertedAmt), 'name': name, 'date': o.date.substring(0, 10)},
@@ -1161,7 +1162,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _recommendations.add(Recommendation(
           id: 'goal_pacing_expired', type: 'risk', severity: 'high',
           title: 'Цель «${g.title}» просрочена',
-          description: 'Осталось ${fmt(remaining)} ₽, дедлайн ${deadline.day}.${deadline.month}.${deadline.year}.',
+          description: 'Осталось ${fmt(remaining)}, дедлайн ${deadline.day}.${deadline.month}.${deadline.year}.',
           titleArgs: {'title': g.title},
           descArgs: {'remaining': fmt(remaining), 'deadline': '${deadline.day}.${deadline.month}.${deadline.year}'},
         ));
@@ -1172,7 +1173,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           _recommendations.add(Recommendation(
             id: 'goal_pacing_slow', type: 'optimization', severity: 'medium',
             title: 'Цель «${g.title}» отстаёт',
-            description: 'Нужно ${fmt(monthlyNeeded)} ₽/мес, откладываете ${fmt(monthlyCanSave)} ₽/мес.',
+            description: 'Нужно ${fmt(monthlyNeeded)}/мес, откладываете ${fmt(monthlyCanSave)}/мес.',
             titleArgs: {'title': g.title},
             descArgs: {'needed': fmt(monthlyNeeded), 'current': fmt(monthlyCanSave), 'deadline': '${deadline.day}.${deadline.month}.${deadline.year}'},
           ));
