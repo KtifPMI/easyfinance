@@ -774,12 +774,13 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
 
     final sym = currencySymbol(_displayCurrency);
+    final symBefore = _displayCurrency == 'USD' || _displayCurrency == 'GBP';
     String fmt(double v) {
       final converted = CurrencyRateService.convert(v, 'RUB', _displayCurrency, _rates);
       final sign = converted < 0 ? '-' : '';
       final intPart = converted.abs().toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
-      return '$sign$intPart $sym';
+      return symBefore ? '$sign$sym$intPart' : '$sign$intPart $sym';
     }
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
 
