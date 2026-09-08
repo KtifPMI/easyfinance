@@ -13,7 +13,16 @@ class CurrencyRateService {
 
   static Future<Map<String, double>> fetchRates() async {
     final cached = await _loadCached();
-    if (cached != null) return cached;
+    if (cached != null) {
+      if (!cached.containsKey('XAG')) {
+        try {
+          final metals = await _fetchMetals();
+          cached.addAll(metals);
+          await _saveCache(cached);
+        } catch (_) {}
+      }
+      return cached;
+    }
 
     try {
       final today = DateTime.now();
