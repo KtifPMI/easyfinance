@@ -589,7 +589,15 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       CurrencyRateService.fetchRates().then((r) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null as dynamic; }),
       api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
       api.getBudgetCategories().then((bc) {
-        _budgets = bc.map((b) => Budget(
+        final seen = <String>{};
+        final unique = <Map<String, dynamic>>[];
+        for (final b in bc) {
+          final catId = b['category_id']?.toString() ?? '';
+          if (catId.isNotEmpty && seen.contains(catId)) continue;
+          seen.add(catId);
+          unique.add(b);
+        }
+        _budgets = unique.map((b) => Budget(
           id: b['id']?.toString() ?? '',
           categoryId: b['category_id']?.toString() ?? '',
           limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
