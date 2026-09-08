@@ -422,7 +422,26 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   FinHealthIndicators get finHealth => _cachedFinHealth ??= calcFinHealth(_accounts, _operations, _budgets, _rates);
 
   double accountActualBalance(Account a) {
-    return a.balance;
+    double bal = a.balance;
+    for (final op in _operations) {
+      if (!op.isPending) continue;
+      if (op.accountId == a.id) {
+        if (op.type == 'expense') bal -= op.amount;
+        else if (op.type == 'income') bal += op.amount;
+        else if (op.type == 'transfer') bal -= op.amount;
+      }
+      if (op.type == 'transfer' && op.toAccountId == a.id) {
+        final src = _accountById[op.accountId];
+        if (op.transferAmount != null && op.transferAmount! > 0) {
+          bal += op.transferAmount!;
+        } else if (src != null && src.currency != a.currency) {
+          bal += CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op));
+        } else {
+          bal += op.amount;
+        }
+      }
+    }
+    return bal;
   }
   double _amountInRub(Operation o) {
     final acc = getAccount(o.accountId);
@@ -1243,7 +1262,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _operations.insert(0, op);
     _invalidateOpCaches();
     _changedOpIds.add(op.id);
-    _adjustAccountBalanceForOp(op, isAdd: true);
     _recalcBudgetSpent();
     _scheduleRecommendations();
     await _registerTags(op.tags);
@@ -1959,39 +1977,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       }
     }
     _recalcCachedTotals();
-  }
-
-  void _adjustAccountBalanceForOp(Operation op, {required bool isAdd}) {
-    final sign = isAdd ? 1.0 : -1.0;
-    if (op.type == 'expense') {
-      _applyDelta(op.accountId, -op.amount * sign);
-    } else if (op.type == 'income') {
-      _applyDelta(op.accountId, op.amount * sign);
-    } else if (op.type == 'transfer') {
-      _applyDelta(op.accountId, -op.amount * sign);
-      final toId = op.toAccountId;
-      if (toId != null) {
-        final dstCurrency = _accountById[toId]?.currency;
-        final srcCurrency = _accountById[op.accountId]?.currency;
-        final double incoming;
-        if (op.transferAmount != null && op.transferAmount! > 0) {
-          incoming = op.transferAmount!;
-        } else if (dstCurrency != null && srcCurrency != null && srcCurrency != dstCurrency) {
-          incoming = CurrencyRateService.convert(op.amount, srcCurrency, dstCurrency, _ratesForOp(op));
-        } else {
-          incoming = op.amount;
-        }
-        _applyDelta(toId, incoming * sign);
-      }
-    }
-    _recalcCachedTotals();
-  }
-
-  void _applyDelta(String accountId, double delta) {
-    final idx = _accounts.indexWhere((a) => a.id == accountId);
-    if (idx >= 0) {
-      _accounts[idx] = _accounts[idx].copyWith(balance: _accounts[idx].balance + delta);
-    }
   }
 
   void _recalcCachedTotals() {
