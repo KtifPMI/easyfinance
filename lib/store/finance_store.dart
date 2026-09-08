@@ -206,6 +206,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     _rebuildLookups();
     _allOperationsLoaded = prefs.getBool('easyfinance_all_ops_loaded') ?? false;
+    if (_allOperationsLoaded && _operations.isEmpty) {
+      _allOperationsLoaded = false;
+      await prefs.remove('easyfinance_all_ops_loaded');
+    }
     _recalcCachedTotals();
     _balanceLoaded = true;
     _scheduleNotify();
