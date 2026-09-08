@@ -611,7 +611,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
     _rebuildLookups();
     _recalcBudgetSpent();
-    _recalcAccountBalances();
     _recalcCachedTotals();
     _generateRecommendations();
 
