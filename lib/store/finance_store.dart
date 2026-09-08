@@ -205,11 +205,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       } catch (_) {}
     }
     _rebuildLookups();
-    _allOperationsLoaded = prefs.getBool('easyfinance_all_ops_loaded') ?? false;
-    if (_allOperationsLoaded && _operations.isEmpty) {
-      _allOperationsLoaded = false;
-      await prefs.remove('easyfinance_all_ops_loaded');
-    }
     _recalcCachedTotals();
     _balanceLoaded = true;
     _scheduleNotify();
@@ -296,7 +291,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _templates = [];
     _useMock = true;
     _allOperationsLoaded = false;
-    await prefs.remove('easyfinance_all_ops_loaded');
     _scheduleNotify();
   }
 
@@ -428,32 +422,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   FinHealthIndicators get finHealth => _cachedFinHealth ??= calcFinHealth(_accounts, _operations, _budgets, _rates);
 
   double accountActualBalance(Account a) {
-    if (_allOperationsLoaded) {
-      double sum = a.initBalance;
-      for (final op in _operations) {
-        if (op.isDeleted) continue;
-        if (op.type == 'income' && op.accountId == a.id) {
-          sum += op.amount;
-        } else if (op.type == 'expense' && op.accountId == a.id) {
-          sum -= op.amount;
-        } else if (op.type == 'transfer') {
-          if (op.accountId == a.id) sum -= op.amount;
-          if (op.toAccountId == a.id) {
-            if (op.transferAmount != null && op.transferAmount! > 0) {
-              sum += op.transferAmount!;
-            } else {
-              final src = getAccount(op.accountId);
-              if (src != null && src.currency != a.currency) {
-                sum += CurrencyRateService.convert(op.amount, src.currency, a.currency, _ratesForOp(op));
-              } else {
-                sum += op.amount;
-              }
-            }
-          }
-        }
-      }
-      return sum;
-    }
     return a.balance;
   }
   double _amountInRub(Operation o) {
@@ -702,8 +670,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       _operations = [...allOps, ...localOnly];
       _invalidateOpCaches();
       _allOperationsLoaded = true;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('easyfinance_all_ops_loaded', true);
       _recalcAccountBalances();
       _recalcBudgetSpent();
       _recalcCachedTotals();
