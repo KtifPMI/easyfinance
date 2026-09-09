@@ -504,6 +504,8 @@
   "scan.back": "Indietro",
   "scan.receipt_comment": "Ricevuta: {store}",
   "home.currency_rates": "Tassi di cambio",
+  "home.rates_unavailable": "Impossibile caricare i tassi. Importi mostrati solo nella valuta selezionata.",
+  "home.rates_retry": "Riprova",
   "home.select_currencies": "Seleziona valute",
   "home.display_currency": "Valuta di visualizzazione",
   "home.cancel": "Annulla",

@@ -282,7 +282,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildRatesSection(BuildContext context, FinanceStore store) {
     final codes = store.watchedCurrencies.where((c) => c != 'RUB' && store.rates.containsKey(c)).toList();
-    if (codes.isEmpty) return const SizedBox.shrink();
+    if (codes.isEmpty) {
+      if (store.ratesUpdatedAt != null) return const SizedBox.shrink();
+      return AppCard(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(Icons.wifi_off, size: 18, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Expanded(child: Text(context.tr('home.rates_unavailable'), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)))),
+            TextButton(
+              onPressed: () => store.retryRates(),
+              child: Text(context.tr('home.rates_retry')),
+            ),
+          ],
+        ),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

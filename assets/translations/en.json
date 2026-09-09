@@ -735,6 +735,8 @@
   "budget.edit": "Edit budget",
   "scan.gallery": "Gallery",
   "home.currency_rates": "Exchange rates",
+  "home.rates_unavailable": "Failed to load rates. Amounts shown in selected currency only.",
+  "home.rates_retry": "Retry",
   "scan.add_expense": "Add expense",
   "more.debug": "Debug API",
   "currency.cny_name": "Chinese Yuan",

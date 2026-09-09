@@ -495,6 +495,8 @@
   "scan.back": "Geri",
   "scan.receipt_comment": "Fiş: {store}",
   "home.currency_rates": "Döviz kurları",
+  "home.rates_unavailable": "Kurlar yüklenemedi. Tutarlar yalnızca seçilen para biriminde gösterilir.",
+  "home.rates_retry": "Tekrar dene",
   "home.select_currencies": "Para birimlerini seçin",
   "home.display_currency": "Gösterim para birimi",
   "home.cancel": "İptal",

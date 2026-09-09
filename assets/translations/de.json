@@ -504,6 +504,8 @@
   "scan.back": "Zurück",
   "scan.receipt_comment": "Beleg: {store}",
   "home.currency_rates": "Wechselkurse",
+  "home.rates_unavailable": "Kurse konnten nicht geladen werden. Beträge nur in gewährter Währung.",
+  "home.rates_retry": "Erneut versuchen",
   "home.select_currencies": "Währungen auswählen",
   "home.display_currency": "Anzeigewährung",
   "home.cancel": "Abbrechen",

@@ -504,6 +504,8 @@
   "scan.back": "Retour",
   "scan.receipt_comment": "Reçu : {store}",
   "home.currency_rates": "Taux de change",
+  "home.rates_unavailable": "Impossible de charger les taux. Montants affichés dans la devise sélectionnée uniquement.",
+  "home.rates_retry": "Réessayer",
   "home.select_currencies": "Sélectionner les devises",
   "home.display_currency": "Devise d'affichage",
   "home.cancel": "Annuler",

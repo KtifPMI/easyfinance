@@ -569,6 +569,8 @@
   "scan.back": "Назад",
   "scan.receipt_comment": "Чек: {store}",
   "home.currency_rates": "Курсы валют",
+  "home.rates_unavailable": "Не удалось загрузить курсы. Суммы показаны только в выбранной валюте.",
+  "home.rates_retry": "Повторить",
   "home.select_currencies": "Выберите валюты",
   "home.display_currency": "Валюта отображения",
   "home.cancel": "Отмена",

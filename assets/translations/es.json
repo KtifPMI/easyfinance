@@ -504,6 +504,8 @@
   "scan.back": "Atrás",
   "scan.receipt_comment": "Recibo: {store}",
   "home.currency_rates": "Tipos de cambio",
+  "home.rates_unavailable": "No se pudieron cargar los tipos. Importes mostrados solo en la moneda seleccionada.",
+  "home.rates_retry": "Reintentar",
   "home.select_currencies": "Seleccionar divisas",
   "home.display_currency": "Moneda de visualización",
   "home.cancel": "Cancelar",

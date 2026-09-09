@@ -483,6 +483,18 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   bool _fetching = false;
+  Future<void> retryRates() async {
+    await CurrencyRateService.clearCache();
+    final r = await CurrencyRateService.fetchRates();
+    if (r.isNotEmpty) {
+      _rates = {'RUB': 1.0, ...r};
+      _ratesUpdatedAt = DateTime.now();
+      _recalcCachedTotals();
+      _generateRecommendations();
+    }
+    _scheduleNotify();
+  }
+
   Future<void> fetchAllData() async {
     if (!authService.isAuthenticated) return;
     if (_fetching) return;
