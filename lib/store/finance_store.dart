@@ -586,7 +586,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
       api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null as dynamic; }),
       api.getCurrencies().then((c) { _currencies = c; return c; }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
-      CurrencyRateService.fetchRates().then((r) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null as dynamic; }),
+      CurrencyRateService.fetchRates().then((r) { if (r.isNotEmpty) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); } return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null as dynamic; }),
       api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
       api.getBudgetCategories().then((bc) {
         final seen = <String>{};
