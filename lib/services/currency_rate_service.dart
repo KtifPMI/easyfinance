@@ -24,31 +24,39 @@ class CurrencyRateService {
       return cached;
     }
 
-    try {
-      final today = DateTime.now();
-      final dateStr =
-          '${today.day.toString().padLeft(2, '0')}.${today.month.toString().padLeft(2, '0')}.${today.year}';
-      final uri = Uri.parse('$_cbrUrl?date_req=$dateStr');
-      final response = await http
-          .get(uri, headers: {'User-Agent': 'EasyFinance/1.0'})
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode != 200) return await _loadCache() ?? {};
-
-      final rates = _parseXml(response.body);
+    const maxRetries = 3;
+    for (int attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        final metals = await _fetchMetals();
-        rates.addAll(metals);
-      } catch (_) {}
-      if (rates.isNotEmpty) {
-        await _saveCache(rates);
-        await RateHistoryStorage.saveRates(DateTime.now(), rates);
+        final today = DateTime.now();
+        final dateStr =
+            '${today.day.toString().padLeft(2, '0')}.${today.month.toString().padLeft(2, '0')}.${today.year}';
+        final uri = Uri.parse('$_cbrUrl?date_req=$dateStr');
+        final response = await http
+            .get(uri, headers: {'User-Agent': 'EasyFinance/1.0'})
+            .timeout(const Duration(seconds: 10));
+
+        if (response.statusCode != 200) {
+          if (attempt < maxRetries - 1) { await Future.delayed(Duration(seconds: 2 * (attempt + 1))); continue; }
+          return await _loadCache() ?? {};
+        }
+
+        final rates = _parseXml(response.body);
+        try {
+          final metals = await _fetchMetals();
+          rates.addAll(metals);
+        } catch (_) {}
+        if (rates.isNotEmpty) {
+          await _saveCache(rates);
+          await RateHistoryStorage.saveRates(DateTime.now(), rates);
+        }
+        return rates;
+      } catch (_) {
+        if (attempt < maxRetries - 1) { await Future.delayed(Duration(seconds: 2 * (attempt + 1))); continue; }
+        final cachedFallback = await _loadCache();
+        return cachedFallback ?? {};
       }
-      return rates;
-    } catch (_) {
-      final cached = await _loadCache();
-      return cached ?? {};
     }
+    return await _loadCache() ?? {};
   }
 
   static Future<Map<String, double>> _fetchMetals() async {
