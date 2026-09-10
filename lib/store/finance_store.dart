@@ -484,13 +484,24 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
   bool _fetching = false;
   Future<void> retryRates() async {
-    await CurrencyRateService.clearCache();
-    final r = await CurrencyRateService.fetchRates();
-    if (r.isNotEmpty) {
-      _rates = {'RUB': 1.0, ...r};
-      _ratesUpdatedAt = DateTime.now();
-      _recalcCachedTotals();
-      _generateRecommendations();
+    try {
+      final c = await authService.apiService.getCurrencies();
+      _currencies = c;
+      final r = <String, double>{'RUB': 1.0};
+      for (final cur in c) {
+        final id = cur['id']?.toString();
+        final code = currencyIdToCode[id];
+        final rate = double.tryParse(cur['rate']?.toString() ?? '0') ?? 0;
+        if (rate > 0 && code != null) r[code] = rate;
+      }
+      if (r.length > 1) {
+        _rates = r;
+        _ratesUpdatedAt = DateTime.now();
+        _recalcCachedTotals();
+        _generateRecommendations();
+      }
+    } catch (e) {
+      debugPrint('retryRates error: $e');
     }
     _scheduleNotify();
   }
@@ -597,8 +608,21 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       }).catchError((e) { debugPrint('getTemplates error: $e'); return <OperationTemplate>[]; }),
 
       api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null as dynamic; }),
-      api.getCurrencies().then((c) { _currencies = c; return c; }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
-      CurrencyRateService.fetchRates().then((r) { if (r.isNotEmpty) { _rates = {'RUB': 1.0, ...r}; _ratesUpdatedAt = DateTime.now(); } return r; }).catchError((e) { debugPrint('fetchRates error: $e'); return null as dynamic; }),
+      api.getCurrencies().then((c) {
+        _currencies = c;
+        final r = <String, double>{'RUB': 1.0};
+        for (final cur in c) {
+          final id = cur['id']?.toString();
+          final code = currencyIdToCode[id];
+          final rate = double.tryParse(cur['rate']?.toString() ?? '0') ?? 0;
+          if (rate > 0 && code != null) r[code] = rate;
+        }
+        if (r.length > 1) {
+          _rates = r;
+          _ratesUpdatedAt = DateTime.now();
+        }
+        return c;
+      }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
       api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
       api.getBudgetCategories().then((bc) {
         final seen = <String>{};
