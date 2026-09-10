@@ -203,6 +203,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         final ratesAtRaw = prefs.getString('easyfinance_cached_rates_at');
         if (ratesAtRaw != null) _ratesUpdatedAt = DateTime.tryParse(ratesAtRaw);
       } catch (_) {}
+      await prefs.remove('easyfinance_cached_rates');
+      await prefs.remove('easyfinance_cached_rates_at');
     }
     _rebuildLookups();
     _recalcCachedTotals();
