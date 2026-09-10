@@ -408,7 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showCurrencyPicker(BuildContext context, FinanceStore store) {
-    final allCodes = allCurrencyCodes.where((c) => c != 'RUB').toList();
+    final allCodes = store.rates.keys.where((c) => c != 'RUB').toList()..sort();
     final selected = List<String>.from(store.watchedCurrencies.where((c) => c != 'RUB'));
     showDialog(
       context: context,
