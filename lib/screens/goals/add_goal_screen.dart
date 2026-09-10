@@ -732,13 +732,17 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
   }
 
   String _currencyLabel(List<Map<String, dynamic>> currencies) {
-    if (_currencyId == null) return context.tr('common.ruble');
+    if (_currencyId == null) return currencySymbol('RUB');
     final c = currencies.where((c) => c['id']?.toString() == _currencyId).firstOrNull;
     if (c != null) {
       final code = currencyIdToCode[_currencyId] ?? c['symbol']?.toString() ?? _currencyId;
       return '$code — ${c['name'] ?? code}';
     }
-    return currencyIdToCode[_currencyId] ?? _currencyId ?? context.tr('common.ruble');
+    return currencySymbol(currencyIdToCode[_currencyId] ?? 'RUB');
+  }
+    return currencySymbol(currencyIdToCode[_currencyId] ?? 'RUB');
+  }
+    return currencySymbol(currencyIdToCode[_currencyId] ?? 'RUB');
   }
 
   void _pickGoalCurrency(BuildContext context, FinanceStore store) {
