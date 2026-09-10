@@ -621,6 +621,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _currencies = c;
         _rates = _buildRatesFromCurrencies(c);
         _ratesUpdatedAt = DateTime.now();
+        _recalcCachedTotals();
+        _scheduleNotify();
         return c;
       }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
       api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
