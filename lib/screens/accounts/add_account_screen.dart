@@ -8,6 +8,8 @@ import '../../models/account.dart';
 import '../../services/currency_rate_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../utils/currency_utils.dart';
+import '../../utils/currency_utils.dart';
 import '../../utils/account_utils.dart';
 import '../../utils/format.dart';
 
@@ -260,15 +262,22 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           const SizedBox(height: 16),
           Text(context.tr('accounts.currency'), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: _currencyId,
-            decoration: InputDecoration(
-              filled: true, fillColor: AppColors.cardFor(context),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          GestureDetector(
+            onTap: () => _pickCurrency(context, store),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.cardFor(context),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderFor(context)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(child: Text(_currencyLabel(context, store), style: TextStyle(fontSize: 16, color: AppColors.textFor(context)))),
+                  Icon(Icons.unfold_more, size: 20, color: AppColors.textSecondaryFor(context)),
+                ],
+              ),
             ),
-            items: currencyItems,
-            onChanged: (v) => setState(() => _currencyId = v!),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<int>(
@@ -428,6 +437,89 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         DropdownMenuItem(value: 'differentiated', child: Text(context.tr('accounts.payment_type.differentiated'))),
       ],
       onChanged: (v) => setState(() => _paymentType = v!),
+    );
+  }
+
+  String _currencyLabel(BuildContext context, FinanceStore store) {
+    final currencies = store.currencies;
+    final cur = currencies.where((c) => c['id']?.toString() == _currencyId).firstOrNull;
+    if (cur != null) {
+      final code = currencyIdToCode[_currencyId] ?? cur['symbol']?.toString() ?? _currencyId;
+      return '$code — ${cur['name'] ?? code}';
+    }
+    return currencyIdToCode[_currencyId] ?? _currencyId;
+  }
+
+  void _pickCurrency(BuildContext context, FinanceStore store) {
+    final currencies = store.currencies;
+    String search = '';
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final filtered = search.isEmpty
+              ? currencies
+              : currencies.where((c) {
+                  final q = search.toLowerCase();
+                  final code = (currencyIdToCode[c['id']?.toString()] ?? c['symbol']?.toString() ?? '').toLowerCase();
+                  final name = (c['name']?.toString() ?? '').toLowerCase();
+                  return code.contains(q) || name.contains(q);
+                }).toList();
+          return DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (ctx, scrollCtrl) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onChanged: (v) => setSheetState(() => search = v),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) {
+                      final c = filtered[i];
+                      final id = c['id']?.toString() ?? '1';
+                      final code = currencyIdToCode[id] ?? c['symbol']?.toString() ?? id;
+                      final sym = currencySymbol(code);
+                      final hasRealSymbol = sym != code;
+                      final name = c['name']?.toString() ?? code;
+                      return ListTile(
+                        selected: _currencyId == id,
+                        selectedTileColor: AppColors.primaryLightFor(context),
+                        leading: hasRealSymbol
+                            ? Text(sym, style: const TextStyle(fontSize: 20))
+                            : null,
+                        title: Text(code, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(name, style: Theme.of(context).textTheme.bodySmall),
+                        trailing: _currencyId == id ? Icon(Icons.check, color: AppColors.primary) : null,
+                        onTap: () {
+                          setState(() => _currencyId = id);
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
