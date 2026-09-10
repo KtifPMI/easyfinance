@@ -153,14 +153,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ]),
             const SizedBox(height: 4),
             store.balanceLoaded
-                ? Text(store.fmt(store.moneyBalance), style: TextStyle(color: Colors.white, fontSize: 33, fontWeight: FontWeight.w700))
+                ? Text(formatMoney(store.moneyBalance, currency: store.displayCurrency), style: TextStyle(color: Colors.white, fontSize: 33, fontWeight: FontWeight.w700))
                 : const SizedBox(height: 33, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white54, strokeWidth: 2)))),
             const SizedBox(height: 8),
             Row(children: [
               Text(context.tr('home.capital'), style: const TextStyle(color: Colors.white60, fontSize: 13)),
               const Spacer(),
               store.balanceLoaded
-                  ? Text(store.fmt(store.totalBalance), style: const TextStyle(color: Colors.white60, fontSize: 15, fontWeight: FontWeight.w600))
+                  ? Text(formatMoney(store.totalBalance, currency: store.displayCurrency), style: const TextStyle(color: Colors.white60, fontSize: 15, fontWeight: FontWeight.w600))
                   : const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white54, strokeWidth: 2)),
             ]),
             const SizedBox(height: 12),

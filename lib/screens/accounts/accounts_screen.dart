@@ -84,7 +84,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                   children: [
                                     Text(context.tr('accounts.my_capital'), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                                     const SizedBox(height: 4),
-                                    Text(store.fmt(store.totalBalance), style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
+                                    Text(formatMoney(store.totalBalance, currency: store.displayCurrency), style: TextStyle(fontSize: 23, fontWeight: FontWeight.w700, color: AppColors.textFor(context))),
                                     if (all.where((a) => !a.isArchived).length > 1) ...[
                                       const SizedBox(height: 8),
                                       _buildCurrencyRow(context, store),
