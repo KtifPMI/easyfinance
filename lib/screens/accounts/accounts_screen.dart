@@ -104,7 +104,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                        const SizedBox(width: 4),
                                        Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                        const Spacer(),
-                                        Text(store.fmt(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, 'RUB', store.rates))),
+                                        Text(store.fmt(store.accountActualBalance(a)),
                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                      ],
                                    ),
@@ -142,7 +142,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
 
   Widget _groupHeader(BuildContext context, FinanceStore store, String group, List<Account> list) {
-    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, 'RUB', store.rates));
+    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, store.displayCurrency, store.rates));
     final labels = {
       'money': 'accounts.group.money',
       'owed_by_me': 'accounts.group.owed_by_me',

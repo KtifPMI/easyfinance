@@ -484,18 +484,25 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _trimHistRates();
   }
 
+  Map<String, double> _buildRatesFromCurrencies(List<Map<String, dynamic>> c) {
+    final r = <String, double>{'RUB': 1.0};
+    for (final cur in c) {
+      final id = cur['id']?.toString();
+      final symbol = cur['symbol']?.toString() ?? '';
+      final rate = double.tryParse(cur['rate']?.toString() ?? '0') ?? 0;
+      if (rate <= 0) continue;
+      final code = currencyIdToCode[id] ?? (RegExp(r'^[A-Z]{2,}$').hasMatch(symbol) ? symbol : null);
+      if (code != null) r[code] = rate;
+    }
+    return r;
+  }
+
   bool _fetching = false;
   Future<void> retryRates() async {
     try {
       final c = await authService.apiService.getCurrencies();
       _currencies = c;
-      final r = <String, double>{'RUB': 1.0};
-      for (final cur in c) {
-        final id = cur['id']?.toString();
-        final code = currencyIdToCode[id];
-        final rate = double.tryParse(cur['rate']?.toString() ?? '0') ?? 0;
-        if (rate > 0 && code != null) r[code] = rate;
-      }
+      final r = _buildRatesFromCurrencies(c);
       if (r.length > 1) {
         _rates = r;
         _ratesUpdatedAt = DateTime.now();
@@ -612,17 +619,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null as dynamic; }),
       api.getCurrencies().then((c) {
         _currencies = c;
-        final r = <String, double>{'RUB': 1.0};
-        for (final cur in c) {
-          final id = cur['id']?.toString();
-          final code = currencyIdToCode[id];
-          final rate = double.tryParse(cur['rate']?.toString() ?? '0') ?? 0;
-          if (rate > 0 && code != null) r[code] = rate;
-        }
-        if (r.length > 1) {
-          _rates = r;
-          _ratesUpdatedAt = DateTime.now();
-        }
+        _rates = _buildRatesFromCurrencies(c);
+        _ratesUpdatedAt = DateTime.now();
         return c;
       }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
       api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
