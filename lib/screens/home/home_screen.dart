@@ -427,9 +427,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(currencySymbol(code), style: Theme.of(context).textTheme.bodyLarge!),
                         const SizedBox(width: 8),
-                        Text(code, style: TextStyle(fontSize: 16)),
+                        Text(code, style: const TextStyle(fontSize: 16)),
                         const SizedBox(width: 8),
-                        Text(_currencyName(context, code), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
+                        Expanded(
+                          child: Text(
+                            _currencyName(context, code),
+                            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                       ],
                     ),
                     onChanged: (v) {
