@@ -55,7 +55,7 @@ String formatMoneyWhole(double amount, {String currency = 'RUB'}) {
   final symbol = symbols[currency] ?? currency;
   final sign = amount < 0 ? '-' : '';
   final abs = amount.abs();
-  final intPart = abs.toStringAsFixed(0).replaceAllMapped(
+  final intPart = abs.floor().toString().replaceAllMapped(
     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
     (m) => '${m[1]} ',
   );

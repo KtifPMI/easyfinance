@@ -814,7 +814,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     String fmt(double v) {
       final converted = CurrencyRateService.convert(v, 'RUB', _displayCurrency, _rates);
       final sign = converted < 0 ? '-' : '';
-      final intPart = converted.abs().toStringAsFixed(0).replaceAllMapped(
+      final intPart = converted.abs().floor().toString().replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
       return symBefore ? '$sign$sym$intPart' : '$sign$intPart $sym';
     }
