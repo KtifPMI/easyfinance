@@ -41,6 +41,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   bool get _isDebitCard => _type == 'card';
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
+  bool _saving = false;
+  bool _saving = false;
+  bool _saving = false;
 
   @override
   void didChangeDependencies() {
@@ -82,6 +85,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
     final store = context.read<FinanceStore>();
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) return;
@@ -171,6 +177,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       return;
     }
     Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   String _iconForType(String type) {
@@ -388,7 +397,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
             ),
           ],
           const SizedBox(height: 24),
-          AppButton(title: context.tr('accounts.save'), onPressed: _save),
+          AppButton(title: context.tr('accounts.save'), onPressed: _save, loading: _saving),
           if (_isEditing) ...[
             const SizedBox(height: 8),
             AppButton(

@@ -33,7 +33,7 @@ class CurrencyRateService {
         final uri = Uri.parse('$_cbrUrl?date_req=$dateStr');
         final response = await http
             .get(uri, headers: {'User-Agent': 'EasyFinance/1.0'})
-            .timeout(const Duration(seconds: 10));
+            .timeout(const Duration(seconds: 20));
 
         if (response.statusCode != 200) {
           if (attempt < maxRetries - 1) { await Future.delayed(Duration(seconds: 2 * (attempt + 1))); continue; }
@@ -66,7 +66,7 @@ class CurrencyRateService {
     final uri = Uri.parse('$_metalsUrl?date_req1=$dateStr&date_req2=$dateStr');
     final response = await http
         .get(uri, headers: {'User-Agent': 'EasyFinance/1.0'})
-        .timeout(const Duration(seconds: 10));
+            .timeout(const Duration(seconds: 20));
     if (response.statusCode != 200) return {};
     return _parseMetalsXml(response.body);
   }
