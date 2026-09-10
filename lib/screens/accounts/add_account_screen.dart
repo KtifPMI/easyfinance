@@ -42,8 +42,6 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   bool get _isEditing => widget.accountId != null;
   bool _loaded = false;
   bool _saving = false;
-  bool _saving = false;
-  bool _saving = false;
 
   @override
   void didChangeDependencies() {
