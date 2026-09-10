@@ -410,74 +410,105 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showCurrencyPicker(BuildContext context, FinanceStore store) {
     final allCodes = store.rates.keys.where((c) => c != 'RUB').toList()..sort();
     final selected = List<String>.from(store.watchedCurrencies.where((c) => c != 'RUB'));
+    String search = '';
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setInnerState) => AlertDialog(
-          title: Text(context.tr('home.select_currencies'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
+        builder: (ctx, setInnerState) {
+          final filtered = search.isEmpty
+              ? allCodes
+              : allCodes.where((c) {
+                  final q = search.toLowerCase();
+                  return c.toLowerCase().contains(q) || _currencyName(context, store, c).toLowerCase().contains(q);
+                }).toList();
+          return AlertDialog(
+            title: Text(context.tr('home.select_currencies'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: MediaQuery.of(context).size.height * 0.6,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ...allCodes.map((code) => CheckboxListTile(
-                    value: selected.contains(code),
-                    title: Row(
-                      children: [
-                        Text(currencySymbol(code), style: Theme.of(context).textTheme.bodyLarge!),
-                        const SizedBox(width: 8),
-                        Text(code, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _currencyName(context, code),
-                            style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ],
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
-                    onChanged: (v) {
-                      setInnerState(() {
-                        if (v == true) {
-                          selected.add(code);
-                        } else {
-                          selected.remove(code);
-                        }
-                      });
-                    },
-                    activeColor: AppColors.primary,
-                    controlAffinity: ListTileControlAffinity.trailing,
-                  )),
+                    onChanged: (v) => setInnerState(() => search = v),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (ctx, i) {
+                        final code = filtered[i];
+                        final sym = currencySymbol(code);
+                        final hasRealSymbol = sym != code;
+                        return CheckboxListTile(
+                          value: selected.contains(code),
+                          title: Row(
+                            children: [
+                              if (hasRealSymbol) ...[
+                                Text(sym, style: Theme.of(context).textTheme.bodyLarge!),
+                                const SizedBox(width: 8),
+                              ],
+                              Text(code, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                   _currencyName(context, store, code),
+                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onChanged: (v) {
+                            setInnerState(() {
+                              if (v == true) {
+                                selected.add(code);
+                              } else {
+                                selected.remove(code);
+                              }
+                            });
+                          },
+                          activeColor: AppColors.primary,
+                          controlAffinity: ListTileControlAffinity.trailing,
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-          actions: [
+            actions: [
               TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text(context.tr('home.cancel')),
-            ),
-            TextButton(
-              onPressed: () {
-                final finalList = ['RUB', ...selected];
-                store.setWatchedCurrencies(finalList);
-                Navigator.pop(ctx);
-              },
-              child: Text(context.tr('home.save'), style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
-            ),
-          ],
-        ),
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(context.tr('common.cancel')),
+              ),
+              FilledButton(
+                onPressed: () {
+                  store.setWatchedCurrencies(['RUB', ...selected]);
+                  Navigator.pop(ctx);
+                },
+                child: Text(context.tr('common.save')),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  String _currencyName(BuildContext context, String code) {
+  String _currencyName(BuildContext context, FinanceStore store, String code) {
     const keys = {'USD': 'currency.usd_name', 'EUR': 'currency.eur_name', 'GBP': 'currency.gbp_name', 'CHF': 'currency.chf_name', 'CNY': 'currency.cny_name', 'JPY': 'currency.jpy_name', 'BYN': 'currency.byn_name', 'UAH': 'currency.uah_name', 'KZT': 'currency.kzt_name', 'PLN': 'currency.pln_name', 'CZK': 'currency.czk_name', 'SEK': 'currency.sek_name', 'NOK': 'currency.nok_name'};
     final key = keys[code];
-    return key != null ? context.tr(key) : code;
+    if (key != null) return context.tr(key);
+    final cur = store.currencies.where((c) => currencyIdToCode[c['id']?.toString()] == code || c['symbol']?.toString() == code).firstOrNull;
+    return cur?['name']?.toString() ?? code;
   }
 
   Widget _buildRecommendationsSection(BuildContext context, FinanceStore store) {
