@@ -81,29 +81,6 @@ class _AccountsScreenState extends State<AccountsScreen> {
                             children: [
                               AppCard(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('DEBUG: Курсы и конвертации', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.danger)),
-                                    const SizedBox(height: 8),
-                                    Text('displayCurrency: ${store.displayCurrency}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                                    ...store.accounts.where((a) => !a.isArchived && a.includeInTotal && groupForType(a.type) == 'money').map((a) {
-                                      final bal = store.accountActualBalance(a);
-                                      final rate = store.rates[a.currency] ?? 0;
-                                      final converted = CurrencyRateService.convert(bal, a.currency, store.displayCurrency, store.rates);
-                                      return Padding(
-                                        padding: const EdgeInsets.only(bottom: 4),
-                                        child: Text(
-                                          '${a.name} | ${a.currency} | bal=${bal.toStringAsFixed(2)} | rate=$rate | → ${converted.toStringAsFixed(2)}',
-                                          style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.textFor(context)),
-                                        ),
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              AppCard(
-                                child: Column(
                                   children: [
                                     Text(context.tr('accounts.my_capital'), style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                                     const SizedBox(height: 4),
