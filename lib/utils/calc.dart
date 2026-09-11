@@ -16,6 +16,25 @@ class FinHealthIndicators {
   final String incomeTip;
   final String finStateTip;
 
+  // Серверные тексты из dashboard.get (title/description со стр. сайта)
+  final String finStateTitle;
+  final String moneyTitle;
+  final String budgetTitle;
+  final String debtTitle;
+  final String incomeTitle;
+  final String finStateDescription;
+  final String moneyDescription;
+  final String budgetDescription;
+  final String debtDescription;
+  final String incomeDescription;
+
+  // Цвета, переданные сервером в description (color:#hex)
+  final Color? finStateColor;
+  final Color? moneyColor;
+  final Color? budgetColor;
+  final Color? debtColor;
+  final Color? incomeColor;
+
   FinHealthIndicators({
     required this.finState,
     required this.money,
@@ -27,7 +46,72 @@ class FinHealthIndicators {
     this.debtTip = '',
     this.incomeTip = '',
     this.finStateTip = '',
+    this.finStateTitle = '',
+    this.moneyTitle = '',
+    this.budgetTitle = '',
+    this.debtTitle = '',
+    this.incomeTitle = '',
+    this.finStateDescription = '',
+    this.moneyDescription = '',
+    this.budgetDescription = '',
+    this.debtDescription = '',
+    this.incomeDescription = '',
+    this.finStateColor,
+    this.moneyColor,
+    this.budgetColor,
+    this.debtColor,
+    this.incomeColor,
   });
+
+  bool get hasServerTexts => moneyTitle.isNotEmpty || finStateTitle.isNotEmpty;
+}
+
+String stripHtmlTags(String html) {
+  return html
+      .replaceAll(RegExp(r'<[^>]*>'), ' ')
+      .replaceAll('&mdash;', '—')
+      .replaceAll('&laquo;', '«')
+      .replaceAll('&raquo;', '»')
+      .replaceAll('&nbsp;', ' ')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
+}
+
+/// Достаёт цвет из HTML-описания тахометра: `color:#bf0000` → красный.
+Color? parseTachColor(String html) {
+  final m = RegExp(r'color:#([0-9a-fA-F]{6})').firstMatch(html);
+  if (m == null) return null;
+  return Color(0xFF000000 | int.parse(m.group(1)!, radix: 16));
+}
+
+/// Собирает FinHealthIndicators из ответа dashboard.get (порядок:
+/// finState, money, budget, debt, income). null если данных меньше 5.
+FinHealthIndicators? finHealthFromServer(List<Map<String, dynamic>> items) {
+  if (items.length < 5) return null;
+  double val(int i) => (items[i]['value'] as num?)?.toDouble() ?? 0;
+  String txt(int i, String key) => (items[i][key] as String?) ?? '';
+  return FinHealthIndicators(
+    finState: val(0),
+    money: val(1),
+    budget: val(2),
+    debt: val(3),
+    income: val(4),
+    finStateTitle: txt(0, 'title'),
+    moneyTitle: txt(1, 'title'),
+    budgetTitle: txt(2, 'title'),
+    debtTitle: txt(3, 'title'),
+    incomeTitle: txt(4, 'title'),
+    finStateDescription: txt(0, 'description'),
+    moneyDescription: txt(1, 'description'),
+    budgetDescription: txt(2, 'description'),
+    debtDescription: txt(3, 'description'),
+    incomeDescription: txt(4, 'description'),
+    finStateColor: parseTachColor(txt(0, 'description')),
+    moneyColor: parseTachColor(txt(1, 'description')),
+    budgetColor: parseTachColor(txt(2, 'description')),
+    debtColor: parseTachColor(txt(3, 'description')),
+    incomeColor: parseTachColor(txt(4, 'description')),
+  );
 }
 
 FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operations, List<Budget> budgets, Map<String, double> rates) {

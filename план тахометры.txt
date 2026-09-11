@@ -1,0 +1,48 @@
+План: Тахометры (фин.здоровье) через v2 API
+Проблема
+Сайт показывает фин.здоровье с сервера (get-tachometers)
+Приложение считает локально через calc.dart — другие цифры
+Веб-эндпоинт требует PHPSESSID (сессию браузера), а не API-авторизацию
+Попытка вызвать веб-эндпоинт из приложения не работает (нет PHPSESSID при OAuth логине)
+Решение: добавить tachometers.get в v2 API
+На сервере (SSH):
+Найти файл обработчика веб-эндпоинта /my/info/get-tachometers
+Создать аналогичный обработчик для v2 API (tachometers.get)
+Авторизация через access_token + sig (как другие v2 методы)
+Формат ответа:
+{
+  "response": {
+    "response_data": {
+      "tachometers": [
+        {"value": 85, "title": "...", "description": "..."},
+        {"value": 100, "title": "...", "description": "..."},
+        {"value": 4, "title": "...", "description": "..."},
+        {"value": 100, "title": "...", "description": "..."},
+        {"value": 100, "title": "...", "description": "..."}
+      ]
+    }
+  }
+}
+Порядок: фин.состояние, деньги, бюджет, долги, доходы
+В приложении:
+Изменить getTachometers() в api_client.dart на v2 вызов:
+Future<List<Map<String, dynamic>>> getTachometers() async {
+  try {
+    final data = await get('tachometers.get');
+    final list = data['tachometers'] as List<dynamic>?;
+    if (list == null) return [];
+    return list.cast<Map<String, dynamic>>();
+  } catch (e) {
+    debugPrint('getTachometers error: $e');
+    return [];
+  }
+}
+Убрать веб-эндпоинт URL и PHPSESSID cookie
+finHealth getter: приоритет _serverFinHealth → fallback на calcFinHealth()
+Порядок значений в массиве (индекс → показатель):
+Индекс	Ключ	Название
+0	finState	Итоговая оценка финансового здоровья
+1	money	Денежный запас
+2	budget	Бюджет
+3	debt	Долговая нагрузка
+4	income	Доходы vs расходы

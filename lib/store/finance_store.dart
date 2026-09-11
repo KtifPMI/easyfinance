@@ -203,6 +203,21 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           budget: (t['budget'] as num?)?.toDouble() ?? 0,
           debt: (t['debt'] as num?)?.toDouble() ?? 0,
           income: (t['income'] as num?)?.toDouble() ?? 0,
+          finStateTitle: t['finStateTitle'] as String? ?? '',
+          moneyTitle: t['moneyTitle'] as String? ?? '',
+          budgetTitle: t['budgetTitle'] as String? ?? '',
+          debtTitle: t['debtTitle'] as String? ?? '',
+          incomeTitle: t['incomeTitle'] as String? ?? '',
+          finStateDescription: t['finStateDescription'] as String? ?? '',
+          moneyDescription: t['moneyDescription'] as String? ?? '',
+          budgetDescription: t['budgetDescription'] as String? ?? '',
+          debtDescription: t['debtDescription'] as String? ?? '',
+          incomeDescription: t['incomeDescription'] as String? ?? '',
+          finStateColor: (t['finStateColor'] as num?) != null ? Color(t['finStateColor'] as int) : null,
+          moneyColor: (t['moneyColor'] as num?) != null ? Color(t['moneyColor'] as int) : null,
+          budgetColor: (t['budgetColor'] as num?) != null ? Color(t['budgetColor'] as int) : null,
+          debtColor: (t['debtColor'] as num?) != null ? Color(t['debtColor'] as int) : null,
+          incomeColor: (t['incomeColor'] as num?) != null ? Color(t['incomeColor'] as int) : null,
         );
       } catch (_) {}
     }
@@ -268,12 +283,28 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     await _saveBudgets();
     await _saveGoals();
     if (_serverFinHealth != null) {
+      final h = _serverFinHealth!;
       await prefs.setString('easyfinance_cached_tachometers', jsonEncode({
-        'finState': _serverFinHealth!.finState,
-        'money': _serverFinHealth!.money,
-        'budget': _serverFinHealth!.budget,
-        'debt': _serverFinHealth!.debt,
-        'income': _serverFinHealth!.income,
+        'finState': h.finState,
+        'money': h.money,
+        'budget': h.budget,
+        'debt': h.debt,
+        'income': h.income,
+        'finStateTitle': h.finStateTitle,
+        'moneyTitle': h.moneyTitle,
+        'budgetTitle': h.budgetTitle,
+        'debtTitle': h.debtTitle,
+        'incomeTitle': h.incomeTitle,
+        'finStateDescription': h.finStateDescription,
+        'moneyDescription': h.moneyDescription,
+        'budgetDescription': h.budgetDescription,
+        'debtDescription': h.debtDescription,
+        'incomeDescription': h.incomeDescription,
+        'finStateColor': h.finStateColor?.value,
+        'moneyColor': h.moneyColor?.value,
+        'budgetColor': h.budgetColor?.value,
+        'debtColor': h.debtColor?.value,
+        'incomeColor': h.incomeColor?.value,
       }));
     }
   }
@@ -743,14 +774,9 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (!authService.isAuthenticated) return;
     try {
       final tach = await apiClient.getTachometers();
-      if (tach.length >= 5) {
-        _serverFinHealth = FinHealthIndicators(
-          finState: (tach[0]['value'] as num?)?.toDouble() ?? 0,
-          money: (tach[1]['value'] as num?)?.toDouble() ?? 0,
-          budget: (tach[2]['value'] as num?)?.toDouble() ?? 0,
-          debt: (tach[3]['value'] as num?)?.toDouble() ?? 0,
-          income: (tach[4]['value'] as num?)?.toDouble() ?? 0,
-        );
+      final health = finHealthFromServer(tach);
+      if (health != null) {
+        _serverFinHealth = health;
         await _saveCache();
         if (hasListeners) _scheduleNotify();
       }
