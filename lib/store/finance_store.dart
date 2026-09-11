@@ -206,12 +206,12 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       } catch (_) {}
     }
     _rebuildLookups();
+    _recalcBudgetSpent();
     _recalcCachedTotals();
     _balanceLoaded = true;
     _scheduleNotify();
 
     Future.delayed(Duration.zero, () async {
-      _recalcBudgetSpent();
       _generateRecommendations();
       await _preloadHistoricalRates();
       if (hasListeners) _scheduleNotify();
@@ -674,8 +674,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     _rebuildLookups();
-    _recalcBudgetSpent();
-    _recalcCachedTotals();
     _recalcBudgetSpent();
     _recalcCachedTotals();
     _generateRecommendations();
