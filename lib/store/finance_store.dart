@@ -2028,10 +2028,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   void _recalcCachedTotals() {
     _cachedTotalBalance = _accounts
         .where((a) => a.includeInTotal && !a.isArchived)
-        .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
+        .fold<double>(0, (sum, a) => sum + double.parse(CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates).toStringAsFixed(2)));
     _cachedMoneyBalance = _accounts
         .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
-        .fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates));
+        .fold<double>(0, (sum, a) => sum + double.parse(CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates).toStringAsFixed(2)));
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
