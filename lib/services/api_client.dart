@@ -414,20 +414,17 @@ class ApiClient {
     }
   }
 
-  // --- Tachometers / Financial Health (website endpoint) ---
+  // --- Tachometers / Financial Health (API v2 `dashboard.get`) ---
 
   Future<List<Map<String, dynamic>>> getTachometers() async {
-    final uri = Uri.parse('https://easyfinance.ru/my/info/get-tachometers');
-    final hdrs = <String, String>{
-      'Accept': 'application/json',
-      'User-Agent': 'EasyFinance/1.0',
-      if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
-    };
-    final response = await _httpClient.get(uri, headers: hdrs).timeout(_timeout);
-    if (response.statusCode != 200) return [];
-    final decoded = jsonDecode(response.body);
-    if (decoded is List) return decoded.cast<Map<String, dynamic>>();
-    return [];
+    try {
+      final data = await get('dashboard.get');
+      final list = data['data'] as List<dynamic>?;
+      if (list == null) return [];
+      return list.cast<Map<String, dynamic>>();
+    } catch (_) {
+      return [];
+    }
   }
 
   // --- Calendar / Planned Payments (API v2) ---
