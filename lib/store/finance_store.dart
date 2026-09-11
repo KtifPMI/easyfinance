@@ -638,7 +638,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           id: b['id']?.toString() ?? '',
           categoryId: b['category_id']?.toString() ?? '',
           limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
-          spent: double.tryParse(b['spent']?.toString() ?? '0') ?? 0,
+          spent: 0,
           period: b['period']?.toString() ?? 'monthly',
           isDeleted: b['deleted_at'] != null && b['deleted_at'].toString().isNotEmpty,
         )).toList();
@@ -2116,7 +2116,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
             name: m['name']?.toString(),
             categoryId: m['categoryId']?.toString() ?? '',
             limit: (m['limit'] as num?)?.toDouble() ?? 0,
-            spent: (m['spent'] as num?)?.toDouble() ?? 0,
+            spent: 0,
             period: m['period']?.toString() ?? 'monthly',
             isDeleted: m['isDeleted'] == true,
           );
