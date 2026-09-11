@@ -700,6 +700,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
     try {
       final tach = await apiClient.getTachometers();
+      debugPrint('TACH: got ${tach.length} items');
       if (tach.length >= 5) {
         _serverFinHealth = FinHealthIndicators(
           finState: (tach[0]['value'] as num?)?.toDouble() ?? 0,
@@ -708,9 +709,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           debt: (tach[3]['value'] as num?)?.toDouble() ?? 0,
           income: (tach[4]['value'] as num?)?.toDouble() ?? 0,
         );
+        debugPrint('TACH: serverFinHealth set -> fs=${_serverFinHealth!.finState} money=${_serverFinHealth!.money} budget=${_serverFinHealth!.budget} debt=${_serverFinHealth!.debt} income=${_serverFinHealth!.income}');
       }
     } catch (e) {
-      debugPrint('getTachometers error: $e');
+      debugPrint('TACH getTachometers error: $e');
     }
 
     _useMock = !authService.isAuthenticated;

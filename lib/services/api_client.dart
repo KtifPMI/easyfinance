@@ -419,10 +419,13 @@ class ApiClient {
   Future<List<Map<String, dynamic>>> getTachometers() async {
     try {
       final data = await get('dashboard.get');
+      debugPrint('GETTACH: raw keys=${data.keys.toList()}');
       final list = data['data'] as List<dynamic>?;
+      debugPrint('GETTACH: list=${list?.length}');
       if (list == null) return [];
       return list.cast<Map<String, dynamic>>();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('GETTACH error: $e');
       return [];
     }
   }
