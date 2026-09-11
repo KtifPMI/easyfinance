@@ -86,7 +86,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                     Text('DEBUG: Курсы и конвертации', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.danger)),
                                     const SizedBox(height: 8),
                                     Text('displayCurrency: ${store.displayCurrency}', style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context))),
-                                    ...store.accounts.where((a) => !a.isArchived && a.includeInTotal).map((a) {
+                                    ...store.accounts.where((a) => !a.isArchived && a.includeInTotal && groupForType(a.type) == 'money').map((a) {
                                       final bal = store.accountActualBalance(a);
                                       final rate = store.rates[a.currency] ?? 0;
                                       final converted = CurrencyRateService.convert(bal, a.currency, store.displayCurrency, store.rates);
