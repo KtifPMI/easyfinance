@@ -740,10 +740,6 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
     }
     return currencySymbol(currencyIdToCode[_currencyId] ?? 'RUB');
   }
-    return currencySymbol(currencyIdToCode[_currencyId] ?? 'RUB');
-  }
-    return currencySymbol(currencyIdToCode[_currencyId] ?? 'RUB');
-  }
 
   void _pickGoalCurrency(BuildContext context, FinanceStore store) {
     final currencies = store.currencies;
