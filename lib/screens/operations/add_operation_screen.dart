@@ -275,10 +275,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     final catId = op.categoryId;
     final budget = catId != null ? store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull : null;
     final now = DateTime.now();
-    final catSpend = catId != null
-        ? store.operations.where((o) => !o.isDeleted && o.type == 'expense' && o.categoryId == catId && store.isInMonth(o.date, now)).fold(0.0, (s, o) => s + o.amount)
-        : 0.0;
+    final catSpend = store.categorySpentInMonth(catId, now);
     final totalBudgetRemaining = store.budgets.where((b) => !b.isDeleted).fold(0.0, (s, b) => s + (b.limit - b.spent));
+    final opAccount = store.getAccount(op.accountId);
+    final opCurrency = opAccount?.currency ?? op.currency;
+    final opDateKey = op.date.length >= 10 ? op.date.substring(0, 10) : null;
 
     final bool overBudget = budget != null && budget.spent > budget.limit;
     final accentColor = overBudget ? AppColors.expense : AppColors.success;
@@ -295,7 +296,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(store.fmt(op.amount), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: accentColor)),
+            Text(store.fmt(op.amount, fromCurrency: opCurrency, date: opDateKey), style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: accentColor)),
             if (catId != null) ...[
               const SizedBox(height: 12),
               Text(tCat(context, store.getCategory(catId)?.name ?? ''), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),

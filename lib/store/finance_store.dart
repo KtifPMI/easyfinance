@@ -67,6 +67,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   final Set<String> _deletedOpIds = {};
   Future<void> _cacheReady = Future.value();
   Future<void> _templatesReady = Future.value();
+  Future<void> _recPrefsReady = Future.value();
   PlannedPaymentStore? _plannedPayments;
 
   double _cachedTotalBalance = 0;
@@ -78,8 +79,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   final Map<String, List<String>> _tagsCache = {};
   Map<String, cat.Category> _catById = {};
   Map<String, Account> _accountById = {};
-  List<Operation>? _cachedCurOps;
-  List<Operation>? _cachedPrevOps;
   FinHealthIndicators? _cachedFinHealth;
   FinHealthIndicators? _serverFinHealth;
 
@@ -91,8 +90,6 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
   void _invalidateOpCaches() {
     _tagsCache.clear();
-    _cachedCurOps = null;
-    _cachedPrevOps = null;
     _cachedFinHealth = null;
     _opsDirty = true;
   }
@@ -103,7 +100,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     bindFormatSettings(showKopeks, showKopeksInOps);
     _cacheReady = _loadFromCache();
     _templatesReady = _loadTemplates();
-    _loadRecPrefs();
+    _recPrefsReady = _loadRecPrefs();
     _loadFormatPrefs();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -212,8 +209,9 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _scheduleNotify();
 
     Future.delayed(Duration.zero, () async {
-      _generateRecommendations();
+      await _recPrefsReady;
       await _preloadHistoricalRates();
+      _refreshDerivedData();
       if (hasListeners) _scheduleNotify();
     });
   } catch (_) {
@@ -388,21 +386,20 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  Map<String, double> _effectiveRates(String? dateKey) {
+    if (dateKey == null || dateKey.isEmpty) return _rates;
+    final hist = _histRates[dateKey];
+    if (hist == null || hist.isEmpty) return _rates;
+    return {..._rates, ...hist};
+  }
+
   String fmt(double amount, {String fromCurrency = 'RUB', String? date}) {
-    Map<String, double> rates = _rates;
-    if (date != null && _histRates.containsKey(date)) {
-      rates = _histRates[date]!;
-    }
-    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, rates);
+    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, _effectiveRates(date));
     return formatMoney(converted, currency: _displayCurrency);
   }
 
   String fmtOps(double amount, {String fromCurrency = 'RUB', String? date}) {
-    Map<String, double> rates = _rates;
-    if (date != null && _histRates.containsKey(date)) {
-      rates = _histRates[date]!;
-    }
-    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, rates);
+    final converted = CurrencyRateService.convert(amount, fromCurrency, _displayCurrency, _effectiveRates(date));
     return formatMoneyOps(converted, currency: _displayCurrency);
   }
 
@@ -445,15 +442,24 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     return bal;
   }
   double _amountInRub(Operation o) {
-    final acc = getAccount(o.accountId);
+    final acc = _accountById[o.accountId] ?? getAccount(o.accountId);
     final from = acc?.currency ?? o.currency;
     final dateKey = o.date.length >= 10 ? o.date.substring(0, 10) : null;
-    final rates = (dateKey != null && _histRates.containsKey(dateKey)) ? _histRates[dateKey]! : _rates;
-    return CurrencyRateService.convert(o.amount, from, 'RUB', rates);
+    return CurrencyRateService.convert(o.amount, from, 'RUB', _effectiveRates(dateKey));
   }
 
   double get monthIncome => _cachedMonthIncome;
   double get monthExpense => _cachedMonthExpense;
+
+  double categorySpentInMonth(String? categoryId, [DateTime? month]) {
+    if (categoryId == null) return 0;
+    final m = month ?? DateTime.now();
+    final start = DateTime(m.year, m.month, 1);
+    final end = DateTime(m.year, m.month + 1, 0, 23, 59, 59);
+    return _operations
+        .where((o) => o.categoryId == categoryId && o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
+        .fold(0.0, (s, o) => s + _amountInRub(o));
+  }
 
   bool isInCurrentMonth(String dateIso) => isInMonth(dateIso, DateTime.now());
 
@@ -519,7 +525,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (_fetching) return;
     _fetching = true;
     try {
-    await Future.wait([_cacheReady, _templatesReady]);
+    await Future.wait([_cacheReady, _templatesReady, _recPrefsReady]);
     final bool hasCache = _accounts.isNotEmpty || _operations.isNotEmpty;
     if (!hasCache) {
       _isLoading = true;
@@ -702,6 +708,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
     Future.delayed(Duration.zero, () async {
       await _preloadHistoricalRates();
+      _refreshDerivedData();
       if (hasListeners) _scheduleNotify();
     });
     } catch (_) { _fetching = false; }
@@ -725,8 +732,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       }
       if (newOps.isNotEmpty) {
         _operations.addAll(newOps);
-        _invalidateOpCaches();
-        _recalcBudgetSpent();
+        _refreshDerivedData();
         await _saveCache();
         _scheduleNotify();
       }
@@ -745,11 +751,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       final serverIds = allOps.map((o) => o.id).toSet();
       final localOnly = _operations.where((o) => !serverIds.contains(o.id) && !o.isDeleted).toList();
       _operations = [...allOps, ...localOnly];
-      _invalidateOpCaches();
       _allOperationsLoaded = true;
-      _recalcBudgetSpent();
-      _recalcCachedTotals();
-      _generateRecommendations();
+      _refreshDerivedData();
       await _saveCache();
     } catch (e) {
       debugPrint('loadAllOperations error: $e');
@@ -784,41 +787,28 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     _scheduleNotify();
   }
+  bool _recScheduled = false;
 
-  static DateTime? _lastRecsAt;
-  static int _lastRecsHash = 0;
   void _scheduleRecommendations() {
-    final now = DateTime.now();
-    if (_lastRecsAt != null && now.difference(_lastRecsAt!).inSeconds < 2) return;
-    _lastRecsAt = now;
-    final hash = _operations.length ^ _budgets.length ^ _goals.length ^ _categories.length;
-    if (hash == _lastRecsHash && _recommendations.isNotEmpty) return;
-    _lastRecsHash = hash;
-    _generateRecommendations();
+    if (_recScheduled) return;
+    _recScheduled = true;
+    Future.microtask(() {
+      _recScheduled = false;
+      _generateRecommendations();
+      _scheduleNotify();
+    });
   }
 
   void _generateRecommendations() {
     _recommendations = [];
     final now = DateTime.now();
     final monthStart = DateTime(now.year, now.month, 1);
-    final monthEnd = DateTime(now.year, now.month + 1, 0);
+    final monthEnd = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
     final prevMonthStart = DateTime(now.year, now.month - 1, 1);
-    final prevMonthEnd = DateTime(now.year, now.month, 0);
+    final prevMonthEnd = DateTime(now.year, now.month, 0, 23, 59, 59);
 
-    if (_cachedCurOps == null) {
-      _cachedCurOps = _operations.where((o) {
-        final d = DateTime.tryParse(o.date);
-        return d != null && !d.isBefore(monthStart) && !d.isAfter(monthEnd);
-      }).toList();
-    }
-    if (_cachedPrevOps == null) {
-      _cachedPrevOps = _operations.where((o) {
-        final d = DateTime.tryParse(o.date);
-        return d != null && !d.isBefore(prevMonthStart) && !d.isAfter(prevMonthEnd);
-      }).toList();
-    }
-    final curOps = _cachedCurOps!;
-    final prevOps = _cachedPrevOps!;
+    final curOps = _operations.where((o) => !o.isDeleted && _inPeriod(o.date, monthStart, monthEnd)).toList();
+    final prevOps = _operations.where((o) => !o.isDeleted && _inPeriod(o.date, prevMonthStart, prevMonthEnd)).toList();
 
     final monthIncome = curOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + _amountInRub(o));
     final monthExpense = curOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
@@ -1078,57 +1068,53 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     // 12 — category spike (spending in a category jumped vs its 3-month average)
-    final catExpenses = <String, List<double>>{};
-    for (int m = 0; m < 4; m++) {
+    final catMonthTotals = <String, Map<int, double>>{};
+    final historyMonths = _recPrefs.recurringMonths > 4 ? _recPrefs.recurringMonths : 4;
+    for (int m = 0; m < historyMonths; m++) {
       final ms = DateTime(now.year, now.month - m, 1);
-      final me = DateTime(now.year, now.month - m + 1, 0);
-      for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null && _inPeriod(o.date, ms, me))) {
-        catExpenses.putIfAbsent(o.categoryId!, () => []);
-        if (m == 0) catExpenses[o.categoryId]!.add(_amountInRub(o));
+      final me = DateTime(now.year, now.month - m + 1, 0, 23, 59, 59);
+      for (final o in _operations.where((o) => !o.isDeleted && o.type == 'expense' && o.categoryId != null && _inPeriod(o.date, ms, me))) {
+        final totals = catMonthTotals.putIfAbsent(o.categoryId!, () => {});
+        totals[m] = (totals[m] ?? 0) + _amountInRub(o);
       }
     }
-    for (final entry in catExpenses.entries) {
-      final curTotal = entry.value.fold(0.0, (s, v) => s + v);
+    for (final entry in catMonthTotals.entries) {
+      final curTotal = entry.value[0] ?? 0;
       final cat3m = _catById[entry.key];
       if (cat3m == null || curTotal < 500) continue;
       final prevTotals = <double>[];
       for (int m = 1; m <= 3; m++) {
-        final ms = DateTime(now.year, now.month - m, 1);
-        final me = DateTime(now.year, now.month - m + 1, 0);
-        double sum = 0;
-        for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId == entry.key && _inPeriod(o.date, ms, me))) {
-          sum += _amountInRub(o);
-        }
+        final sum = entry.value[m] ?? 0;
         if (sum > 0) prevTotals.add(sum);
       }
-      if (prevTotals.isNotEmpty) {
-        final avg3m = prevTotals.reduce((a, b) => a + b) / prevTotals.length;
-        if (avg3m > 0 && curTotal > avg3m * (1 + _recPrefs.spikePct / 100)) {
-          _recommendations.add(Recommendation(
-            id: 'category_spike_${entry.key}', type: 'risk', severity: 'medium',
-            title: 'Рост «${cat3m.name}» на ${((curTotal - avg3m) / avg3m * 100).round()}%',
-            description: 'Было ${fmt(avg3m)}/мес, стало ${fmt(curTotal)}.',
-            titleArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString()},
-            descArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString(), 'avg': fmt(avg3m), 'curr': fmt(curTotal)},
-          ));
-        }
+      if (prevTotals.isEmpty) continue;
+      final avg3m = prevTotals.reduce((a, b) => a + b) / prevTotals.length;
+      if (avg3m > 0 && curTotal > avg3m * (1 + _recPrefs.spikePct / 100)) {
+        _recommendations.add(Recommendation(
+          id: 'category_spike_${entry.key}', type: 'risk', severity: 'medium',
+          title: 'Рост «${cat3m.name}» на ${((curTotal - avg3m) / avg3m * 100).round()}%',
+          description: 'Было ${fmt(avg3m)}/мес, стало ${fmt(curTotal)}.',
+          titleArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString()},
+          descArgs: {'name': cat3m.name, 'pct': ((curTotal - avg3m) / avg3m * 100).round().toString(), 'avg': fmt(avg3m), 'curr': fmt(curTotal)},
+        ));
       }
     }
 
     // 13 — recurring expenses (potential subscriptions)
-    final catMonthTotals = <String, Map<int, double>>{};
-    for (int m = 0; m < _recPrefs.recurringMonths; m++) {
-      final ms = DateTime(now.year, now.month - m, 1);
-      final me = DateTime(now.year, now.month - m + 1, 0);
-      for (final o in _operations.where((o) => o.type == 'expense' && o.categoryId != null && _inPeriod(o.date, ms, me))) {
-        catMonthTotals.putIfAbsent(o.categoryId!, () => {});
-        catMonthTotals[o.categoryId!]![m] = (catMonthTotals[o.categoryId!]![m] ?? 0) + _amountInRub(o);
-      }
-    }
     final subCats = <String>{};
-    for (final entry in catMonthTotals.entries) {
-      if (entry.value.length >= _recPrefs.recurringMonths) {
-        final amounts = entry.value.values.toList();
+    if (_recPrefs.recurringMonths > 0) {
+      for (final entry in catMonthTotals.entries) {
+        final amounts = <double>[];
+        var hasAllMonths = true;
+        for (int m = 0; m < _recPrefs.recurringMonths; m++) {
+          final amount = entry.value[m] ?? 0;
+          if (amount <= 0) {
+            hasAllMonths = false;
+            break;
+          }
+          amounts.add(amount);
+        }
+        if (!hasAllMonths || amounts.isEmpty) continue;
         final avg = amounts.reduce((a, b) => a + b) / amounts.length;
         if (avg > 200 && amounts.every((a) => (a - avg).abs() / avg < 0.15)) {
           subCats.add(entry.key);
@@ -1325,7 +1311,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _invalidateOpCaches();
     _changedOpIds.add(op.id);
     _recalcBudgetSpent();
-    _scheduleRecommendations();
+    await _ensureBudgetForOperation(op);
+    _refreshDerivedData();
     await _registerTags(op.tags);
     await _saveCache();
     if (_rates.isNotEmpty) {
@@ -1367,6 +1354,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     for (final p in pending) {
       if (!serverIds.contains(p.id)) _operations.insert(0, p);
     }
+    _refreshDerivedData();
     _scheduleNotify();
   }
 
@@ -1403,8 +1391,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         debugPrint('Sync pending op ${op.id} failed: $e');
       }
     }
-    _recalcBudgetSpent();
-    _scheduleRecommendations();
+    _refreshDerivedData();
     _scheduleNotify();
   }
 
@@ -1460,7 +1447,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _changedOpIds.add(op.id);
 
     _recalcBudgetSpent();
-    _scheduleRecommendations();
+    await _ensureBudgetForOperation(op);
+    _refreshDerivedData();
     await _registerTags(op.tags);
     await _saveCache();
     _scheduleNotify();
@@ -1473,11 +1461,9 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final op = _operations[opIdx];
     if (op.isPending) {
       _operations.removeAt(opIdx);
-      _invalidateOpCaches();
       _deletedOpIds.add(id);
-    _recalcBudgetSpent();
-    _scheduleRecommendations();
-    _scheduleNotify();
+      _refreshDerivedData();
+      _scheduleNotify();
       return;
     }
     if (authService.isAuthenticated) {
@@ -1505,11 +1491,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (!op.isDeleted) {
       _operations[opIdx] = _operations[opIdx].copyWith(isDeleted: true);
     }
-    _invalidateOpCaches();
     _changedOpIds.add(op.id);
-
-    _recalcBudgetSpent();
-    _scheduleRecommendations();
+    _refreshDerivedData();
     await _saveCache();
     _scheduleNotify();
   }
@@ -1518,8 +1501,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final now = formatApiDateTime();
     _operations[idx] = op.copyWith(isPending: true, isDeleted: true, updatedAt: now);
 
-    _recalcBudgetSpent();
-    _scheduleRecommendations();
+    _refreshDerivedData();
     _saveCache();
     _scheduleNotify();
   }
@@ -1565,7 +1547,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         if (accounts != null && accounts.isNotEmpty) {
           final serverId = accounts[0]['id']?.toString();
           if (serverId != null && serverId.isNotEmpty) {
-            _accounts.add(newAccount.copyWith(id: serverId));
+            final added = newAccount.copyWith(id: serverId);
+            _accounts.add(added);
+            _accountById[serverId] = added;
+            _refreshDerivedData();
             await _saveCache();
             _scheduleNotify();
             return;
@@ -1587,6 +1572,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     _accounts.add(toAdd);
     _accountById[toAdd.id] = toAdd;
+    _refreshDerivedData();
     await _saveCache();
     _scheduleNotify();
   }
@@ -1627,6 +1613,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final idx = _accounts.indexWhere((a) => a.id == acc.id);
     if (idx >= 0) _accounts[idx] = acc; else _accounts.add(acc);
     _accountById[acc.id] = acc;
+    _refreshDerivedData();
 
     await _saveCache();
     _scheduleNotify();
@@ -1685,6 +1672,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     _accounts.removeWhere((a) => a.id == id);
     _accountById.remove(id);
+    _refreshDerivedData();
     await _saveCache();
     _scheduleNotify();
   }
@@ -1741,6 +1729,8 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
               id: serverId, name: c.name, type: c.type, icon: c.icon, color: c.color,
               parentId: c.parentId, isDefault: false, systemId: sid,
             ));
+            _rebuildLookups();
+            _scheduleRecommendations();
             await _saveCache();
             _scheduleNotify();
             return;
@@ -1762,6 +1752,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     _categories.add(toAdd);
     _catById[toAdd.id] = toAdd;
+    _scheduleRecommendations();
     await _saveCache();
     _scheduleNotify();
   }
@@ -1802,6 +1793,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final idx = _categories.indexWhere((x) => x.id == catToSave.id);
     if (idx >= 0) _categories[idx] = catToSave; else _categories.add(catToSave);
     _catById[catToSave.id] = catToSave;
+    _scheduleRecommendations();
     await _saveCache();
     _scheduleNotify();
   }
@@ -1815,6 +1807,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (c.isPending) {
       _categories.removeAt(idx);
       _catById.remove(id);
+      _scheduleRecommendations();
       await _saveCache();
       _scheduleNotify();
       return;
@@ -1854,6 +1847,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     _categories.removeWhere((x) => x.id == id);
     _catById.remove(id);
+    _scheduleRecommendations();
     await _saveCache();
     _scheduleNotify();
   }
@@ -1964,13 +1958,14 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
   double _calcSpentForMonth(String categoryId) {
     final now = DateTime.now();
-    final ops = _operations.where((o) {
-      if (o.categoryId != categoryId || o.type != 'expense' || o.isDeleted) return false;
-      final dateKey = o.date.length >= 10 ? o.date.substring(0, 10) : o.date;
-      final d = DateTime.tryParse(dateKey);
-      return d != null && d.year == now.year && d.month == now.month;
-    });
-    return ops.fold(0.0, (sum, o) => sum + o.amount);
+    final start = DateTime(now.year, now.month, 1);
+    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final ops = _operations.where((o) =>
+        o.categoryId == categoryId &&
+        o.type == 'expense' &&
+        !o.isDeleted &&
+        _inPeriod(o.date, start, end));
+    return ops.fold(0.0, (sum, o) => sum + _amountInRub(o));
   }
 
   void _recalcBudgetSpent() {
@@ -1981,7 +1976,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     for (final o in _operations) {
       if (o.isDeleted || o.type != 'expense' || o.categoryId == null) continue;
       if (_inPeriod(o.date, start, end)) {
-        catSpent[o.categoryId!] = (catSpent[o.categoryId!] ?? 0) + o.amount;
+        catSpent[o.categoryId!] = (catSpent[o.categoryId!] ?? 0) + _amountInRub(o);
       }
     }
     for (var i = 0; i < _budgets.length; i++) {
@@ -1996,10 +1991,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
 
   Map<String, double> _ratesForOp(Operation op) {
     final dateKey = op.date.length >= 10 ? op.date.substring(0, 10) : null;
-    if (dateKey != null && _histRates.containsKey(dateKey)) {
-      return _histRates[dateKey]!;
-    }
-    return _rates;
+    return _effectiveRates(dateKey);
   }
 
   void _recalcAccountBalances() {
@@ -2057,6 +2049,25 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _cachedMonthExpense = _operations
         .where((o) => o.type == 'expense' && !o.isDeleted && _inPeriod(o.date, start, end))
         .fold(0.0, (s, o) => s + _amountInRub(o));
+  }
+
+  void _refreshDerivedData() {
+    _invalidateOpCaches();
+    _recalcBudgetSpent();
+    _recalcCachedTotals();
+    _generateRecommendations();
+  }
+
+  Future<void> _ensureBudgetForOperation(Operation op) async {
+    if (op.isDeleted || op.type == 'transfer' || op.categoryId == null) return;
+    final hasBudget = _budgets.any((b) => b.categoryId == op.categoryId && !b.isDeleted);
+    if (hasBudget) return;
+    await addBudget(Budget(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      categoryId: op.categoryId!,
+      limit: 0,
+    ));
+    _error = null;
   }
 
   String _iso8601Date(DateTime dt) {
@@ -2165,6 +2176,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
               isCompleted: g.isCompleted, accountId: g.accountId, accountIds: g.accountIds,
             ));
             await _saveGoals();
+            _scheduleRecommendations();
             _scheduleNotify();
             return;
           }
@@ -2203,6 +2215,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
               goalType: g.goalType, goalState: g.goalState,
             ));
             await _saveGoals();
+            _scheduleRecommendations();
             _scheduleNotify();
             return;
           }
@@ -2217,6 +2230,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (authService.isAuthenticated) return;
     _goals.add(g);
     await _saveGoals();
+    _scheduleRecommendations();
     _scheduleNotify();
   }
 
@@ -2256,6 +2270,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         }, targetId: id);
         _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, accountIds: newAccountIds, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
         await _saveGoals();
+        _scheduleRecommendations();
         _scheduleNotify();
         return;
       } on ApiException catch (e) {
@@ -2282,6 +2297,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _error = null;
         _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, accountIds: newAccountIds, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
         await _saveGoals();
+        _scheduleRecommendations();
         _scheduleNotify();
         return;
       } on ApiException catch (e) {
@@ -2294,6 +2310,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (authService.isAuthenticated) return;
     _goals[idx] = g.copyWith(currentAmount: currentAmount, isCompleted: isCompleted, title: newTitle, targetAmount: newTarget, deadline: newDeadline, startDate: newStartDate, accountId: newAccountId, accountIds: newAccountIds, currencyId: newCurrencyId, comment: newComment, category: newCategory, goalType: newType, goalState: newState);
     await _saveGoals();
+    _scheduleRecommendations();
     _scheduleNotify();
   }
 
@@ -2373,6 +2390,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         }, targetId: id);
         _goals.removeWhere((g) => g.id == id);
         await _saveGoals();
+        _scheduleRecommendations();
         _scheduleNotify();
         return;
       } on ApiException catch (e) {
@@ -2391,6 +2409,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _error = null;
         _goals.removeWhere((g) => g.id == id);
         await _saveGoals();
+        _scheduleRecommendations();
         _scheduleNotify();
         return;
       } on ApiException catch (e) {
@@ -2402,6 +2421,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     if (authService.isAuthenticated) return;
     _goals.removeWhere((g) => g.id == id);
     await _saveGoals();
+    _scheduleRecommendations();
     _scheduleNotify();
   }
 

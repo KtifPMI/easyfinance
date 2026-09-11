@@ -424,13 +424,9 @@ class ApiClient {
       if (_webSessionId != null) 'Cookie': 'PHPSESSID=$_webSessionId',
     };
     final response = await _httpClient.get(uri, headers: hdrs).timeout(_timeout);
-    if (response.statusCode != 200) {
-      throw ApiException('Tachometers HTTP ${response.statusCode}', 'TACHOMETERS_ERROR');
-    }
+    if (response.statusCode != 200) return [];
     final decoded = jsonDecode(response.body);
-    if (decoded is List) {
-      return decoded.cast<Map<String, dynamic>>();
-    }
+    if (decoded is List) return decoded.cast<Map<String, dynamic>>();
     return [];
   }
 
