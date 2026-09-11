@@ -678,6 +678,7 @@
   "account.credit_type": "Кредит",
   "account.savings_type": "Накопления",
   "account.electronic_type": "Электронный",
+  "currency.rub_name": "Российский рубль",
   "currency.usd_name": "Доллар США",
   "currency.eur_name": "Евро",
   "currency.gbp_name": "Фунт стерлингов",

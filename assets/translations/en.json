@@ -680,6 +680,7 @@
   "goals.type_mortgage": "Mortgage",
   "scan.receipt_comment": "Receipt: {store}",
   "currency.sek_name": "Swedish Krona",
+  "currency.rub_name": "Russian Ruble",
   "currency.usd_name": "US Dollar",
   "home.cancel": "Cancel",
   "currency.jpy_name": "Japanese Yen",

@@ -598,6 +598,7 @@
   "account.credit_type": "Kredit",
   "account.savings_type": "Ersparnisse",
   "account.electronic_type": "Elektronisch",
+  "currency.rub_name": "Russischer Rubel",
   "currency.usd_name": "US-Dollar",
   "currency.eur_name": "Euro",
   "currency.gbp_name": "Pfund Sterling",

@@ -30,18 +30,21 @@ class FinHealthCard extends StatelessWidget {
     final incomeColor = indicators.incomeColor ?? _color(indicators.income, incomeRanges);
     final finColor = indicators.finStateColor ?? _color(indicators.finState, finRanges);
 
-    // Локальные подсказки хранят ключи переводов; серверные (hasServerTexts) — готовый текст.
-    String title(String key, String serverTitle) =>
-        serverTitle.isNotEmpty ? serverTitle : context.tr(key);
-    String body(String key, String serverDesc) =>
-        serverDesc.isNotEmpty ? stripHtmlTags(serverDesc) : context.tr(key);
+    // Подсказки хранят ключи переводов (health.*.tipN): уровень приходит из
+    // API (цвет → ключ), при отсутствии — фолбэк по значению (порядок как у цветов).
+    String tip(String prefix, String serverTip, double value, List<double> ranges) {
+      if (serverTip.isNotEmpty) return serverTip;
+      if (value >= ranges[2]) return '$prefix.tip3';
+      if (value >= ranges[1]) return '$prefix.tip2';
+      return '$prefix.tip1';
+    }
 
     final items = [
-      ('health.status', Icons.favorite, indicators.finState, finColor, indicators.finStateTip, indicators.finStateTitle, indicators.finStateDescription),
-      ('health.money', Icons.attach_money, indicators.money, moneyColor, indicators.moneyTip, indicators.moneyTitle, indicators.moneyDescription),
-      ('health.budget', Icons.bar_chart, indicators.budget, budgetColor, indicators.budgetTip, indicators.budgetTitle, indicators.budgetDescription),
-      ('health.debts', Icons.account_balance, indicators.debt, debtColor, indicators.debtTip, indicators.debtTitle, indicators.debtDescription),
-      ('health.savings', Icons.savings, indicators.income, incomeColor, indicators.incomeTip, indicators.incomeTitle, indicators.incomeDescription),
+      ('health.status', Icons.favorite, indicators.finState, finColor, tip('health.status', indicators.finStateTip, indicators.finState, finRanges)),
+      ('health.money', Icons.attach_money, indicators.money, moneyColor, tip('health.money', indicators.moneyTip, indicators.money, moneyRanges)),
+      ('health.budget', Icons.bar_chart, indicators.budget, budgetColor, tip('health.budget', indicators.budgetTip, indicators.budget, budgetRanges)),
+      ('health.debts', Icons.account_balance, indicators.debt, debtColor, tip('health.debt', indicators.debtTip, indicators.debt, debtRanges)),
+      ('health.savings', Icons.savings, indicators.income, incomeColor, tip('health.income', indicators.incomeTip, indicators.income, incomeRanges)),
     ];
 
     return Container(
@@ -66,8 +69,8 @@ class FinHealthCard extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: Text(title(item.$1, item.$6), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600)),
-                        content: SingleChildScrollView(child: Text(body(item.$5, item.$7), style: Theme.of(context).textTheme.bodyMedium)),
+                        title: Text(context.tr(item.$1), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600)),
+                        content: SingleChildScrollView(child: Text(context.tr(item.$5), style: Theme.of(context).textTheme.bodyMedium)),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('common.ok'))),
                         ],

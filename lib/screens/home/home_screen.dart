@@ -340,9 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Expanded(
                           child: Row(
                             children: [
-                              Text(currencySymbol(codes[r * 3 + c]), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                              const SizedBox(width: 4),
-                              Text(codes[r * 3 + c], style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
+                              Text(codes[r * 3 + c], style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                               const Spacer(),
                               Text(store.rates[codes[r * 3 + c]]!.toStringAsFixed(1), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textFor(context))),
                             ],
@@ -511,7 +509,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   String _currencyName(BuildContext context, FinanceStore store, String code) {
-    const keys = {'USD': 'currency.usd_name', 'EUR': 'currency.eur_name', 'GBP': 'currency.gbp_name', 'CHF': 'currency.chf_name', 'CNY': 'currency.cny_name', 'JPY': 'currency.jpy_name', 'BYN': 'currency.byn_name', 'UAH': 'currency.uah_name', 'KZT': 'currency.kzt_name', 'PLN': 'currency.pln_name', 'CZK': 'currency.czk_name', 'SEK': 'currency.sek_name', 'NOK': 'currency.nok_name'};
+    const keys = {'RUB': 'currency.rub_name', 'USD': 'currency.usd_name', 'EUR': 'currency.eur_name', 'GBP': 'currency.gbp_name', 'CHF': 'currency.chf_name', 'CNY': 'currency.cny_name', 'JPY': 'currency.jpy_name', 'BYN': 'currency.byn_name', 'UAH': 'currency.uah_name', 'KZT': 'currency.kzt_name', 'PLN': 'currency.pln_name', 'CZK': 'currency.czk_name', 'SEK': 'currency.sek_name', 'NOK': 'currency.nok_name'};
     final key = keys[code];
     if (key != null) return context.tr(key);
     final cur = store.currencies.where((c) => currencyIdToCode[c['id']?.toString()] == code || c['symbol']?.toString() == code).firstOrNull;

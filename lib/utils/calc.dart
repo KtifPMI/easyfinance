@@ -3,6 +3,7 @@ import '../models/account.dart';
 import '../models/budget.dart';
 import '../models/operation.dart';
 import '../services/currency_rate_service.dart';
+import '../theme/theme.dart';
 
 class FinHealthIndicators {
   final double finState;
@@ -16,19 +17,7 @@ class FinHealthIndicators {
   final String incomeTip;
   final String finStateTip;
 
-  // Серверные тексты из dashboard.get (title/description со стр. сайта)
-  final String finStateTitle;
-  final String moneyTitle;
-  final String budgetTitle;
-  final String debtTitle;
-  final String incomeTitle;
-  final String finStateDescription;
-  final String moneyDescription;
-  final String budgetDescription;
-  final String debtDescription;
-  final String incomeDescription;
-
-  // Цвета, переданные сервером в description (color:#hex)
+  // Цвета, переданные сервером в description (color:#hex), маппятся на фирменные
   final Color? finStateColor;
   final Color? moneyColor;
   final Color? budgetColor;
@@ -46,71 +35,73 @@ class FinHealthIndicators {
     this.debtTip = '',
     this.incomeTip = '',
     this.finStateTip = '',
-    this.finStateTitle = '',
-    this.moneyTitle = '',
-    this.budgetTitle = '',
-    this.debtTitle = '',
-    this.incomeTitle = '',
-    this.finStateDescription = '',
-    this.moneyDescription = '',
-    this.budgetDescription = '',
-    this.debtDescription = '',
-    this.incomeDescription = '',
     this.finStateColor,
     this.moneyColor,
     this.budgetColor,
     this.debtColor,
     this.incomeColor,
   });
-
-  bool get hasServerTexts => moneyTitle.isNotEmpty || finStateTitle.isNotEmpty;
 }
 
-String stripHtmlTags(String html) {
-  return html
-      .replaceAll(RegExp(r'<[^>]*>'), ' ')
-      .replaceAll('&mdash;', '—')
-      .replaceAll('&laquo;', '«')
-      .replaceAll('&raquo;', '»')
-      .replaceAll('&nbsp;', ' ')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-}
-
-/// Достаёт цвет из HTML-описания тахометра: `color:#bf0000` → красный.
+/// Достаёт цвет из HTML-описания тахометра: `color:#bf0000` и маппит
+/// серверные цвета подсказок на фирменные цвета приложения.
 Color? parseTachColor(String html) {
   final m = RegExp(r'color:#([0-9a-fA-F]{6})').firstMatch(html);
   if (m == null) return null;
-  return Color(0xFF000000 | int.parse(m.group(1)!, radix: 16));
+  final hex = m.group(1)!.toLowerCase();
+  switch (hex) {
+    case '106601': return AppColors.success; // зелёный — фирменный
+    case 'bf0000': return AppColors.expense; // красный
+    case 'd6ab00': return AppColors.warning; // жёлтый
+    default:
+      return Color(0xFF000000 | int.parse(hex, radix: 16));
+  }
 }
+
+/// Уровень подсказки (1=плохо, 2=средне, 3=хорошо) из цвета описания API.
+/// Цвет и текст совета сервер генерирует вместе, поэтому это точное
+/// соответствие сайту.
+int? tachTipLevel(String html) {
+  final c = parseTachColor(html);
+  if (c == null) return null;
+  if (c == AppColors.success) return 3;
+  if (c == AppColors.warning) return 2;
+  if (c == AppColors.expense) return 1;
+  return null;
+}
+
+int _finLevel(double v) => v >= 66 ? 3 : (v >= 33 ? 2 : 1);
+int _moneyLevel(double v) => v >= 83 ? 3 : (v >= 33 ? 2 : 1);
+int _budgetLevel(double v) => v <= 33 ? 3 : (v <= 66 ? 2 : 1); // меньше израсходовано → лучше
+int _debtLevel(double v) => v <= 30 ? 3 : (v <= 60 ? 2 : 1); // меньше долгов → лучше
+int _incomeLevel(double v) => v >= 50 ? 3 : (v >= 25 ? 2 : 1);
 
 /// Собирает FinHealthIndicators из ответа dashboard.get (порядок:
 /// finState, money, budget, debt, income). null если данных меньше 5.
+/// Подсказки выбираются по уровню из цвета API и сохраняются как ключи
+/// переводов (health.*.tipN) — текст всегда на языке приложения.
 FinHealthIndicators? finHealthFromServer(List<Map<String, dynamic>> items) {
   if (items.length < 5) return null;
   double val(int i) => (items[i]['value'] as num?)?.toDouble() ?? 0;
-  String txt(int i, String key) => (items[i][key] as String?) ?? '';
+  String desc(int i) => (items[i]['description'] as String?) ?? '';
+  int level(int i, int fallback(double v)) => tachTipLevel(desc(i)) ?? fallback(val(i));
+  String tipKey(String prefix, int l) => 'health.$prefix.tip$l';
   return FinHealthIndicators(
     finState: val(0),
     money: val(1),
     budget: val(2),
     debt: val(3),
     income: val(4),
-    finStateTitle: txt(0, 'title'),
-    moneyTitle: txt(1, 'title'),
-    budgetTitle: txt(2, 'title'),
-    debtTitle: txt(3, 'title'),
-    incomeTitle: txt(4, 'title'),
-    finStateDescription: txt(0, 'description'),
-    moneyDescription: txt(1, 'description'),
-    budgetDescription: txt(2, 'description'),
-    debtDescription: txt(3, 'description'),
-    incomeDescription: txt(4, 'description'),
-    finStateColor: parseTachColor(txt(0, 'description')),
-    moneyColor: parseTachColor(txt(1, 'description')),
-    budgetColor: parseTachColor(txt(2, 'description')),
-    debtColor: parseTachColor(txt(3, 'description')),
-    incomeColor: parseTachColor(txt(4, 'description')),
+    finStateTip: tipKey('status', level(0, _finLevel)),
+    moneyTip: tipKey('money', level(1, _moneyLevel)),
+    budgetTip: tipKey('budget', level(2, _budgetLevel)),
+    debtTip: tipKey('debt', level(3, _debtLevel)),
+    incomeTip: tipKey('income', level(4, _incomeLevel)),
+    finStateColor: parseTachColor(desc(0)),
+    moneyColor: parseTachColor(desc(1)),
+    budgetColor: parseTachColor(desc(2)),
+    debtColor: parseTachColor(desc(3)),
+    incomeColor: parseTachColor(desc(4)),
   );
 }
 
