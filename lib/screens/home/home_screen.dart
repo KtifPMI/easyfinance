@@ -37,6 +37,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _plannedSynced = false;
   bool _goalsSynced = false;
+  bool _tachSynced = false;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +53,12 @@ class _HomeScreenState extends State<HomeScreen> {
           _goalsSynced = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             store.refreshGoals();
+          });
+        }
+        if (!_tachSynced) {
+          _tachSynced = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            store.fetchTachometers();
           });
         }
         final indicators = store.finHealth;

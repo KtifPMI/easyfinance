@@ -193,6 +193,19 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     await _loadGoals();
     await _loadDisplayCurrency();
     _watchedCurrencies = await _loadWatchedCurrencies();
+    final tachRaw = prefs.getString('easyfinance_cached_tachometers');
+    if (tachRaw != null) {
+      try {
+        final t = jsonDecode(tachRaw) as Map<String, dynamic>;
+        _serverFinHealth = FinHealthIndicators(
+          finState: (t['finState'] as num?)?.toDouble() ?? 0,
+          money: (t['money'] as num?)?.toDouble() ?? 0,
+          budget: (t['budget'] as num?)?.toDouble() ?? 0,
+          debt: (t['debt'] as num?)?.toDouble() ?? 0,
+          income: (t['income'] as num?)?.toDouble() ?? 0,
+        );
+      } catch (_) {}
+    }
     final ratesRaw = prefs.getString('easyfinance_cached_rates');
     if (ratesRaw != null) {
       try {
@@ -254,6 +267,15 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
     await _saveBudgets();
     await _saveGoals();
+    if (_serverFinHealth != null) {
+      await prefs.setString('easyfinance_cached_tachometers', jsonEncode({
+        'finState': _serverFinHealth!.finState,
+        'money': _serverFinHealth!.money,
+        'budget': _serverFinHealth!.budget,
+        'debt': _serverFinHealth!.debt,
+        'income': _serverFinHealth!.income,
+      }));
+    }
   }
 
   void saveUser(User user) {
@@ -698,22 +720,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _recalcCachedTotals();
     _generateRecommendations();
 
-    try {
-      final tach = await apiClient.getTachometers();
-      debugPrint('TACH: got ${tach.length} items');
-      if (tach.length >= 5) {
-        _serverFinHealth = FinHealthIndicators(
-          finState: (tach[0]['value'] as num?)?.toDouble() ?? 0,
-          money: (tach[1]['value'] as num?)?.toDouble() ?? 0,
-          budget: (tach[2]['value'] as num?)?.toDouble() ?? 0,
-          debt: (tach[3]['value'] as num?)?.toDouble() ?? 0,
-          income: (tach[4]['value'] as num?)?.toDouble() ?? 0,
-        );
-        debugPrint('TACH: serverFinHealth set -> fs=${_serverFinHealth!.finState} money=${_serverFinHealth!.money} budget=${_serverFinHealth!.budget} debt=${_serverFinHealth!.debt} income=${_serverFinHealth!.income}');
-      }
-    } catch (e) {
-      debugPrint('TACH getTachometers error: $e');
-    }
+    await fetchTachometers();
 
     _useMock = !authService.isAuthenticated;
     _isLoading = false;
@@ -727,7 +734,29 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       _refreshDerivedData();
       if (hasListeners) _scheduleNotify();
     });
-    } catch (_) { _fetching = false; }
+} catch (_) { _fetching = false; }
+  }
+
+  /// Загружает тахометры по API (dashboard.get). При ошибке (например, нет сети)
+  /// оставляет последние данные из кэша — ничего не сбрасывает.
+  Future<void> fetchTachometers() async {
+    if (!authService.isAuthenticated) return;
+    try {
+      final tach = await apiClient.getTachometers();
+      if (tach.length >= 5) {
+        _serverFinHealth = FinHealthIndicators(
+          finState: (tach[0]['value'] as num?)?.toDouble() ?? 0,
+          money: (tach[1]['value'] as num?)?.toDouble() ?? 0,
+          budget: (tach[2]['value'] as num?)?.toDouble() ?? 0,
+          debt: (tach[3]['value'] as num?)?.toDouble() ?? 0,
+          income: (tach[4]['value'] as num?)?.toDouble() ?? 0,
+        );
+        await _saveCache();
+        if (hasListeners) _scheduleNotify();
+      }
+    } catch (e) {
+      debugPrint('fetchTachometers error: $e');
+    }
   }
 
   Future<void> loadMoreOperations(DateTime from, DateTime to) async {
