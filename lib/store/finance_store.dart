@@ -2026,12 +2026,20 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   void _recalcCachedTotals() {
-    _cachedTotalBalance = _accounts
-        .where((a) => a.includeInTotal && !a.isArchived)
-        .fold<double>(0, (sum, a) => sum + double.parse(CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates).toStringAsFixed(2)));
-    _cachedMoneyBalance = _accounts
-        .where((a) => a.includeInTotal && !a.isArchived && groupForType(a.type) == 'money')
-        .fold<double>(0, (sum, a) => sum + double.parse(CurrencyRateService.convert(accountActualBalance(a), a.currency, _displayCurrency, _rates).toStringAsFixed(2)));
+    _cachedTotalBalance = 0;
+    _cachedMoneyBalance = 0;
+    for (final a in _accounts) {
+      if (!a.includeInTotal || a.isArchived) continue;
+      final bal = accountActualBalance(a);
+      final converted = CurrencyRateService.convert(bal, a.currency, _displayCurrency, _rates);
+      final rounded = double.parse(converted.toStringAsFixed(2));
+      _cachedTotalBalance += rounded;
+      if (groupForType(a.type) == 'money') _cachedMoneyBalance += rounded;
+      if (a.currency != _displayCurrency) {
+        debugPrint('RATES_DEBUG: ${a.name} | bal=$bal ${a.currency} | rate=${_rates[a.currency]} | converted=$converted | rounded=$rounded');
+      }
+    }
+    debugPrint('RATES_DEBUG: total=$_cachedTotalBalance money=$_cachedMoneyBalance display=$_displayCurrency');
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, 1);
     final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
