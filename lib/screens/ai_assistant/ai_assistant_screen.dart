@@ -124,11 +124,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     // ---- BUDGETS ----
     if (_match(q, ['бюджет', 'лимит', 'план', 'превышен', 'перерасход', 'budget', 'limit', 'over', 'planned'])) {
       if (budgets.isEmpty) return _ChatMessage(role: 'assistant', text: context.tr('ai.no_budgets'), navLabel: context.tr('ai.nav_budget'), navRoute: '/plan');
+      final spentMap = store.monthSpentByCategory();
       final parts = budgets.map((b) {
         final cat = store.categories.where((c) => c.id == b.categoryId).firstOrNull;
-        final pct = b.limit > 0 ? (b.spent / b.limit * 100).round() : 0;
+        final spent = spentMap[b.categoryId] ?? 0;
+        final pct = b.limit > 0 ? (spent / b.limit * 100).round() : 0;
         final warn = pct > 100 ? ' ??' : pct > 80 ? ' ??' : ' ??';
-        return 'вЂў ${b.name ?? cat?.name ?? 'вЂ”'}: ${store.fmt(b.spent)} / ${store.fmt(b.limit)} ($pct%)$warn';
+        return 'вЂў ${b.name ?? cat?.name ?? 'вЂ”'}: ${store.fmt(spent)} / ${store.fmt(b.limit)} ($pct%)$warn';
       }).join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.budget_overview')}\n\n$parts', navLabel: context.tr('ai.nav_budget'), navRoute: '/plan');
     }

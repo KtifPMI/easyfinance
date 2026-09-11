@@ -275,13 +275,15 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     final catId = op.categoryId;
     final budget = catId != null ? store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull : null;
     final now = DateTime.now();
-    final catSpend = store.categorySpentInMonth(catId, now);
-    final totalBudgetRemaining = store.budgets.where((b) => !b.isDeleted).fold(0.0, (s, b) => s + (b.limit - b.spent));
+    final spentMap = store.monthSpentByCategory(now);
+    final catSpend = spentMap[catId] ?? 0;
+    final budgetSpent = budget != null ? (spentMap[budget.categoryId] ?? 0) : 0.0;
+    final totalBudgetRemaining = store.budgets.where((b) => !b.isDeleted).fold(0.0, (s, b) => s + (b.limit - (spentMap[b.categoryId] ?? 0)));
     final opAccount = store.getAccount(op.accountId);
     final opCurrency = opAccount?.currency ?? op.currency;
     final opDateKey = op.date.length >= 10 ? op.date.substring(0, 10) : null;
 
-    final bool overBudget = budget != null && budget.spent > budget.limit;
+    final bool overBudget = budget != null && budgetSpent > budget.limit;
     final accentColor = overBudget ? AppColors.expense : AppColors.success;
 
     final children = <Widget>[
@@ -304,9 +306,9 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
               Text('add_operation.category_spend'.tr(namedArgs: {'amount': store.fmt(catSpend)}), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
               if (budget != null) ...[
                 const SizedBox(height: 4),
-                Text('${store.fmt(budget.spent)} / ${store.fmt(budget.limit)}', style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                Text('${store.fmt(budgetSpent)} / ${store.fmt(budget.limit)}', style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
                 const SizedBox(height: 4),
-                Text('add_operation.category_budget_remaining'.tr(namedArgs: {'amount': store.fmt((budget.limit - budget.spent).clamp(0, double.infinity))}), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
+                Text('add_operation.category_budget_remaining'.tr(namedArgs: {'amount': store.fmt((budget.limit - budgetSpent).clamp(0, double.infinity))}), style: TextStyle(fontSize: 14, color: AppColors.textFor(context))),
               ],
             ],
             const SizedBox(height: 8),
@@ -813,7 +815,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     if (amount <= 0) return const SizedBox.shrink();
     final budget = store.budgets.where((b) => b.categoryId == _categoryId && !b.isDeleted).firstOrNull;
     if (budget == null) return const SizedBox.shrink();
-    final newSpent = budget.spent + amount;
+    final newSpent = store.categorySpentInMonth(_categoryId) + amount;
     final forecastPct = getBudgetForecastPercent(budget.copyWith(spent: newSpent));
     if (forecastPct <= 90) return const SizedBox.shrink();
 

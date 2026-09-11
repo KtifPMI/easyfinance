@@ -108,6 +108,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
 
     final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
     final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
+    final spentByCat = store.monthSpentByCategory();
 
     return RefreshIndicator(
       onRefresh: () => store.fetchAllData(),
@@ -177,14 +178,14 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           if (incomeBudgets.isNotEmpty) ...[
             Text(context.tr('budget.income'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.income)),
             const SizedBox(height: 8),
-            ...incomeBudgets.map((b) => _budgetItem(context, b, store)),
+            ...incomeBudgets.map((b) => _budgetItem(context, b, store, spentByCat)),
             const SizedBox(height: 12),
           ],
 
           if (expenseBudgets.isNotEmpty) ...[
             Text(context.tr('budget.expense'), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.expense)),
             const SizedBox(height: 8),
-            ...expenseBudgets.map((b) => _budgetItem(context, b, store)),
+            ...expenseBudgets.map((b) => _budgetItem(context, b, store, spentByCat)),
           ],
           const SizedBox(height: 24),
         ],
@@ -206,11 +207,13 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _budgetItem(BuildContext context, Budget b, FinanceStore store) {
+  Widget _budgetItem(BuildContext context, Budget b, FinanceStore store, Map<String, double> spentByCat) {
     final cat = store.getCategory(b.categoryId);
-    final forecastPct = getBudgetForecastPercent(b);
+    final spent = spentByCat[b.categoryId] ?? 0;
+    final bWithSpent = b.copyWith(spent: spent);
+    final forecastPct = getBudgetForecastPercent(bWithSpent);
     final color = budgetForecastColor(forecastPct);
-    final spentPct = b.limit > 0 ? (b.spent / b.limit * 100) : 0.0;
+    final spentPct = b.limit > 0 ? (spent / b.limit * 100) : 0.0;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
@@ -229,7 +232,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     child: Text(b.name ?? tCat(context, cat?.name ?? ''), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(width: 8),
-                  Text('${store.fmt(b.spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
+                  Text('${store.fmt(spent)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {

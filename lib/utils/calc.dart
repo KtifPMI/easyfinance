@@ -36,9 +36,9 @@ FinHealthIndicators calcFinHealth(List<Account> accounts, List<Operation> operat
   final moneyMonths = _calcMoneyMonths(accounts, operations, now, rates);
   final moneyVal = (moneyMonths / 6.0 * 100).clamp(0.0, 100.0);
   final budgetRaw = _calcBudget(budgets);
-  final budgetVal = (100 - budgetRaw).clamp(0.0, 100.0);
+  final budgetVal = budgetRaw.clamp(0.0, 100.0);
   final debtRaw = _calcDebt(accounts, operations, now, rates);
-  final debtVal = (100 - debtRaw).clamp(0.0, 100.0);
+  final debtVal = debtRaw.clamp(0.0, 100.0);
   final incomeRaw = _calcIncomeRaw(operations, accounts, now, rates);
   final incomeVal = (incomeRaw / 20.0 * 100).clamp(0.0, 100.0);
   final finStateVal = _calcFinState(moneyMonths, budgetRaw, debtRaw, incomeRaw);
@@ -79,19 +79,17 @@ double _calcMoneyMonths(List<Account> accounts, List<Operation> operations, Date
   }
   if (moneyBalance <= 0) return 0;
 
-  final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
-  final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
-
-  final threeMonthOps = operations.where((o) {
+  final monthStart = DateTime(now.year, now.month - 1, now.day);
+  final periodOps = operations.where((o) {
     if (o.isDeleted) return false;
     final d = DateTime.tryParse(o.date);
-    return d != null && !d.isBefore(threeMonthsAgo) && !d.isAfter(endOfCurrent);
+    return d != null && !d.isBefore(monthStart) && !d.isAfter(now);
   }).toList();
 
-  final expenses = threeMonthOps
+  final expenses = periodOps
       .where((o) => o.type == 'expense')
       .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
-  final creditPayments = _calcCreditPayments(threeMonthOps, accounts, rates);
+  final creditPayments = _calcCreditPayments(periodOps, accounts, rates);
   final avgMonthlyExpense = (expenses + creditPayments) / 3;
 
   if (avgMonthlyExpense <= 0) return 6;
@@ -112,52 +110,52 @@ double _calcBudget(List<Budget> budgets) {
   final active = budgets.where((b) => !b.isDeleted).toList();
   final totalPlanned = active.fold<double>(0, (s, b) => s + b.limit);
   final totalSpent = active.fold<double>(0, (s, b) => s + b.spent);
-  if (totalPlanned == 0 || totalSpent == 0) return 0;
+  if (totalSpent == 0) return 100;
+  if (totalPlanned == 0) return 0;
   return ((1 - totalSpent / totalPlanned) * 100).clamp(0.0, 100.0);
 }
 
 double _calcDebt(List<Account> accounts, List<Operation> operations, DateTime now, Map<String, double> rates) {
-  final startOfMonth = DateTime(now.year, now.month, 1);
-  final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+  final periodStart = DateTime(now.year, now.month - 1, now.day);
 
-  final monthOps = operations.where((o) {
+  final periodOps = operations.where((o) {
     if (o.isDeleted) return false;
     final d = DateTime.tryParse(o.date);
-    return d != null && !d.isBefore(startOfMonth) && !d.isAfter(endOfMonth);
+    return d != null && !d.isBefore(periodStart) && !d.isAfter(now);
   }).toList();
 
-  final creditPayments = _calcCreditPayments(monthOps, accounts, rates);
-  final income = monthOps
+  final creditPayments = _calcCreditPayments(periodOps, accounts, rates);
+  final income = periodOps
       .where((o) => o.type == 'income')
       .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
+  if (creditPayments == 0) return 100;
   if (income == 0) return 0;
 
   return ((1 - creditPayments / income) * 100).clamp(0.0, 100.0);
 }
 
 double _calcIncomeRaw(List<Operation> operations, List<Account> accounts, DateTime now, Map<String, double> rates) {
-  final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
-  final endOfCurrent = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+  final periodStart = DateTime(now.year, now.month - 1, now.day);
 
-  final threeMonthOps = operations.where((o) {
+  final periodOps = operations.where((o) {
     if (o.isDeleted) return false;
     final d = DateTime.tryParse(o.date);
-    return d != null && !d.isBefore(threeMonthsAgo) && !d.isAfter(endOfCurrent);
+    return d != null && !d.isBefore(periodStart) && !d.isAfter(now);
   }).toList();
 
-  final income3m = threeMonthOps
+  final income3m = periodOps
       .where((o) => o.type == 'income')
       .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
   if (income3m == 0) return 0;
 
-  final expenses3m = threeMonthOps
+  final expenses3m = periodOps
       .where((o) => o.type == 'expense')
       .fold<double>(0, (s, o) => s + _opToRub(o, accounts, rates));
-  final creditPayments = _calcCreditPayments(threeMonthOps, accounts, rates);
+  final creditPayments = _calcCreditPayments(periodOps, accounts, rates);
   final totalExp = expenses3m + creditPayments;
   if (totalExp == 0) return 20;
 
-  return (((income3m / totalExp) - 1) * 100).clamp(0.0, 20.0);
+  return ((income3m / totalExp) - 1) * 500;
 }
 
 double _calcFinState(double moneyMonths, double budget, double debt, double incomeRaw) {
