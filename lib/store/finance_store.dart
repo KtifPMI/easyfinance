@@ -81,6 +81,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   List<Operation>? _cachedCurOps;
   List<Operation>? _cachedPrevOps;
   FinHealthIndicators? _cachedFinHealth;
+  FinHealthIndicators? _serverFinHealth;
 
   void _rebuildLookups() {
     _catById = {for (final c in _categories) c.id: c};
@@ -419,7 +420,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   double get moneyBalance => _cachedMoneyBalance;
   bool get balanceLoaded => _balanceLoaded;
 
-  FinHealthIndicators get finHealth => _cachedFinHealth ??= calcFinHealth(_accounts, _operations, _budgets, _rates);
+  FinHealthIndicators get finHealth => _serverFinHealth ?? (_cachedFinHealth ??= calcFinHealth(_accounts, _operations, _budgets, _rates));
 
   double accountActualBalance(Account a) {
     double bal = a.balance;
@@ -675,7 +676,24 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _rebuildLookups();
     _recalcBudgetSpent();
     _recalcCachedTotals();
+    _recalcBudgetSpent();
+    _recalcCachedTotals();
     _generateRecommendations();
+
+    try {
+      final tach = await apiClient.getTachometers();
+      if (tach.length >= 5) {
+        _serverFinHealth = FinHealthIndicators(
+          finState: (tach[0]['value'] as num?)?.toDouble() ?? 0,
+          money: (tach[1]['value'] as num?)?.toDouble() ?? 0,
+          budget: (tach[2]['value'] as num?)?.toDouble() ?? 0,
+          debt: (tach[3]['value'] as num?)?.toDouble() ?? 0,
+          income: (tach[4]['value'] as num?)?.toDouble() ?? 0,
+        );
+      }
+    } catch (e) {
+      debugPrint('getTachometers error: $e');
+    }
 
     _useMock = !authService.isAuthenticated;
     _isLoading = false;
