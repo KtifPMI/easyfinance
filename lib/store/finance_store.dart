@@ -1074,8 +1074,9 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
 
     // 8 — idle cash
+    const moneyTypes = {'cash', 'card', 'electronic', 'bank_account'};
     for (final a in _accounts) {
-      if (a.icon == 'cash' && a.balance > _recPrefs.idleCashMin) {
+      if (moneyTypes.contains(a.type) && a.balance > _recPrefs.idleCashMin) {
         _recommendations.add(Recommendation(
           id: 'idle_cash_${a.id}', type: 'optimization', severity: 'low',
           title: '${fmt(a.balance)} наличными без движения',

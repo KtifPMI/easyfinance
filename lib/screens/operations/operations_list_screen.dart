@@ -228,10 +228,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    if (store.loadingAllOps)
-                                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                                    else
-                                      Icon(Icons.info_outline, size: 16, color: AppColors.primary),
+                                    Icon(Icons.info_outline, size: 16, color: AppColors.primary),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
@@ -239,12 +236,13 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                         style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textFor(context)),
                                       ),
                                     ),
-                                    TextButton(
-                                      onPressed: store.loadingAllOps ? null : () => store.loadAllOperations(),
-                                      child: store.loadingAllOps
-                                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                                          : Text(context.tr('operations.load_all')),
-                                    ),
+                                    if (store.loadingAllOps)
+                                      const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                                    else
+                                      TextButton(
+                                        onPressed: () => store.loadAllOperations(),
+                                        child: Text(context.tr('operations.load_all')),
+                                      ),
                                   ],
                                 ),
                               ),

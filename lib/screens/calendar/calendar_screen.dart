@@ -52,7 +52,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             const SizedBox(width: 8, height: 8, child: DecoratedBox(decoration: BoxDecoration(color: Colors.grey, shape: BoxShape.circle))),
             const SizedBox(width: 6),
-            Text(context.tr('calendar.legend_planned'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('calendar.legend_planned'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           ],
         ),
         Row(
@@ -60,7 +60,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             const SizedBox(width: 8, height: 8, child: DecoratedBox(decoration: BoxDecoration(color: AppColors.danger, shape: BoxShape.circle))),
             const SizedBox(width: 6),
-            Text(context.tr('calendar.legend_overdue'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('calendar.legend_overdue'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           ],
         ),
         Row(
@@ -68,7 +68,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           children: [
             const SizedBox(width: 8, height: 8, child: DecoratedBox(decoration: BoxDecoration(color: AppColors.transfer, shape: BoxShape.circle))),
             const SizedBox(width: 6),
-            Text(context.tr('calendar.legend_confirmed'), style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSecondaryFor(context))),
+            Text(context.tr('calendar.legend_confirmed'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context))),
           ],
         ),
       ],

@@ -6,7 +6,6 @@ import '../../components/common/screen_scaffold.dart';
 import '../../models/account.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
-import '../../utils/currency_utils.dart';
 import '../../services/currency_rate_service.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/account_utils.dart';
@@ -249,7 +248,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             border: Border.all(color: AppColors.borderFor(context)),
           ),
           child: Text(
-            '${currencySymbol(e.key)} ${formatMoney(e.value, currency: e.key)}',
+            formatMoney(e.value, currency: e.key),
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textFor(context)),
           ),
         );
