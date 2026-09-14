@@ -54,11 +54,14 @@ class AppColors {
       Theme.of(context).brightness == Brightness.dark ? darkPrimaryLight : primaryLight;
 
   static const chartPalette = [
-    Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00),
-    Color(0xFF8E24AA), Color(0xFF00ACC1), Color(0xFFF4511E), Color(0xFF3949AB),
-    Color(0xFFD81B60), Color(0xFF7CB342), Color(0xFF6D4C41), Color(0xFFC0CA33),
-    Color(0xFFFF7043), Color(0xFF26A69A), Color(0xFF5C6BC0), Color(0xFFAB47BC),
-    Color(0xFFFFCA28), Color(0xFF795548), Color(0xFF00897B), Color(0xFFF06292),
+    Color(0xFFE53935), Color(0xFFFB8C00), Color(0xFF8E24AA), Color(0xFFF4511E),
+    Color(0xFFD81B60), Color(0xFF6D4C41), Color(0xFFFF7043), Color(0xFFAB47BC),
+    Color(0xFFFFCA28), Color(0xFF795548), Color(0xFFF06292), Color(0xFFFF5722),
+    Color(0xFF9C27B0), Color(0xFFFF8F00), Color(0xFFEF5350), Color(0xFFA1887F),
+    Color(0xFFEC407A), Color(0xFFF57C00), Color(0xFFC2185B), Color(0xFF8D6E63),
+    Color(0xFFFF6D00), Color(0xFFDD2C00), Color(0xFFFFC107), Color(0xFFE040FB),
+    Color(0xFF6A1B9A), Color(0xFFAD1457), Color(0xFF4A148C), Color(0xFF880E4F),
+    Color(0xFF7B1FA2), Color(0xFFBCAAA4),
   ];
 }
 
