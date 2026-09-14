@@ -397,8 +397,10 @@ class _HomeScreenState extends State<HomeScreen> {
             children: codes.map((code) => RadioListTile<String>(
               title: Row(
                 children: [
-                  Text(currencySymbol(code), style: Theme.of(context).textTheme.bodyLarge!),
-                  const SizedBox(width: 8),
+                  if (currencySymbol(code) != code) ...[
+                    Text(currencySymbol(code), style: Theme.of(context).textTheme.bodyLarge!),
+                    const SizedBox(width: 8),
+                  ],
                   Text(code, style: TextStyle(fontSize: 16)),
                 ],
               ),

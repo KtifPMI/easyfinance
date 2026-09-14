@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/operation.dart';
+import '../utils/currency_utils.dart';
 
 bool showKopeks = true;
 bool showKopeksInOps = true;
@@ -12,6 +13,35 @@ void bindFormatSettings(bool kopeks, bool kopeksInOps) {
   _boundShowKopeks = kopeks;
   _boundShowKopeksInOps = kopeksInOps;
   _formatBound = true;
+}
+
+String _formatMoneyWithKopeksCore(double amount, {String currency = 'RUB'}) {
+  final symbol = currencySymbol(currency);
+  final sign = amount < 0 ? '-' : '';
+  final abs = amount.abs();
+  final parts = abs.toStringAsFixed(2).split('.');
+  final intPart = parts[0].replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]} ',
+  );
+  final locale = Intl.defaultLocale ?? 'ru';
+  final after = signAfterAmount(locale: locale, currency: currency);
+  final number = '$sign$intPart.${parts[1]}';
+  return after ? '$number $symbol' : '$symbol$number';
+}
+
+String _formatMoneyWholeCore(double amount, {String currency = 'RUB'}) {
+  final symbol = currencySymbol(currency);
+  final sign = amount < 0 ? '-' : '';
+  final abs = amount.abs();
+  final intPart = abs.floor().toString().replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]} ',
+  );
+  final locale = Intl.defaultLocale ?? 'ru';
+  final after = signAfterAmount(locale: locale, currency: currency);
+  final number = '$sign$intPart';
+  return after ? '$number $symbol' : '$symbol$number';
 }
 
 String formatApiDateTime([DateTime? dt]) {
@@ -37,30 +67,9 @@ String formatMoney(double amount, {String currency = 'RUB'}) {
   return _formatMoneyWithKopeks(amount, currency: currency);
 }
 
-String _formatMoneyWithKopeks(double amount, {String currency = 'RUB'}) {
-  final symbols = {'RUB': '₽', 'USD': '\$', 'EUR': '€'};
-  final symbol = symbols[currency] ?? currency;
-  final sign = amount < 0 ? '-' : '';
-  final abs = amount.abs();
-  final parts = abs.toStringAsFixed(2).split('.');
-  final intPart = parts[0].replaceAllMapped(
-    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-    (m) => '${m[1]} ',
-  );
-  return '$sign$intPart.${parts[1]} $symbol';
-}
+String _formatMoneyWithKopeks(double amount, {String currency = 'RUB'}) => _formatMoneyWithKopeksCore(amount, currency: currency);
 
-String formatMoneyWhole(double amount, {String currency = 'RUB'}) {
-  final symbols = {'RUB': '₽', 'USD': '\$', 'EUR': '€'};
-  final symbol = symbols[currency] ?? currency;
-  final sign = amount < 0 ? '-' : '';
-  final abs = amount.abs();
-  final intPart = abs.floor().toString().replaceAllMapped(
-    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-    (m) => '${m[1]} ',
-  );
-  return '$sign$intPart $symbol';
-}
+String formatMoneyWhole(double amount, {String currency = 'RUB'}) => _formatMoneyWholeCore(amount, currency: currency);
 
 String formatSignedMoney(double amount, {String currency = 'RUB'}) {
   final sign = amount > 0 ? '+' : '';

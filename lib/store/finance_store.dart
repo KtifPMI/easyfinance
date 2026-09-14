@@ -876,15 +876,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     final prevIncome = prevOps.where((o) => o.type == 'income').fold(0.0, (s, o) => s + _amountInRub(o));
     final prevExpense = prevOps.where((o) => o.type == 'expense').fold(0.0, (s, o) => s + _amountInRub(o));
 
-    final sym = currencySymbol(_displayCurrency);
-    final symBefore = _displayCurrency == 'USD' || _displayCurrency == 'GBP';
-    String fmt(double v) {
-      final converted = CurrencyRateService.convert(v, 'RUB', _displayCurrency, _rates);
-      final sign = converted < 0 ? '-' : '';
-      final intPart = converted.abs().floor().toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]} ');
-      return symBefore ? '$sign$sym$intPart' : '$sign$intPart $sym';
-    }
+String fmt(double v) => formatMoneyWhole(
+      CurrencyRateService.convert(v, 'RUB', _displayCurrency, _rates),
+      currency: _displayCurrency,
+    );
     String pct(double part, double total) => total > 0 ? ((part / total) * 100).round().toString() : '0';
 
     // 1 — budget overspent or near limit

@@ -1,7 +1,7 @@
 const Map<String, String> currencyIdToCode = {
   '1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF',
   '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT',
-  '11': 'CNY', '12': 'CZK', '13': 'SEK', '14': 'NOK',
+  '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK',
 };
 
 const Map<String, String> currencyCodeToId = {
@@ -11,11 +11,31 @@ const Map<String, String> currencyCodeToId = {
 };
 
 const Map<String, String> currencySymbols = {
-  'RUB': '₽', 'USD': '\$', 'EUR': '€', 'GBP': '£', 'CHF': '₣',
+  'RUB': '₽', 'USD': '\$', 'EUR': '€', 'GBP': '£', 'CHF': 'CHF',
   'CNY': '¥', 'JPY': '¥', 'BYN': 'Br', 'UAH': '₴', 'KZT': '₸',
   'PLN': 'zł', 'CZK': 'Kč', 'SEK': 'kr', 'NOK': 'kr',
   'XAG': 'Ag', 'XAU': 'Au',
 };
+
+/// Валюты, чей знак по национальному стандарту ставится ПОСЛЕ суммы ($/£/¥/₩ ... ставят перед).
+const Set<String> currenciesWithPostfixSign = {
+  'RUB', 'EUR', 'CHF', 'BYN', 'PLN', 'CZK', 'HUF', 'SEK', 'NOK', 'DKK',
+  'BGN', 'VND', 'MNT', 'UZS', 'AMD', 'AZN', 'GEL', 'UAH', 'KZT',
+};
+
+/// Валюты, чей знак по национальному стандарту ставится ПЕРЕД суммой.
+const Set<String> currenciesWithPrefixSign = {
+  'USD', 'GBP', 'CNY', 'JPY', 'CAD', 'AUD', 'NZD', 'HKD', 'SGD',
+  'INR', 'TRY', 'ILS', 'KRW', 'THB', 'MXN', 'BRL', 'COP', 'ZAR',
+};
+
+/// ПОЛНОЕ правило: для русского языка все знаки ставятся после суммы
+/// (русская типографика), для иностранных — по национальному стандарту валюты.
+bool signAfterAmount({String? locale, String currency = 'RUB'}) {
+  final loc = locale ?? 'ru';
+  if (loc == 'ru') return true;
+  return currenciesWithPostfixSign.contains(currency);
+}
 
 const List<String> allCurrencyCodes = [
   'RUB', 'USD', 'EUR', 'GBP', 'CHF', 'CNY', 'JPY',
