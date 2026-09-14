@@ -1057,7 +1057,7 @@ String fmt(double v) => formatMoneyWhole(
       !g.isCompleted && (g.title.contains('подушк') || g.title.contains('безопасн') || g.title.contains('сбережен') ||
                          g.title.contains('emergency') || g.title.contains('safety') || g.title.contains('cushion'))
     ).isEmpty) {
-      final suggested = monthExpense > 0 ? '${(monthExpense * _recPrefs.emergencyMonths).toStringAsFixed(0)} $sym' : '—';
+      final suggested = monthExpense > 0 ? '${(monthExpense * _recPrefs.emergencyMonths).toStringAsFixed(0)} ${currencySymbol(_displayCurrency)}' : '—';
       _recommendations.add(Recommendation(
         id: 'no_emergency', type: 'tip', severity: 'low',
         title: 'Создайте финансовую подушку',
