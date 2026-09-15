@@ -21,7 +21,7 @@ jobs:
           echo "storeFile=../key.jks" > android/key.properties
           echo "keyAlias=release" >> android/key.properties
           echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
-          echo "keyPassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
