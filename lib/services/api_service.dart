@@ -82,6 +82,15 @@ class ApiService {
     return user;
   }
 
+  /// Удаляет аккаунт на сервере (users.delete). Требует пароль пользователя.
+  /// При неверном/пустом пароле сервер отвечает ошибкой INVALID_PASSWORD /
+  /// MISSING_PASSWORD — здесь она уходит как ApiException.
+  Future<void> deleteAccount(String password) async {
+    await _client.post('users.delete', params: _writeParams(), body: {
+      'request': {'request_data': {'password': password}},
+    });
+  }
+
   Future<List<Tag>> getTags() async {
     final json = await _client.get('tags.get');
     return _parseList(json, 'tags', Tag.fromJson);

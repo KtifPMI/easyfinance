@@ -8,6 +8,7 @@ import '../../components/common/app_logo.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../services/csv_export_service.dart';
 import '../../services/update_service.dart';
+import '../../services/api_client.dart';
 import '../../store/finance_store.dart';
 import '../../store/locale_store.dart';
 import '../../store/planned_payment_store.dart';
@@ -124,6 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
+          _deleteAccountItem(context),
           const SizedBox(height: 32),
           const Center(child: AppLogo(height: 32)),
           const SizedBox(height: 16),
@@ -435,40 +437,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _exportItem(BuildContext context) {
+  Widget _deleteAccountItem(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(top: 4),
       child: AppCard(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: InkWell(
-          onTap: () async {
-            final now = DateTime.now();
-            final picked = await showDateRangePicker(
-              context: context,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-              initialDateRange: DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
-            );
-            if (picked != null && context.mounted) {
-              final store = context.read<FinanceStore>();
-              try {
-                await CsvExportService.export(store, picked.start, picked.end);
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Export error: $e'), backgroundColor: AppColors.danger));
-                }
-              }
-            }
-          },
+          onTap: () => _showDeleteAccountDialog(context),
           child: Row(
             children: [
-              Icon(Icons.file_download_outlined, color: AppColors.primary, size: 20),
+              Icon(Icons.delete_forever_outlined, color: AppColors.danger, size: 20),
               const SizedBox(width: 12),
-              Text(context.tr('settings.export_csv'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+              Text(context.tr('settings.delete_account'), style: TextStyle(fontSize: 16, color: AppColors.danger)),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _showDeleteAccountDialog(BuildContext context) async {
+    final pwdCtrl = TextEditingController();
+    var busy = false;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (dialogCtx, setDialogState) {
+          Future<void> submit() async {
+            final password = pwdCtrl.text.trim();
+            if (password.isEmpty) return;
+            setDialogState(() => busy = true);
+            final store = context.read<FinanceStore>();
+            try {
+              await store.authService.apiService.deleteAccount(password);
+              if (!dialogCtx.mounted) return;
+              Navigator.pop(dialogCtx);
+              await store.handleAccountDeleted();
+            } on ApiException catch (e) {
+              if (!dialogCtx.mounted) return;
+              setDialogState(() => busy = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(e.message), backgroundColor: AppColors.danger),
+              );
+            } catch (e) {
+              if (!dialogCtx.mounted) return;
+              setDialogState(() => busy = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('$e'), backgroundColor: AppColors.danger),
+              );
+            }
+          }
+
+          return AlertDialog(
+            title: Text(context.tr('settings.delete_account_title')),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(context.tr('settings.delete_account_warning')),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: pwdCtrl,
+                  obscureText: true,
+                  autofocus: true,
+                  enabled: !busy,
+                  keyboardType: TextInputType.visiblePassword,
+                  decoration: InputDecoration(
+                    hintText: context.tr('settings.delete_account_password_hint'),
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onSubmitted: (_) { if (!busy) submit(); },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: busy ? null : () => Navigator.pop(dialogCtx),
+                child: Text(context.tr('settings.delete_account_cancel')),
+              ),
+              FilledButton(
+                onPressed: busy ? null : submit,
+                style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+                child: busy
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(context.tr('settings.delete_account_confirm')),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    pwdCtrl.dispose();
   }
 }
