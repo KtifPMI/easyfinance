@@ -72,7 +72,14 @@ class ApiService {
     final json = await _client.get('users.get');
     final list = json['users'] as List<dynamic>?;
     if (list == null || list.isEmpty) throw ApiException('User not found', 'NOT_FOUND');
-    return User.fromJson(list.first as Map<String, dynamic>);
+    final user = User.fromJson(list.first as Map<String, dynamic>);
+    // При удалении аккаунта на сайте сервер зачищает login/name/mail,
+    // но OAuth-токен при этом остаётся валидным. Пустые все три поля для
+    // аутентифицированного пользователя = аккаунт удалён.
+    if (user.login.isEmpty && user.name.isEmpty && user.email.isEmpty) {
+      throw ApiException('Account deleted', 'ACCOUNT_DELETED');
+    }
+    return user;
   }
 
   Future<List<Tag>> getTags() async {

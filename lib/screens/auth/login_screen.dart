@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_logo.dart';
+import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
@@ -33,12 +34,36 @@ class _LoginScreenState extends State<LoginScreen> {
     final initialRoute = hasPin ? '/pin' : (startScreen == 'addOperation' ? '/add-operation' : '/main');
 
     if (restored && mounted) {
-      Navigator.pushReplacementNamed(context, initialRoute);
-      store.fetchAllData();
-      NotificationService().rescheduleAll();
-      NotificationService().trackAppOpen();
+      // Проверяем, что аккаунт не был удалён на сайте: при удалении сервер
+      // зачищает login/name/mail, а токен остаётся валидным.
+      if (await _verifyAccountNotDeleted(store)) {
+        Navigator.pushReplacementNamed(context, initialRoute);
+        store.fetchAllData();
+        NotificationService().rescheduleAll();
+        NotificationService().trackAppOpen();
+      }
     } else if (mounted && !store.useMock) {
       Navigator.pushReplacementNamed(context, initialRoute);
+    }
+  }
+
+  Future<bool> _verifyAccountNotDeleted(FinanceStore store) async {
+    try {
+      final api = store.authService.apiService;
+      final user = await api.getUser();
+      if (user.id.isNotEmpty && store.apiClient.userId != user.id) {
+        store.apiClient.setAuth(accessToken: store.apiClient.accessToken ?? '', userId: user.id);
+      }
+      return true;
+    } on ApiException catch (e) {
+      if (e.code == 'ACCOUNT_DELETED') {
+        store.handleAccountDeleted();
+        return false;
+      }
+      return true;
+    } catch (_) {
+      // Нет сети или сервер недоступен — оставляем сессию как есть.
+      return true;
     }
   }
 

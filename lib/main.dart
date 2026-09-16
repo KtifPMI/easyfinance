@@ -18,6 +18,8 @@ import 'store/theme_store.dart';
 import 'theme/theme.dart';
 import 'utils/format.dart';
 
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -70,7 +72,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FinanceStore(authService: authService, apiClient: apiClient, plannedPayments: plannedPaymentStore)),
+        ChangeNotifierProvider(create: (_) => _createFinanceStore(authService: authService, apiClient: apiClient, plannedPayments: plannedPaymentStore)),
         ChangeNotifierProvider.value(value: localeStore),
         ChangeNotifierProvider.value(value: plannedPaymentStore),
         ChangeNotifierProvider.value(value: themeStore),
@@ -89,6 +91,19 @@ void main() async {
   );
 }
 
+FinanceStore _createFinanceStore({
+  required AuthService authService,
+  required ApiClient apiClient,
+  required PlannedPaymentStore plannedPayments,
+}) {
+  final store = FinanceStore(authService: authService, apiClient: apiClient, plannedPayments: plannedPayments);
+  // Аккаунт удалён на сайте — полный logout и переход на экран логина.
+  store.onAccountDeleted = () {
+    appNavigatorKey.currentState?.pushNamedAndRemoveUntil(AppRouter.login, (r) => false);
+  };
+  return store;
+}
+
 class EasyFinanceApp extends StatelessWidget {
   const EasyFinanceApp({super.key});
 
@@ -105,6 +120,7 @@ class EasyFinanceApp extends StatelessWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeStore.themeMode,
       initialRoute: AppRouter.login,
+      navigatorKey: appNavigatorKey,
       routes: AppRouter.routes,
       onGenerateRoute: AppRouter.onGenerateRoute,
       onUnknownRoute: (settings) => MaterialPageRoute(

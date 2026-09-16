@@ -60,6 +60,11 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   bool showKopeks = true;
   bool showKopeksInOps = true;
   bool _authExpired = false;
+
+  /// Сервер сообщил, что аккаунт был удалён (login/name/mail зачищены при
+  /// валидном токене). Внешний слой (main.dart) вешает сюда навигацию на
+  /// экран логина после полного logout.
+  void Function()? onAccountDeleted;
   String? _error;
   bool _notifyScheduled = false;
   bool _dataLoaded = false;
@@ -331,9 +336,21 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     _goals = [];
     _tags = [];
     _templates = [];
-    _useMock = true;
+_useMock = true;
     _allOperationsLoaded = false;
     _scheduleNotify();
+  }
+
+  /// Аккаунт удалён на сайте: полный logout (чистит токены и локальный кэш)
+  /// и переход на экран логина.
+  Future<void> handleAccountDeleted() async {
+    try {
+      await logout();
+    } catch (e) {
+      debugPrint('logout on account deleted error: $e');
+    }
+    clearAuthExpired();
+    onAccountDeleted?.call();
   }
 
   bool get isAuthenticated => authService.isAuthenticated;
@@ -613,7 +630,13 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
           apiClient.setAuth(accessToken: apiClient.accessToken ?? '', userId: u.id);
         }
         return u;
-      }).catchError((e) { debugPrint('getUser error: $e'); return null as dynamic; }),
+      }).catchError((Object e) {
+        debugPrint('getUser error: $e');
+        if (e is ApiException && e.code == 'ACCOUNT_DELETED') {
+          handleAccountDeleted();
+        }
+        return null as dynamic;
+      }),
 
       api.getAccounts().then((accs) {
         final pendingAcc = _accounts.where((a) => a.isPending).toList();
