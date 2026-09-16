@@ -53,6 +53,7 @@ class _DebugScreenState extends State<DebugScreen> {
     _MethodItem('budget.categoriesset', 'budget.categoriesset'),
     _MethodItem('users.get', 'users.get'),
     _MethodItem('users.post — with goals', 'users.post'),
+    _MethodItem('users.delete — ⚠ REAL DELETE', 'users.delete'),
     _MethodItem('goals.get', 'goals.get'),
     _MethodItem('goals.post', 'goals.post'),
     _MethodItem('goals.set', 'goals.set'),
@@ -185,6 +186,13 @@ class _DebugScreenState extends State<DebugScreen> {
           ]
         }
       ]
+    }
+  }
+}''',
+    'users.delete': '''{
+  "request": {
+    "request_data": {
+      "password": "CURRENT_PASSWORD"
     }
   }
 }''',
