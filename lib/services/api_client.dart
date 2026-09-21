@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
+import 'easy_api_credentials.dart';
 
 class ApiClient {
   static const String baseUrl = 'https://api.easyfinance.ru/v2/';
@@ -232,6 +233,72 @@ class ApiClient {
   bool _isRedirect(int statusCode) {
     return statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308;
   }
+
+  /// Нативная регистрация: POST /registration.xml на easyApi.
+  ///
+  /// Возвращает id нового пользователя либо бросает [ApiException] с текстом
+  /// ошибки сервера (занятый логин/e-mail, некорректные поля и т.п.).
+  Future<String> register({
+    required String login,
+    required String password,
+    required String name,
+    required String email,
+  }) async {
+    final uri = Uri.parse(
+        '${EasyApiCredentials.registerUrl}?app_id=${EasyApiCredentials.appId}&app_pass=${EasyApiCredentials.appPass}');
+    final xml = '''
+<?xml version="1.0" encoding="UTF-8"?>
+<request>
+  <request_info>
+    <count_row>1</count_row>
+    <object>user</object>
+  </request_info>
+  <user>
+    <user_login>${_xmlEscape(login.trim())}</user_login>
+    <name>${_xmlEscape(name.trim())}</name>
+    <user_mail>${_xmlEscape(email.trim())}</user_mail>
+    <password>${_xmlEscape(password)}</password>
+  </user>
+</request>
+''';
+    try {
+      final response = await _httpClient
+          .post(
+            uri,
+            headers: {'Content-Type': 'text/xml; charset=utf-8'},
+            body: xml,
+          )
+          .timeout(_timeout);
+      return _parseRegisterResponse(response.statusCode, response.body);
+    } on TimeoutException {
+      throw ApiException('Registration timeout', 'TIMEOUT');
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Registration failed: $e', 'REGISTER_FAIL');
+    }
+  }
+
+  String _parseRegisterResponse(int statusCode, String body) {
+    if (statusCode != 200) {
+      final error = RegExp(r'<error[^>]*>([^<]*)</error>').firstMatch(body)?.group(1)?.trim();
+      throw ApiException(error != null && error.isNotEmpty ? error : 'HTTP $statusCode', statusCode.toString());
+    }
+    final success = RegExp(r'<success>(true|false)</success>').firstMatch(body)?.group(1);
+    if (success != 'true') {
+      final message =
+          RegExp(r'<message>(.*?)</message>', dotAll: true).firstMatch(body)?.group(1)?.trim();
+      throw ApiException(message != null && message.isNotEmpty ? message : 'Registration failed', 'REGISTER_FAILED');
+    }
+    return RegExp(r'<id>(\d+)</id>').firstMatch(body)?.group(1) ?? '';
+  }
+
+  String _xmlEscape(String value) => value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&apos;');
 
   String? _extractTokenFromUri(Uri uri) {
     // Проверяем query parameters

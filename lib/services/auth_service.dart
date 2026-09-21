@@ -185,6 +185,22 @@ class AuthService {
     return user;
   }
 
+  /// Нативная регистрация: создаёт аккаунт и сразу входит (password grant).
+  Future<User?> register({
+    required String login,
+    required String password,
+    required String name,
+    required String email,
+  }) async {
+    await _apiClient.register(
+      login: login,
+      password: password,
+      name: name,
+      email: email,
+    );
+    return loginWithPassword(login: login, password: password);
+  }
+
   Future<void> logout() async {
     _apiClient.clearAuth();
     _apiService = null;
