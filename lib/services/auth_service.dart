@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_client.dart';
 import 'api_service.dart';
 import '../models/user.dart';
+import '../models/master_status.dart';
 
 class AuthService {
   final ApiClient _apiClient;
@@ -213,5 +214,11 @@ class AuthService {
     await prefs.remove(_webSessionKey);
     await prefs.remove(_legacyAppIdKey);
     await prefs.remove(_legacySecretKeyKey);
+  }
+
+  /// Проверяет статус мастера первого входа.
+  Future<MasterStatus> checkMasterStatus() async {
+    final data = await _apiClient.getMaster();
+    return MasterStatus.fromJson(data);
   }
 }

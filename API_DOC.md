@@ -92,11 +92,14 @@
   <p class="toc-item toc-sub"><a href="#s49">4.9. currencies.get — валюты</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
   <p class="toc-item toc-sub"><a href="#s410">4.10. systemCategories.get</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
   <p class="toc-item toc-sub"><a href="#s411">4.11. users.get — данные пользователя</a><span class="toc-dots"></span><span class="toc-page-num">17</span></p>
+  <p class="toc-item toc-sub"><a href="#s412">4.12. users.delete — удаление аккаунта</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
 
   <p class="toc-item"><a href="#web">5. Веб-эндпоинты (сайт)</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
   <p class="toc-item"><a href="#tariffs">6. Тарифы и ограничения синхронизации</a><span class="toc-dots"></span><span class="toc-page-num">18</span></p>
   <p class="toc-item"><a href="#errors">7. Коды ошибок</a><span class="toc-dots"></span><span class="toc-page-num">19</span></p>
   <p class="toc-item"><a href="#checklist">8. Чек-лист методов</a><span class="toc-dots"></span><span class="toc-page-num">22</span></p>
+  <p class="toc-item"><a href="#server">9. Серверные доработки (backend)</a><span class="toc-dots"></span><span class="toc-page-num">23</span></p>
+  <p class="toc-item"><a href="#master">10. Мастер первого входа (first time entrance master)</a><span class="toc-dots"></span><span class="toc-page-num">24</span></p>
 </div>
 
 # EasyFinance API — Полная документация разработчика
@@ -162,13 +165,50 @@
 
 3. Далее во всех запросах передаются `access_token` и `uid` (для подписи `sig`).
 
-<h3 id="s23">2.3. Login / password + получение access_token</h3>
+<h3 id="s23">2.3. Login / password + получение access_token (grant_type=password)</h3>
 
-Альтернативный флоу (партнёрские приложения):
-- `POST` на сайт `https://easyfinance.ru/login/` с параметрами `login`, `pass`
-  возвращает cookie `PHPSESSID` (используется веб-эндпоинтами, см. раздел 5).
-- Для API v2 приложение обменивает связку `app_id` + `secret_key` на `access_token`
-  и `uid` (параметры `app_id`, `secret_key` обмениваются на `access_token` и `uid`).
+Основной **нативный** флоу авторизации приложения (без WebView). Серверная
+поддержка включена (см. §9.1). Пароль передаётся только по HTTPS.
+
+```
+GET https://api.easyfinance.ru/v2/
+    ?app_id=APP_ID
+    &grant_type=password
+    &username=LOGIN
+    &password=PASS
+    &response_type=token
+    &sig=SIG
+```
+
+- `sig` строится **без** `uid`: `md5(secret_key + params)`, где `params` — параметры
+  в порядке: `app_id`, затем по алфавиту (`grant_type`, `password`, `response_type`,
+  `username`).
+- Пароль на сервере хранится как `sha1(plain)`; сервер сравнивает `sha1(password)`.
+
+**Ответ:** HTTP `302 Found` с заголовком (тело пустое):
+```
+Location: https://api.easyfinance.ru/v2/result?access_token=...&expires_in=3367607398
+```
+`access_token` извлекается из `Location` (тот же приём, что в
+`exchangeCodeForToken` — запрос с `followRedirects = false`). `expires_in` —
+в секундах (~100 лет).
+
+**Проверка:**
+```bash
+APP_ID="7e65ca8e482d55ad7ad31476d7b33dc64a7d0f60"
+SECRET="e3df02801d7e7073a0d042f6a040aa043b9fc003"
+PARAMS="app_id=${APP_ID}&grant_type=password&password=PASS&response_type=token&username=LOGIN"
+SIG=$(printf '%s%s' "${SECRET}" "${PARAMS}" | md5sum | awk '{print $1}')
+curl -s -D - -o /dev/null "https://api.easyfinance.ru/v2/?${PARAMS}&sig=${SIG}"
+```
+
+Далее `uid` извлекается из `users.get` (см. §2.5). Коды ошибок: `34` (`invalid_grant`
+— неверный логин/пароль), `35` (`unsupported_grant_type`), `57` (`Invalid app_id`),
+`43` (required sig).
+
+> Примечание: веб-логин `POST https://easyfinance.ru/login/` (`login`, `pass` →
+> cookie `PHPSESSID`) остаётся для веб-эндпоинтов раздела 5 и не заменяет
+> получение `access_token`.
 
 <h3 id="s24">2.4. Регистрация пользователя (users.post)</h3>
 
@@ -673,6 +713,17 @@ GET https://api.easyfinance.ru/v2/
 Для полной синхронизации всех данных за один запрос используйте `users.get` с
 параметром `fields`, перечисляющим нужные типы данных.
 
+<h3 id="s412">4.12. users.delete — удаление аккаунта</h3>
+
+**POST** (серверная доработка, см. §9.2). Query: `transact_key`, `sig`.
+**Тело:** `{"request":{"request_data":{"password":"<текущий пароль>"}}}`.
+
+**Ответ (успех):** `response_data.users.result = "deleted"`.
+**Ошибки:** `MISSING_PASSWORD`, `INVALID_PASSWORD` (передаются в `response_data.errors`).
+
+Серверная валидация — `apiUserValidator::validateDelete()`; смена/проверка пароля —
+`UserData::delete()` (сравнение `sha1($password)`).
+
 ---
 
 <h2 id="web">5. Веб-эндпоинты (сайт)</h2>
@@ -845,3 +896,144 @@ GET https://api.easyfinance.ru/v2/
 accounts/categories/tags/operationPatterns/operations выполняется через `*.set` с
 `deleted_at` (или `state="2"` для счетов). Исключение: у календаря есть собственный
 метод `calendar.delete` (§4.7).
+
+Также приложением вызываются `users.delete` (§4.12), методы нативного мастера
+`master.get` / `master.set` / `master.finish` (§9.3) и нативный вход
+`grant_type=password` (§2.3).
+
+---
+
+<h2 id="server">9. Серверные доработки (backend)</h2>
+
+Изменения, внесённые на сервере `/var/www/easyfinance.ru/sf/` для поддержки
+нативного входа и удаления аккаунта. Рядом с каждым изменённым файлом оставлен
+бэкап `*.php.bak`.
+
+<h3>9.1. Включение password grant</h3>
+
+| Файл | Изменение |
+|---|---|
+| `lib/oauthServer/sfOAuth2Server.php` | `getSupportedGrantTypes()` — добавлен `OAUTH2_GRANT_TYPE_USER_CREDENTIALS`; реализован `checkUserCredentials($app_id, $username, $password)`: ищет пользователя через `UserTable::getUserByLoginAndPass($username, sha1($password))`, вызывает `setUserId($user_id)` и возвращает `TRUE` (иначе `FALSE`). Метод `grantAccessToken()` оставлен как проксирующий в родителя. |
+| `lib/oauthServer/oauth2Lib/OAuth2.php` | В `grantAccessToken()` снята принудительная заглушка в ветке `case OAUTH2_GRANT_TYPE_USER_CREDENTIALS` (была `errorResponse(..., OAUTH2_ERROR_INVALID_REQUEST, 'Missing parameters...')` с комментарием «функция не реализована»); `username`/`password` читаются из `$_GET`. |
+| `lib/model/doctrine/UserTable.class.php` | `getUserByLoginAndPass()` — столбец `u.pass` заменён на `u.password`. В `User` физическая колонка — `user_pass` с алиасом `password` (`hasColumn('user_pass as password')`), поля `pass` в БД нет. |
+
+Проверка (см. §2.3) даёт `302` → `Location` с `access_token`; затем `users.get`
+возвращает данные владельца токена (`response_data.users[0].id`).
+
+<h3>9.2. Удаление аккаунта (users.delete)</h3>
+
+| Файл | Изменение |
+|---|---|
+| `apps/api/config/restConfig/queries_config.yml` | Добавлен метод `users.delete` (формат как у `users.post` — только `options`). |
+| `apps/api/lib/apiDataClasses/UserData.php` | Добавлен метод `delete()`: проверка пароля (`sha1`), пометка/удаление аккаунта, `buildResponse`/`save`. |
+| `apps/api/lib/requestValidateClasses/apiUserValidator.php` | Добавлен `validateDelete()` (без него `RequestValidatorFactory` → «Undefined method» → generic error 58). |
+
+> **Замечание:** флаг `is_master_completed` спрятан в `user_settings` и через
+> `users.get` не экспонируется. Для нативного мастера выбран **отдельный метод**
+> `master.get` (см. §9.3); в `users.get` поле не добавлялось.
+
+<h3>9.3. Нативный мастер входа (master.get / master.set / master.finish)</h3>
+
+Реализация нативного мастера первого входа (Фаза 1). Статус: **залито на боевой
+сервер и проверено живыми запросами (21.09.2026)** — `master.get` (цепочки man
+`[1,2,3,5,6,7]`, company `[1,5,6,7]`), `master.set` (`saved`, двойной записи нет),
+`master.finish` (`completed` → повтор `already_completed`; в БД создаются/обновляются
+бюджет `budget` и цель «Финансовая подушка» + счёт в `target_account`).
+Изменённые файлы (рядом с каждым правленым файлом — бэкап `*.bak.MASTER`):
+
+| Файл | Изменение |
+|---|---|
+| `apps/api/lib/apiDataClasses/MasterData.php` | **новый** — `responseBuilder()`: методы `get` / `set` / `finish`; запись в БД напрямую (по образцу `users.delete`) |
+| `apps/api/lib/requestValidateClasses/apiMasterValidator.php` | **новый** — `validateGet` / `validateSet` / `validateFinish` → `isValid = true`; бизнес-валидация внутри `MasterData` |
+| `apps/api/lib/requestValidateClasses/RequestValidatorFactory.php` | добавлен `validateMaster()` (по `objectMethod`, как у остальных объектов) |
+| `apps/api/lib/apiDataClasses/allDataFactory.php` | добавлен `getMasterData($user, $parameters)` → `new MasterData($user)->responseBuilder(...)` |
+| `apps/api/config/restConfig/queries_config.yml` | добавлены `master.get` (пустой, как `dashboard.get`), `master.set`, `master.finish` (формат `users.set`) |
+
+**Контракт:**
+
+- `master.get` → `response_data.master`:
+  - `is_active` — `app_project_first_time_entrance_master_enabled` (глобальный тумблер);
+  - `is_master_completed` — из `user_settings` (нет строки → `true`);
+  - `master_chain` — `FirstTimeEntranceMasterSettingTable::getMasterChainByProfileType($user->getAccountType())`.
+- `master.set` (POST, `request_data` как в `users.delete`): `currency_default`,
+  `currency_list` (массив), `has_automobile` / `has_motocycle` / `has_children` /
+  `has_animals`, `pays_utilities`, `pays_renting`. Ответ: `{ result: 'saved' }`.
+- `master.finish` (POST): `budgetTotalAmount`, `utilitiesAmount`, `rentingAmount`,
+  `targetAmount`. Логика = web «FinishMaster» (порядок важен):
+  1. `RegistrationModel::setDefaultCategoriesByUserProfileType($user)`;
+  2. `setIsMasterCompleted(true)` + save;
+  3. если `account_type != User::COMPANY_ACCOUNT_TYPE`:
+     `showHideCategoriesByMasterSettings($user)` + `addFirstBudgetAndTarget()`.
+  Ответ: `{ result: 'completed' }`; повторный вызов → `{ result: 'already_completed' }`
+  без изменений (идемпотентность). Для `company` бюджет/цель не создаются (как на сайте).
+
+**Особенности реализации:**
+
+- Бюджет и цель **не** идут через web-контроллеры
+  (`budgetActions::executeAdd` / `targetActions::executeProcessTarget` требуют
+  web-`sfUser` через `getUserRecord()`, в API-контексте не инстанцируются).
+  Их логика реплицирована на уровне моделей внутри `MasterData`:
+  `BudgetCategoryTable::multipleUpdate` / `multipleInsert`,
+  `BudgetAdditionalEntityTable::multipleUpdate` / `multipleInsert`; цель пишется
+  через модели `Target` + `TargetAccount` (**`TargetForm` не используется** —
+  в `doSave`/`configure` она вызывает `sfContext::getUserRecord()`,
+  недоступный в API), привязывается только первый свободный счёт.
+- Формула расходной категории:
+  `0.85 * (budgetTotalAmount - renting - utilities) * procent / 65`;
+  нулевые проценты → кастом (аренда / коммуналка); доходные — `budgetTotalAmount`;
+  `start = BudgetManager::getBudgetStartDate(userId, new DateTime())`.
+- Цель: «Финансовая подушка», `TYPE_SAVE_MONEY`, `CATEGORY_ID_FINANCE_PILLOW`,
+  `start` = сегодня, `end` = +30 мес, валюта пользователя; при пустом списке
+  доступных счетов (через `AccountTable::getAvailableAccountsForTarget`) — пропуск.
+- `currency_list` при чтении может быть и массивом, и serialized-строкой —
+  обрабатывается защитно.
+
+Полный контракт и фазы — в `NATIVE_LOGIN_MASTER.md` (§4.2).
+
+<h2 id="master">10. Мастер первого входа (first time entrance master)</h2>
+
+Как это устроено **на сайте** (результат ревизии бэкенда, для нативной реализации):
+
+- Включён ли мастер глобально: `app_project_first_time_entrance_master_enabled`
+  (sfConfig, ставится в `isMasterCompletedFilter` в контекст `isMasterActive`).
+- Пройден ли мастер пользователем: `user_settings.is_master_completed`
+  (boolean-колонка, `BaseUserSettings::hasColumn('is_master_completed', 'boolean')`).
+- **Условие показа:** `is_active && !is_master_completed`
+  (`apps/frontend/templates/_res.php:44`). Если `user_settings` нет — считается
+  пройденным (`isMasterCompletedFilter`).
+- Цепочка шагов **не хардкодится**, а берётся из БД:
+  `FirstTimeEntranceMasterSettingTable::getMasterChainByProfileType($accountType)`,
+  где профиль = `users.account_type`; дополнительно `getClosestFreeMasterSetting()`
+  и карты переходов `master_chain_redirect_next` / `master_chain_redirect_previous`.
+- Каждый AJAX-ответ сайта содержит блок
+  `first_entrance_master: { is_active, is_master_completed, master_chain, master_chain_redirect_next, master_chain_redirect_previous }`.
+- Шаги мастера (контроллер `firstTimeEntranceMaster/actions/actions.class.php`),
+  `pageNumber` → `executeIndex` форвардит на `Step{N}` / `SaveStep{N}`:
+
+| Шаг | Шаблон | Что сохраняет |
+|---|---|---|
+| 1 | `_startPage` | `currency_default` + `currency[]` (JSON) → `users.currency_id` и `users.currency_list` (serialize; чужие валюты из `CurrencyTable::getAlreadyUsedCurrencies` дописываются) |
+| 2 | `_categories` | видимость системных категорий + `renting` → `user_settings.has_automobile/has_motocycle/has_children/has_animals/pays_utilities`, `pays_renting` |
+| 3 | `_budgetAndTarget` | `budgetTotalAmount`, `utilitiesAmount`, `rentingAmount`, `budget_start_day`, `targetAmount`; значения **в сессию** (`setAttribute`), реально применяются на `FinishMaster` через `addFirstBudgetAndTarget()` |
+| 4 | `_calendarSettings` | SMS-напоминания + Google Calendar → делегирует в `profileActions::executeSaveReminders`; для `IS_BANKIRU` ещё email |
+| 5 | `_createOperation` | ничего (`result`) |
+| 6 | `_mobile` | `selectedMobileApplication` → `user_settings.mobile_application_id` |
+| 7 | `_downloadBanksAccount` | только рендер (список банков) |
+| 8 | `_profileType` | `gender` → `users.account_type` |
+| 9 | `_businessCategories` | ничего (`result`) |
+| — | `FinishMaster` | `RegistrationModel::setDefaultCategoriesByUserProfileType()`, `user_settings.setIsMasterCompleted(true)`, для не-`COMPANY` — `showHideCategoriesByMasterSettings()` + `addFirstBudgetAndTarget()` |
+
+- Цепочка шагов хранится в БД (`first_time_entrance_master_setting`, модель
+  `FirstTimeEntranceMasterSetting` + `FirstTimeEntranceMasterSettingTable`),
+  выборка — `getMasterChainByProfileType($accountType)`.
+- Шаблоны: `_profileType`, `_categories`, `_budgetAndTarget`, `_calendarSettings`,
+  `_createOperation`, `_downloadBanksAccount`, `_startPage`, `_mobile`,
+  `_businessCategories`.
+- При создании пользователя через API флаг выставляется сразу (`UserData.php:286`):
+  если у приложения включён `DISABLE_FEM` — `true`, иначе `false` (новый
+  пользователь по умолчанию должен пройти мастер).
+
+**Чего не хватало в API v2 (до Фазы 1):** `users.get` не возвращает
+`is_master_completed`, а метода для получения `master_chain` / настроек шагов
+не было вовсе (`queries_config.yml` не содержал `master`). Решение — отдельный
+блок методов `master.*` (см. §9.3).

@@ -4,11 +4,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_logo.dart';
+import '../../navigation/app_router.dart';
 import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
-import '../../navigation/app_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -35,9 +35,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final initialRoute = hasPin ? '/pin' : (startScreen == 'addOperation' ? '/add-operation' : '/main');
 
     if (restored && mounted) {
-      // Проверяем, что аккаунт не был удалён на сайте: при удалении сервер
-      // зачищает login/name/mail, а токен остаётся валидным.
       if (await _verifyAccountNotDeleted(store)) {
+        if (!mounted) return;
+        try {
+          final masterStatus = await store.authService.checkMasterStatus();
+          if (!mounted) return;
+          if (masterStatus.isActive && !masterStatus.isMasterCompleted) {
+            Navigator.pushReplacementNamed(context, AppRouter.onboarding, arguments: masterStatus);
+            return;
+          }
+        } catch (_) {}
         Navigator.pushReplacementNamed(context, initialRoute);
         store.fetchAllData();
         NotificationService().rescheduleAll();

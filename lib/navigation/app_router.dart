@@ -14,6 +14,8 @@ import '../screens/settings/settings_screen.dart';
 import '../screens/recommendations/recommendations_screen.dart';
 import '../screens/planned_payments/add_planned_payment_screen.dart';
 import '../../models/financial_event.dart';
+import '../screens/onboarding/master_onboarding_screen.dart';
+import '../models/master_status.dart';
 import 'tab_router.dart';
 
 class AppRouter {
@@ -23,6 +25,7 @@ class AppRouter {
   static const String register = '/register';
   static const String pin = '/pin';
   static const String main = '/main';
+  static const String onboarding = '/onboarding';
   static const String addOperation = '/add-operation';
   static const String operationDetail = '/operation-detail';
   static const String scanReceipt = '/scan-receipt';
@@ -51,6 +54,14 @@ class AppRouter {
     nativeLogin: (_) => const NativeLoginScreen(),
     register: (_) => const RegisterScreen(),
     pin: (_) => const PinScreen(),
+    onboarding: (ctx) {
+      final args = ModalRoute.of(ctx)?.settings.arguments;
+      final status = args is MasterStatus ? args : null;
+      return MasterOnboardingScreen(
+        masterChain: status?.masterChain ?? [],
+        isCompany: false,
+      );
+    },
     scanReceipt: (_) => const ScanReceiptScreen(),
     aiAssistant: (_) => const AiAssistantScreen(),
     operationDetail: (_) => const OperationDetailScreen(),

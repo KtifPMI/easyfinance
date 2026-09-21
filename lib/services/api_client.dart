@@ -581,6 +581,20 @@ class ApiClient {
     return post('calendar.accept', params: {'transact_key': _transactKey(), 'operation_id': operationId, 'chain_id': chainId}, body: {'request': {'request_data': {'date': date, 'accepted': 1}}});
   }
 
+  // --- Master / First Entrance Onboarding (API v2) ---
+
+  Future<Map<String, dynamic>> getMaster() async {
+    return get('master.get');
+  }
+
+  Future<Map<String, dynamic>> setMaster(Map<String, dynamic> data) async {
+    return post('master.set', body: {'request': {'request_data': data}});
+  }
+
+  Future<Map<String, dynamic>> finishMaster(Map<String, dynamic> data) async {
+    return post('master.finish', body: {'request': {'request_data': data}});
+  }
+
   // --- Categories (API v2) ---
 
   /// Fetches all categories via API v2 `categories.get`.

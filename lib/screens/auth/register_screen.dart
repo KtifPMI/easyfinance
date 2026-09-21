@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
+import '../../navigation/app_router.dart';
 import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
@@ -69,7 +70,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final store = context.read<FinanceStore>();
       final plannedStore = context.read<PlannedPaymentStore>();
-      final user = await store.authService.register(
+      final authService = store.authService;
+      final user = await authService.register(
         name: name,
         email: email,
         login: login,
@@ -78,11 +80,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (user != null) store.saveUser(user);
       store.clearAuthExpired();
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
-      store.fetchAllData();
-      plannedStore.syncFromServer();
-      NotificationService().rescheduleAll();
-      NotificationService().trackAppOpen();
+
+      final masterStatus = await authService.checkMasterStatus();
+      if (!mounted) return;
+      if (masterStatus.isActive && !masterStatus.isMasterCompleted) {
+        Navigator.pushReplacementNamed(context, AppRouter.onboarding, arguments: masterStatus);
+      } else {
+        Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
+        store.fetchAllData();
+        plannedStore.syncFromServer();
+        NotificationService().rescheduleAll();
+        NotificationService().trackAppOpen();
+      }
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
