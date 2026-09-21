@@ -816,5 +816,11 @@
   "onboarding.tip1": "Fügen Sie Ihre Konten hinzu: Bargeld, Karten, Kredite",
   "onboarding.tip2": "Erstellen Sie Vorgänge für jeden Einkauf oder Einkommen",
   "onboarding.tip3": "Setzen Sie Budgets pro Kategorie, um Ausgaben zu kontrollieren",
-  "onboarding.tip4": "Planen Sie wiederkehrende Zahlungen im Kalender"
+  "onboarding.tip4": "Planen Sie wiederkehrende Zahlungen im Kalender",
+  "onboarding.step8_title": "Wer sind Sie?",
+  "onboarding.step8_subtitle": "Dies hilft uns, Kategorien und Budget einzurichten",
+  "onboarding.account_man": "Mann",
+  "onboarding.account_woman": "Frau",
+  "onboarding.account_family": "Familie",
+  "onboarding.account_company": "Unternehmen"
 }

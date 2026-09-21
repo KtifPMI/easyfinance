@@ -816,5 +816,11 @@
   "onboarding.tip1": "Aggiungi i tuoi conti: contanti, carte, prestiti",
   "onboarding.tip2": "Crea operazioni per ogni acquisto o entrata",
   "onboarding.tip3": "Imposta budget per categoria per controllare le spese",
-  "onboarding.tip4": "Pianifica i pagamenti ricorrenti nel calendario"
+  "onboarding.tip4": "Pianifica i pagamenti ricorrenti nel calendario",
+  "onboarding.step8_title": "Chi sei?",
+  "onboarding.step8_subtitle": "Questo ci aiuta a configurare categorie e budget",
+  "onboarding.account_man": "Uomo",
+  "onboarding.account_woman": "Donna",
+  "onboarding.account_family": "Famiglia",
+  "onboarding.account_company": "Azienda"
 }

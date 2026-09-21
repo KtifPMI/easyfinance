@@ -59,7 +59,6 @@ class AppRouter {
       final status = args is MasterStatus ? args : null;
       return MasterOnboardingScreen(
         masterChain: status?.masterChain ?? [],
-        isCompany: false,
       );
     },
     scanReceipt: (_) => const ScanReceiptScreen(),

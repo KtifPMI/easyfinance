@@ -803,5 +803,11 @@
   "onboarding.tip1": "Adicione suas contas: dinheiro, cartões, empréstimos",
   "onboarding.tip2": "Crie operações para cada compra ou receita",
   "onboarding.tip3": "Defina orçamentos por categoria para controlar gastos",
-  "onboarding.tip4": "Agende pagamentos recorrentes no calendário"
+  "onboarding.tip4": "Agende pagamentos recorrentes no calendário",
+  "onboarding.step8_title": "Quem é você?",
+  "onboarding.step8_subtitle": "Isso nos ajuda a configurar categorias e orçamento",
+  "onboarding.account_man": "Homem",
+  "onboarding.account_woman": "Mulher",
+  "onboarding.account_family": "Família",
+  "onboarding.account_company": "Empresa"
 }

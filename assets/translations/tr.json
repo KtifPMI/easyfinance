@@ -803,5 +803,11 @@
   "onboarding.tip1": "Hesaplarınızı ekleyin: nakit, kartlar, krediler",
   "onboarding.tip2": "Her alışveriş veya gelir için işlem oluşturun",
   "onboarding.tip3": "Harcamaları kontrol etmek için kategori bazlı bütçeler belirleyin",
-  "onboarding.tip4": "Tekrarlayan ödemeleri takvimde planlayın"
+  "onboarding.tip4": "Tekrarlayan ödemeleri takvimde planlayın",
+  "onboarding.step8_title": "Kimsiniz?",
+  "onboarding.step8_subtitle": "Bu, kategorileri ve bütçeyi yapılandırmamıza yardımcı olur",
+  "onboarding.account_man": "Erkek",
+  "onboarding.account_woman": "Kadın",
+  "onboarding.account_family": "Aile",
+  "onboarding.account_company": "Şirket"
 }

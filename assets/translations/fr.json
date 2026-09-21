@@ -816,5 +816,11 @@
   "onboarding.tip1": "Ajoutez vos comptes : espèces, cartes, prêts",
   "onboarding.tip2": "Créez des opérations pour chaque achat ou revenu",
   "onboarding.tip3": "Définissez des budgets par catégorie pour contrôler les dépenses",
-  "onboarding.tip4": "Planifiez les paiements récurrents dans le calendrier"
+  "onboarding.tip4": "Planifiez les paiements récurrents dans le calendrier",
+  "onboarding.step8_title": "Qui êtes-vous ?",
+  "onboarding.step8_subtitle": "Cela nous aide à configurer les catégories et le budget",
+  "onboarding.account_man": "Homme",
+  "onboarding.account_woman": "Femme",
+  "onboarding.account_family": "Famille",
+  "onboarding.account_company": "Entreprise"
 }

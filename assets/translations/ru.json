@@ -854,5 +854,11 @@
   "onboarding.tip1": "Добавляйте свои счета: наличные, карты, кредиты",
   "onboarding.tip2": "Создавайте операции при каждой покупке или получении дохода",
   "onboarding.tip3": "Установите бюджеты по категориям, чтобы контролировать расходы",
-  "onboarding.tip4": "Планируйте регулярные платежи в календаре"
+  "onboarding.tip4": "Планируйте регулярные платежи в календаре",
+  "onboarding.step8_title": "Кто вы?",
+  "onboarding.step8_subtitle": "Это поможет настроить категории и бюджет",
+  "onboarding.account_man": "Мужчина",
+  "onboarding.account_woman": "Женщина",
+  "onboarding.account_family": "Семейный",
+  "onboarding.account_company": "Компания"
 }

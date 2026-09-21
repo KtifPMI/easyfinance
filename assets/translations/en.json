@@ -853,5 +853,11 @@
   "onboarding.tip1": "Add your accounts: cash, cards, loans",
   "onboarding.tip2": "Create operations for every purchase or income",
   "onboarding.tip3": "Set budgets by category to control spending",
-  "onboarding.tip4": "Schedule recurring payments in the calendar"
+  "onboarding.tip4": "Schedule recurring payments in the calendar",
+  "onboarding.step8_title": "Who are you?",
+  "onboarding.step8_subtitle": "This helps us configure categories and budget",
+  "onboarding.account_man": "Male",
+  "onboarding.account_woman": "Female",
+  "onboarding.account_family": "Family",
+  "onboarding.account_company": "Company"
 }

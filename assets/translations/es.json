@@ -816,5 +816,11 @@
   "onboarding.tip1": "Añada sus cuentas: efectivo, tarjetas, préstamos",
   "onboarding.tip2": "Cree operaciones por cada compra o ingreso",
   "onboarding.tip3": "Establezca presupuestos por categoría para controlar gastos",
-  "onboarding.tip4": "Programe pagos recurrentes en el calendario"
+  "onboarding.tip4": "Programe pagos recurrentes en el calendario",
+  "onboarding.step8_title": "¿Quién eres?",
+  "onboarding.step8_subtitle": "Esto nos ayuda a configurar categorías y presupuesto",
+  "onboarding.account_man": "Hombre",
+  "onboarding.account_woman": "Mujer",
+  "onboarding.account_family": "Familiar",
+  "onboarding.account_company": "Empresa"
 }
