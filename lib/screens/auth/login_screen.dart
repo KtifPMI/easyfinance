@@ -8,6 +8,7 @@ import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
+import '../../navigation/app_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -68,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _startOAuth() async {
-    final result = await Navigator.pushNamed(context, '/oauth');
+    final result = await Navigator.pushNamed(context, AppRouter.nativeLogin);
     if (result == true && mounted) {
       Navigator.pushReplacementNamed(context, '/main');
       NotificationService().trackAppOpen();

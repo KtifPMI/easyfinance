@@ -178,6 +178,57 @@ class ApiClient {
     }
   }
 
+  /// Нативный вход: password grant (grant_type=password).
+  ///
+  /// Сервер отвечает 302, `access_token` лежит в query параметрах `Location`.
+  /// Подпись: md5(secret + query string без sig); параметры отправляются ровно
+  /// в том же порядке, в котором подписываются (сервер берёт raw QUERY_STRING
+  /// и вырезает из неё `sig`), uid не участвует — пользователь ещё не известен.
+  Future<String> exchangePasswordForToken(String login, String password) async {
+    final params = <String, String>{
+      'response_type': 'token',
+      'grant_type': 'password',
+      'app_id': appId,
+      'username': login.trim(),
+      'password': password,
+    };
+
+    final httpClient = HttpClient()..autoUncompress = true;
+    try {
+      final query = params.entries
+          .map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}')
+          .join('&');
+      final sig = _md5('$secretKey$query');
+      final uri = Uri.parse('$baseUrl?$query&sig=$sig');
+
+      try {
+        final request = await httpClient.getUrl(uri).timeout(_timeout);
+        request.followRedirects = false;
+
+        final response = await request.close().timeout(_timeout);
+        final statusCode = response.statusCode;
+        final location = response.headers.value('location');
+
+        if (location != null && _isRedirect(statusCode)) {
+          final locUri = Uri.parse(location);
+          final token = _extractTokenFromUri(locUri);
+          if (token != null && token.isNotEmpty) return token;
+        }
+
+        final body = await response.transform(utf8.decoder).join();
+        return _extractTokenFromBody(body, statusCode: statusCode, location: location);
+      } finally {
+        httpClient.close();
+      }
+    } on TimeoutException {
+      throw ApiException('Token exchange timeout', 'TIMEOUT');
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Token exchange failed: $e', 'EXCHANGE_FAIL');
+    }
+  }
+
   bool _isRedirect(int statusCode) {
     return statusCode == 301 || statusCode == 302 || statusCode == 307 || statusCode == 308;
   }

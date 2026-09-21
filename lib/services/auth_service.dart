@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'api_client.dart';
 import 'api_service.dart';
+import '../models/user.dart';
 
 class AuthService {
   final ApiClient _apiClient;
@@ -146,6 +147,42 @@ class AuthService {
       await _secure.delete(key: _webSessionKey);
     }
     await migrateLegacyPin();
+  }
+
+  /// Нативный вход по паролю (grant_type=password).
+  ///
+  /// Меняет логин/пароль на `access_token`, затем, если получится, тянет
+  /// `users.get`, чтобы сохранить `uid` для будущих подписей. Возвращает
+  /// пользователя (или null, если сети/сервиса не было — сессия всё равно жива).
+  Future<User?> loginWithPassword({
+    required String login,
+    required String password,
+  }) async {
+    final token = await _apiClient.exchangePasswordForToken(login, password);
+    if (token.isEmpty) throw ApiException('Empty token', 'LOGIN_FAIL');
+
+    _apiClient.setAuth(accessToken: token);
+
+    User? user;
+    try {
+      user = await apiService.getUser();
+      if (user.id.isNotEmpty) {
+        _apiClient.setAuth(accessToken: token, userId: user.id);
+      }
+    } on ApiException {
+      user = null;
+    } catch (_) {
+      user = null;
+    }
+
+    await saveCredentials(
+      appId: _apiClient.appId,
+      secretKey: _apiClient.secretKey,
+      accessToken: token,
+      userId: user?.id,
+    );
+
+    return user;
   }
 
   Future<void> logout() async {

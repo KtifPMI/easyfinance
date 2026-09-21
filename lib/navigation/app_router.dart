@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/ai_assistant/ai_assistant_screen.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/native_login_screen.dart';
 import '../screens/auth/oauth_webview_screen.dart';
 import '../screens/auth/pin_screen.dart';
 import '../screens/auth/register_screen.dart';
@@ -18,6 +19,7 @@ import 'tab_router.dart';
 class AppRouter {
   static const String login = '/login';
   static const String oauth = '/oauth';
+  static const String nativeLogin = '/native-login';
   static const String register = '/register';
   static const String pin = '/pin';
   static const String main = '/main';
@@ -46,6 +48,7 @@ class AppRouter {
   static Map<String, Widget Function(BuildContext)> get routes => {
     login: (_) => const LoginScreen(),
     oauth: (_) => const OAuthWebViewScreen(),
+    nativeLogin: (_) => const NativeLoginScreen(),
     register: (_) => const RegisterScreen(),
     pin: (_) => const PinScreen(),
     scanReceipt: (_) => const ScanReceiptScreen(),
