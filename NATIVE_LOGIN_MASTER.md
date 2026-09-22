@@ -375,6 +375,21 @@ if (master.isActive && !master.isMasterCompleted) {
 - Файл: `apps/easyApi/modules/registration/actions/actions.class.php` (бэкап `.bak.MASTER`).
 - E2E-проверка: `apitest_master_260921181959` (uid 48163377) → `master.get` вернул
   `is_master_completed: false`, `master_chain: [1,8,2,3,5,6,7]`.
+- Файл `apps/api/lib/apiDataClasses/MasterData.php` (`get()`, бэкап `.bak.MASTERGET`) —
+  фикс для аккаунтов, созданных **до** введения мастера: старые аккаунты имеют
+  `user_settings.is_master_completed = 1` по дефолту при `account_type IS NULL`.
+  Новый мастер обязан спрашивать тип аккаунта (step 8), поэтому завершённым считаем
+  только `flag=1 И account_type != NULL`:
+  ```php
+  $flagCompleted = !empty($userSettings) && (bool) $userSettings->getIsMasterCompleted();
+  $isMasterCompleted = $flagCompleted && !empty($user->getAccountType());
+  ```
+  Проверено живым API после деплоя и reload fpm:
+  - `apitest_e2e_260922095231008` (uid 48163386, `account_type=man`, mc=1) →
+    `is_master_completed: true`, chain `[1,2,3,5,6,7]` (без регрессии);
+  - `apitest_fix_260922260265` (uid 48163387, `account_type=NULL`) →
+    `is_master_completed: false`, chain `[1,8,2,3,5,6,7]`.
+  В БД под этот сценарий подпадает 4661 аккаунт (mc=1 + тип не выбран).
 
 **Контракт API (подтверждён живыми запросами):**
 
@@ -388,10 +403,12 @@ if (master.isActive && !master.isMasterCompleted) {
 
 | Профиль | master_chain (сервер) | Показываем в приложении |
 |---|---|---|
-| Физлицо (account_type != 'company') | `[1,8,2,3,5,6,7]` | `[1,2,3,5]` (фильтр `{1,2,3,5}`) |
+| Физлицо (`account_type IS NULL` — не выбран) | `[1,8,2,3,5,6,7]` | `[1,2,3,5]` (фильтр `{1,2,3,5}`) |
+| Физлицо (`account_type` задан) | `[1,2,3,5,6,7]` | `[1,2,3,5]` (фильтр `{1,2,3,5}`) |
 | Компания (`account_type = 'company'`) | `[1,5,6,7]` | `[1,5]` (фильтр `{1,2,3,5}`) |
 
-Шаг 8 (выбор профиля) — отфильтрован клиентом. Шаг 4 (календарь) — неактивен на сервере.
+Шаг 8 (выбор профиля) — отфильтрован клиентом: в цепочке он всегда первый (следует из
+`account_type IS NULL`), поэтому клиент задаёт тип аккаунта до остальных шагов. Шаг 4 (календарь) — неактивен на сервере.
 
 **Клиент (Flutter):**
 
