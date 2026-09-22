@@ -9,6 +9,7 @@ import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/currency_utils.dart';
+import '../../utils/format.dart';
 
 class MasterOnboardingScreen extends StatefulWidget {
   final List<int> masterChain;
@@ -20,60 +21,120 @@ class MasterOnboardingScreen extends StatefulWidget {
 }
 
 class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
-  late final List<int> _steps;
+  late List<int> _baseSteps;
+  late List<int> _steps;
   int _currentStepIndex = 0;
   bool _loading = false;
   String? _error;
 
   final _pageController = PageController();
 
-  final _targetAmountController = TextEditingController();
   final _budgetTotalController = TextEditingController();
   final _utilitiesAmountController = TextEditingController();
   final _rentingAmountController = TextEditingController();
 
   String _accountType = 'man';
   String _selectedCurrencyId = '1';
+  final Set<String> _watchedCurrencyIds = {'2', '3'};
   bool _hasAutomobile = false;
   bool _hasMotocycle = false;
   bool _hasChildren = false;
   bool _hasAnimals = false;
-  bool _paysUtilities = false;
-  bool _paysRenting = false;
+  int _housingOption = 3;
+
+  bool get _paysUtilities => _housingOption == 1 || _housingOption == 3;
+  bool get _paysRenting => _housingOption == 2 || _housingOption == 3;
 
   @override
   void initState() {
     super.initState();
-    _steps = _computeSteps();
+    _baseSteps = _computeSteps();
+    _steps = _applyAccountType(_baseSteps);
     final store = context.read<FinanceStore>();
     final userCurrency = store.currentUser?.currency ?? 'RUB';
     _selectedCurrencyId = currencyCodeToId[userCurrency] ?? '1';
+    _watchedCurrencyIds.remove(_selectedCurrencyId);
+    _budgetTotalController.addListener(_onIncomeChanged);
   }
 
   List<int> _computeSteps() {
     final filtered = widget.masterChain.where((s) => const {1, 2, 3, 5, 8}.contains(s)).toList();
-    if (filtered.isEmpty) return [8, 1, 2, 3, 5];
+    if (filtered.isEmpty) return [1, 8, 2, 3, 5];
     return filtered;
+  }
+
+  List<int> _applyAccountType(List<int> base) {
+    if (_accountType == 'company') {
+      return base.where((s) => s != 2 && s != 3).toList();
+    }
+    return base;
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _targetAmountController.dispose();
+    _budgetTotalController.removeListener(_onIncomeChanged);
     _budgetTotalController.dispose();
     _utilitiesAmountController.dispose();
     _rentingAmountController.dispose();
     super.dispose();
   }
 
+  void _onIncomeChanged() => setState(() {});
+
   bool get _isLastStep => _currentStepIndex == _steps.length - 1;
   bool get _isFirstStep => _currentStepIndex == 0;
+
+  String get _mainCurrencyCode => currencyIdToCode[_selectedCurrencyId] ?? 'RUB';
+
+  double get _incomeValue => double.tryParse(_budgetTotalController.text) ?? 0;
+  double get _utilitiesValue => double.tryParse(_utilitiesAmountController.text) ?? 0;
+  double get _rentingValue => double.tryParse(_rentingAmountController.text) ?? 0;
+  double get _targetValue => _incomeValue * 6;
 
   Future<void> _next() async {
     if (_isLastStep) {
       await _finish();
       return;
     }
+
+    final stepId = _steps[_currentStepIndex];
+
+    if (stepId == 8) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+      try {
+        final apiClient = context.read<FinanceStore>().authService.apiClient;
+        await apiClient.setMaster({'account_type': _accountType});
+        if (!mounted) return;
+        setState(() {
+          _loading = false;
+          final newSteps = _applyAccountType(_baseSteps);
+          final currentStepId = _steps[_currentStepIndex];
+          _steps = newSteps;
+          _currentStepIndex = newSteps.indexOf(currentStepId) + 1;
+        });
+        _pageController.jumpToPage(_currentStepIndex);
+      } on ApiException catch (e) {
+        if (mounted) {
+          setState(() {
+            _error = e.message;
+            _loading = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _error = context.tr('onboarding.finish_error');
+            _loading = false;
+          });
+        }
+      }
+      return;
+    }
+
     setState(() => _currentStepIndex++);
     _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
   }
@@ -85,6 +146,14 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   }
 
   Future<void> _finish() async {
+    if (_steps.contains(3)) {
+      final leftover = _incomeValue - _utilitiesValue - _rentingValue;
+      if (_incomeValue <= 0 || leftover <= 0) {
+        setState(() => _error = context.tr('onboarding.budget_error'));
+        return;
+      }
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -96,6 +165,7 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
       await apiClient.setMaster({
         'account_type': _accountType,
         'currency_default': int.parse(_selectedCurrencyId),
+        'currency_list': _watchedCurrencyIds.map(int.parse).toList(),
         'has_automobile': _hasAutomobile,
         'has_motocycle': _hasMotocycle,
         'has_children': _hasChildren,
@@ -104,16 +174,11 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
         'pays_renting': _paysRenting,
       });
 
-      final budgetTotal = double.tryParse(_budgetTotalController.text) ?? 0;
-      final utilitiesAmount = double.tryParse(_utilitiesAmountController.text) ?? 0;
-      final rentingAmount = double.tryParse(_rentingAmountController.text) ?? 0;
-      final targetAmount = double.tryParse(_targetAmountController.text) ?? 0;
-
       await apiClient.finishMaster({
-        'budgetTotalAmount': budgetTotal,
-        'utilitiesAmount': utilitiesAmount,
-        'rentingAmount': rentingAmount,
-        'targetAmount': targetAmount,
+        'budgetTotalAmount': _incomeValue,
+        'utilitiesAmount': _paysUtilities ? _utilitiesValue : 0,
+        'rentingAmount': _paysRenting ? _rentingValue : 0,
+        'targetAmount': _steps.contains(3) ? _targetValue : 0,
       });
 
       if (!mounted) return;
@@ -206,7 +271,7 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                     child: Container(
                       height: 2,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
-                      color: i < _currentStepIndex ? AppColors.primary : AppColors.textSecondary.withOpacity(0.3),
+                      color: i < _currentStepIndex ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
                     ),
                   ),
               ],
@@ -239,10 +304,10 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
 
   Widget _buildStep(int stepId) {
     switch (stepId) {
-      case 8:
-        return _buildAccountTypeStep();
       case 1:
         return _buildCurrencyStep();
+      case 8:
+        return _buildAccountTypeStep();
       case 2:
         return _buildCategoriesStep();
       case 3:
@@ -288,7 +353,7 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
-                  color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.transparent,
+                  color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
                 ),
                 child: Row(
                   children: [
@@ -333,21 +398,24 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             context.tr('onboarding.step1_subtitle'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           ...currencyItems.map((item) {
             final id = item['id'] as String;
             final code = item['code'] as String;
             final symbol = item['symbol'] as String;
             final isSelected = id == _selectedCurrencyId;
             return InkWell(
-              onTap: () => setState(() => _selectedCurrencyId = id),
+              onTap: () => setState(() {
+                _selectedCurrencyId = id;
+                _watchedCurrencyIds.remove(id);
+              }),
               child: Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
-                  color: isSelected ? AppColors.primary.withOpacity(0.08) : Colors.transparent,
+                  color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
                 ),
                 child: Row(
                   children: [
@@ -364,6 +432,49 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
               ),
             );
           }),
+          const SizedBox(height: 16),
+          Text(
+            context.tr('onboarding.step1_watch_title'),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          ...currencyItems.map((item) {
+            final id = item['id'] as String;
+            final code = item['code'] as String;
+            final symbol = item['symbol'] as String;
+            if (id == _selectedCurrencyId) return const SizedBox.shrink();
+            final isChecked = _watchedCurrencyIds.contains(id);
+            return InkWell(
+              onTap: () => setState(() {
+                if (isChecked) {
+                  _watchedCurrencyIds.remove(id);
+                } else {
+                  _watchedCurrencyIds.add(id);
+                }
+              }),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isChecked ? AppColors.primary : AppColors.border),
+                  color: isChecked ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isChecked ? Icons.check_box : Icons.check_box_outline_blank,
+                      color: isChecked ? AppColors.primary : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 12),
+                    Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+                  ],
+                ),
+              ),
+            );
+          }),
           const SizedBox(height: 48),
         ],
       ),
@@ -371,6 +482,13 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   }
 
   Widget _buildCategoriesStep() {
+    final housingOptions = [
+      {'value': 1, 'label': context.tr('onboarding.housing_1')},
+      {'value': 2, 'label': context.tr('onboarding.housing_2')},
+      {'value': 3, 'label': context.tr('onboarding.housing_3')},
+      {'value': 4, 'label': context.tr('onboarding.housing_4')},
+    ];
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -391,34 +509,42 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
           _buildToggle(context.tr('onboarding.has_motocycle'), _hasMotocycle, Icons.two_wheeler, (v) => setState(() => _hasMotocycle = v)),
           _buildToggle(context.tr('onboarding.has_children'), _hasChildren, Icons.child_care, (v) => setState(() => _hasChildren = v)),
           _buildToggle(context.tr('onboarding.has_animals'), _hasAnimals, Icons.pets, (v) => setState(() => _hasAnimals = v)),
-          _buildToggle(context.tr('onboarding.pays_utilities'), _paysUtilities, Icons.home_repair_service, (v) => setState(() => _paysUtilities = v)),
-          _buildToggle(context.tr('onboarding.pays_renting'), _paysRenting, Icons.home, (v) => setState(() => _paysRenting = v)),
+          const SizedBox(height: 24),
+          Text(
+            context.tr('onboarding.housing_title'),
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 12),
+          ...housingOptions.map((o) {
+            final opt = o['value'] as int;
+            final isSelected = _housingOption == opt;
+            return InkWell(
+              onTap: () => setState(() => _housingOption = opt),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
+                  color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text('$opt. ${o['label'] as String}', style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
           const SizedBox(height: 48),
         ],
-      ),
-    );
-  }
-
-  Widget _buildToggle(String label, bool value, IconData icon, ValueChanged<bool> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: () => onChanged(!value),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: value ? AppColors.primary : AppColors.textSecondary, size: 24),
-              const SizedBox(width: 12),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 16, color: AppColors.textFor(context)))),
-              Switch(value: value, onChanged: onChanged, activeColor: AppColors.primary),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -446,22 +572,45 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 16),
-          AppInput(
-            label: context.tr('onboarding.utilities_amount'),
-            controller: _utilitiesAmountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-          const SizedBox(height: 16),
-          AppInput(
-            label: context.tr('onboarding.renting_amount'),
-            controller: _rentingAmountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-          const SizedBox(height: 16),
-          AppInput(
-            label: context.tr('onboarding.target_amount'),
-            controller: _targetAmountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          if (_paysUtilities) ...[
+            AppInput(
+              label: context.tr('onboarding.utilities_amount'),
+              controller: _utilitiesAmountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 16),
+          ],
+          if (_paysRenting) ...[
+            AppInput(
+              label: context.tr('onboarding.renting_amount'),
+              controller: _rentingAmountController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 16),
+          ],
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: AppColors.primary.withValues(alpha: 0.08),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.tr('onboarding.target_banner', args: [_incomeValue > 0 ? formatMoneyWhole(_targetValue, currency: _mainCurrencyCode) : '']),
+                  style: TextStyle(fontSize: 16, color: AppColors.textFor(context), fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  context.tr('onboarding.target_hint'),
+                  style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 48),
         ],
@@ -473,8 +622,15 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
     final tips = [
       context.tr('onboarding.tip1'),
       context.tr('onboarding.tip2'),
-      context.tr('onboarding.tip3'),
-      context.tr('onboarding.tip4'),
+    ];
+
+    final helps = [
+      {'title': context.tr('onboarding.help1_title'), 'text': context.tr('onboarding.help1_text')},
+      {'title': context.tr('onboarding.help2_title'), 'text': context.tr('onboarding.help2_text')},
+      {'title': context.tr('onboarding.help3_title'), 'text': context.tr('onboarding.help3_text')},
+      {'title': context.tr('onboarding.help4_title'), 'text': context.tr('onboarding.help4_text')},
+      {'title': context.tr('onboarding.help5_title'), 'text': context.tr('onboarding.help5_text')},
+      {'title': context.tr('onboarding.help6_title'), 'text': context.tr('onboarding.help6_text')},
     ];
 
     return SingleChildScrollView(
@@ -492,22 +648,85 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             context.tr('onboarding.step5_subtitle'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
-          const SizedBox(height: 32),
-          ...tips.map((tip) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+          const SizedBox(height: 16),
+          ...tips.asMap().entries.map((entry) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.check_circle, color: AppColors.primary, size: 24),
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+                      child: Text('${entry.key + 1}', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(tip, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+                      child: Text(entry.value, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
                     ),
                   ],
                 ),
               )),
+          const SizedBox(height: 8),
+          ...helps.map((h) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Card(
+                  elevation: 0,
+                  margin: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: AppColors.border, width: 1),
+                  ),
+                  color: AppColors.cardFor(context),
+                  clipBehavior: Clip.antiAlias,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+                      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      title: Text(
+                        h['title'] as String,
+                        style: TextStyle(fontSize: 16, color: AppColors.textFor(context), fontWeight: FontWeight.w500),
+                      ),
+                      iconColor: AppColors.primary,
+                      collapsedIconColor: AppColors.textSecondary,
+                      children: [
+                        Text(
+                          h['text'] as String,
+                          style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context), height: 1.4),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )),
           const SizedBox(height: 48),
         ],
+      ),
+    );
+  }
+
+  Widget _buildToggle(String label, bool value, IconData icon, ValueChanged<bool> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: () => onChanged(!value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: value ? AppColors.primary : AppColors.textSecondary, size: 24),
+              const SizedBox(width: 12),
+              Expanded(child: Text(label, style: TextStyle(fontSize: 16, color: AppColors.textFor(context)))),
+              Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.primary),
+            ],
+          ),
+        ),
       ),
     );
   }
