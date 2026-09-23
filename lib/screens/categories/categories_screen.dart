@@ -53,11 +53,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
         return ScreenScaffold(
           title: context.tr('categories.title'),
           showLogo: false,
+          scrollable: false,
           floatingActionButton: FloatingActionButton(
             onPressed: () => _showAddSheet(context, store),
             child: const Icon(Icons.add),
           ),
-          child: Column(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -112,6 +115,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
               ),
             ],
           ),
+        ),
         );
       },
     );
