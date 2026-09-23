@@ -90,9 +90,14 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
 
   String get _mainCurrencyCode => currencyIdToCode[_selectedCurrencyId] ?? 'RUB';
 
-  double get _incomeValue => double.tryParse(_budgetTotalController.text) ?? 0;
-  double get _utilitiesValue => double.tryParse(_utilitiesAmountController.text) ?? 0;
-  double get _rentingValue => double.tryParse(_rentingAmountController.text) ?? 0;
+  double _parseAmount(String text) {
+    final normalized = text.trim().replaceAll(RegExp(r'\s'), '').replaceAll(',', '.');
+    return double.tryParse(normalized) ?? 0;
+  }
+
+  double get _incomeValue => _parseAmount(_budgetTotalController.text);
+  double get _utilitiesValue => _parseAmount(_utilitiesAmountController.text);
+  double get _rentingValue => _parseAmount(_rentingAmountController.text);
   double get _targetValue => _incomeValue * 6;
 
   /// Ensures a cash wallet account exists in the selected main currency.
