@@ -326,7 +326,7 @@
   "auth.login_hint": "Login",
   "auth.password_hint": "Senha",
   "auth.enter": "Entrar",
-  "auth.oauth_fallback": "Iniciar sessão pela versão web",
+  "auth.oauth_fallback": "Recuperar palavra-passe",
   "auth.name": "Nome",
   "auth.email": "E-mail",
   "auth.password_confirm": "Repita a senha",

@@ -335,7 +335,7 @@
   "auth.login_hint": "Nome utente",
   "auth.password_hint": "Password",
   "auth.enter": "Accedi",
-  "auth.oauth_fallback": "Accedi tramite versione web",
+  "auth.oauth_fallback": "Recupera password",
   "auth.name": "Nome",
   "auth.email": "E-mail",
   "auth.password_confirm": "Ripeti la password",

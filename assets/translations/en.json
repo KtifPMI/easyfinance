@@ -427,7 +427,7 @@
   "auth.login_hint": "Login",
   "auth.password_hint": "Password",
   "auth.enter": "Sign in",
-  "auth.oauth_fallback": "Sign in via web version",
+  "auth.oauth_fallback": "Recover password",
   "auth.name": "Name",
   "auth.email": "E-mail",
   "auth.password_confirm": "Repeat password",

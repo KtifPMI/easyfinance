@@ -335,7 +335,7 @@
   "auth.login_hint": "Identifiant",
   "auth.password_hint": "Mot de passe",
   "auth.enter": "Se connecter",
-  "auth.oauth_fallback": "Connexion via la version web",
+  "auth.oauth_fallback": "Récupérer le mot de passe",
   "auth.name": "Nom",
   "auth.email": "E-mail",
   "auth.password_confirm": "Répéter le mot de passe",

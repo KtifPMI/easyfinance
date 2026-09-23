@@ -335,7 +335,7 @@
   "auth.login_hint": "Benutzername",
   "auth.password_hint": "Passwort",
   "auth.enter": "Anmelden",
-  "auth.oauth_fallback": "Anmeldung über die Web-Version",
+  "auth.oauth_fallback": "Passwort wiederherstellen",
   "auth.name": "Name",
   "auth.email": "E-Mail",
   "auth.password_confirm": "Passwort wiederholen",

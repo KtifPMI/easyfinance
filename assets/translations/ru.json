@@ -376,7 +376,7 @@
   "auth.login_hint": "Логин",
   "auth.password_hint": "Пароль",
   "auth.enter": "Войти",
-  "auth.oauth_fallback": "Вход через веб-версию",
+  "auth.oauth_fallback": "Восстановление пароля",
   "auth.name": "Имя",
   "auth.email": "E-mail",
   "auth.password_confirm": "Повторите пароль",

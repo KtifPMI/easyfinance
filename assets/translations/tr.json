@@ -326,7 +326,7 @@
   "auth.login_hint": "Kullanıcı adı",
   "auth.password_hint": "Şifre",
   "auth.enter": "Giriş yap",
-  "auth.oauth_fallback": "Web sürümüyle giriş yap",
+  "auth.oauth_fallback": "Şifre kurtarma",
   "auth.name": "Ad",
   "auth.email": "E-posta",
   "auth.password_confirm": "Şifreyi tekrarla",

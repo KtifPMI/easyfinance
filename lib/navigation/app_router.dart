@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../screens/ai_assistant/ai_assistant_screen.dart';
-import '../screens/auth/login_screen.dart';
 import '../screens/auth/native_login_screen.dart';
 import '../screens/auth/oauth_webview_screen.dart';
 import '../screens/auth/pin_screen.dart';
@@ -49,7 +48,7 @@ class AppRouter {
   };
 
   static Map<String, Widget Function(BuildContext)> get routes => {
-    login: (_) => const LoginScreen(),
+    login: (_) => const NativeLoginScreen(),
     oauth: (_) => const OAuthWebViewScreen(),
     nativeLogin: (_) => const NativeLoginScreen(),
     register: (_) => const RegisterScreen(),
