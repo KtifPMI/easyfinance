@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/financial_event.dart';
 import '../services/api_client.dart';
+import '../services/account_cache.dart';
 import '../services/notification_service.dart';
 
 class PlannedPaymentStore extends ChangeNotifier {
@@ -11,6 +12,8 @@ class PlannedPaymentStore extends ChangeNotifier {
   List<FinancialEvent> _events = [];
 
   PlannedPaymentStore({required ApiClient apiClient}) : _apiClient = apiClient;
+
+  String get _cacheKey => AccountCache.key(_key, _apiClient.userId);
 
   List<FinancialEvent> get events => List.unmodifiable(_events);
 
@@ -48,7 +51,7 @@ class PlannedPaymentStore extends ChangeNotifier {
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
+    final raw = prefs.getString(_cacheKey);
     if (raw != null) {
       final list = jsonDecode(raw) as List<dynamic>;
       _events = list.map((e) => FinancialEvent.fromJson(e as Map<String, dynamic>)).toList();
@@ -218,7 +221,7 @@ class PlannedPaymentStore extends ChangeNotifier {
   Future<void> save() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = jsonEncode(_events.map((e) => e.toJson()).toList());
-    await prefs.setString(_key, raw);
+    await prefs.setString(_cacheKey, raw);
   }
 
   Future<void> add(FinancialEvent event) async {
@@ -305,7 +308,7 @@ class PlannedPaymentStore extends ChangeNotifier {
 
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
+    await prefs.remove(_cacheKey);
     _events = [];
     notifyListeners();
   }

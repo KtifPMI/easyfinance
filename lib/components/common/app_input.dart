@@ -13,10 +13,11 @@ class AppInput extends StatelessWidget {
   final bool enabled;
   final int? maxLines;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
   final bool readOnly;
 
-  const AppInput({super.key, required this.label, this.hint, this.controller, this.obscureText = false, this.keyboardType, this.inputFormatters, this.error, this.enabled = true, this.maxLines = 1, this.onSubmitted, this.onTap, this.readOnly = false});
+  const AppInput({super.key, required this.label, this.hint, this.controller, this.obscureText = false, this.keyboardType, this.inputFormatters, this.error, this.enabled = true, this.maxLines = 1, this.onSubmitted, this.onChanged, this.onTap, this.readOnly = false});
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,7 @@ class AppInput extends StatelessWidget {
           enabled: enabled,
           maxLines: maxLines,
           onSubmitted: onSubmitted,
+          onChanged: onChanged,
           onTap: onTap,
           readOnly: readOnly,
           style: TextStyle(fontSize: 16, color: AppColors.textFor(context)),
@@ -47,7 +49,7 @@ class AppInput extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.borderFor(context)),
+              borderSide: BorderSide(color: error != null ? AppColors.danger : AppColors.borderFor(context)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

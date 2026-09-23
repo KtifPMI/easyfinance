@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
+import 'account_cache.dart';
 
 const String _channelId = 'easyfinance_reminders';
 const String _channelName = 'Напоминания EasyFinance';
@@ -60,7 +61,8 @@ Future<void> _runDailyCheck(FlutterLocalNotificationsPlugin plugin, SharedPrefer
 }
 
 String? _buildPlannedPaymentsText(SharedPreferences prefs) {
-  final raw = prefs.getString('easyfinance_planned_payments');
+  final uid = prefs.getString(AccountCache.activeUidKey);
+  final raw = prefs.getString(AccountCache.key('easyfinance_planned_payments', uid));
   if (raw == null) return null;
 
   final events = jsonDecode(raw) as List<dynamic>;
@@ -84,7 +86,8 @@ String? _buildPlannedPaymentsText(SharedPreferences prefs) {
 }
 
 String? _buildGoalsText(SharedPreferences prefs) {
-  final raw = prefs.getString('easyfinance_goals');
+  final uid = prefs.getString(AccountCache.activeUidKey);
+  final raw = prefs.getString(AccountCache.key('easyfinance_goals', uid));
   if (raw == null) return null;
 
   final goals = jsonDecode(raw) as List<dynamic>;

@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../store/finance_store.dart';
-import '../../store/planned_payment_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/format.dart';
 
@@ -12,9 +11,7 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
-    final plannedStore = context.read<PlannedPaymentStore>();
     final store = context.read<FinanceStore>();
-    await plannedStore.clear();
     await store.logout();
     if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
   }

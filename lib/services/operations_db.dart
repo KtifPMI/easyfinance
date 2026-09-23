@@ -4,6 +4,20 @@ import '../models/operation.dart';
 
 class OperationsDb {
   static Database? _db;
+  static String? _userId;
+
+  /// Переключает активный файл БД на аккаунт [userId]. Анонимный режим (null)
+  /// использует общий файл `easyfinance_operations.db`.
+  static Future<void> setUserId(String? userId) async {
+    _userId = (userId == null || userId.isEmpty) ? null : userId;
+    final db = _db;
+    _db = null;
+    if (db != null) {
+      try {
+        await db.close();
+      } catch (_) {}
+    }
+  }
 
   static Future<Database> get database async {
     if (_db != null) return _db!;
@@ -13,7 +27,9 @@ class OperationsDb {
 
   static Future<Database> _initDb() async {
     final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, 'easyfinance_operations.db');
+    final uid = _userId;
+    final name = (uid == null || uid.isEmpty) ? 'easyfinance_operations.db' : 'easyfinance_operations_$uid.db';
+    final path = p.join(dbPath, name);
     return await openDatabase(
       path,
       version: 2,

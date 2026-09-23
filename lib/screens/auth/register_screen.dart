@@ -27,6 +27,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _loading = false;
   String? _error;
 
+  String? _nameError;
+  String? _emailError;
+  String? _loginError;
+  String? _passwordError;
+  String? _confirmError;
+
+  bool _confirmTouched = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -37,30 +45,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void _onChanged(String _) {
+    setState(() {
+      _nameError = null;
+      _emailError = null;
+      _loginError = null;
+      if (_confirmTouched && _confirmController.text.isNotEmpty && _passwordController.text != _confirmController.text) {
+        _confirmError = _confirmMismatchText;
+      } else {
+        _confirmError = null;
+      }
+      _error = null;
+    });
+  }
+
   bool get _validEmail {
     final re = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     return re.hasMatch(_emailController.text.trim());
   }
 
-  Future<void> _submit() async {
+  String get _confirmMismatchText => context.tr('auth.password_mismatch');
+
+  int _passwordStrength(String pwd) {
+    if (pwd.isEmpty) return 0;
+    var score = 0;
+    if (pwd.length >= 8) score++;
+    if (RegExp(r'[a-z]').hasMatch(pwd) && RegExp(r'[A-Z]').hasMatch(pwd)) score++;
+    if (RegExp(r'\d').hasMatch(pwd)) score++;
+    if (RegExp(r'[^a-zA-Z0-9]').hasMatch(pwd)) score++;
+    return score;
+  }
+
+  bool _validate() {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final login = _loginController.text.trim();
     final password = _passwordController.text;
     final confirm = _confirmController.text;
 
-    if (name.isEmpty || email.isEmpty || login.isEmpty || password.isEmpty) {
-      setState(() => _error = context.tr('auth.register_required'));
-      return;
-    }
-    if (!_validEmail) {
-      setState(() => _error = context.tr('auth.invalid_email'));
-      return;
-    }
-    if (password != confirm) {
-      setState(() => _error = context.tr('auth.password_mismatch'));
-      return;
-    }
+    setState(() {
+      _nameError = name.isEmpty ? context.tr('auth.register_required') : null;
+      _emailError = email.isEmpty ? context.tr('auth.register_required') : (_validEmail ? null : context.tr('auth.invalid_email'));
+      _loginError = login.isEmpty ? context.tr('auth.register_required') : null;
+      _passwordError = password.isEmpty ? context.tr('auth.register_required') : null;
+      _confirmTouched = true;
+      _confirmError = confirm.isEmpty ? context.tr('auth.register_required') : (password != confirm ? context.tr('auth.password_mismatch') : null);
+    });
+    return _nameError == null && _emailError == null && _loginError == null && _passwordError == null && _confirmError == null;
+  }
+
+  Future<void> _submit() async {
+    if (!_validate()) return;
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final login = _loginController.text.trim();
+    final password = _passwordController.text;
 
     setState(() {
       _loading = true;
@@ -77,8 +117,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         login: login,
         password: password,
       );
-      if (user != null) store.saveUser(user);
+      if (!mounted) return;
       store.clearAuthExpired();
+
+      try {
+        await store.switchToAccount(store.authService.userId);
+      } catch (_) {}
+      if (user != null) store.saveUser(user);
       if (!mounted) return;
 
       final masterStatus = await authService.checkMasterStatus();
@@ -121,6 +166,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strength = _passwordStrength(_passwordController.text);
+    final showStrength = _passwordController.text.isNotEmpty;
     return Scaffold(
       appBar: AppBar(title: Text(context.tr('auth.register')), centerTitle: true),
       body: SafeArea(
@@ -139,29 +186,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       AppInput(
                         label: context.tr('auth.name'),
                         controller: _nameController,
+                        error: _nameError,
+                        onChanged: _onChanged,
                       ),
                       const SizedBox(height: 16),
                       AppInput(
                         label: context.tr('auth.email'),
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        error: _emailError,
+                        onChanged: _onChanged,
                       ),
                       const SizedBox(height: 16),
                       AppInput(
                         label: context.tr('auth.login_hint'),
                         controller: _loginController,
+                        error: _loginError,
+                        onChanged: _onChanged,
                       ),
                       const SizedBox(height: 16),
                       AppInput(
                         label: context.tr('auth.password_hint'),
                         controller: _passwordController,
                         obscureText: true,
+                        error: _passwordError,
+                        onChanged: _onChanged,
                       ),
+                      if (showStrength) ...[
+                        const SizedBox(height: 8),
+                        _StrengthIndicator(strength: strength),
+                        const SizedBox(height: 4),
+                        Text(
+                          strength <= 1 ? context.tr('auth.password_weak') : (strength == 2 ? context.tr('auth.password_medium') : context.tr('auth.password_strong')),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: strength <= 1 ? AppColors.danger : (strength == 2 ? Colors.orange : AppColors.success),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       AppInput(
                         label: context.tr('auth.password_confirm'),
                         controller: _confirmController,
                         obscureText: true,
+                        error: _confirmError,
+                        onChanged: _onChanged,
                         onSubmitted: (_) => _submit(),
                       ),
                       if (_error != null) ...[
@@ -183,6 +253,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _StrengthIndicator extends StatelessWidget {
+  final int strength;
+  const _StrengthIndicator({required this.strength});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(4, (i) {
+        final filled = i < strength;
+        return Expanded(
+          child: Container(
+            height: 4,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              color: strength == 0
+                  ? AppColors.borderFor(context)
+                  : (filled
+                      ? (strength <= 1
+                          ? AppColors.danger
+                          : (strength == 2 ? Colors.orange : AppColors.success))
+                      : AppColors.borderFor(context)),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

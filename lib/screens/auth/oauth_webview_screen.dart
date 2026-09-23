@@ -142,7 +142,6 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       final user = await _fetchUser();
       if (user != null && user.id.isNotEmpty) {
         store.apiClient.setAuth(accessToken: token, userId: user.id);
-        store.saveUser(user);
       }
 
       final webSession = await _captureWebSession();
@@ -155,6 +154,10 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
         webSession: webSession,
       );
+      try {
+        await store.switchToAccount(store.authService.userId);
+      } catch (_) {}
+      if (user != null && user.id.isNotEmpty) store.saveUser(user);
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
@@ -163,7 +166,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       NotificationService().rescheduleAll();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: AppColors.danger));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_mapError(e.message)), backgroundColor: AppColors.danger));
         Navigator.pop(context, false);
       }
     } catch (e) {
@@ -186,7 +189,6 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       final user = await _fetchUser();
       if (user != null && user.id.isNotEmpty) {
         store.apiClient.setAuth(accessToken: token, userId: user.id);
-        store.saveUser(user);
       }
 
       final webSession = await _captureWebSession();
@@ -199,6 +201,10 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         userId: user?.id,
         webSession: webSession,
       );
+      try {
+        await store.switchToAccount(store.authService.userId);
+      } catch (_) {}
+      if (user != null && user.id.isNotEmpty) store.saveUser(user);
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(context, '/main', (r) => false);
       }
@@ -207,7 +213,7 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
       NotificationService().rescheduleAll();
     } on ApiException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message), backgroundColor: AppColors.danger));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_mapError(e.message)), backgroundColor: AppColors.danger));
         Navigator.pop(context, false);
       }
     } catch (e) {
@@ -216,6 +222,14 @@ class _OAuthWebViewScreenState extends State<OAuthWebViewScreen> {
         Navigator.pop(context, false);
       }
     }
+  }
+
+  String _mapError(String raw) {
+    final s = raw.toLowerCase();
+    if (s.contains('invalid grant') || s.contains('invalid_grant')) {
+      return context.tr('auth.invalid_credentials');
+    }
+    return raw;
   }
 
   @override

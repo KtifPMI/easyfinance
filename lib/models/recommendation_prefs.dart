@@ -1,8 +1,13 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/account_cache.dart';
 
 class RecommendationPrefs {
   static const _key = 'easyfinance_recommendation_prefs';
+
+  static String _k(String? uid) => AccountCache.key(_key, uid ?? _activeUid());
+
+  static String? _activeUid() => AccountCache.activeUidSync();
 
   double foodHighPct;
   double foodMediumPct;
@@ -84,9 +89,9 @@ class RecommendationPrefs {
     largeCashMin: (j['largeCashMin'] ?? 30000).toDouble(),
   );
 
-  static Future<RecommendationPrefs> load() async {
+  static Future<RecommendationPrefs> load({String? uid}) async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
+    final raw = prefs.getString(_k(uid));
     if (raw != null) {
       try {
         return RecommendationPrefs.fromJson(jsonDecode(raw));
@@ -95,9 +100,9 @@ class RecommendationPrefs {
     return RecommendationPrefs();
   }
 
-  Future<void> save() async {
+  Future<void> save({String? uid}) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, jsonEncode(toJson()));
+    await prefs.setString(_k(uid), jsonEncode(toJson()));
   }
 
   RecommendationPrefs copy() => RecommendationPrefs.fromJson(toJson());

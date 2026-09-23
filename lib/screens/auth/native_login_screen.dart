@@ -64,6 +64,10 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
       if (await _verifyAccountNotDeleted(store)) {
         if (!mounted) return;
         try {
+          await store.switchToAccount(store.authService.userId);
+        } catch (_) {}
+        if (!mounted) return;
+        try {
           final masterStatus = await store.authService.checkMasterStatus();
           if (!mounted) return;
           if (masterStatus.isActive && !masterStatus.isMasterCompleted) {
@@ -122,8 +126,12 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
       final plannedStore = context.read<PlannedPaymentStore>();
       final authService = store.authService;
       final user = await authService.loginWithPassword(login: login, password: password);
-      if (user != null) store.saveUser(user);
       store.clearAuthExpired();
+      if (!mounted) return;
+      try {
+        await store.switchToAccount(store.authService.userId);
+      } catch (_) {}
+      if (user != null) store.saveUser(user);
       if (!mounted) return;
 
       final masterStatus = await authService.checkMasterStatus();
@@ -140,7 +148,7 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.message;
+          _error = _mapLoginError(e.message);
           _loading = false;
         });
       }
@@ -152,6 +160,14 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
         });
       }
     }
+  }
+
+  String _mapLoginError(String raw) {
+    final s = raw.toLowerCase();
+    if (s.contains('invalid grant') || s.contains('invalid_grant')) {
+      return context.tr('auth.invalid_credentials');
+    }
+    return raw;
   }
 
   void _skipLogin() {

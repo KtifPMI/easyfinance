@@ -14,6 +14,7 @@ import '../models/tag.dart';
 import '../models/user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/account_cache.dart';
 import '../utils/account_utils.dart';
 import '../services/api_service.dart';
 import '../services/mock_data.dart' show mockCategories;
@@ -142,24 +143,31 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> _loadRecPrefs() async {
-    _recPrefs = await RecommendationPrefs.load();
+    _recPrefs = await RecommendationPrefs.load(uid: authService.userId);
   }
 
   Future<void> _applyFavoriteStates() async {
     final prefs = await SharedPreferences.getInstance();
     for (int i = 0; i < _accounts.length; i++) {
-      final isFav = prefs.getBool('fav_${_accounts[i].id}') ?? false;
+      final isFav = prefs.getBool(_favKey(_accounts[i].id)) ?? false;
       if (isFav) _accounts[i] = _accounts[i].copyWith(isFavorite: true);
     }
+  }
+
+  String _ck(String base) => AccountCache.key(base, authService.userId);
+
+  String _favKey(String accountId) {
+    final uid = authService.userId;
+    return (uid == null || uid.isEmpty) ? 'fav_$accountId' : 'fav_${uid}_$accountId';
   }
 
   Future<void> _loadFromCache() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-    final accountsRaw = prefs.getString('easyfinance_cached_accounts');
-    final categoriesRaw = prefs.getString('easyfinance_cached_categories');
-    final tagsRaw = prefs.getString('easyfinance_cached_tags');
-    final userRaw = prefs.getString('easyfinance_cached_user');
+    final accountsRaw = prefs.getString(_ck('easyfinance_cached_accounts'));
+    final categoriesRaw = prefs.getString(_ck('easyfinance_cached_categories'));
+    final tagsRaw = prefs.getString(_ck('easyfinance_cached_tags'));
+    final userRaw = prefs.getString(_ck('easyfinance_cached_user'));
     if (accountsRaw != null) {
       try {
         final list = jsonDecode(accountsRaw) as List<dynamic>;
@@ -186,7 +194,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
         _tags = list.map((e) => Tag.fromJson(e as Map<String, dynamic>)).toList();
       } catch (_) {}
     }
-    final deletedRaw = prefs.getString('easyfinance_deleted_tags');
+    final deletedRaw = prefs.getString(_ck('easyfinance_deleted_tags'));
     if (deletedRaw != null) {
       final list = jsonDecode(deletedRaw) as List<dynamic>;
       _deletedTagNames.addAll(list.map((e) => e.toString().toLowerCase()));
@@ -198,7 +206,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     await _loadGoals();
     await _loadDisplayCurrency();
     _watchedCurrencies = await _loadWatchedCurrencies();
-    final tachRaw = prefs.getString('easyfinance_cached_tachometers');
+    final tachRaw = prefs.getString(_ck('easyfinance_cached_tachometers'));
     if (tachRaw != null) {
       try {
         final t = jsonDecode(tachRaw) as Map<String, dynamic>;
@@ -247,10 +255,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _saveCache() async {
+Future<void> _saveCache() async {
     final prefs = await SharedPreferences.getInstance();
     if (_accounts.isNotEmpty) {
-      await prefs.setString('easyfinance_cached_accounts', jsonEncode(_accounts.map((a) => a.toJson()).toList()));
+      await prefs.setString(_ck('easyfinance_cached_accounts'), jsonEncode(_accounts.map((a) => a.toJson()).toList()));
     }
     try {
       if (_changedOpIds.isNotEmpty || _deletedOpIds.isNotEmpty) {
@@ -263,16 +271,16 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
       }
     } catch (_) {}
     if (_categories.isNotEmpty) {
-      await prefs.setString('easyfinance_cached_categories', jsonEncode(_categories.map((c) => c.toJson()).toList()));
+      await prefs.setString(_ck('easyfinance_cached_categories'), jsonEncode(_categories.map((c) => c.toJson()).toList()));
     }
     if (_tags.isNotEmpty) {
-      await prefs.setString('easyfinance_cached_tags', jsonEncode(_tags.map((t) => t.toJson()).toList()));
+      await prefs.setString(_ck('easyfinance_cached_tags'), jsonEncode(_tags.map((t) => t.toJson()).toList()));
     }
     if (_deletedTagNames.isNotEmpty) {
-      await prefs.setString('easyfinance_deleted_tags', jsonEncode(_deletedTagNames.toList()));
+      await prefs.setString(_ck('easyfinance_deleted_tags'), jsonEncode(_deletedTagNames.toList()));
     }
     if (_currentUser != null) {
-      await prefs.setString('easyfinance_cached_user', jsonEncode(_currentUser!.toJson()));
+      await prefs.setString(_ck('easyfinance_cached_user'), jsonEncode(_currentUser!.toJson()));
     }
     if (_rates.isNotEmpty) {
       await prefs.setString('easyfinance_cached_rates', jsonEncode(_rates));
@@ -284,7 +292,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
     await _saveGoals();
     if (_serverFinHealth != null) {
       final h = _serverFinHealth!;
-      await prefs.setString('easyfinance_cached_tachometers', jsonEncode({
+      await prefs.setString(_ck('easyfinance_cached_tachometers'), jsonEncode({
         'finState': h.finState,
         'money': h.money,
         'budget': h.budget,
@@ -310,22 +318,10 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('easyfinance_budgets');
-    await prefs.remove('easyfinance_goals');
-    await prefs.remove('easyfinance_planned_payments');
-    await prefs.remove('easyfinance_templates');
-    await prefs.remove('easyfinance_cached_accounts');
-    await prefs.remove('easyfinance_cached_operations');
-    await prefs.remove('easyfinance_cached_categories');
-    await prefs.remove('easyfinance_cached_tags');
-    await prefs.remove('easyfinance_cached_user');
-    await prefs.remove('display_currency');
-    final favKeys = prefs.getKeys().where((k) => k.startsWith('fav_')).toList();
-    for (final k in favKeys) {
-      await prefs.remove(k);
-    }
-    await OperationsDb.deleteAll();
+    // Не удаляем пер-аккаунтный кеш: смена аккаунта подтянет именно его кеш.
+    // Просто сбрасываем in-memory состояние и переключаем БД на анонимную.
+    await OperationsDb.setUserId(null);
+    await AccountCache.setActiveUid(null);
     await authService.logout();
     _currentUser = null;
     _accounts = [];
@@ -341,13 +337,47 @@ _useMock = true;
     _scheduleNotify();
   }
 
+  /// Переключает кеш на аккаунт [userId]: сбрасывает in-memory состояние и
+  /// загружает локальный кеш именно этого аккаунта (и отдельную БД операций).
+  Future<void> switchToAccount(String? userId) async {
+    await Future.wait([_cacheReady, _templatesReady, _recPrefsReady]);
+    await AccountCache.setActiveUid(userId);
+    await OperationsDb.setUserId(userId);
+    _currentUser = null;
+    _accounts = [];
+    _operations = [];
+    _opsDirty = true;
+    _categories = [];
+    _budgets = [];
+    _goals = [];
+    _tags = [];
+    _templates = [];
+    _deletedTagNames.clear();
+    _deletedTemplateIds.clear();
+    _useMock = true;
+    _allOperationsLoaded = false;
+    await _loadFromCache();
+    await _loadTemplates();
+    await _loadRecPrefs();
+    try {
+      await _plannedPayments?.load();
+    } catch (_) {}
+    _scheduleNotify();
+  }
+
   /// Аккаунт удалён на сайте: полный logout (чистит токены и локальный кэш)
   /// и переход на экран логина.
   Future<void> handleAccountDeleted() async {
+    final deletedUid = authService.userId;
     try {
       await logout();
     } catch (e) {
       debugPrint('logout on account deleted error: $e');
+    }
+    try {
+      await AccountCache.clearAccount(deletedUid);
+    } catch (e) {
+      debugPrint('clear deleted account cache error: $e');
     }
     clearAuthExpired();
     onAccountDeleted?.call();
@@ -379,15 +409,15 @@ _useMock = true;
   DateTime? get ratesUpdatedAt => _ratesUpdatedAt;
   List<String> get watchedCurrencies => _watchedCurrencies;
 
-  Future<void> updateRecPrefs(RecommendationPrefs newPrefs) async {
+Future<void> updateRecPrefs(RecommendationPrefs newPrefs) async {
     _recPrefs = newPrefs;
-    await _recPrefs.save();
+    await _recPrefs.save(uid: authService.userId);
     _generateRecommendations();
     _scheduleNotify();
   }
 
-  Future<List<String>> _loadWatchedCurrencies() async {
-    final saved = await CurrencyPrefsService.load();
+Future<List<String>> _loadWatchedCurrencies() async {
+    final saved = await CurrencyPrefsService.load(uid: authService.userId);
     if (saved.isNotEmpty) return saved;
     final accountCurrencies = _accounts.map((a) => a.currency).toSet().toList();
     return deriveWatchedCurrencies(_currentUser?.currency, accountCurrencies);
@@ -395,17 +425,17 @@ _useMock = true;
 
   Future<void> setWatchedCurrencies(List<String> codes) async {
     _watchedCurrencies = codes;
-    await CurrencyPrefsService.save(codes);
+    await CurrencyPrefsService.save(codes, uid: authService.userId);
     _scheduleNotify();
   }
 
   String get displayCurrency => _displayCurrency;
   String get displayCurrencySymbol => currencySymbol(_displayCurrency);
 
-  Future<void> setDisplayCurrency(String code) async {
+Future<void> setDisplayCurrency(String code) async {
     _displayCurrency = code;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('display_currency', code);
+    await prefs.setString(_ck('display_currency'), code);
     _recalcCachedTotals();
     _generateRecommendations();
     _scheduleNotify();
@@ -413,7 +443,7 @@ _useMock = true;
 
   Future<void> _loadDisplayCurrency() async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString('display_currency');
+    final saved = prefs.getString(_ck('display_currency'));
     if (saved != null && allCurrencyCodes.contains(saved)) {
       _displayCurrency = saved;
     } else {
@@ -2197,13 +2227,13 @@ String fmt(double v) => formatMoneyWhole(
       'period': b.period,
       'isDeleted': b.isDeleted,
     }).toList();
-    await prefs.setString('easyfinance_budgets', jsonEncode(data));
+    await prefs.setString(_ck('easyfinance_budgets'), jsonEncode(data));
   }
 
   Future<void> _loadBudgets() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('easyfinance_budgets');
+      final raw = prefs.getString(_ck('easyfinance_budgets'));
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
         _budgets = list.map((e) {
@@ -2514,13 +2544,13 @@ String fmt(double v) => formatMoneyWhole(
   Future<void> _saveGoals() async {
     final prefs = await SharedPreferences.getInstance();
     final data = _goals.map((g) => g.toJson()).toList();
-    await prefs.setString('easyfinance_goals', jsonEncode(data));
+await prefs.setString(_ck('easyfinance_goals'), jsonEncode(data));
   }
 
   Future<void> _loadGoals() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('easyfinance_goals');
+      final raw = prefs.getString(_ck('easyfinance_goals'));
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
         _goals = list.map((e) => Goal.fromLocalJson(e as Map<String, dynamic>)).toList();
@@ -2716,19 +2746,19 @@ String fmt(double v) => formatMoneyWhole(
   Future<void> _saveTemplates() async {
     final prefs = await SharedPreferences.getInstance();
     final data = _templates.map((t) => t.toJson()).toList();
-    await prefs.setString('easyfinance_templates', jsonEncode(data));
-    await prefs.setString('easyfinance_deleted_templates', jsonEncode(_deletedTemplateIds.toList()));
+    await prefs.setString(_ck('easyfinance_templates'), jsonEncode(data));
+    await prefs.setString(_ck('easyfinance_deleted_templates'), jsonEncode(_deletedTemplateIds.toList()));
   }
 
   Future<void> _loadTemplates() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString('easyfinance_templates');
+      final raw = prefs.getString(_ck('easyfinance_templates'));
       if (raw != null) {
         final list = jsonDecode(raw) as List<dynamic>;
         _templates = list.map((e) => OperationTemplate.fromLocalJson(e as Map<String, dynamic>)).toList();
       }
-      final delRaw = prefs.getString('easyfinance_deleted_templates');
+      final delRaw = prefs.getString(_ck('easyfinance_deleted_templates'));
       if (delRaw != null) {
         final list = jsonDecode(delRaw) as List<dynamic>;
         _deletedTemplateIds.addAll(list.map((e) => e.toString()));
