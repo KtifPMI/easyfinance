@@ -41,7 +41,7 @@ class User {
       login: json['login']?.toString() ?? '',
       accountType: json['account_type']?.toString() ?? 'individual',
       tariffEnd: tariffEnd,
-      currency: currencyIdToCode[json['default_currency']?.toString()] ?? 'RUB',
+      currency: currencyIdToCode[json['currency_default']?.toString() ?? json['default_currency']?.toString()] ?? 'RUB',
       registeredAt: registeredAt,
     );
   }

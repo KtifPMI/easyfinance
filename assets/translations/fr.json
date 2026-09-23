@@ -814,7 +814,7 @@
   "onboarding.renting_amount": "Loyer",
   "onboarding.target_amount": "Fonds de réserve",
   "onboarding.tip1": "créer un compte (espèces, comptes bancaires, etc.)",
-  "onboarding.tip2": "ajouter une opération réelle (manuellement, importer depuis un fichier, relevé bancaire ou activer la synchronisation automatique)",
+  "onboarding.tip2": "ajouter une opération réelle manuellement",
   "onboarding.tip3": "Définissez des budgets par catégorie pour contrôler les dépenses",
   "onboarding.tip4": "Planifiez les paiements récurrents dans le calendrier",
   "onboarding.step8_title": "Qui êtes-vous ?",

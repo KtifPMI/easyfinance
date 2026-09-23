@@ -745,8 +745,8 @@ _useMock = true;
       _plannedPayments?.syncFromServer().catchError((e) { debugPrint('planned payments sync error: $e'); }) ?? Future.value(),
     ]);
 
-    final targets = results[9] as List<dynamic>? ?? [];
-    final templateGoals = results[10] as List<dynamic>? ?? [];
+    final targets = results.length > 8 ? results[8] as List<dynamic>? ?? [] : [];
+    final templateGoals = results.length > 9 ? results[9] as List<dynamic>? ?? [] : [];
     final existingGoalIds = _goals.map((g) => g.id).toSet();
     final targetIds = targets.map((t) => t['id']?.toString()).whereType<String>().toSet();
     _goals.removeWhere((g) => targetIds.contains(g.id));
@@ -778,7 +778,13 @@ _useMock = true;
       _refreshDerivedData();
       if (hasListeners) _scheduleNotify();
     });
-} catch (_) { _fetching = false; }
+} catch (e) {
+      debugPrint('fetchAllData error: $e');
+      _fetching = false;
+      _isLoading = false;
+      _dataLoaded = true;
+      _scheduleNotify();
+    }
   }
 
   /// Загружает тахометры по API (dashboard.get). При ошибке (например, нет сети)

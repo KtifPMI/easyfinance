@@ -801,7 +801,7 @@
   "onboarding.renting_amount": "Kira",
   "onboarding.target_amount": "Acil durum fonu",
   "onboarding.tip1": "bir hesap oluşturmak (nakit, banka hesapları vb.)",
-  "onboarding.tip2": "gerçek bir işlem eklemek (manuel, dosyadan içe aktarma, banka ekstresi veya otomatik senkronizasyon)",
+  "onboarding.tip2": "gerçek bir işlem manuel olarak eklemek",
   "onboarding.tip3": "Harcamaları kontrol etmek için kategori bazlı bütçeler belirleyin",
   "onboarding.tip4": "Tekrarlayan ödemeleri takvimde planlayın",
   "onboarding.step8_title": "Kimsiniz?",
