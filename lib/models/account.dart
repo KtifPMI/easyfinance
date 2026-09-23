@@ -107,8 +107,8 @@ class Account {
     this.isPending = false,
   });
 
-  Account copyWith({String? id, double? balance, String? currencyId, bool? isFavorite, bool? isArchived, bool? isPending}) =>
-      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived ?? this.isArchived, isFavorite: isFavorite ?? this.isFavorite, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt, annualRate: annualRate, paymentType: paymentType, openDate: openDate, closeDate: closeDate, commissionOneTime: commissionOneTime, commissionMonthly: commissionMonthly, paymentDay: paymentDay, creditLimit: creditLimit, description: description, bankId: bankId, isPending: isPending ?? this.isPending);
+  Account copyWith({String? id, double? balance, String? currency, String? currencyId, bool? isFavorite, bool? isArchived, bool? isPending}) =>
+      Account(id: id ?? this.id, name: name, balance: balance ?? this.balance, currency: currency ?? this.currency, currencyId: currencyId ?? this.currencyId, icon: icon, color: color, type: type, includeInTotal: includeInTotal, isArchived: isArchived ?? this.isArchived, isFavorite: isFavorite ?? this.isFavorite, initBalance: initBalance, createdAt: createdAt, updatedAt: updatedAt, annualRate: annualRate, paymentType: paymentType, openDate: openDate, closeDate: closeDate, commissionOneTime: commissionOneTime, commissionMonthly: commissionMonthly, paymentDay: paymentDay, creditLimit: creditLimit, description: description, bankId: bankId, isPending: isPending ?? this.isPending);
 
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'balance': balance, 'currency': currency,

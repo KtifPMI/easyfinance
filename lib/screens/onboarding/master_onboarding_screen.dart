@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
+import '../../models/account.dart';
 import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
 import '../../store/finance_store.dart';
@@ -36,6 +37,8 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   String _accountType = 'man';
   String _selectedCurrencyId = '1';
   final Set<String> _watchedCurrencyIds = {'2', '3'};
+  Account? _walletAccount;
+  bool _walletOwnsAccount = false;
   bool _hasAutomobile = false;
   bool _hasMotocycle = false;
   bool _hasChildren = false;
@@ -92,6 +95,62 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   double get _rentingValue => double.tryParse(_rentingAmountController.text) ?? 0;
   double get _targetValue => _incomeValue * 6;
 
+  /// Ensures a cash wallet account exists in the selected main currency.
+  /// Called after the currency step and again before [finishMaster] so the
+  /// server can bind the master goal to the account.
+  Future<bool> _ensureWalletAccount() async {
+    if (!mounted) return false;
+    final store = context.read<FinanceStore>();
+
+    if (_walletAccount != null) {
+      if (_walletOwnsAccount && _walletAccount!.currencyId != _selectedCurrencyId) {
+        final updated = _walletAccount!.copyWith(
+          currency: _mainCurrencyCode,
+          currencyId: _selectedCurrencyId,
+        );
+        await store.updateAccount(updated);
+        if (store.error != null) return false;
+        _walletAccount = updated;
+      }
+      return true;
+    }
+
+    var list = store.accounts;
+    if (list.isEmpty) {
+      try {
+        list = await store.authService.apiService.getAccounts();
+      } catch (_) {}
+    }
+    if (list.isNotEmpty) {
+      _walletAccount = list.first;
+      return true;
+    }
+
+    if (!mounted) return false;
+    final now = formatApiDateTime();
+    final acc = Account(
+      id: DateTime.now().microsecondsSinceEpoch.toRadixString(36),
+      name: context.tr('onboarding.wallet_name'),
+      balance: 0,
+      type: 'cash',
+      currencyId: _selectedCurrencyId,
+      currency: _mainCurrencyCode,
+      icon: 'cash',
+      color: '#16A34A',
+      initBalance: 0,
+      createdAt: now,
+      updatedAt: now,
+      description: context.tr('onboarding.wallet_description'),
+    );
+    await store.addAccount(acc);
+    if (store.error != null) return false;
+    _walletOwnsAccount = true;
+    _walletAccount = store.accounts.where((a) => a.id == acc.id).firstOrNull ??
+        store.accounts.where((a) => a.name == acc.name).firstOrNull ??
+        acc;
+    return true;
+  }
+
   Future<void> _next() async {
     if (_isLastStep) {
       await _finish();
@@ -135,6 +194,23 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
       return;
     }
 
+    if (stepId == 1) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+      final ok = await _ensureWalletAccount();
+      if (!mounted) return;
+      if (!ok) {
+        setState(() {
+          _error = context.read<FinanceStore>().error ?? context.tr('onboarding.finish_error');
+          _loading = false;
+        });
+        return;
+      }
+      setState(() => _loading = false);
+    }
+
     setState(() => _currentStepIndex++);
     _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
   }
@@ -160,7 +236,19 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
     });
 
     try {
-      final apiClient = context.read<FinanceStore>().authService.apiClient;
+      final store = context.read<FinanceStore>();
+      final apiClient = store.authService.apiClient;
+
+      final ensured = await _ensureWalletAccount();
+      if (!mounted) return;
+      if (!ensured) {
+        setState(() {
+          _error = store.error ?? context.tr('onboarding.finish_error');
+          _loading = false;
+        });
+        return;
+      }
+      await store.syncPendingAccounts();
 
       await apiClient.setMaster({
         'account_type': _accountType,

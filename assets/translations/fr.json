@@ -832,6 +832,8 @@
   "onboarding.budget_error": "Indiquez votre revenu mensuel moyen. Il doit être supérieur aux services publics et au loyer.",
   "onboarding.target_banner": "Nous créerons pour vous votre premier objectif financier « Fonds de réserve » d'un montant de {0}",
   "onboarding.target_hint": "Une telle réserve financière est nécessaire pour 6 mois de vie en cas de perte du revenu principal (recherche d'emploi, traitement, etc.)",
+  "onboarding.wallet_name": "Portefeuille",
+  "onboarding.wallet_description": "Mes espèces",
   "onboarding.help1_title": "Comment atteindre l'indépendance financière",
   "onboarding.help1_text": "Pour atteindre l'indépendance financière, suivez vos revenus et dépenses, contrôlez votre budget, mettez de côté une partie de vos revenus pour le fonds de réserve et investissez.",
   "onboarding.help2_title": "Comment ajouter un compte",

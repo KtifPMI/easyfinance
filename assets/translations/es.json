@@ -832,6 +832,8 @@
   "onboarding.budget_error": "Indique su ingreso mensual promedio. Debe ser mayor que los servicios públicos y el alquiler.",
   "onboarding.target_banner": "Crearemos su primera meta financiera «Fondo de emergencia» por un monto de {0}",
   "onboarding.target_hint": "Dicha reserva financiera es necesaria para 6 meses de vida en caso de pérdida del ingreso principal (búsqueda de empleo, tratamiento, etc.)",
+  "onboarding.wallet_name": "Cartera",
+  "onboarding.wallet_description": "Mi dinero en efectivo",
   "onboarding.help1_title": "Cómo alcanzar la independencia financiera",
   "onboarding.help1_text": "Para alcanzar la independencia financiera, haga seguimiento de sus ingresos y gastos, controle su presupuesto, reserve parte de sus ingresos para el fondo de emergencia e invierta.",
   "onboarding.help2_title": "Cómo añadir una cuenta",

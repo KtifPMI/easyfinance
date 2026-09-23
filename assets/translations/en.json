@@ -869,6 +869,8 @@
   "onboarding.budget_error": "Specify your average monthly income. It must be greater than utilities and rent payments.",
   "onboarding.target_banner": "We will create your first financial goal «Emergency fund» in the amount of {0}",
   "onboarding.target_hint": "Such a financial reserve is necessary for 6 months of life in case of loss of primary income (job search, treatment, etc.)",
+  "onboarding.wallet_name": "Wallet",
+  "onboarding.wallet_description": "My cash money",
   "onboarding.help1_title": "How to achieve financial independence",
   "onboarding.help1_text": "To achieve financial independence, keep track of income and expenses, control your budget, set aside part of income for an emergency fund and invest.",
   "onboarding.help2_title": "How to add an account",

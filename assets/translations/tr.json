@@ -819,6 +819,8 @@
   "onboarding.budget_error": "Aylık ortalama gelirinizi belirtin. Faturalar ve kira tutarından büyük olmalıdır.",
   "onboarding.target_banner": "Size {0} tutarında ilk finansal hedefiniz olan «Acil durum fonu» oluşturacağız",
   "onboarding.target_hint": "Böyle bir finansal rezerv, ana gelir kaybı durumunda (iş arama, tedavi vb.) 6 aylık yaşam için gereklidir",
+  "onboarding.wallet_name": "Cüzdan",
+  "onboarding.wallet_description": "Nakit param",
   "onboarding.help1_title": "Finansal bağımsızlığa nasıl ulaşılır",
   "onboarding.help1_text": "Finansal bağımsızlığa ulaşmak için gelir ve giderlerinizi takip edin, bütçenizi kontrol edin, gelirinizin bir kısmını acil durum fonu için ayırın ve yatırım yapın.",
   "onboarding.help2_title": "Hesap nasıl eklenir",

@@ -832,6 +832,8 @@
   "onboarding.budget_error": "Geben Sie Ihr durchschnittliches Monatseinkommen an. Es muss höher sein als Nebenkosten und Miete.",
   "onboarding.target_banner": "Wir erstellen Ihnen Ihr erstes Finanzziel «Notgroschen» in Höhe von {0}",
   "onboarding.target_hint": "Eine solche Finanzreserve ist für 6 Lebensmonate bei Verlust des Haupteinkommens notwendig (Arbeitssuche, Behandlung usw.)",
+  "onboarding.wallet_name": "Brieftasche",
+  "onboarding.wallet_description": "Mein Bargeld",
   "onboarding.help1_title": "Wie Sie finanzielle Unabhängigkeit erreichen",
   "onboarding.help1_text": "Um finanzielle Unabhängigkeit zu erreichen, verfolgen Sie Einnahmen und Ausgaben, kontrollieren Sie Ihr Budget, legen Sie einen Teil des Einkommens für den Notgroschen zurück und investieren Sie.",
   "onboarding.help2_title": "So fügen Sie ein Konto hinzu",

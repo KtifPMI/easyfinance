@@ -832,6 +832,8 @@
   "onboarding.budget_error": "Indica il tuo reddito mensile medio. Deve essere maggiore di utenze e affitto.",
   "onboarding.target_banner": "Creeremo il tuo primo obiettivo finanziario «Fondo di emergenza» per un importo di {0}",
   "onboarding.target_hint": "Tale riserva finanziaria è necessaria per 6 mesi di vita in caso di perdita del reddito principale (ricerca di lavoro, cure, ecc.)",
+  "onboarding.wallet_name": "Portafoglio",
+  "onboarding.wallet_description": "I miei contanti",
   "onboarding.help1_title": "Come raggiungere l'indipendenza finanziaria",
   "onboarding.help1_text": "Per raggiungere l'indipendenza finanziaria, tieni traccia di entrate e uscite, controlla il budget, metti da parte una parte del reddito per il fondo di emergenza e investi.",
   "onboarding.help2_title": "Come aggiungere un conto",

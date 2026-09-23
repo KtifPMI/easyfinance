@@ -819,6 +819,8 @@
   "onboarding.budget_error": "Informe sua renda mensal média. Ela deve ser maior que os serviços públicos e o aluguel.",
   "onboarding.target_banner": "Criaremos seu primeiro objetivo financeiro «Fundo de emergência» no valor de {0}",
   "onboarding.target_hint": "Essa reserva financeira é necessária para 6 meses de vida em caso de perda da renda principal (busca de emprego, tratamento, etc.)",
+  "onboarding.wallet_name": "Carteira",
+  "onboarding.wallet_description": "Meu dinheiro em espécie",
   "onboarding.help1_title": "Como alcançar a independência financeira",
   "onboarding.help1_text": "Para alcançar a independência financeira, acompanhe receitas e despesas, controle seu orçamento, reserve parte da renda para o fundo de emergência e invista.",
   "onboarding.help2_title": "Como adicionar uma conta",
