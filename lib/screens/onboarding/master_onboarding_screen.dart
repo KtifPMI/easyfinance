@@ -91,7 +91,33 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   String get _mainCurrencyCode => currencyIdToCode[_selectedCurrencyId] ?? 'RUB';
 
   double _parseAmount(String text) {
-    final normalized = text.trim().replaceAll(RegExp(r'\s'), '').replaceAll(',', '.');
+    final s = text.trim().replaceAll(RegExp(r'\s'), '');
+    if (s.isEmpty) return 0;
+
+    var normalized = s;
+    // "1,000.50" / "1,000.00" — comma thousands, dot decimal: strip commas.
+    if (normalized.contains(',') && normalized.contains('.')) {
+      normalized = normalized.replaceAll(',', '');
+    } else if (normalized.contains(',')) {
+      final parts = normalized.split(',');
+      final lastLen = parts.last.length;
+      // Single comma with <3 fractional digits is a decimal comma: "150,5".
+      if (parts.length == 2 && lastLen > 0 && lastLen < 3) {
+        normalized = normalized.replaceAll(',', '.');
+      } else {
+        // Thousands commas: "1,000" / "1,000,000" — drop them.
+        normalized = normalized.replaceAll(',', '');
+      }
+    }
+
+    // "1.000.000" — dot thousands: keep the last dot as decimal point.
+    if ('.'.allMatches(normalized).length > 1) {
+      final lastDot = normalized.lastIndexOf('.');
+      final intPart = normalized.substring(0, lastDot).replaceAll('.', '');
+      final fracPart = normalized.substring(lastDot + 1);
+      normalized = '$intPart.$fracPart';
+    }
+
     return double.tryParse(normalized) ?? 0;
   }
 
@@ -682,32 +708,49 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             const SizedBox(height: 16),
           ],
           const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: AppColors.primary.withValues(alpha: 0.08),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.tr('onboarding.target_banner', args: [_incomeValue > 0 ? formatMoneyWhole(_targetValue, currency: _mainCurrencyCode) : '']),
-                  style: TextStyle(fontSize: 16, color: AppColors.textFor(context), fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  context.tr('onboarding.target_hint'),
-                  style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context)),
-                ),
-              ],
-            ),
-          ),
+          _buildTargetField(),
           const SizedBox(height: 48),
         ],
       ),
+    );
+  }
+
+  Widget _buildTargetField() {
+    final hasIncome = _incomeValue > 0;
+    final value = hasIncome
+        ? formatMoneyWhole(_targetValue, currency: _mainCurrencyCode)
+        : '0';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr('onboarding.target_amount'),
+          style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context), fontWeight: FontWeight.w400),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.cardFor(context),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.borderFor(context)),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: hasIncome ? AppColors.textFor(context) : AppColors.textSecondaryFor(context).withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          context.tr('onboarding.target_hint'),
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondaryFor(context)),
+        ),
+      ],
     );
   }
 
