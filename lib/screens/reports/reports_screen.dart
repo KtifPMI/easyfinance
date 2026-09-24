@@ -136,11 +136,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final catExpense = catTotals.fold<double>(0, (s, e) => s + e.total);
         final otherTotal = catTotals.length > 6 ? catTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
         final chartSlices = <({String label, double value, Color color})>[];
+        final expenseSliceCats = <String?>[];
         for (int i = 0; i < catTotals.length && i < 6; i++) {
           chartSlices.add((label: tCat(context, catTotals[i].category.name), value: catTotals[i].total, color: _chartPalette[i % _chartPalette.length]));
+          expenseSliceCats.add(catTotals[i].category.id);
         }
         if (otherTotal > 0) {
           chartSlices.add((label: context.tr('reports.other'), value: otherTotal, color: AppColors.textSecondaryFor(context)));
+          expenseSliceCats.add(null);
         }
 
         final incomeCatTotals = store.categories
@@ -152,11 +155,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
         final incomeCatTotal = incomeCatTotals.fold<double>(0, (s, e) => s + e.total);
         final incomeOtherTotal = incomeCatTotals.length > 6 ? incomeCatTotals.skip(6).fold<double>(0, (s, e) => s + e.total) : 0.0;
         final incomeChartSlices = <({String label, double value, Color color})>[];
+        final incomeSliceCats = <String?>[];
         for (int i = 0; i < incomeCatTotals.length && i < 6; i++) {
           incomeChartSlices.add((label: tCat(context, incomeCatTotals[i].category.name), value: incomeCatTotals[i].total, color: _incomePalette[i % _incomePalette.length]));
+          incomeSliceCats.add(incomeCatTotals[i].category.id);
         }
         if (incomeOtherTotal > 0) {
           incomeChartSlices.add((label: context.tr('reports.other'), value: incomeOtherTotal, color: AppColors.textSecondaryFor(context)));
+          incomeSliceCats.add(null);
         }
 
         return ScreenScaffold(
@@ -270,15 +276,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(child: Text(context.tr('home.no_expenses'), style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context)))),
                 )
-              else ...[
+else ...[
                 Center(
                     child: _chartType == 'bar'
-                      ? SimpleBarChart(slices: chartSlices, height: 200, showPercentages: true)
+                      ? SimpleBarChart(slices: chartSlices, height: 200, showPercentages: true, onBarTap: (i) => _openSliceOperations(expenseSliceCats, i))
                       : SimplePieChart(
                           slices: chartSlices,
                           size: 220,
                           holeRadius: 0.5,
                           showPercentages: true,
+                          onSliceTap: (i) => _openSliceOperations(expenseSliceCats, i),
                         ),
                 ),
                 const SizedBox(height: 16),
@@ -317,12 +324,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
               else ...[
                 Center(
                   child: _incomeChartType == 'bar'
-                    ? SimpleBarChart(slices: incomeChartSlices, height: 200, showPercentages: true)
+                    ? SimpleBarChart(slices: incomeChartSlices, height: 200, showPercentages: true, onBarTap: (i) => _openSliceOperations(incomeSliceCats, i))
                     : SimplePieChart(
                         slices: incomeChartSlices,
                         size: 220,
                         holeRadius: 0.5,
                         showPercentages: true,
+                        onSliceTap: (i) => _openSliceOperations(incomeSliceCats, i),
                       ),
                 ),
                 const SizedBox(height: 16),
@@ -362,6 +370,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
          _preset = null;
        });
      }
+  }
+
+  void _openSliceOperations(List<String?> sliceCats, int index) {
+    if (index < 0 || index >= sliceCats.length) return;
+    final args = <String, dynamic>{
+      'dateFrom': _customFrom?.toIso8601String().substring(0, 10) ?? _selectedMonth.toIso8601String().substring(0, 10),
+      'dateTo': _customTo?.toIso8601String().substring(0, 10) ?? DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).toIso8601String().substring(0, 10),
+    };
+    final catId = sliceCats[index];
+    if (catId != null) args['categoryId'] = catId;
+    Navigator.pushNamed(context, '/operations', arguments: args);
   }
 
   List<Widget> _buildCategoryRows(List<({dynamic category, double total})> catTotals, double monthExpense, FinanceStore store, List<Color> palette) {

@@ -7,24 +7,56 @@ class SimplePieChart extends StatelessWidget {
   final double size;
   final double holeRadius;
   final bool showPercentages;
+  final void Function(int index)? onSliceTap;
 
-  const SimplePieChart({super.key, required this.slices, this.size = 180, this.holeRadius = 0.55, this.showPercentages = false});
+  const SimplePieChart({
+    super.key,
+    required this.slices,
+    this.size = 180,
+    this.holeRadius = 0.55,
+    this.showPercentages = false,
+    this.onSliceTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final total = slices.fold<double>(0, (s, e) => s + e.value);
     if (total == 0) return SizedBox(width: size, height: size);
 
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(
-        painter: _PiePainter(
-          slices: slices,
-          total: total,
-          holeRadius: holeRadius,
-          showPercentages: showPercentages,
-          holeColor: AppColors.backgroundFor(context),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapUp: (details) {
+        if (onSliceTap == null) return;
+        final local = details.localPosition;
+        final center = Offset(size / 2, size / 2);
+        final dx = local.dx - center.dx;
+        final dy = local.dy - center.dy;
+        final dist = sqrt(dx * dx + dy * dy);
+        final radius = size / 2;
+        if (dist < radius * holeRadius || dist > radius) return;
+        var angle = atan2(dy, dx) + pi / 2;
+        if (angle < 0) angle += 2 * pi;
+        double accumulated = 0;
+        for (int i = 0; i < slices.length; i++) {
+          final sweep = (slices[i].value / total) * 2 * pi;
+          if (angle <= accumulated + sweep) {
+            onSliceTap!(i);
+            return;
+          }
+          accumulated += sweep;
+        }
+      },
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CustomPaint(
+          painter: _PiePainter(
+            slices: slices,
+            total: total,
+            holeRadius: holeRadius,
+            showPercentages: showPercentages,
+            holeColor: AppColors.backgroundFor(context),
+          ),
         ),
       ),
     );
