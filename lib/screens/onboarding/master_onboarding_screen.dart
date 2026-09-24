@@ -542,23 +542,37 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
           const SizedBox(height: 16),
           if (selectedMain == null)
             _buildMainCurrencyList(mainItems)
-          else
+          else ...[
             _buildCurrencySummaryCard(
               icon: Icons.payments_outlined,
               label: context.tr('onboarding.main_currency'),
-              value: '${selectedMain['symbol']} ${selectedMain['code']}',
+              value: selectedMain['symbol'] == selectedMain['code']
+                  ? selectedMain['code']
+                  : '${selectedMain['symbol']} ${selectedMain['code']}',
               onTap: () => _pickMainCurrency(mainItems, selectedMain['id']),
             ),
+            const SizedBox(height: 6),
+            Text(
+              context.tr('onboarding.currency_tap_hint'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context)),
+            ),
+          ],
           const SizedBox(height: 24),
           if (selectedWatch.isEmpty)
             _buildWatchedCurrencyList(watchItems)
-          else
+          else ...[
             _buildCurrencySummaryCard(
               icon: Icons.currency_exchange,
               label: context.tr('onboarding.other_currencies'),
               value: selectedWatch.map((it) => it['code']).join(', '),
               onTap: () => _pickWatchedCurrencies(watchItems),
             ),
+            const SizedBox(height: 6),
+            Text(
+              context.tr('onboarding.currency_tap_watch_hint'),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context)),
+            ),
+          ],
           const SizedBox(height: 48),
         ],
       ),
@@ -661,6 +675,7 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
           final id = item['id'] as String;
           final code = item['code'] as String;
           final symbol = item['symbol'] as String;
+          final hasRealSymbol = symbol != code;
           final isSelected = selectablePredicate(id);
           final isMain = id == selectedId;
           final checked = isMain || isSelected;
@@ -681,8 +696,10 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                     color: checked ? AppColors.primary : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 12),
-                  Text(symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(width: 12),
+                  if (hasRealSymbol) ...[
+                    Text(symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 12),
+                  ],
                   Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
                   const SizedBox(width: 8),
                   Expanded(
@@ -736,13 +753,16 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                         final id = item['id'] as String;
                         final code = item['code'] as String;
                         final symbol = item['symbol'] as String;
+                        final hasRealSymbol = symbol != code;
                         final isChecked = id == selected;
                         return ListTile(
                           leading: Icon(isChecked ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: isChecked ? AppColors.primary : AppColors.textSecondary),
                           title: Row(
                             children: [
-                              Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                              const SizedBox(width: 12),
+                              if (hasRealSymbol) ...[
+                                Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                const SizedBox(width: 12),
+                              ],
                               Text(code, style: const TextStyle(fontSize: 16)),
                               const SizedBox(width: 8),
                               Expanded(
@@ -815,13 +835,16 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                         final id = item['id'] as String;
                         final code = item['code'] as String;
                         final symbol = item['symbol'] as String;
+                        final hasRealSymbol = symbol != code;
                         final isChecked = selected.contains(id);
                         return CheckboxListTile(
                           value: isChecked,
                           title: Row(
                             children: [
-                              Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                              const SizedBox(width: 12),
+                              if (hasRealSymbol) ...[
+                                Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                const SizedBox(width: 12),
+                              ],
                               Text(code, style: const TextStyle(fontSize: 16)),
                               const SizedBox(width: 8),
                               Expanded(

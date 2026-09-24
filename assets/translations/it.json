@@ -803,6 +803,8 @@
   "onboarding.step1_subtitle": "Valuta principale per il monitoraggio finanziario",
   "onboarding.main_currency": "Valuta principale",
   "onboarding.other_currencies": "Altre valute",
+  "onboarding.currency_tap_hint": "Tocca per cambiare la valuta principale",
+  "onboarding.currency_tap_watch_hint": "Tocca per cambiare altre valute",
   "onboarding.step2_title": "Configura le categorie",
   "onboarding.step2_subtitle": "Seleziona ciò che ti riguarda — mostreremo le categorie giuste",
   "onboarding.step3_title": "Budget e obiettivo",

@@ -803,6 +803,8 @@
   "onboarding.step1_subtitle": "Hauptwährung für die Finanzübersicht",
   "onboarding.main_currency": "Hauptwährung",
   "onboarding.other_currencies": "Andere Währungen",
+  "onboarding.currency_tap_hint": "Zum Ändern der Hauptwährung tippen",
+  "onboarding.currency_tap_watch_hint": "Zum Ändern anderer Währungen tippen",
   "onboarding.step2_title": "Kategorien konfigurieren",
   "onboarding.step2_subtitle": "Markieren Sie, was für Sie relevant ist — wir zeigen die passenden Kategorien",
   "onboarding.step3_title": "Budget und Ziel",

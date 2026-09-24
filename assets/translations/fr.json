@@ -803,6 +803,8 @@
   "onboarding.step1_subtitle": "Devise principale pour le suivi financier",
   "onboarding.main_currency": "Devise principale",
   "onboarding.other_currencies": "Autres devises",
+  "onboarding.currency_tap_hint": "Appuyez pour changer la devise principale",
+  "onboarding.currency_tap_watch_hint": "Appuyez pour changer d'autres devises",
   "onboarding.step2_title": "Configurez les catégories",
   "onboarding.step2_subtitle": "Cochez ce qui vous concerne — nous afficherons les bonnes catégories",
   "onboarding.step3_title": "Budget et objectif",

@@ -841,6 +841,8 @@
   "onboarding.step1_subtitle": "Основная валюта для учёта финансов",
   "onboarding.main_currency": "Основная валюта",
   "onboarding.other_currencies": "Остальные валюты",
+  "onboarding.currency_tap_hint": "Нажмите, чтобы изменить основную валюту",
+  "onboarding.currency_tap_watch_hint": "Нажмите, чтобы изменить остальные валюты",
   "onboarding.step2_title": "Настройте категории",
   "onboarding.step2_subtitle": "Отметьте, что вам актуально — мы покажем нужные категории",
   "onboarding.step3_title": "Бюджет и цель",
