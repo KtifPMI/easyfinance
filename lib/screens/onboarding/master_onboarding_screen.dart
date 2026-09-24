@@ -37,6 +37,8 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   String _accountType = 'man';
   String _selectedCurrencyId = '1';
   final Set<String> _watchedCurrencyIds = {'2', '3'};
+  List<Map<String, dynamic>> _serverCurrencies = [];
+  String _currencySearch = '';
   Account? _walletAccount;
   bool _walletOwnsAccount = false;
   bool _hasAutomobile = false;
@@ -58,6 +60,18 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
     _selectedCurrencyId = currencyCodeToId[userCurrency] ?? '1';
     _watchedCurrencyIds.remove(_selectedCurrencyId);
     _budgetTotalController.addListener(_onIncomeChanged);
+    _loadCurrencies();
+  }
+
+  Future<void> _loadCurrencies() async {
+    try {
+      final store = context.read<FinanceStore>();
+      final list = store.currencies.isNotEmpty
+          ? store.currencies
+          : await store.authService.apiService.getCurrencies();
+      if (!mounted) return;
+      setState(() => _serverCurrencies = list);
+    } catch (_) {}
   }
 
   List<int> _computeSteps() {
@@ -88,7 +102,15 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   bool get _isLastStep => _currentStepIndex == _steps.length - 1;
   bool get _isFirstStep => _currentStepIndex == 0;
 
-  String get _mainCurrencyCode => currencyIdToCode[_selectedCurrencyId] ?? 'RUB';
+  String get _mainCurrencyCode {
+    final fromServer =
+        _serverCurrencies.where((c) => c['id']?.toString() == _selectedCurrencyId).firstOrNull;
+    if (fromServer != null) {
+      final symbol = fromServer['symbol']?.toString() ?? '';
+      if (RegExp(r'^[A-Z]{2,}$').hasMatch(symbol)) return symbol;
+    }
+    return currencyIdToCode[_selectedCurrencyId] ?? 'RUB';
+  }
 
   double _parseAmount(String text) {
     final s = text.trim().replaceAll(RegExp(r'\s'), '');
@@ -496,11 +518,10 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
   }
 
   Widget _buildCurrencyStep() {
-    final currencyItems = allCurrencyCodes.map((code) {
-      final id = currencyCodeToId[code];
-      final symbol = currencySymbol(code);
-      return {'id': id, 'code': code, 'symbol': symbol};
-    }).toList();
+    final items = _currencyItems();
+    final mainItems = items.where((it) => it['isRegular'] == true).toList();
+    final watchItems = items.where((it) => it['id'] != _selectedCurrencyId).toList();
+    final q = _currencySearch.trim().toLowerCase();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -517,8 +538,25 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             context.tr('onboarding.step1_subtitle'),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
+          const SizedBox(height: 16),
+          TextField(
+            decoration: InputDecoration(
+              hintText: context.tr('common.search'),
+              prefixIcon: const Icon(Icons.search, size: 20),
+              isDense: true,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+            onChanged: (v) => setState(() => _currencySearch = v),
+          ),
           const SizedBox(height: 24),
-          ...currencyItems.map((item) {
+          ...mainItems.where((item) {
+            if (q.isEmpty) return true;
+            final code = item['code'] as String;
+            final symbol = item['symbol'] as String;
+            final name = item['name'] as String? ?? '';
+            return code.toLowerCase().contains(q) || symbol.toLowerCase().contains(q) || name.toLowerCase().contains(q);
+          }).map((item) {
             final id = item['id'] as String;
             final code = item['code'] as String;
             final symbol = item['symbol'] as String;
@@ -546,6 +584,15 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                     Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 12),
                     Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item['name'] as String? ?? '',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context), overflow: TextOverflow.ellipsis),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -557,11 +604,16 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
-          ...currencyItems.map((item) {
+          ...watchItems.where((item) {
+            if (q.isEmpty) return true;
+            final code = item['code'] as String;
+            final symbol = item['symbol'] as String;
+            final name = item['name'] as String? ?? '';
+            return code.toLowerCase().contains(q) || symbol.toLowerCase().contains(q) || name.toLowerCase().contains(q);
+          }).map((item) {
             final id = item['id'] as String;
             final code = item['code'] as String;
             final symbol = item['symbol'] as String;
-            if (id == _selectedCurrencyId) return const SizedBox.shrink();
             final isChecked = _watchedCurrencyIds.contains(id);
             return InkWell(
               onTap: () => setState(() {
@@ -589,6 +641,15 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
                     Text(symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     const SizedBox(width: 12),
                     Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item['name'] as String? ?? '',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context), overflow: TextOverflow.ellipsis),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -598,6 +659,33 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
         ],
       ),
     );
+  }
+
+  List<Map<String, dynamic>> _currencyItems() {
+    if (_serverCurrencies.isEmpty) {
+      return currencyCodeToId.entries.map((e) {
+        final code = e.key;
+        final isRegular = isRegularCurrency(code);
+        return {'id': e.value, 'code': code, 'symbol': currencySymbol(code), 'name': code, 'isRegular': isRegular};
+      }).toList();
+    }
+    final items = <Map<String, dynamic>>[];
+    for (final c in _serverCurrencies) {
+      final id = c['id']?.toString() ?? '';
+      if (id.isEmpty) continue;
+      final symbol = c['symbol']?.toString() ?? '';
+      final code = currencyIdToCode[id] ?? (RegExp(r'^[A-Z]{2,}$').hasMatch(symbol) ? symbol : null);
+      if (code == null) continue;
+      final isRegular = isRegularCurrency(code);
+      items.add({
+        'id': id,
+        'code': code,
+        'symbol': currencySymbol(code),
+        'name': c['name']?.toString() ?? code,
+        'isRegular': isRegular,
+      });
+    }
+    return items;
   }
 
   Widget _buildCategoriesStep() {

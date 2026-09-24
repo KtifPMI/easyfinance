@@ -60,6 +60,28 @@ const List<String> allCurrencyCodes = [
 
 const List<String> defaultWatchedCurrencies = ['RUB', 'USD', 'EUR'];
 
+/// Драгоценные металлы (менее «обычные» валюты) — только в списке курсов.
+const Set<String> metalCurrencyCodes = {'XAU', 'XAG', 'XPT', 'XPD'};
+
+/// Наиболее распространённые драгоценные металлы и криптовалюты.
+/// Используется для классификации валют из серверного списка (currencies.get):
+/// всё, что попадает в эту выборку, считается «необычной» валютой и
+/// не показывается как основная валюта мастера.
+const Set<String> specialCurrencyCodes = {
+  ...metalCurrencyCodes,
+  'BTC', 'ETH', 'USDT', 'USDC', 'BNB', 'XRP', 'ADA', 'DOGE', 'LTC',
+  'DOT', 'SOL', 'TRX', 'AVAX', 'SHIB', 'MATIC', 'LINK', 'BCH', 'XLM',
+  'NEAR', 'UNI', 'ATOM', 'ETC', 'FIL', 'ALGO', 'VET', 'ICP',
+};
+
+/// Основные валюты (обычные фиатные), которые разрешено выбирать как основную
+/// валюту в мастере настройки. Всё, что не металл и не крипта, считается
+/// обычной валютой (любая фиатная валюта мира с сайта).
+///
+/// Является ли валюта «обычной» (фиатной), пригодной для выбора основной
+/// валюты. Металлы и криптовалюты не считаются обычными.
+bool isRegularCurrency(String code) => !specialCurrencyCodes.contains(code);
+
 String currencySymbol(String code) => currencySymbols[code] ?? code;
 
 List<String> deriveWatchedCurrencies(String? userDefaultCurrency, List<String> accountCurrencies) {
