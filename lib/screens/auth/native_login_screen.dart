@@ -170,7 +170,9 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
     return raw;
   }
 
-  void _skipLogin() {
+  Future<void> _skipLogin() async {
+    await context.read<FinanceStore>().enterDemo();
+    if (!mounted) return;
     Navigator.pushReplacementNamed(context, '/main');
     NotificationService().trackAppOpen();
   }

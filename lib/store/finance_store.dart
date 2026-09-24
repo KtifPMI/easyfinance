@@ -17,7 +17,7 @@ import '../services/auth_service.dart';
 import '../services/account_cache.dart';
 import '../utils/account_utils.dart';
 import '../services/api_service.dart';
-import '../services/mock_data.dart' show mockCategories;
+import '../services/mock_data.dart' show mockUser, mockAccounts, mockCategories, mockOperations, mockBudgets;
 import '../services/currency_rate_service.dart';
 import '../services/currency_prefs_service.dart';
 import '../services/rate_history_storage.dart';
@@ -365,8 +365,38 @@ _useMock = true;
     _scheduleNotify();
   }
 
-  /// Аккаунт удалён на сайте: полный logout (чистит токены и локальный кэш)
-  /// и переход на экран логина.
+  /// Вход в демо-режим без аккаунта: очищает в памяти всё от предыдущего
+  /// аккаунта (и анонимный кеш), чтобы показать чистые демо-данные.
+  Future<void> enterDemo() async {
+    await Future.wait([_cacheReady, _templatesReady, _recPrefsReady]);
+    await AccountCache.setActiveUid(null);
+    await OperationsDb.setUserId(null);
+    await AccountCache.clearAnonymous();
+    try {
+      await OperationsDb.deleteAll();
+    } catch (_) {}
+    _currentUser = mockUser;
+    _accounts = [...mockAccounts];
+    _operations = [...mockOperations];
+    _opsDirty = true;
+    _categories = [...mockCategories];
+    _budgets = [...mockBudgets];
+    _goals = [];
+    _tags = [];
+    _templates = [];
+    _deletedTagNames.clear();
+    _deletedTemplateIds.clear();
+    _useMock = true;
+    _allOperationsLoaded = true;
+    _dataLoaded = true;
+    _serverBudget = null;
+    _serverFinHealth = null;
+    _cachedFinHealth = null;
+    _rebuildLookups();
+    _invalidateOpCaches();
+    _recalcCachedTotals();
+    _scheduleNotify();
+  }
   Future<void> handleAccountDeleted() async {
     final deletedUid = authService.userId;
     try {

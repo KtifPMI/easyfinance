@@ -521,7 +521,8 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
     final items = _currencyItems();
     final mainItems = items.where((it) => it['isRegular'] == true).toList();
     final watchItems = items.where((it) => it['id'] != _selectedCurrencyId).toList();
-    final q = _currencySearch.trim().toLowerCase();
+    final selectedMain = mainItems.where((it) => it['id'] == _selectedCurrencyId).firstOrNull;
+    final selectedWatch = watchItems.where((it) => _watchedCurrencyIds.contains(it['id'])).toList();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -539,126 +540,359 @@ class _MasterOnboardingScreenState extends State<MasterOnboardingScreen> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
-          TextField(
-            decoration: InputDecoration(
-              hintText: context.tr('common.search'),
-              prefixIcon: const Icon(Icons.search, size: 20),
-              isDense: true,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          if (selectedMain == null)
+            _buildMainCurrencyList(mainItems)
+          else
+            _buildCurrencySummaryCard(
+              icon: Icons.payments_outlined,
+              label: context.tr('onboarding.main_currency'),
+              value: '${selectedMain['symbol']} ${selectedMain['code']}',
+              onTap: () => _pickMainCurrency(mainItems, selectedMain['id']),
             ),
-            onChanged: (v) => setState(() => _currencySearch = v),
-          ),
           const SizedBox(height: 24),
-          ...mainItems.where((item) {
-            if (q.isEmpty) return true;
-            final code = item['code'] as String;
-            final symbol = item['symbol'] as String;
-            final name = item['name'] as String? ?? '';
-            return code.toLowerCase().contains(q) || symbol.toLowerCase().contains(q) || name.toLowerCase().contains(q);
-          }).map((item) {
-            final id = item['id'] as String;
-            final code = item['code'] as String;
-            final symbol = item['symbol'] as String;
-            final isSelected = id == _selectedCurrencyId;
-            return InkWell(
-              onTap: () => setState(() {
-                _selectedCurrencyId = id;
-                _watchedCurrencyIds.remove(id);
-              }),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isSelected ? AppColors.primary : AppColors.border),
-                  color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                      color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 12),
-                    Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        item['name'] as String? ?? '',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context), overflow: TextOverflow.ellipsis),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-          const SizedBox(height: 16),
-          Text(
-            context.tr('onboarding.step1_watch_title'),
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-          ),
-          const SizedBox(height: 12),
-          ...watchItems.where((item) {
-            if (q.isEmpty) return true;
-            final code = item['code'] as String;
-            final symbol = item['symbol'] as String;
-            final name = item['name'] as String? ?? '';
-            return code.toLowerCase().contains(q) || symbol.toLowerCase().contains(q) || name.toLowerCase().contains(q);
-          }).map((item) {
-            final id = item['id'] as String;
-            final code = item['code'] as String;
-            final symbol = item['symbol'] as String;
-            final isChecked = _watchedCurrencyIds.contains(id);
-            return InkWell(
-              onTap: () => setState(() {
-                if (isChecked) {
-                  _watchedCurrencyIds.remove(id);
-                } else {
-                  _watchedCurrencyIds.add(id);
-                }
-              }),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: isChecked ? AppColors.primary : AppColors.border),
-                  color: isChecked ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isChecked ? Icons.check_box : Icons.check_box_outline_blank,
-                      color: isChecked ? AppColors.primary : AppColors.textSecondary,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 12),
-                    Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        item['name'] as String? ?? '',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context), overflow: TextOverflow.ellipsis),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
+          if (selectedWatch.isEmpty)
+            _buildWatchedCurrencyList(watchItems)
+          else
+            _buildCurrencySummaryCard(
+              icon: Icons.currency_exchange,
+              label: context.tr('onboarding.other_currencies'),
+              value: selectedWatch.map((it) => it['code']).join(', '),
+              onTap: () => _pickWatchedCurrencies(watchItems),
+            ),
           const SizedBox(height: 48),
         ],
       ),
     );
+  }
+
+  Widget _buildCurrencySummaryCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainCurrencyList(List<Map<String, dynamic>> mainItems) {
+    return _buildCurrencyList(
+      mainItems,
+      selectedId: _selectedCurrencyId,
+      onSelected: (id) {
+        _selectedCurrencyId = id;
+        _watchedCurrencyIds.remove(id);
+      },
+      selectablePredicate: (_) => true,
+    );
+  }
+
+  Widget _buildWatchedCurrencyList(List<Map<String, dynamic>> watchItems) {
+    return _buildCurrencyList(
+      watchItems,
+      selectedId: null,
+      onSelected: (id) {
+        if (_watchedCurrencyIds.contains(id)) {
+          _watchedCurrencyIds.remove(id);
+        } else {
+          _watchedCurrencyIds.add(id);
+        }
+      },
+      selectablePredicate: (id) => _watchedCurrencyIds.contains(id),
+    );
+  }
+
+  Widget _buildCurrencyList(
+    List<Map<String, dynamic>> items, {
+    required String? selectedId,
+    required void Function(String id) onSelected,
+    required bool Function(String id) selectablePredicate,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        TextField(
+          decoration: InputDecoration(
+            hintText: context.tr('common.search'),
+            prefixIcon: const Icon(Icons.search, size: 20),
+            isDense: true,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          onChanged: (v) => setState(() => _currencySearch = v),
+        ),
+        const SizedBox(height: 12),
+        ..._filterCurrencyItems(items).map((item) {
+          final id = item['id'] as String;
+          final code = item['code'] as String;
+          final symbol = item['symbol'] as String;
+          final isSelected = selectablePredicate(id);
+          final isMain = id == selectedId;
+          final checked = isMain || isSelected;
+          return InkWell(
+            onTap: () => setState(() => onSelected(id)),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: checked ? AppColors.primary : AppColors.border),
+                color: checked ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isMain ? Icons.radio_button_checked : (isSelected ? Icons.check_box : Icons.check_box_outline_blank),
+                    color: checked ? AppColors.primary : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(symbol, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 12),
+                  Text(code, style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item['name'] as String? ?? '',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context), overflow: TextOverflow.ellipsis),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Future<void> _pickMainCurrency(List<Map<String, dynamic>> mainItems, String currentId) async {
+    var selected = currentId;
+    String search = '';
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setInnerState) {
+          final filtered = _filterForSearch(mainItems, search);
+          return AlertDialog(
+            title: Text(context.tr('onboarding.main_currency'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onChanged: (v) => setInnerState(() => search = v),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (ctx, i) {
+                        final item = filtered[i];
+                        final id = item['id'] as String;
+                        final code = item['code'] as String;
+                        final symbol = item['symbol'] as String;
+                        final isChecked = id == selected;
+                        return ListTile(
+                          leading: Icon(isChecked ? Icons.radio_button_checked : Icons.radio_button_unchecked, color: isChecked ? AppColors.primary : AppColors.textSecondary),
+                          title: Row(
+                            children: [
+                              Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                              const SizedBox(width: 12),
+                              Text(code, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item['name'] as String? ?? '',
+                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () => Navigator.pop(ctx, id),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(context.tr('common.cancel')),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (picked != null && mounted) {
+      setState(() {
+        _selectedCurrencyId = picked;
+        _watchedCurrencyIds.remove(picked);
+      });
+    }
+  }
+
+  Future<void> _pickWatchedCurrencies(List<Map<String, dynamic>> watchItems) async {
+    final selected = Set<String>.from(_watchedCurrencyIds);
+    String search = '';
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setInnerState) {
+          final filtered = _filterForSearch(watchItems, search);
+          return AlertDialog(
+            title: Text(context.tr('onboarding.other_currencies'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+            content: SizedBox(
+              width: double.maxFinite,
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onChanged: (v) => setInnerState(() => search = v),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (ctx, i) {
+                        final item = filtered[i];
+                        final id = item['id'] as String;
+                        final code = item['code'] as String;
+                        final symbol = item['symbol'] as String;
+                        final isChecked = selected.contains(id);
+                        return CheckboxListTile(
+                          value: isChecked,
+                          title: Row(
+                            children: [
+                              Text(symbol, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                              const SizedBox(width: 12),
+                              Text(code, style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item['name'] as String? ?? '',
+                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context)),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          onChanged: (v) => setInnerState(() {
+                            if (v == true) {
+                              selected.add(id);
+                            } else {
+                              selected.remove(id);
+                            }
+                          }),
+                          activeColor: AppColors.primary,
+                          controlAffinity: ListTileControlAffinity.trailing,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text(context.tr('common.cancel')),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(context.tr('common.save')),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+    if (ok == true && mounted) {
+      setState(() {
+        _watchedCurrencyIds
+          ..clear()
+          ..addAll(selected.where((id) => id != _selectedCurrencyId));
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> _filterCurrencyItems(List<Map<String, dynamic>> items) {
+    final q = _currencySearch.trim().toLowerCase();
+    if (q.isEmpty) return items;
+    return items.where((item) {
+      final code = item['code'] as String;
+      final symbol = item['symbol'] as String;
+      final name = item['name'] as String? ?? '';
+      return code.toLowerCase().contains(q) || symbol.toLowerCase().contains(q) || name.toLowerCase().contains(q);
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _filterForSearch(List<Map<String, dynamic>> items, String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return items;
+    return items.where((item) {
+      final code = item['code'] as String;
+      final symbol = item['symbol'] as String;
+      final name = item['name'] as String? ?? '';
+      return code.toLowerCase().contains(q) || symbol.toLowerCase().contains(q) || name.toLowerCase().contains(q);
+    }).toList();
   }
 
   List<Map<String, dynamic>> _currencyItems() {

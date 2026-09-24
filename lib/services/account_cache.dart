@@ -57,4 +57,13 @@ class AccountCache {
       await prefs.remove('${b}_$uid');
     }
   }
+
+  /// Удаляет анонимный (безаккаунтный) кеш — используется при входе в
+  /// демо-режим, чтобы не подтягивать данные предыдущего аккаунта.
+  static Future<void> clearAnonymous() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final b in _cacheKeyBases) {
+      await prefs.remove(b);
+    }
+  }
 }

@@ -839,6 +839,8 @@
   "onboarding.finish_error": "Не удалось сохранить настройки. Попробуйте ещё раз.",
   "onboarding.step1_title": "Выберите валюту",
   "onboarding.step1_subtitle": "Основная валюта для учёта финансов",
+  "onboarding.main_currency": "Основная валюта",
+  "onboarding.other_currencies": "Остальные валюты",
   "onboarding.step2_title": "Настройте категории",
   "onboarding.step2_subtitle": "Отметьте, что вам актуально — мы покажем нужные категории",
   "onboarding.step3_title": "Бюджет и цель",

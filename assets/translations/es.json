@@ -801,6 +801,8 @@
   "onboarding.finish_error": "Error al guardar la configuración. Inténtelo de nuevo.",
   "onboarding.step1_title": "Elija moneda",
   "onboarding.step1_subtitle": "Moneda principal para el seguimiento financiero",
+  "onboarding.main_currency": "Moneda principal",
+  "onboarding.other_currencies": "Otras monedas",
   "onboarding.step2_title": "Configure categorías",
   "onboarding.step2_subtitle": "Marque lo que le corresponde — mostraremos las categorías adecuadas",
   "onboarding.step3_title": "Presupuesto y meta",

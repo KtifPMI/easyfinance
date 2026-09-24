@@ -788,6 +788,8 @@
   "onboarding.finish_error": "Falha ao salvar. Tente novamente.",
   "onboarding.step1_title": "Escolha uma moeda",
   "onboarding.step1_subtitle": "Moeda principal para o controle financeiro",
+  "onboarding.main_currency": "Moeda principal",
+  "onboarding.other_currencies": "Outras moedas",
   "onboarding.step2_title": "Configure as categorias",
   "onboarding.step2_subtitle": "Marque o que é relevante para você — mostraremos as categorias certas",
   "onboarding.step3_title": "Orçamento e meta",

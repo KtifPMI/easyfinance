@@ -838,6 +838,8 @@
   "onboarding.finish_error": "Failed to save settings. Please try again.",
   "onboarding.step1_title": "Choose Currency",
   "onboarding.step1_subtitle": "Primary currency for tracking finances",
+  "onboarding.main_currency": "Main currency",
+  "onboarding.other_currencies": "Other currencies",
   "onboarding.step2_title": "Configure Categories",
   "onboarding.step2_subtitle": "Mark what's relevant to you — we'll show the right categories",
   "onboarding.step3_title": "Budget & Goal",

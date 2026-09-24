@@ -801,6 +801,8 @@
   "onboarding.finish_error": "Échec de l'enregistrement. Réessayez.",
   "onboarding.step1_title": "Choisissez une devise",
   "onboarding.step1_subtitle": "Devise principale pour le suivi financier",
+  "onboarding.main_currency": "Devise principale",
+  "onboarding.other_currencies": "Autres devises",
   "onboarding.step2_title": "Configurez les catégories",
   "onboarding.step2_subtitle": "Cochez ce qui vous concerne — nous afficherons les bonnes catégories",
   "onboarding.step3_title": "Budget et objectif",
