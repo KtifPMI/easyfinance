@@ -42,25 +42,54 @@ final mockCategories = [
   Category(id: '551145686', name: 'Инвестиционный расход', type: 'expense', icon: 'trending_down', color: '#DC2626'),
 ];
 
-String _iso(int daysAgo) {
-  final d = DateTime.now().subtract(Duration(days: daysAgo));
-  return d.toIso8601String();
+Operation _mkOp(String id, String type, double amount, DateTime d, String accountId, String categoryId, String comment, {String? toAccountId}) {
+  return Operation(
+    id: id,
+    type: type,
+    amount: amount,
+    date: d.toIso8601String(),
+    accountId: accountId,
+    toAccountId: toAccountId,
+    categoryId: categoryId,
+    comment: comment,
+  );
 }
 
-final mockOperations = [
-  Operation(id: 'o1', type: 'expense', amount: 2350, date: _iso(0), accountId: 'a2', categoryId: '551145669', comment: 'Пятёрочка'),
-  Operation(id: 'o2', type: 'expense', amount: 450, date: _iso(0), accountId: 'a1', categoryId: '551145671', comment: 'Метро'),
-  Operation(id: 'o3', type: 'income', amount: 95000, date: _iso(1), accountId: 'a3', categoryId: '551145678', comment: 'Зарплата'),
-  Operation(id: 'o4', type: 'expense', amount: 1200, date: _iso(1), accountId: 'a2', categoryId: '551145663', comment: 'Кофейня'),
-  Operation(id: 'o5', type: 'transfer', amount: 20000, date: _iso(2), accountId: 'a3', toAccountId: 'a4', comment: 'Перевод на накопления'),
-  Operation(id: 'o6', type: 'expense', amount: 35000, date: _iso(3), accountId: 'a3', categoryId: '551145661', comment: 'Аренда квартиры'),
-  Operation(id: 'o7', type: 'expense', amount: 890, date: _iso(4), accountId: 'a2', categoryId: '551145675', comment: 'Связь'),
-  Operation(id: 'o8', type: 'expense', amount: 3200, date: _iso(5), accountId: 'a2', categoryId: '551145663', comment: 'Кино и боулинг'),
-  Operation(id: 'o9', type: 'income', amount: 18000, date: _iso(6), accountId: 'a2', categoryId: '551145678', comment: 'Проект на фрилансе'),
-  Operation(id: 'o10', type: 'expense', amount: 5400, date: _iso(7), accountId: 'a2', categoryId: '551145668', comment: 'Одежда'),
-];
+/// Демо-данные за последние 12 месяцев: в каждом месяце — зарплата и набор
+/// типовых расходов, чтобы в отчётах/графиках были столбики по всем месяцам.
+final mockOperations = _buildMockOperations();
+
+List<Operation> _buildMockOperations() {
+  final now = DateTime.now();
+  final ops = <Operation>[];
+  for (var i = 11; i >= 0; i--) {
+    final m = DateTime(now.year, now.month - i, 1);
+    final daysIn = DateTime(m.year, m.month + 1, 0).day;
+    DateTime day(int d) => DateTime(m.year, m.month, d.clamp(1, daysIn), 12);
+    final suf = '$i';
+    ops.add(_mkOp('m$suf-zp', 'income', 95000, day(1), 'a3', '551145678', 'Зарплата'));
+    ops.add(_mkOp('m$suf-rent', 'expense', 35000, day(3), 'a3', '551145661', 'Аренда квартиры'));
+    ops.add(_mkOp('m$suf-food', 'expense', 12000, day(10), 'a2', '551145669', 'Продукты'));
+    ops.add(_mkOp('m$suf-trans', 'expense', 3000, day(12), 'a1', '551145671', 'Транспорт'));
+    ops.add(_mkOp('m$suf-com', 'expense', 2500, day(15), 'a2', '551145675', 'Связь и интернет'));
+    ops.add(_mkOp('m$suf-fun', 'expense', 4500, day(20), 'a2', '551145663', 'Досуг'));
+    ops.add(_mkOp('m$suf-care', 'expense', 2500, day(25), 'a2', '551145677', 'Уход за собой'));
+  }
+  // Актуальные операции текущего месяца, чтобы список не был "пустым"
+  final today = DateTime(now.year, now.month, now.day);
+  String tIso(int daysAgo) => today.subtract(Duration(days: daysAgo)).toIso8601String();
+  ops.add(_mkOp('recent-1', 'income', 18000, DateTime.parse(tIso(6)), 'a2', '551145678', 'Проект на фрилансе'));
+  ops.add(_mkOp('recent-2', 'expense', 2350, DateTime.parse(tIso(0)), 'a2', '551145669', 'Пятёрочка'));
+  ops.add(_mkOp('recent-3', 'expense', 450, DateTime.parse(tIso(0)), 'a1', '551145671', 'Метро'));
+  ops.add(_mkOp('recent-4', 'expense', 5400, DateTime.parse(tIso(4)), 'a2', '551145668', 'Одежда'));
+  ops.add(_mkOp('recent-5', 'expense', 3200, DateTime.parse(tIso(5)), 'a2', '551145663', 'Кино и боулинг'));
+  ops.add(_mkOp('recent-6', 'transfer', 20000, DateTime.parse(tIso(2)), 'a3', '551145681', 'Перевод на накопления', toAccountId: 'a4'));
+  return ops;
+}
 
 final mockBudgets = [
+  Budget(id: 'bi1', name: 'Персональные доходы', categoryId: '551145678', limit: 95000, spent: 0),
+  Budget(id: 'bi2', name: 'Прочие доходы', categoryId: '551145672', limit: 10000, spent: 0),
   Budget(id: 'b1', name: 'Питание', categoryId: '551145669', limit: 30000, spent: 0),
   Budget(id: 'b2', name: 'Проезд, транспорт', categoryId: '551145671', limit: 5000, spent: 0),
   Budget(id: 'b3', name: 'Коммунальные платежи', categoryId: '551145664', limit: 8000, spent: 0),
