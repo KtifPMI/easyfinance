@@ -154,7 +154,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     _summaryRow(context, 'budget.planned', store.fmt(incomePlanned)),
                     _summaryRow(context, 'budget.received', store.fmt(store.monthIncome), AppColors.success),
-                    _summaryRow(context, 'budget.remaining', store.fmt(incomePlanned - store.monthIncome), (incomePlanned - store.monthIncome) >= 0 ? AppColors.success : AppColors.expense),
+                    _summaryRow(context, 'budget.remaining', store.fmt(store.monthIncome - incomePlanned), (store.monthIncome - incomePlanned) >= 0 ? AppColors.success : AppColors.expense),
                     const SizedBox(height: 12),
                   ],
                   if (expenseBudgets.isNotEmpty) ...[
@@ -169,7 +169,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                   const SizedBox(height: 4),
                   _summaryRow(context, 'budget.planned', store.fmt(incomePlanned - expensePlanned)),
                   _summaryRow(context, 'budget.received', store.fmt(store.monthIncome - store.monthExpense), AppColors.success),
-                  _summaryRow(context, 'budget.remaining', store.fmt((incomePlanned - expensePlanned) - (store.monthIncome - store.monthExpense)), ((incomePlanned - expensePlanned) - (store.monthIncome - store.monthExpense)) >= 0 ? AppColors.success : AppColors.expense),
+                  _summaryRow(context, 'budget.remaining', store.fmt((store.monthIncome - store.monthExpense) - (incomePlanned - expensePlanned)), ((store.monthIncome - store.monthExpense) - (incomePlanned - expensePlanned)) >= 0 ? AppColors.success : AppColors.expense),
                 ],
               ),
             ),
