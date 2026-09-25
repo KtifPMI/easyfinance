@@ -633,6 +633,22 @@ Future<void> setDisplayCurrency(String code) async {
     return result;
   }
 
+  /// Сумма доходов за месяц по категориям — для отображения выполнения
+  /// планов по доходам (аналог [monthSpentByCategory]).
+  Map<String, double> monthEarnedByCategory([DateTime? month]) {
+    final m = month ?? DateTime.now();
+    final start = DateTime(m.year, m.month, 1);
+    final end = DateTime(m.year, m.month + 1, 0, 23, 59, 59);
+    final result = <String, double>{};
+    for (final o in _operations) {
+      if (o.isDeleted || o.type != 'income' || o.categoryId == null) continue;
+      if (_inPeriod(o.date, start, end)) {
+        result[o.categoryId!] = (result[o.categoryId!] ?? 0) + _amountInRub(o);
+      }
+    }
+    return result;
+  }
+
   bool isInCurrentMonth(String dateIso) => isInMonth(dateIso, DateTime.now());
 
   bool isInMonth(String dateIso, DateTime month) {
