@@ -1,4 +1,5 @@
-﻿import 'dart:convert';
+﻿import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/account.dart';
@@ -542,7 +543,7 @@ Future<void> setDisplayCurrency(String code) async {
   double accountActualBalance(Account a) {
     double bal = a.balance;
     for (final op in _operations) {
-      if (!op.isPending) continue;
+      if (!op.isPending || op.isDeleted) continue;
       if (op.accountId == a.id) {
         if (op.type == 'expense') bal -= op.amount;
         else if (op.type == 'income') bal += op.amount;
@@ -566,6 +567,43 @@ Future<void> setDisplayCurrency(String code) async {
     final from = acc?.currency ?? o.currency;
     final dateKey = o.date.length >= 10 ? o.date.substring(0, 10) : null;
     return CurrencyRateService.convert(o.amount, from, 'RUB', _effectiveRates(dateKey));
+  }
+
+  /// Применяет эффект операции на балансы счетов (локально, пока серверный
+  /// balance не подтянут заново). sign = 1 — учесть операцию, sign = -1 — снять.
+  void _applyOpDeltaToAccounts(Operation op, {required double sign}) {
+    if (op.isDeleted) return;
+    final acc = _accountById[op.accountId];
+    if (acc != null) {
+      if (op.type == 'income') {
+        _adjustAccountBalance(op.accountId, op.amount * sign);
+      } else if (op.type == 'expense') {
+        _adjustAccountBalance(op.accountId, -op.amount * sign);
+      } else if (op.type == 'transfer') {
+        _adjustAccountBalance(op.accountId, -op.amount * sign);
+        final toId = op.toAccountId;
+        if (toId != null) {
+          final dstAcc = _accountById[toId];
+          if (op.transferAmount != null && op.transferAmount! > 0) {
+            _adjustAccountBalance(toId, op.transferAmount! * sign);
+          } else if (dstAcc != null && acc.currency != dstAcc.currency) {
+            final converted = CurrencyRateService.convert(op.amount, acc.currency, dstAcc.currency, _ratesForOp(op));
+            _adjustAccountBalance(toId, converted * sign);
+          } else {
+            _adjustAccountBalance(toId, op.amount * sign);
+          }
+        }
+      }
+    }
+  }
+
+  void _adjustAccountBalance(String accountId, double delta) {
+    for (var i = 0; i < _accounts.length; i++) {
+      if (_accounts[i].id == accountId) {
+        _accounts[i] = _accounts[i].copyWith(balance: _accounts[i].balance + delta);
+        return;
+      }
+    }
   }
 
   double get monthIncome => _cachedMonthIncome;
@@ -1456,6 +1494,7 @@ String fmt(double v) => formatMoneyWhole(
     _operations.insert(0, op);
     _invalidateOpCaches();
     _changedOpIds.add(op.id);
+    if (!op.isPending) _applyOpDeltaToAccounts(op, sign: 1);
     _recalcBudgetSpent();
     await _ensureBudgetForOperation(op);
     _refreshDerivedData();
@@ -1466,6 +1505,7 @@ String fmt(double v) => formatMoneyWhole(
       await RateHistoryStorage.saveRates(opDate, _rates);
     }
     _scheduleNotify();
+    unawaited(fetchTachometers());
   }
 
   String _typeToApi(String type) {
@@ -1530,6 +1570,7 @@ String fmt(double v) => formatMoneyWhole(
             _operations.removeAt(idx);
             _opsDirty = true;
           } else if (serverId != null && serverId.isNotEmpty) {
+            _applyOpDeltaToAccounts(_operations[idx], sign: 1);
             _operations[idx] = _operations[idx].copyWith(id: serverId, isPending: false, clientId: withClient.clientId);
           }
         }
@@ -1587,10 +1628,13 @@ String fmt(double v) => formatMoneyWhole(
     }
     final idx = _operations.indexWhere((o) => o.id == op.id);
     if (idx >= 0) {
+      final old = _operations[idx];
+      if (!old.isPending) _applyOpDeltaToAccounts(old, sign: -1);
       _operations[idx] = op.copyWith(updatedAt: formatApiDateTime());
     }
     _invalidateOpCaches();
     _changedOpIds.add(op.id);
+    if (!op.isPending) _applyOpDeltaToAccounts(op, sign: 1);
 
     _recalcBudgetSpent();
     await _ensureBudgetForOperation(op);
@@ -1598,6 +1642,7 @@ String fmt(double v) => formatMoneyWhole(
     await _registerTags(op.tags);
     await _saveCache();
     _scheduleNotify();
+    unawaited(fetchTachometers());
   }
 
   Future<void> deleteOperation(String id) async {
@@ -1637,14 +1682,17 @@ String fmt(double v) => formatMoneyWhole(
     if (!op.isDeleted) {
       _operations[opIdx] = _operations[opIdx].copyWith(isDeleted: true);
     }
+    _applyOpDeltaToAccounts(op, sign: -1);
     _changedOpIds.add(op.id);
     _refreshDerivedData();
     await _saveCache();
     _scheduleNotify();
+    unawaited(fetchTachometers());
   }
 
   void _queuePendingDelete(Operation op, int idx) {
     final now = formatApiDateTime();
+    _applyOpDeltaToAccounts(op, sign: -1);
     _operations[idx] = op.copyWith(isPending: true, isDeleted: true, updatedAt: now);
 
     _refreshDerivedData();
