@@ -1,6 +1,7 @@
 ﻿import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -20,6 +21,7 @@ class UpdateInfo {
 class UpdateService {
   static const _repo = 'KtifPMI/easyfinance';
   static const _apiUrl = 'https://api.github.com/repos/$_repo/releases/latest';
+  static const _channel = MethodChannel('easyfinance/app_info');
 
   static const _cacheKey = 'update_cache_v1';
   static const _pendingKey = 'update_pending_download';
@@ -28,7 +30,21 @@ class UpdateService {
 
   static bool _downloading = false;
 
+  /// Возвращает true, если приложение установлено из Google Play.
+  /// В этом случае обновления должны приходить только через Play Store,
+  /// а GitHub-проверка не выполняется.
+  static Future<bool> _installedFromPlay() async {
+    try {
+      if (!Platform.isAndroid) return false;
+      final installer = await _channel.invokeMethod<String>('getInstallerPackageName');
+      return installer == 'com.android.vending';
+    } catch (_) {
+      return false;
+    }
+  }
+
   static Future<UpdateInfo?> check({bool force = false}) async {
+    if (await _installedFromPlay()) return null;
     if (!force) {
       final cached = await _readCache();
       if (cached != null) {
@@ -198,6 +214,7 @@ class UpdateService {
 
   static Future<void> resumeIfNeeded(BuildContext context) async {
     if (_downloading) return;
+    if (await _installedFromPlay()) return;
     final url = await _getPendingUrl();
     if (url != null) {
       final prefs = await SharedPreferences.getInstance();
@@ -271,6 +288,14 @@ class UpdateService {
   }
 
   static Future<void> checkAndShow(BuildContext context, {bool showLatest = false, bool force = false}) async {
+    if (await _installedFromPlay()) {
+      if (showLatest && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.tr('update.latest_version')), backgroundColor: AppColors.success, duration: const Duration(seconds: 2)),
+        );
+      }
+      return;
+    }
     UpdateInfo? update;
     bool errored = false;
     try {
