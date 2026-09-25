@@ -23,10 +23,7 @@ class ScanReceiptScreen extends StatefulWidget {
 class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
   File? _image;
   bool _scanning = false;
-  String? _recognizedText;
   String? _error;
-  String? _ocrSource;
-  String? _ocrLog;
   bool _showConfirm = false;
   bool _saving = false;
 
@@ -59,7 +56,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       _image = File(picked.path);
       _scanning = true;
       _error = null;
-      _recognizedText = null;
       _showConfirm = false;
     });
     await _scanReceipt(store);
@@ -88,8 +84,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
 
   Future<void> _scanReceipt(FinanceStore store) async {
     if (_image == null) return;
-    String? ocrSource;
-    String? ocrLog;
     try {
       String? text;
       final processed = _preprocessImage(_image!);
@@ -99,23 +93,20 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
         try {
           final cloudResult = await CloudOcrService.recognize(processed);
           text = cloudResult.text;
-          ocrSource = 'Yandex Vision';
-          ocrLog = 'OK: ${text.length} СЃРёРјРІРѕР»РѕРІ';
+          debugPrint('OCR [Yandex Vision]: OK, ${text.length} символов');
         } on CloudOcrException catch (e) {
-          ocrSource = 'Yandex Vision (РѕС€РёР±РєР°)';
-          ocrLog = e.message;
+          debugPrint('OCR [Yandex Vision]: ошибка — ${e.message}');
           // Cloud failed вЂ” fall through to ML Kit
         } catch (e) {
-          ocrSource = 'Yandex Vision (РёСЃРєР»СЋС‡РµРЅРёРµ)';
-          ocrLog = e.toString();
+          debugPrint('OCR [Yandex Vision]: исключение — $e');
         }
       } else {
-        ocrLog = 'РќРµ РЅР°СЃС‚СЂРѕРµРЅ (РєР»СЋС‡: ${CloudOcrService.apiKey.isEmpty ? "РїСѓСЃС‚РѕР№" : "РµСЃС‚СЊ"}, folder: ${CloudOcrService.folderId.isEmpty ? "РїСѓСЃС‚РѕР№" : "РµСЃС‚СЊ"})';
+        debugPrint('OCR: не настроен (ключ: ${CloudOcrService.apiKey.isEmpty ? "пустой" : "есть"}, folder: ${CloudOcrService.folderId.isEmpty ? "пустой" : "есть"})');
       }
 
       // Fallback to on-device ML Kit
       text ??= await _runMlKit(processed);
-      ocrSource ??= 'ML Kit (on-device)';
+      debugPrint('OCR [source]: ${text != null ? "ML Kit (on-device)" : "нет текста"}');
 
       if (!mounted) return;
       if (text == null || text.isEmpty) {
@@ -124,9 +115,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
       }
       _parseReceiptText(text, store);
       setState(() {
-        _recognizedText = text;
-        _ocrSource = ocrSource;
-        _ocrLog = ocrLog;
         _scanning = false;
         _showConfirm = true;
       });
@@ -533,34 +521,6 @@ class _ScanReceiptScreenState extends State<ScanReceiptScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.file(_image!, height: 200, width: double.infinity, fit: BoxFit.cover),
-            ),
-            const SizedBox(height: 16),
-          ],
-          if (_ocrSource != null) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'OCR: $_ocrSource${_ocrLog != null ? '\n$_ocrLog' : ''}',
-                style: Theme.of(context).textTheme.labelSmall!.copyWith(color: _ocrLog != null && _ocrLog!.startsWith('OK') ? AppColors.success : AppColors.warning),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          if (_recognizedText != null) ...[
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.cardFor(context),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.borderFor(context)),
-              ),
-              child: Text(_recognizedText!, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: AppColors.textSecondaryFor(context))),
             ),
             const SizedBox(height: 16),
           ],
