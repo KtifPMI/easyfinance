@@ -16,6 +16,8 @@ ios/Flutter/Flutter.podspec
 
 # Credentials
 /lib/config.dart
+/android/key.properties
+/android/key.jks
 
 # Temp copies
 *копия*
