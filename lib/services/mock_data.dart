@@ -56,24 +56,44 @@ Operation _mkOp(String id, String type, double amount, DateTime d, String accoun
 }
 
 /// Демо-данные за последние 12 месяцев: в каждом месяце — зарплата и набор
-/// типовых расходов, чтобы в отчётах/графиках были столбики по всем месяцам.
+/// типовых расходов с вариацией по месяцам, чтобы в отчётах/графиках были
+/// "живые" столбики доходов, расходов и чистого дохода.
 final mockOperations = _buildMockOperations();
 
 List<Operation> _buildMockOperations() {
   final now = DateTime.now();
   final ops = <Operation>[];
+  // Индекс i=0 — текущий месяц, i=11 — самый старый (12 месяцев назад).
+  const salary = <double>[95000, 94000, 96000, 91000, 98000, 89000, 92000, 88000, 95000, 87000, 90000, 85000];
+  const rent = <double>[30000, 32000, 32000, 31000, 32000, 33000, 30000, 32000, 31000, 32000, 32000, 33000];
+  const food = <double>[15000, 18000, 16000, 17000, 15000, 19000, 17000, 16000, 18000, 17000, 16000, 18000];
+  const trans = <double>[2000, 3500, 2800, 3200, 3000, 3800, 2600, 3400, 3000, 2800, 3200, 3000];
+  const com = <double>[2000, 2500, 2200, 2600, 2400, 2800, 2300, 2500, 2400, 2300, 2500, 2600];
+  const fun = <double>[0, 4500, 12000, 5500, 6500, 8000, 7000, 5500, 6500, 10000, 11000, 9000];
+  const care = <double>[1500, 2500, 2000, 3000, 2500, 2800, 2200, 2600, 2400, 2300, 2600, 2500];
+  const clothes = <double>[0, 8000, 0, 0, 15000, 0, 0, 9000, 0, 0, 0, 12000];
+  const bonus = <double>[0, 0, 12000, 0, 0, 0, 30000, 0, 0, 0, 0, 0];
+
   for (var i = 11; i >= 0; i--) {
     final m = DateTime(now.year, now.month - i, 1);
     final daysIn = DateTime(m.year, m.month + 1, 0).day;
     DateTime day(int d) => DateTime(m.year, m.month, d.clamp(1, daysIn), 12);
     final suf = '$i';
-    ops.add(_mkOp('m$suf-zp', 'income', 95000, day(1), 'a3', '551145678', 'Зарплата'));
-    ops.add(_mkOp('m$suf-rent', 'expense', 35000, day(3), 'a3', '551145661', 'Аренда квартиры'));
-    ops.add(_mkOp('m$suf-food', 'expense', 12000, day(10), 'a2', '551145669', 'Продукты'));
-    ops.add(_mkOp('m$suf-trans', 'expense', 3000, day(12), 'a1', '551145671', 'Транспорт'));
-    ops.add(_mkOp('m$suf-com', 'expense', 2500, day(15), 'a2', '551145675', 'Связь и интернет'));
-    ops.add(_mkOp('m$suf-fun', 'expense', 4500, day(20), 'a2', '551145663', 'Досуг'));
-    ops.add(_mkOp('m$suf-care', 'expense', 2500, day(25), 'a2', '551145677', 'Уход за собой'));
+    ops.add(_mkOp('m$suf-zp', 'income', salary[i], day(1), 'a3', '551145678', 'Зарплата'));
+    if (bonus[i] > 0) {
+      ops.add(_mkOp('m$suf-bonus', 'income', bonus[i], day(20), 'a3', '551145678', 'Премия'));
+    }
+    ops.add(_mkOp('m$suf-rent', 'expense', rent[i], day(3), 'a3', '551145661', 'Аренда квартиры'));
+    ops.add(_mkOp('m$suf-food', 'expense', food[i], day(10), 'a2', '551145669', 'Продукты'));
+    ops.add(_mkOp('m$suf-trans', 'expense', trans[i], day(12), 'a1', '551145671', 'Транспорт'));
+    ops.add(_mkOp('m$suf-com', 'expense', com[i], day(15), 'a2', '551145675', 'Связь и интернет'));
+    if (fun[i] > 0) {
+      ops.add(_mkOp('m$suf-fun', 'expense', fun[i], day(20), 'a2', '551145663', 'Досуг'));
+    }
+    ops.add(_mkOp('m$suf-care', 'expense', care[i], day(25), 'a2', '551145677', 'Уход за собой'));
+    if (clothes[i] > 0) {
+      ops.add(_mkOp('m$suf-clothes', 'expense', clothes[i], day(18), 'a2', '551145668', 'Одежда'));
+    }
   }
   // Актуальные операции текущего месяца, чтобы список не был "пустым"
   final today = DateTime(now.year, now.month, now.day);
@@ -81,7 +101,7 @@ List<Operation> _buildMockOperations() {
   ops.add(_mkOp('recent-1', 'income', 18000, DateTime.parse(tIso(6)), 'a2', '551145678', 'Проект на фрилансе'));
   ops.add(_mkOp('recent-2', 'expense', 2350, DateTime.parse(tIso(0)), 'a2', '551145669', 'Пятёрочка'));
   ops.add(_mkOp('recent-3', 'expense', 450, DateTime.parse(tIso(0)), 'a1', '551145671', 'Метро'));
-  ops.add(_mkOp('recent-4', 'expense', 5400, DateTime.parse(tIso(4)), 'a2', '551145668', 'Одежда'));
+  ops.add(_mkOp('recent-4', 'expense', 3800, DateTime.parse(tIso(4)), 'a2', '551145668', 'Одежда'));
   ops.add(_mkOp('recent-5', 'expense', 3200, DateTime.parse(tIso(5)), 'a2', '551145663', 'Кино и боулинг'));
   ops.add(_mkOp('recent-6', 'transfer', 20000, DateTime.parse(tIso(2)), 'a3', '551145681', 'Перевод на накопления', toAccountId: 'a4'));
   return ops;
