@@ -1,7 +1,9 @@
 name: Release APK + AAB (Google Play)
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
