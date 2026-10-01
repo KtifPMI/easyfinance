@@ -30,12 +30,13 @@ class UpdateService {
 
   static bool _downloading = false;
 
-  /// Возвращает true, если приложение установлено из Google Play.
-  /// В этом случае обновления должны приходить только через Play Store,
-  /// а GitHub-проверка не выполняется.
+  /// Возвращает true, если обновления должны приходить через магазин
+  /// приложений, а не через встроенную GitHub-проверку:
+  /// — Play Store (Android), когда приложение установлено из Google Play;
+  /// — App Store (iOS) — всегда.
   static Future<bool> _installedFromPlay() async {
     try {
-      if (!Platform.isAndroid) return false;
+      if (!Platform.isAndroid) return true;
       final installer = await _channel.invokeMethod<String>('getInstallerPackageName');
       return installer == 'com.android.vending';
     } catch (_) {

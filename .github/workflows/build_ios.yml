@@ -1,0 +1,56 @@
+name: Build iOS (test, no-codesign)
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    concurrency:
+      group: ios-test-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate config.dart
+        run: |
+          cat > lib/config.dart << EOF
+          class AppConfig {
+            static const String appId = '${{ secrets.APP_ID }}';
+            static const String secretKey = '${{ secrets.SECRET_KEY }}';
+            static const String yandexVisionApiKey = '${{ secrets.YANDEX_API_KEY }}';
+            static const String yandexFolderId = '${{ secrets.YANDEX_FOLDER_ID }}';
+          }
+          EOF
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Enable macOS Desktop for host tests
+        run: flutter config --enable-macos-desktop
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build iOS (release, no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Upload iOS build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app
+          path: build/ios/iphoneos/*.app
+          if-no-files-found: error

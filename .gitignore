@@ -1,7 +1,9 @@
 .dart_tool/
+.idea/
 .packages
 .pub/
 build/
+.metadata
 flutter_*.png
 *.iml
 .DS_Store
