@@ -189,11 +189,14 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
             ...LocaleStore.supportedCodes.map((code) => ListTile(
               title: Text(ctx.tr('settings.language_$code')),
               leading: Icon(Icons.check_circle, color: current == code ? AppColors.primary : Colors.transparent),
-              onTap: () {
+              onTap: () async {
                 final locale = Locale(code);
                 ctx.read<LocaleStore>().setLocale(locale);
-                ctx.setLocale(locale);
                 Navigator.pop(ctx);
+                // setLocale перезагружает переводы асинхронно, поэтому ждём его
+                // и только потом пересобираем демо-данные на новом языке.
+                await ctx.setLocale(locale);
+                if (ctx.mounted) ctx.read<FinanceStore>().relocalizeDemoData();
               },
             )),
           ],

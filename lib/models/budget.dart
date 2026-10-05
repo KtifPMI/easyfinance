@@ -17,8 +17,8 @@ class Budget {
     this.isDeleted = false,
   });
 
-  Budget copyWith({double? spent, bool? isDeleted, double? limit}) =>
-      Budget(id: id, name: name, categoryId: categoryId, limit: limit ?? this.limit, spent: spent ?? this.spent, period: period, isDeleted: isDeleted ?? this.isDeleted);
+  Budget copyWith({String? name, double? spent, bool? isDeleted, double? limit}) =>
+      Budget(id: id, name: name ?? this.name, categoryId: categoryId, limit: limit ?? this.limit, spent: spent ?? this.spent, period: period, isDeleted: isDeleted ?? this.isDeleted);
 
   Map<String, dynamic> toJson() => {
     'id': id,

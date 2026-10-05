@@ -381,11 +381,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ...['ru', 'en', 'es', 'it', 'fr', 'de', 'pt', 'tr'].map((code) => ListTile(
               title: Text(context.tr('settings.language_$code')),
               leading: Icon(Icons.check_circle, color: current == code ? AppColors.primary : Colors.transparent),
-              onTap: () {
+              onTap: () async {
                 final locale = Locale(code);
                 context.read<LocaleStore>().setLocale(locale);
-                context.setLocale(locale);
                 Navigator.pop(ctx);
+                // setLocale перезагружает переводы асинхронно, поэтому ждём его
+                // и только потом пересобираем демо-данные на новом языке.
+                await context.setLocale(locale);
+                if (context.mounted) context.read<FinanceStore>().relocalizeDemoData();
               },
             )),
           ],

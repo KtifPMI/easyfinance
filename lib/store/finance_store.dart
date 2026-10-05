@@ -1,6 +1,7 @@
 ﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/account.dart';
 import '../models/budget.dart';
@@ -18,7 +19,18 @@ import '../services/auth_service.dart';
 import '../services/account_cache.dart';
 import '../utils/account_utils.dart';
 import '../services/api_service.dart';
-import '../services/mock_data.dart' show mockUser, mockAccounts, mockCategories, mockOperations, mockBudgets;
+import '../services/mock_data.dart'
+    show
+        demoAccountNameKey,
+        demoBudgetNameKey,
+        demoCategoryNameKey,
+        demoCommentKey,
+        demoUserId,
+        buildMockAccounts,
+        buildMockBudgets,
+        buildMockCategories,
+        buildMockOperations,
+        buildMockUser;
 import '../services/currency_rate_service.dart';
 import '../services/currency_prefs_service.dart';
 import '../services/rate_history_storage.dart';
@@ -59,6 +71,11 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   bool _balanceLoaded = false;
   bool _allOperationsLoaded = false;
   bool _useMock = true;
+  /// Демо-режим был явно включён через enterDemo(). В отличие от [_useMock],
+  /// который ещё true до первой загрузки данных, этот флаг означает, что на
+  /// экране лежат именно демо-данные — только их можно пересобирать при смене
+  /// языка, не трогая реальный счёт пользователя.
+  bool _demoActive = false;
   bool showKopeks = true;
   bool showKopeksInOps = true;
   bool _authExpired = false;
@@ -333,7 +350,8 @@ Future<void> _saveCache() async {
     _goals = [];
     _tags = [];
     _templates = [];
-_useMock = true;
+    _useMock = true;
+    _demoActive = false;
     _allOperationsLoaded = false;
     _scheduleNotify();
   }
@@ -356,6 +374,7 @@ _useMock = true;
     _deletedTagNames.clear();
     _deletedTemplateIds.clear();
     _useMock = true;
+    _demoActive = false;
     _allOperationsLoaded = false;
     await _loadFromCache();
     await _loadTemplates();
@@ -376,18 +395,19 @@ _useMock = true;
     try {
       await OperationsDb.deleteAll();
     } catch (_) {}
-    _currentUser = mockUser;
-    _accounts = [...mockAccounts];
-    _operations = [...mockOperations];
+    _currentUser = buildMockUser(tr);
+    _accounts = buildMockAccounts(tr);
+    _operations = buildMockOperations(tr);
     _opsDirty = true;
-    _categories = [...mockCategories];
-    _budgets = [...mockBudgets];
+    _categories = buildMockCategories(tr);
+    _budgets = buildMockBudgets(tr);
     _goals = [];
     _tags = [];
     _templates = [];
     _deletedTagNames.clear();
     _deletedTemplateIds.clear();
     _useMock = true;
+    _demoActive = true;
     _allOperationsLoaded = true;
     _dataLoaded = true;
     _serverBudget = null;
@@ -396,6 +416,56 @@ _useMock = true;
     _rebuildLookups();
     _invalidateOpCaches();
     _recalcCachedTotals();
+    _scheduleNotify();
+  }
+
+  /// Пересобирает демо-данные под текущий язык интерфейса. Вызывается при
+  /// смене локали, чтобы демо-режим не оставался на русском после переключения
+  /// языка. Реальные данные пользователя не трогает: работает только пока
+  /// [_demoActive] true, а объекты без demo-ключа сохраняют свои имена.
+  ///
+  /// Комментарии операций различаются по [Operation.id] (см. [demoCommentKey]),
+  /// суммы и даты не меняются — переводится только текст.
+  void relocalizeDemoData() {
+    if (!_demoActive) return;
+    const t = tr;
+
+    if (_currentUser?.id == demoUserId) {
+      _currentUser = buildMockUser(t);
+    }
+    _accounts = [
+      for (final a in _accounts)
+        switch (demoAccountNameKey(a.id)) {
+          final key? => a.copyWith(name: t(key)),
+          null => a,
+        },
+    ];
+    _categories = [
+      for (final c in _categories)
+        switch (demoCategoryNameKey(c.id)) {
+          final key? => c.copyWith(name: t(key)),
+          null => c,
+        },
+    ];
+    _budgets = [
+      for (final b in _budgets)
+        switch (demoBudgetNameKey(b.id)) {
+          final key? => b.copyWith(name: t(key)),
+          null => b,
+        },
+    ];
+    _operations = [
+      for (final op in _operations)
+        switch (demoCommentKey(op.id)) {
+          final key? => op.copyWith(comment: t(key)),
+          null => op,
+        },
+    ];
+
+    _rebuildLookups();
+    _invalidateOpCaches();
+    _recalcCachedTotals();
+    _recalcBudgetSpent();
     _scheduleNotify();
   }
   Future<void> handleAccountDeleted() async {
@@ -526,6 +596,8 @@ Future<void> setDisplayCurrency(String code) async {
 
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
+  /// true — на экране демо-данные, введённые через enterDemo().
+  bool get demoActive => _demoActive;
   String? get error => _error;
 
   cat.Category? getCategory(String? id) {
@@ -789,7 +861,7 @@ Future<void> setDisplayCurrency(String code) async {
         _buildSystemIconMap(rawCats);
         final pendingCats = _categories.where((c) => c.isPending).toList();
         _categories = rawCats.map((j) => cat.Category.fromJson(j)).toList();
-        if (_categories.isEmpty) _categories = [...mockCategories];
+        if (_categories.isEmpty) _categories = buildMockCategories(tr);
         debugPrint('Categories loaded: ${_categories.length}');
         if (_categories.isNotEmpty) {
           debugPrint('First 3 cat IDs: ${_categories.take(3).map((c) => c.id).join(', ')}');
@@ -881,6 +953,7 @@ Future<void> setDisplayCurrency(String code) async {
     await fetchTachometers();
 
     _useMock = !authService.isAuthenticated;
+    if (!_useMock) _demoActive = false;
     _isLoading = false;
     _dataLoaded = true;
     _fetching = false;

@@ -41,6 +41,7 @@ class Operation {
 
   Operation copyWith({
     String? id,
+    String? comment,
     bool? isDeleted,
     String? tags,
     bool? isPending,
@@ -59,7 +60,7 @@ class Operation {
         accountId: accountId,
         toAccountId: toAccountId,
         categoryId: categoryId ?? this.categoryId,
-        comment: comment,
+        comment: comment ?? this.comment,
         tags: tags ?? this.tags,
         isDeleted: isDeleted ?? this.isDeleted,
         isPending: isPending ?? this.isPending,
