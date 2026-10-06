@@ -56,5 +56,13 @@ APK (и AAB) и создаст релиз, а приложение само пр
 
 ## Пакет приложения
 
-- `applicationId` = `com.easyfinance.app` (задан в `android/app/build.gradle`).
-  Менять нельзя после первой публикации в Play.
+- `applicationId` = `com.EasyFinance` (задан в `android/app/build.gradle`).
+  Так требует запись в Play Console — пакет нельзя менять после первой
+  публикации приложения, поэтому Play — источник истины.
+- iOS `PRODUCT_BUNDLE_IDENTIFIER` = `com.EasyFinance`
+  (`ios/Runner.xcodeproj/project.pbxproj`) — намеренно совпадает с Android.
+- `namespace` в `build.gradle` остаётся `com.easyfinance.app` — это пакет
+  Kotlin/R-классов, по нему разрешается `.MainActivity` в манифесте.
+  namespace и `applicationId` независимы, и это нормально; менять его
+  не нужно и даже вредно: придётся переносить `MainActivity.kt`.
+
