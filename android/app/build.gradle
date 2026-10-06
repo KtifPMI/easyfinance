@@ -26,7 +26,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.easyfinance.app"
+        // Идентичность приложения в Google Play. Play-консоль потребовала
+        // именно com.EasyFinance (запись в магазине создана под этим именем).
+        // НЕ путать с namespace выше: namespace — это пакет Kotlin/R-классов,
+        // по нему разрешается .MainActivity в манифесте.
+        applicationId = "com.EasyFinance"
         minSdkVersion = flutter.minSdkVersion
         targetSdk = 36 // Обновил до 35
         versionCode = flutter.versionCode

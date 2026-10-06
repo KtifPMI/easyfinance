@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import '../screens/ai_assistant/ai_assistant_screen.dart';
 import '../screens/auth/native_login_screen.dart';
 import '../screens/auth/oauth_webview_screen.dart';
@@ -63,7 +64,7 @@ class AppRouter {
     scanReceipt: (_) => const ScanReceiptScreen(),
     aiAssistant: (_) => const AiAssistantScreen(),
     operationDetail: (_) => const OperationDetailScreen(),
-    debug: (_) => const DebugScreen(),
+    if (kDebugMode) debug: (_) => const DebugScreen(),
     accounts: (_) => const AccountsScreen(),
     settings: (_) => const SettingsScreen(),
     recommendations: (_) => const RecommendationsScreen(),

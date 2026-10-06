@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:easy_localization/easy_localization.dart';
 import '../../components/common/app_card.dart';
 import '../../components/common/screen_hint.dart';
@@ -28,7 +29,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.category_outlined, context.tr('more.categories'), const CategoriesScreen()),
       (Icons.label_outline, context.tr('more.tags'), const TagsScreen()),
       (Icons.settings_outlined, context.tr('more.settings'), const SettingsScreen()),
-      (Icons.bug_report_outlined, context.tr('more.debug'), const DebugScreen()),
+      if (kDebugMode) (Icons.bug_report_outlined, context.tr('more.debug'), const DebugScreen()),
       (Icons.help_outline, context.tr('more.support'), const SupportScreen()),
     ];
 
