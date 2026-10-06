@@ -48,8 +48,8 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Build APK (release)
-        run: flutter build apk --release
+      - name: Build APK (release, flavor direct)
+        run: flutter build apk --release --flavor direct
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
