@@ -128,6 +128,9 @@ class NotificationService {
     await _plugin!.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
     );
+    await _plugin
+        ?.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
   }
 
   Future<void> initializeForBackground() async {

@@ -37,6 +37,17 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions = ["distribution"]
+
+    productFlavors {
+        play {
+            dimension = "distribution"
+        }
+        direct {
+            dimension = "distribution"
+        }
+    }
+
     signingConfigs {
         release {
             keyAlias = keystoreProperties['keyAlias'] ?: 'release'
