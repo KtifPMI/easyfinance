@@ -10,6 +10,22 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>
 
+    <!--
+        FOREGROUND_SERVICE, FOREGROUND_SERVICE_DATA_SYNC и
+        FOREGROUND_SERVICE_SHORT_SERVICE подмешивает плагин workmanager 0.9.3
+        (для long-running workers). EasyFinance их не использует: задача
+        dailyCheck регистрируется без foregroundServiceConfig, поэтому
+        BackgroundWorker не вызывает setForegroundAsync и
+        SystemForegroundService не стартует. Задача идёт обычным
+        SystemJobService (JobScheduler), уведомления шлёт
+        flutter_local_notifications. Google Play отклонил релиз с требованием
+        убрать FOREGROUND_SERVICE_DATA_SYNC либо предоставить видео —
+        убираем разрешения, функциональность не меняется.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" tools:node="remove"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SHORT_SERVICE" tools:node="remove"/>
+
     <application
         android:label="EasyFinance"
         android:name="${applicationName}"
