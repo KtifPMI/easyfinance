@@ -33,6 +33,14 @@ jobs:
           echo "storePassword=${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" >> android/key.properties
           echo "keyPassword=${{ secrets.RELEASE_KEY_PASSWORD }}" >> android/key.properties
 
+      # Gradle 8.14 (AGP 8.11.1) не поддерживает Java 25, которая стоит
+      # по умолчанию на раннере, — пиним JDK 21, как в локальной сборке.
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
