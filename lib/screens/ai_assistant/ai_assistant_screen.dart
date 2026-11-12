@@ -90,7 +90,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
     // ---- BALANCE ----
     if (_match(q, ['баланс', 'сколько денег', 'сколько всего', 'мой баланс', 'мои деньги', 'общий счёт', 'balance', 'how much money', 'total'])) {
-      return _ChatMessage(role: 'assistant', text: '${context.tr('ai.balance_title')}\n\n${accs.map((a) => 'вЂў ${a.name}: ${store.fmt(a.balance, fromCurrency: a.currency)}').join('\n')}\n\n${context.tr('ai.total')}: ${store.fmt(accountsTotal)}', navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
+      return _ChatMessage(role: 'assistant', text: '${context.tr('ai.balance_title')}\n\n${accs.map((a) => '• ${a.name}: ${store.fmt(a.balance, fromCurrency: a.currency)}').join('\n')}\n\n${context.tr('ai.total')}: ${store.fmt(accountsTotal)}', navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
     }
 
     // ---- INCOME ----
@@ -98,20 +98,20 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       final incomes = store.operations.where((o) => o.type == 'income' && inRange(o)).toList()..sort((a, b) => b.date.compareTo(a.date));
       final top = incomes.take(5).map((o) {
         final cat = store.categories.where((c) => c.id == o.categoryId).firstOrNull;
-        return 'вЂў ${formatDate(o.date)}: ${cat?.name ?? 'вЂ”'} вЂ” ${store.fmt(o.amount, fromCurrency: store.accounts.where((a) => a.id == o.accountId).firstOrNull?.currency ?? 'RUB', date: o.date)}';
+        return '• ${formatDate(o.date)}: ${cat?.name ?? '—'} — ${store.fmt(o.amount, fromCurrency: store.accounts.where((a) => a.id == o.accountId).firstOrNull?.currency ?? 'RUB', date: o.date)}';
       }).join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.month_income', namedArgs: {'income': store.fmt(mi), 'expense': store.fmt(mexp), 'balance': store.fmt(sav)})}\n\n${top.isNotEmpty ? top : context.tr('ai.no_income')}', navLabel: context.tr('ai.nav_operations'), navRoute: '/operations');
     }
 
     // ---- EXPENSES ----
     if (_match(q, ['расход', 'расходы', 'трат', 'потратил', 'ушло', 'списание', 'expense', 'spent', 'spending', 'cost', 'costs'])) {
-      final top5 = topCat.take(5).map((e) => 'вЂў ${e.key}: ${store.fmt(e.value)} (${(e.value / mexp * 100).round()}%)').join('\n');
+      final top5 = topCat.take(5).map((e) => '• ${e.key}: ${store.fmt(e.value)} (${(e.value / mexp * 100).round()}%)').join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.month_expense', namedArgs: {'amount': store.fmt(mexp)})}\n\n$top5', navLabel: context.tr('ai.nav_reports'), navRoute: '/reports');
     }
 
     // ---- CATEGORIES ----
     if (_match(q, ['категор', 'структура', 'на что', 'куда уходят', 'разбивка', 'category', 'categories', 'breakdown', 'break down', 'where'])) {
-      final all = topCat.map((e) => 'вЂў ${e.key}: ${store.fmt(e.value)} (${(e.value / mexp * 100).round()}%)').join('\n');
+      final all = topCat.map((e) => '• ${e.key}: ${store.fmt(e.value)} (${(e.value / mexp * 100).round()}%)').join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.expense_categories')}\n\n${all.isNotEmpty ? all : context.tr('ai.no_category_data')}', navLabel: context.tr('ai.nav_reports'), navRoute: '/reports');
     }
 
@@ -130,7 +130,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
         final spent = spentMap[b.categoryId] ?? 0;
         final pct = b.limit > 0 ? (spent / b.limit * 100).round() : 0;
         final warn = pct > 100 ? ' ??' : pct > 80 ? ' ??' : ' ??';
-        return 'вЂў ${b.name ?? cat?.name ?? 'вЂ”'}: ${store.fmt(spent)} / ${store.fmt(b.limit)} ($pct%)$warn';
+        return '• ${b.name ?? cat?.name ?? '—'}: ${store.fmt(spent)} / ${store.fmt(b.limit)} ($pct%)$warn';
       }).join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.budget_overview')}\n\n$parts', navLabel: context.tr('ai.nav_budget'), navRoute: '/plan');
     }
@@ -143,8 +143,8 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       final parts = active.map((g) {
         final pct = g.targetAmount > 0 ? (g.currentAmount / g.targetAmount * 100).round() : 0;
         final m = g.monthlyRecommendation;
-        final rec = m != null && m > 0 && pct < 80 ? ' вЂ” ${context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(m)})}' : '';
-        return 'вЂў ${g.title}: ${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)} ($pct%)$rec';
+        final rec = m != null && m > 0 && pct < 80 ? ' — ${context.tr('goals.recommendation', namedArgs: {'amount': store.fmt(m)})}' : '';
+        return '• ${g.title}: ${store.fmt(g.currentAmount)} / ${store.fmt(g.targetAmount)} ($pct%)$rec';
       }).join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.goals_overview', namedArgs: {'count': active.length.toString()})}\n\n$parts${done.isNotEmpty ? '\n\n${context.tr('ai.goals_completed', namedArgs: {'count': done.length.toString()})}' : ''}', navLabel: context.tr('ai.nav_goals'), navRoute: '/plan');
     }
@@ -152,13 +152,13 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
     // ---- RECOMMENDATIONS / TIPS ----
     if (_match(q, ['совет', 'рекомендац', 'улучш', 'оптимиз', 'помощ', 'предлож', 'tip', 'recommend', 'advice', 'improve', 'suggest', 'help me'])) {
       if (recs.isEmpty) return _ChatMessage(role: 'assistant', text: context.tr('ai.no_recommendations'));
-      final items = recs.map((r) => 'вЂў ${r.localizeTitle(context.tr(r.titleKey))}\n  ${r.localizeDesc(context.tr(r.descKey))}').join('\n\n');
+      final items = recs.map((r) => '• ${r.localizeTitle(context.tr(r.titleKey))}\n  ${r.localizeDesc(context.tr(r.descKey))}').join('\n\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.recommendations_title')}\n\n$items', navLabel: context.tr('ai.nav_recommendations'), navRoute: '/recommendations');
     }
 
     // ---- ACCOUNTS ----
     if (_match(q, ['счёт', 'счет', 'счета', 'карт', 'кошел', 'account', 'accounts', 'card', 'wallet'])) {
-      final aText = accs.map((a) => 'вЂў ${a.name} (${a.type == 'credit' ? context.tr('accounts.type.credit') : context.tr('accounts.type.cash')}): ${store.fmt(a.balance, fromCurrency: a.currency)}${a.isFavorite ? ' ?' : ''}').join('\n');
+      final aText = accs.map((a) => '• ${a.name} (${a.type == 'credit' ? context.tr('accounts.type.credit') : context.tr('accounts.type.cash')}): ${store.fmt(a.balance, fromCurrency: a.currency)}${a.isFavorite ? ' ★' : ''}').join('\n');
       return _ChatMessage(role: 'assistant', text: '${context.tr('ai.accounts_count', namedArgs: {'count': accs.length.toString(), 'total': store.fmt(accountsTotal)})}\n\n$aText', navLabel: context.tr('ai.nav_accounts'), navRoute: '/accounts');
     }
 

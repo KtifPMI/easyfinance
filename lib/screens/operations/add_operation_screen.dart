@@ -734,6 +734,64 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     );
   }
 
+  void _showTagSearch(BuildContext context, List<String> tags) {
+    final searchCtrl = TextEditingController();
+    final sorted = [...tags]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          final q = searchCtrl.text.trim().toLowerCase();
+          final filtered = q.isEmpty ? sorted : sorted.where((t) => t.toLowerCase().contains(q)).toList();
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (ctx, scrollCtrl) => Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: TextField(
+                    controller: searchCtrl,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    onChanged: (_) => setSheetState(() {}),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollCtrl,
+                    itemCount: filtered.length,
+                    itemBuilder: (_, i) {
+                      final t = filtered[i];
+                      return ListTile(
+                        leading: Icon(Icons.label_outline, color: AppColors.textSecondaryFor(context)),
+                        title: Text('#$t', style: Theme.of(context).textTheme.bodyMedium),
+                        onTap: () {
+                          if (!_selectedTags.contains(t)) setState(() => _selectedTags.add(t));
+                          Navigator.pop(ctx);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    ).whenComplete(searchCtrl.dispose);
+  }
+
   Widget _buildTagSelector(BuildContext context, FinanceStore store) {
     final availableTags = <String>{
       ...store.tags.map((t) => t.name),
@@ -774,21 +832,18 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           ),
         if (availableTags.isNotEmpty) ...[
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            initialValue: null,
-            decoration: InputDecoration(
-              filled: true, fillColor: AppColors.cardFor(context),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              hintText: context.tr('tags.add_tag'),
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => _showTagSearch(context, availableTags.where((t) => !allTags.contains(t)).toList()),
+            child: InputDecorator(
+              decoration: InputDecoration(
+                filled: true, fillColor: AppColors.cardFor(context),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                suffixIcon: Icon(Icons.search, size: 20, color: AppColors.textSecondaryFor(context)),
+              ),
+              child: Text(context.tr('tags.add_tag'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondaryFor(context))),
             ),
-            items: availableTags.where((t) => !allTags.contains(t)).map((t) => DropdownMenuItem(value: t, child: Text('#$t', style: Theme.of(context).textTheme.bodyMedium))).toList(),
-            onChanged: (v) {
-              if (v != null && !_selectedTags.contains(v)) {
-                setState(() => _selectedTags.add(v));
-              }
-            },
-            isExpanded: true,
           ),
         ],
         const SizedBox(height: 4),

@@ -225,25 +225,17 @@ class _DebugScreenState extends State<DebugScreen> {
     'budget.categoriespost': '''{
   "request": {
     "request_data": {
-      "budgets": [
-        {
-          "category_id": "CATEGORY_ID",
-          "planned": "30000",
-          "period": "monthly"
-        }
-      ]
+      "category_id": "CATEGORY_ID",
+      "planned": "30000"
     }
   }
 }''',
     'budget.categoriesset': '''{
   "request": {
     "request_data": {
-      "budgets": [
-        {
-          "id": "BUDGET_ID",
-          "planned": "35000"
-        }
-      ]
+      "id": "BUDGET_ID",
+      "category_id": "CATEGORY_ID",
+      "planned": "35000"
     }
   }
 }''',

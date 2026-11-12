@@ -196,18 +196,41 @@ class ApiService {
     await _client.post('targets.set', params: _writeParams({'target_id': targetId}), body: {'request': {'request_data': {'targets': [{'id': targetId, ...body}]}}});
   }
 
+  /// v2 returns `response_data.budgets[]` with `id`, `category_id`, `planned`,
+  /// `spent`, `period`, `date_start`. The site keeps one row per category per
+  /// period, so callers must not assume `category_id` is unique.
   Future<List<Map<String, dynamic>>> getBudgetCategories() async {
-    final json = await _client.get('budget.categoriesget');
+    final json = await _client.get('budget.categoriesget', params: {
+      'fields': 'id,category_id,planned,spent,period,date_start',
+    });
     return _parseList(json, 'budgets', (m) => m);
   }
 
-  Future<Map<String, dynamic>> addBudgetCategory(Map<String, dynamic> body) async {
-    final json = await _client.post('budget.categoriespost', params: _writeParams({'options': 'client'}), body: {'request': {'request_data': body}});
+  /// `budget.categoriespost` accepts a single object, not a `budgets` array.
+  Future<Map<String, dynamic>> addBudgetCategory({
+    required String categoryId,
+    required String planned,
+  }) async {
+    final json = await _client.post('budget.categoriespost', params: _writeParams({'options': 'client'}), body: {
+      'request': {
+        'request_data': {'category_id': categoryId, 'planned': planned},
+      },
+    });
     return json;
   }
 
-  Future<void> setBudgetCategory(Map<String, dynamic> body) async {
-    await _client.post('budget.categoriesset', params: _writeParams(), body: {'request': {'request_data': body}});
+  /// `budget.categoriesset` requires `id`, `category_id` and `planned` in the
+  /// same object. Setting `planned` to `0.00` clears the plan for that period.
+  Future<void> setBudgetCategory({
+    required String id,
+    required String categoryId,
+    required String planned,
+  }) async {
+    await _client.post('budget.categoriesset', params: _writeParams(), body: {
+      'request': {
+        'request_data': {'id': id, 'category_id': categoryId, 'planned': planned},
+      },
+    });
   }
 
   Future<List<Map<String, dynamic>>> getGoalTemplates() async {

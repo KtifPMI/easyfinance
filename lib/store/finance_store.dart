@@ -898,21 +898,12 @@ Future<void> setDisplayCurrency(String code) async {
       }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
       api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
       api.getBudgetCategories().then((bc) {
-        final seen = <String>{};
-        final unique = <Map<String, dynamic>>[];
-        for (final b in bc) {
-          final catId = b['category_id']?.toString() ?? '';
-          if (catId.isNotEmpty && seen.contains(catId)) continue;
-          seen.add(catId);
-          unique.add(b);
-        }
-        _budgets = unique.map((b) => Budget(
+        _budgets = _selectCurrentBudgets(bc).map((b) => Budget(
           id: b['id']?.toString() ?? '',
           categoryId: b['category_id']?.toString() ?? '',
           limit: double.tryParse(b['planned']?.toString() ?? '0') ?? 0,
           spent: 0,
           period: b['period']?.toString() ?? 'monthly',
-          isDeleted: b['deleted_at'] != null && b['deleted_at'].toString().isNotEmpty,
         )).toList();
         return bc;
       }).catchError((e) { debugPrint('getBudgetCategories error: $e'); return <Map<String, dynamic>>[]; }),
@@ -2179,19 +2170,69 @@ String fmt(double v) => formatMoneyWhole(
     return fields;
   }
 
+  /// `budget.categoriesget` returns one row per category **per period**. The
+  /// app only shows the current month, so keep the row for the period that
+  /// contains today and ignore cleared (`planned == 0`) rows.
+  List<Map<String, dynamic>> _selectCurrentBudgets(List<Map<String, dynamic>> rows) {
+    final today = DateTime.now();
+    final byCategory = <String, List<Map<String, dynamic>>>{};
+    for (final row in rows) {
+      final catId = row['category_id']?.toString() ?? '';
+      if (catId.isEmpty) continue;
+      if ((row['deleted_at']?.toString() ?? '').isNotEmpty) continue;
+      final planned = double.tryParse(row['planned']?.toString() ?? '0') ?? 0;
+      if (planned <= 0) continue;
+      byCategory.putIfAbsent(catId, () => []).add(row);
+    }
+
+    final selected = <Map<String, dynamic>>[];
+    for (final categoryRows in byCategory.values) {
+      final current = categoryRows.where((r) => _budgetPeriodContains(r, today)).toList();
+      if (current.isNotEmpty) {
+        current.sort(_byDateStartDesc);
+        selected.add(current.first);
+        continue;
+      }
+      // No row for the current period: fall back to the latest period that has
+      // already started, so a plan is not lost if the server omits `date_start`.
+      final started = categoryRows.where((r) {
+        final ds = DateTime.tryParse(r['date_start']?.toString() ?? '');
+        return ds == null || !ds.isAfter(today);
+      }).toList();
+      if (started.isEmpty) continue;
+      started.sort(_byDateStartDesc);
+      selected.add(started.first);
+    }
+    return selected;
+  }
+
+  int _byDateStartDesc(Map<String, dynamic> a, Map<String, dynamic> b) {
+    final da = a['date_start']?.toString() ?? '';
+    final db = b['date_start']?.toString() ?? '';
+    return db.compareTo(da);
+  }
+
+  bool _budgetPeriodContains(Map<String, dynamic> row, DateTime day) {
+    final ds = DateTime.tryParse(row['date_start']?.toString() ?? '');
+    if (ds == null) return true; // server did not report a period
+    final start = DateTime(ds.year, ds.month, ds.day);
+    final period = (row['period']?.toString() ?? 'monthly').toLowerCase();
+    final end = period.contains('year')
+        ? DateTime(start.year + 1, start.month, start.day)
+        : DateTime(start.year, start.month + 1, start.day);
+    return !day.isBefore(start) && day.isBefore(end);
+  }
+
   Future<void> addBudget(Budget b) async {
     _error = null;
-    final spent = _calcSpentForMonth(b.categoryId);
+    final spent = _calcSpentForBudgetPeriod(b.categoryId);
     if (authService.isAuthenticated) {
       try {
-        final resp = await authService.apiService.addBudgetCategory({
-          'budgets': [{
-            'category_id': b.categoryId,
-            'planned': b.limit.toStringAsFixed(2),
-          }]
-        });
-        final budgets = resp['budgets'] as List<dynamic>?;
-        final serverId = budgets != null && budgets.isNotEmpty ? budgets[0]['id']?.toString() : null;
+        final resp = await authService.apiService.addBudgetCategory(
+          categoryId: b.categoryId,
+          planned: b.limit.toStringAsFixed(2),
+        );
+        final serverId = _budgetIdFromResponse(resp);
         _budgets.add(Budget(
           id: (serverId != null && serverId.isNotEmpty) ? serverId : b.id,
           name: b.name, categoryId: b.categoryId,
@@ -2219,12 +2260,11 @@ String fmt(double v) => formatMoneyWhole(
     _error = null;
     if (authService.isAuthenticated) {
       try {
-        await authService.apiService.setBudgetCategory({
-          'budgets': [{
-            'id': b.id,
-            'planned': b.limit.toStringAsFixed(2),
-          }]
-        });
+        await authService.apiService.setBudgetCategory(
+          id: b.id,
+          categoryId: b.categoryId,
+          planned: b.limit.toStringAsFixed(2),
+        );
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -2239,26 +2279,43 @@ String fmt(double v) => formatMoneyWhole(
     _scheduleNotify();
   }
 
-  double _calcSpentForMonth(String categoryId) {
+  /// The site's budget period can start on a custom day (`budget_start_day`),
+  /// so prefer the dates reported by `budget.get` over the calendar month.
+  ({DateTime start, DateTime end}) _budgetPeriodBounds() {
+    final server = _serverBudget;
+    if (server != null) {
+      final start = DateTime.tryParse(server.dateStart);
+      final end = DateTime.tryParse(server.dateEnd);
+      if (start != null && end != null) {
+        return (
+          start: DateTime(start.year, start.month, start.day),
+          end: DateTime(end.year, end.month, end.day, 23, 59, 59),
+        );
+      }
+    }
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, 1);
-    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    return (
+      start: DateTime(now.year, now.month, 1),
+      end: DateTime(now.year, now.month + 1, 0, 23, 59, 59),
+    );
+  }
+
+  double _calcSpentForBudgetPeriod(String categoryId) {
+    final period = _budgetPeriodBounds();
     final ops = _operations.where((o) =>
         o.categoryId == categoryId &&
         o.type == 'expense' &&
         !o.isDeleted &&
-        _inPeriod(o.date, start, end));
+        _inPeriod(o.date, period.start, period.end));
     return ops.fold(0.0, (sum, o) => sum + _amountInRub(o));
   }
 
   void _recalcBudgetSpent() {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, 1);
-    final end = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final period = _budgetPeriodBounds();
     final catSpent = <String, double>{};
     for (final o in _operations) {
       if (o.isDeleted || o.type != 'expense' || o.categoryId == null) continue;
-      if (_inPeriod(o.date, start, end)) {
+      if (_inPeriod(o.date, period.start, period.end)) {
         catSpent[o.categoryId!] = (catSpent[o.categoryId!] ?? 0) + _amountInRub(o);
       }
     }
@@ -2363,11 +2420,17 @@ String fmt(double v) => formatMoneyWhole(
 
   Future<void> deleteBudget(String id) async {
     _error = null;
-    if (authService.isAuthenticated) {
+    final idx = _budgets.indexWhere((b) => b.id == id);
+    final categoryId = idx >= 0 ? _budgets[idx].categoryId : '';
+    if (authService.isAuthenticated && categoryId.isNotEmpty) {
       try {
-        await authService.apiService.setBudgetCategory({
-          'budgets': [{'id': id, 'deleted_at': formatApiDateTime()}]
-        });
+        // The v2 contract has no delete flag: clearing the plan to 0 matches
+        // what the website does when a budget row is removed.
+        await authService.apiService.setBudgetCategory(
+          id: id,
+          categoryId: categoryId,
+          planned: '0.00',
+        );
       } on ApiException catch (e) {
         _error = e.message; notifyListeners();
         return;
@@ -2376,11 +2439,28 @@ String fmt(double v) => formatMoneyWhole(
         return;
       }
     }
-    final idx = _budgets.indexWhere((b) => b.id == id);
     if (idx >= 0) _budgets[idx] = _budgets[idx].copyWith(isDeleted: true);
     await _saveBudgets();
     _scheduleRecommendations();
     _scheduleNotify();
+  }
+
+  /// `categoriespost` may answer with `budgets[]`, a single `budget` object or
+  /// the created row itself. Accept all three shapes.
+  String? _budgetIdFromResponse(Map<String, dynamic> resp) {
+    dynamic source = resp;
+    final data = resp['data'];
+    if (data is Map<String, dynamic>) source = data;
+    if (data is List && data.isNotEmpty) source = {'budgets': data};
+
+    final budgets = (source as Map<String, dynamic>)['budgets'];
+    if (budgets is List && budgets.isNotEmpty) {
+      final first = budgets.first;
+      if (first is Map && first['id'] != null) return first['id'].toString();
+    }
+    final budget = source['budget'];
+    if (budget is Map && budget['id'] != null) return budget['id'].toString();
+    return source['id']?.toString();
   }
 
   Future<void> _saveBudgets() async {
