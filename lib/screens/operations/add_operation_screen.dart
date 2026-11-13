@@ -492,7 +492,8 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     final since = DateTime(today.year, today.month - 3, today.day);
                     final counts = <String, int>{};
                     for (final op in store.operations.where((o) => !o.isDeleted && o.type != 'transfer')) {
-                      final d = DateTime.tryParse(op.date);
+                      final ds = op.date.length >= 10 ? op.date.substring(0, 10) : op.date;
+                      final d = DateTime.tryParse(ds);
                       if (d == null || d.isBefore(since)) continue;
                       counts[op.accountId] = (counts[op.accountId] ?? 0) + 1;
                     }
