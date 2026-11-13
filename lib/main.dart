@@ -121,6 +121,14 @@ class EasyFinanceApp extends StatelessWidget {
       themeMode: themeStore.themeMode,
       initialRoute: AppRouter.login,
       navigatorKey: appNavigatorKey,
+      builder: (context, child) {
+        // Крупный системный шрифт ломает вёрстку, поэтому масштаб ограничен.
+        final media = MediaQuery.of(context);
+        return MediaQuery(
+          data: media.copyWith(textScaler: media.textScaler.clamp(maxScaleFactor: 1.3)),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
       routes: AppRouter.routes,
       onGenerateRoute: AppRouter.onGenerateRoute,
       onUnknownRoute: (settings) => MaterialPageRoute(

@@ -51,7 +51,7 @@ class ScreenScaffold extends StatelessWidget {
           if (isLoading)
             _buildSkeleton(context)
           else
-            _buildBody(),
+            _buildBody(context),
         ],
       ),
     );
@@ -152,11 +152,11 @@ class ScreenScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(BuildContext context) {
     if (!scrollable) return child;
 
     final scrollView = SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
+      padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16 + MediaQuery.viewPaddingOf(context).bottom),
       child: child,
     );
 

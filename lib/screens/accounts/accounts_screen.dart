@@ -196,17 +196,20 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(a.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+                    Text(a.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                     Text(context.tr(accountTypeLabels[int.tryParse(_typeToId(a.type)) ?? 1] ?? 'accounts.type.cash'), maxLines: 1, overflow: TextOverflow.ellipsis, style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.textSecondaryFor(context))),
                   ],
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
                   formatMoney(store.accountActualBalance(a), currency: a.currency),
                   maxLines: 1, softWrap: false,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
                     color: store.accountActualBalance(a) >= 0 ? AppColors.textFor(context) : AppColors.expense),
+                ),
               ),
               const SizedBox(width: 4),
               GestureDetector(
