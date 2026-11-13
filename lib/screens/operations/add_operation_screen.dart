@@ -485,12 +485,29 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 label: context.tr('operations.account'),
                 value: store.accounts.where((a) => a.id == _accountId).map((a) => a.name).firstOrNull,
                 onTap: () async {
+                  final isTransfer = _type == 'transfer';
+                  final popularIds = <String>{};
+                  if (!isTransfer) {
+                    final today = DateTime.now();
+                    final since = DateTime(today.year, today.month - 3, today.day);
+                    final counts = <String, int>{};
+                    for (final op in store.operations.where((o) => !o.isDeleted && o.type != 'transfer')) {
+                      final d = DateTime.tryParse(op.date);
+                      if (d == null || d.isBefore(since)) continue;
+                      counts[op.accountId] = (counts[op.accountId] ?? 0) + 1;
+                    }
+                    final used = store.accounts.where((a) => (counts[a.id] ?? 0) > 0).toList()
+                      ..sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
+                    popularIds.addAll(used.take(5).map((a) => a.id));
+                  }
                   final result = await GroupedPickerSheet.show<String>(
                     context: context,
                     title: context.tr('operations.account'),
                     items: store.accounts.map((a) => a.id).toList(),
                     labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
+                    orderedGroups: isTransfer ? null : [context.tr('accounts.popular')],
                     groupBuilder: (id) {
+                      if (popularIds.contains(id)) return context.tr('accounts.popular');
                       final a = store.accounts.firstWhere((a) => a.id == id);
                       return a.currency;
                     },
