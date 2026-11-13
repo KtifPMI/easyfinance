@@ -101,15 +101,26 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
       return cat != null && cat.type == 'income';
     }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
 
-    final expenseBudgets = store.budgets.where((b) {
-      final cat = store.getCategory(b.categoryId);
-      return cat == null || cat.type != 'income';
-    }).toList()..sort((a, b) => b.limit.compareTo(a.limit));
+    final spentByCat = store.monthSpentByCategory();
+    final earnedByCat = store.monthEarnedByCategory();
+    // Expense categories with spending this month but no budget (plan 0), as on the website.
+    final budgetCatIds = store.budgets.map((b) => b.categoryId).toSet();
+    final factRows = spentByCat.entries
+        .where((e) => e.value > 0 && !budgetCatIds.contains(e.key) && store.getCategory(e.key)?.type != 'income')
+        .map((e) => Budget(id: 'fact_${e.key}', categoryId: e.key, limit: 0, spent: e.value))
+        .toList()
+      ..sort((a, b) => b.spent.compareTo(a.spent));
+
+    final expenseBudgets = [
+      ...store.budgets.where((b) {
+        final cat = store.getCategory(b.categoryId);
+        return cat == null || cat.type != 'income';
+      }),
+      ...factRows,
+    ]..sort((a, b) => b.limit != a.limit ? b.limit.compareTo(a.limit) : b.spent.compareTo(a.spent));
 
     final incomePlanned = incomeBudgets.fold(0.0, (s, b) => s + b.limit);
     final expensePlanned = expenseBudgets.fold(0.0, (s, b) => s + b.limit);
-    final spentByCat = store.monthSpentByCategory();
-    final earnedByCat = store.monthEarnedByCategory();
 
     return RefreshIndicator(
       onRefresh: () => store.fetchAllData(),
@@ -117,7 +128,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (store.budgets.isEmpty) ...[
+            if (store.budgets.isEmpty && factRows.isEmpty) ...[
               const SizedBox(height: 48),
               Center(
                 child: Column(
@@ -215,10 +226,17 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
     final forecastPct = getBudgetForecastPercent(bWithSpent);
     final color = budgetForecastColor(forecastPct);
     final spentPct = b.limit > 0 ? (actual / b.limit * 100) : 0.0;
+    final isFact = b.id.startsWith('fact_');
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
-        onTap: () => _editBudgetDialog(context, b, store),
+        onTap: () {
+          if (isFact) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => AddBudgetScreen(categoryId: b.categoryId)));
+          } else {
+            _editBudgetDialog(context, b, store);
+          }
+        },
         child: AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,7 +253,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
                   const SizedBox(width: 8),
                   Text('${store.fmt(actual)} / ${store.fmt(b.limit)}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
                   const SizedBox(width: 8),
-                  GestureDetector(
+                  if (!isFact) GestureDetector(
                     onTap: () {
                       showDialog(
                         context: context,

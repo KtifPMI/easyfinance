@@ -1093,7 +1093,7 @@ String fmt(double v) => formatMoneyWhole(
     for (final b in _budgets.where((b) => !b.isDeleted)) {
       final cat = _catById[b.categoryId];
       final name = cat?.name ?? b.name ?? '';
-      if (b.spent > b.limit) {
+      if (b.limit > 0 && b.spent > b.limit) {
         _recommendations.add(Recommendation(
           id: 'b_overspent_${b.id}', type: 'risk', severity: 'high',
           title: 'Лимит превышен: $name',
@@ -1101,7 +1101,7 @@ String fmt(double v) => formatMoneyWhole(
           titleArgs: {'name': name},
           descArgs: {'spent': fmt(b.spent), 'limit': fmt(b.limit), 'overspent': fmt(b.spent - b.limit), 'pct': pct(b.spent, b.limit)},
         ));
-      } else if (b.spent > b.limit * _recPrefs.budgetNearPct / 100) {
+      } else if (b.limit > 0 && b.spent > b.limit * _recPrefs.budgetNearPct / 100) {
         final remaining = b.limit - b.spent;
         _recommendations.add(Recommendation(
           id: 'b_near_${b.id}', type: 'optimization', severity: 'medium',
