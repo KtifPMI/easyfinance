@@ -691,6 +691,22 @@ Future<void> setDisplayCurrency(String code) async {
         .fold(0.0, (s, o) => s + _amountInRub(o));
   }
 
+  /// Доходы и расходы по месяцам (ключ 'yyyy-M'), в RUB по курсу на дату операции.
+  /// Переводы не учитываются, как и в [monthIncome] / [monthExpense].
+  Map<String, (double, double)> monthlyIncomeExpenseRub() {
+    final result = <String, (double, double)>{};
+    for (final o in _operations) {
+      if (o.isDeleted || (o.type != 'income' && o.type != 'expense')) continue;
+      final d = DateTime.tryParse(o.date);
+      if (d == null) continue;
+      final key = '${d.year}-${d.month}';
+      final cur = result[key] ?? (0.0, 0.0);
+      final amt = _amountInRub(o);
+      result[key] = o.type == 'income' ? (cur.$1 + amt, cur.$2) : (cur.$1, cur.$2 + amt);
+    }
+    return result;
+  }
+
   Map<String, double> monthSpentByCategory([DateTime? month]) {
     final m = month ?? DateTime.now();
     final start = DateTime(m.year, m.month, 1);

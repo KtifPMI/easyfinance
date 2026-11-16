@@ -5,6 +5,7 @@ import '../../components/common/expandable_fab.dart';
 import '../../components/common/screen_hint.dart';
 import '../../components/common/screen_scaffold.dart';
 import '../../components/operations/operation_list_item.dart';
+import '../../models/operation.dart';
 import '../../store/finance_store.dart';
 import '../../theme/theme.dart';
 import '../../utils/color_utils.dart';
@@ -74,62 +75,92 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
     });
   }
 
+  List<Operation>? _memoSource;
+  String? _memoKey;
+  List<Operation> _memoOps = const [];
+
+  String get _filterKey => [
+        _advTypeFilter,
+        _advDateFrom?.toIso8601String(),
+        _advDateTo?.toIso8601String(),
+        _advAmountFrom,
+        _advAmountTo,
+        _advComment,
+        _advTagName,
+        _advAccountIds.join(','),
+        _reportCategoryId,
+        _sortByInputTime,
+        _sortByUpdated,
+      ].join('|');
+
+  List<Operation> _opsFor(FinanceStore store) {
+    final key = _filterKey;
+    if (identical(store.operations, _memoSource) && key == _memoKey) return _memoOps;
+
+    var ops = store.operations.where((o) => !o.isDeleted).toList();
+
+    if (_advTypeFilter != null) {
+      ops = ops.where((o) => o.type == _advTypeFilter).toList();
+    }
+    if (_reportCategoryId != null) {
+      ops = ops.where((o) => o.categoryId == _reportCategoryId).toList();
+    }
+    if (_advAccountIds.isNotEmpty) {
+      ops = ops.where((o) => _advAccountIds.contains(o.accountId) || (o.toAccountId != null && _advAccountIds.contains(o.toAccountId))).toList();
+    }
+
+    if (_advDateFrom != null) {
+      ops = ops.where((o) {
+        final d = DateTime.tryParse(o.date);
+        return d != null && !d.isBefore(_advDateFrom!);
+      }).toList();
+    }
+    if (_advDateTo != null) {
+      final to = DateTime(_advDateTo!.year, _advDateTo!.month, _advDateTo!.day, 23, 59, 59);
+      ops = ops.where((o) {
+        final d = DateTime.tryParse(o.date);
+        return d != null && !d.isAfter(to);
+      }).toList();
+    }
+    if (_advAmountFrom.isNotEmpty) {
+      final min = double.tryParse(_advAmountFrom.replaceAll(',', '.')) ?? 0;
+      ops = ops.where((o) => o.amount >= min).toList();
+    }
+    if (_advAmountTo.isNotEmpty) {
+      final max = double.tryParse(_advAmountTo.replaceAll(',', '.')) ?? double.infinity;
+      ops = ops.where((o) => o.amount <= max).toList();
+    }
+    if (_advComment.isNotEmpty) {
+      final q = _advComment.toLowerCase();
+      ops = ops.where((o) {
+        if ((o.comment ?? '').toLowerCase().contains(q)) return true;
+        if (store.getTagsForOperation(o).any((t) => t.toLowerCase().contains(q))) return true;
+        return false;
+      }).toList();
+    }
+    if (_advTagName != null) {
+      ops = ops.where((o) => store.getTagsForOperation(o).contains(_advTagName)).toList();
+    }
+
+    if (_sortByUpdated) {
+      ops.sort((a, b) => (b.updatedAt ?? b.date).compareTo(a.updatedAt ?? a.date));
+    } else if (_sortByInputTime) {
+      ops.sort((a, b) => (b.clientId ?? '').compareTo(a.clientId ?? ''));
+    } else {
+      ops.sort((a, b) => b.date.compareTo(a.date));
+    }
+
+    _memoSource = store.operations;
+    _memoKey = key;
+    _memoOps = ops;
+    return ops;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        var ops = store.operations.where((o) => !o.isDeleted).toList();
-
-        if (_advTypeFilter != null) {
-          ops = ops.where((o) => o.type == _advTypeFilter).toList();
-        }
-        if (_reportCategoryId != null) {
-          ops = ops.where((o) => o.categoryId == _reportCategoryId).toList();
-        }
-        if (_advAccountIds.isNotEmpty) {
-          ops = ops.where((o) => _advAccountIds.contains(o.accountId) || (o.toAccountId != null && _advAccountIds.contains(o.toAccountId))).toList();
-        }
-
-        if (_advDateFrom != null) {
-          ops = ops.where((o) {
-            final d = DateTime.tryParse(o.date);
-            return d != null && !d.isBefore(_advDateFrom!);
-          }).toList();
-        }
-        if (_advDateTo != null) {
-          final to = DateTime(_advDateTo!.year, _advDateTo!.month, _advDateTo!.day, 23, 59, 59);
-          ops = ops.where((o) {
-            final d = DateTime.tryParse(o.date);
-            return d != null && !d.isAfter(to);
-          }).toList();
-        }
-        if (_advAmountFrom.isNotEmpty) {
-          final min = double.tryParse(_advAmountFrom.replaceAll(',', '.')) ?? 0;
-          ops = ops.where((o) => o.amount >= min).toList();
-        }
-        if (_advAmountTo.isNotEmpty) {
-          final max = double.tryParse(_advAmountTo.replaceAll(',', '.')) ?? double.infinity;
-          ops = ops.where((o) => o.amount <= max).toList();
-        }
-        if (_advComment.isNotEmpty) {
-          final q = _advComment.toLowerCase();
-          ops = ops.where((o) {
-            if ((o.comment ?? '').toLowerCase().contains(q)) return true;
-            if (store.getTagsForOperation(o).any((t) => t.toLowerCase().contains(q))) return true;
-            return false;
-          }).toList();
-        }
-        if (_advTagName != null) {
-          ops = ops.where((o) => store.getTagsForOperation(o).contains(_advTagName)).toList();
-        }
-
-        if (_sortByUpdated) {
-          ops.sort((a, b) => (b.updatedAt ?? b.date).compareTo(a.updatedAt ?? a.date));
-        } else if (_sortByInputTime) {
-          ops.sort((a, b) => (b.clientId ?? '').compareTo(a.clientId ?? ''));
-        } else {
-          ops.sort((a, b) => b.date.compareTo(a.date));
-        }
+        final ops = _opsFor(store);
 
         final grouped = groupByDay(ops);
         final items = <dynamic>[
@@ -215,6 +246,14 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                                       child: Text(context.tr('filters.reset'), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primary)),
                                     ),
                                   ],
+                                ),
+                              ),
+                            if (_hasAdvFilter && ops.isEmpty && !store.allOperationsLoaded)
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: TextButton(
+                                  onPressed: store.loadingAllOps ? null : () => store.loadAllOperations(),
+                                  child: Text(context.tr('operations.load_all')),
                                 ),
                               ),
                             if (!store.allOperationsLoaded && !_hasAdvFilter && _reportCategoryId == null)
@@ -498,12 +537,20 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
   }
 
   void _showAdvFilterSheet(BuildContext context, FinanceStore store) {
+    final amountFromCtrl = TextEditingController(text: _advAmountFrom);
+    final amountToCtrl = TextEditingController(text: _advAmountTo);
+    final commentCtrl = TextEditingController(text: _advComment);
+    List<String>? tagCache;
+    int tagCacheOps = -1;
+    if (!store.allOperationsLoaded) store.loadAllOperations();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
-        return StatefulBuilder(
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+          child: StatefulBuilder(
           builder: (ctx, setSheetState) {
             return DraggableScrollableSheet(
               initialChildSize: 0.85,
@@ -511,25 +558,38 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
               maxChildSize: 0.95,
               expand: false,
               builder: (ctx, scrollCtrl) {
-                final tagSet = <String>{};
-                for (final op in store.operations) {
-                  for (final t in store.getTagsForOperation(op)) {
-                    tagSet.add(t);
+                if (tagCache == null || tagCacheOps != store.operations.length) {
+                  final tagSet = <String>{};
+                  for (final op in store.operations) {
+                    for (final t in store.getTagsForOperation(op)) {
+                      tagSet.add(t);
+                    }
                   }
+                  tagCache = tagSet.toList()..sort();
+                  tagCacheOps = store.operations.length;
                 }
-                final tags = tagSet.toList()..sort();
+                final tags = tagCache!;
 
-                return Padding(
+                return ListenableBuilder(
+                  listenable: store,
+                  builder: (ctx, _) => Padding(
                   padding: const EdgeInsets.all(20),
                   child: ListView(
                     controller: scrollCtrl,
                     children: [
+                      if (store.loadingAllOps) ...[
+                        const LinearProgressIndicator(),
+                        const SizedBox(height: 12),
+                      ],
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(context.tr('filters.advanced_filter'), style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                           TextButton(
                             onPressed: () {
+                              amountFromCtrl.clear();
+                              amountToCtrl.clear();
+                              commentCtrl.clear();
                               setSheetState(() {});
                               setState(() => _resetAdvFilter());
                             },
@@ -607,6 +667,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                         children: [
                           Expanded(
                             child: TextField(
+                              controller: amountFromCtrl,
                               decoration: InputDecoration(labelText: context.tr('filters.from_amount'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true),
                               keyboardType: TextInputType.number,
                               onChanged: (v) => _advAmountFrom = v,
@@ -615,6 +676,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: TextField(
+                              controller: amountToCtrl,
                               decoration: InputDecoration(labelText: context.tr('filters.to_amount'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true),
                               keyboardType: TextInputType.number,
                               onChanged: (v) => _advAmountTo = v,
@@ -627,6 +689,7 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       Text(context.tr('filters.comment'), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
                       const SizedBox(height: 8),
                       TextField(
+                        controller: commentCtrl,
                         decoration: InputDecoration(hintText: context.tr('filters.comment_hint'), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)), isDense: true, prefixIcon: const Icon(Icons.search, size: 20)),
                         onChanged: (v) => _advComment = v,
                       ),
@@ -679,10 +742,12 @@ class _OperationsListScreenState extends State<OperationsListScreen> {
                       const SizedBox(height: 20),
                     ],
                   ),
+                ),
                 );
               },
             );
           },
+        ),
         );
       },
     );

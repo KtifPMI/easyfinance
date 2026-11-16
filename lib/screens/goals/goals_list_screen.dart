@@ -21,6 +21,7 @@ class GoalsListScreen extends StatelessWidget {
         return ScreenScaffold(
           title: context.tr('goals.title'),
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddGoalScreen())),
             child: const Icon(Icons.add),
           ),

@@ -111,7 +111,7 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
         return IgnorePointer(
           ignoring: animationValue < 0.1,
           child: Opacity(
-          opacity: animationValue,
+          opacity: animationValue.clamp(0.0, 1.0),
           child: Transform.translate(
             offset: Offset(0, -8 * (1 - animationValue)),
             child: Padding(

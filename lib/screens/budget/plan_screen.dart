@@ -53,6 +53,7 @@ class _PlanScreenState extends State<PlanScreen> with SingleTickerProviderStateM
           scrollable: false,
           showBackButton: widget.showBackButton,
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => _showAddChoice(context),
             child: const Icon(Icons.add),
           ),

@@ -55,6 +55,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
           showLogo: false,
           scrollable: false,
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => _showAddSheet(context, store),
             child: const Icon(Icons.add),
           ),

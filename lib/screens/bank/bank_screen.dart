@@ -21,6 +21,7 @@ class BankScreen extends StatelessWidget {
         return ScreenScaffold(
           title: 'EasyBank',
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
             child: const Icon(Icons.add),
           ),

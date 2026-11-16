@@ -7,6 +7,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:workmanager/workmanager.dart';
 import 'navigation/app_router.dart';
 import 'config.dart';
+import 'models/home_modules_prefs.dart';
 import 'services/api_client.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
@@ -76,6 +77,7 @@ void main() async {
         ChangeNotifierProvider.value(value: localeStore),
         ChangeNotifierProvider.value(value: plannedPaymentStore),
         ChangeNotifierProvider.value(value: themeStore),
+        ChangeNotifierProvider(create: (_) => HomeModulesPrefs()),
       ],
       child: EasyLocalization(
         supportedLocales: const [

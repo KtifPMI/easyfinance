@@ -121,6 +121,7 @@ class _TagsScreenState extends State<TagsScreen> {
             ],
           ),
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => _showAddSheet(context, store),
             backgroundColor: AppColors.primary,
             child: const Icon(Icons.add, color: Colors.white),

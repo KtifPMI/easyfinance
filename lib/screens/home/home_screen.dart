@@ -9,6 +9,7 @@ import '../../components/home/fin_health_card.dart';
 import '../../components/common/app_logo.dart';
 import '../../store/finance_store.dart';
 import '../../models/financial_event.dart';
+import '../../models/home_modules_prefs.dart';
 import '../../theme/theme.dart';
 import '../../utils/calc.dart';
 import '../../utils/format.dart';
@@ -63,21 +64,24 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         final indicators = store.finHealth;
         final accountType = store.currentUser?.accountType ?? 'individual';
+        final modules = context.watch<HomeModulesPrefs>();
 
         return ScreenScaffold(
           title: '',
           showLogo: false,
           titleWidget: Row(
             children: [
-              Container(
-                height: 42,
-                margin: const EdgeInsets.only(left: -8),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.cardFor(context),
-                  borderRadius: BorderRadius.circular(12),
+              Transform.translate(
+                offset: const Offset(-8, 0),
+                child: Container(
+                  height: 42,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardFor(context),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(child: AppLogo(height: 26)),
                 ),
-                child: const Center(child: AppLogo(height: 26)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -125,14 +129,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildAccountsSection(context, store),
                 const SizedBox(height: 16),
               ],
-              FinHealthCard(indicators: indicators),
-              const SizedBox(height: 16),
-              _buildRatesSection(context, store),
-              _buildRecommendationsSection(context, store),
-              _buildUpcomingPaymentsSection(context, plannedPayments, store),
-              _buildBudgetsSection(context, store),
-              _buildGoalsSection(context, store),
-              _buildReportsSection(context, store),
+              if (modules.isVisible(HomeModule.finHealth)) ...[
+                FinHealthCard(indicators: indicators),
+                const SizedBox(height: 16),
+              ],
+              if (modules.isVisible(HomeModule.rates)) _buildRatesSection(context, store),
+              if (modules.isVisible(HomeModule.recommendations)) _buildRecommendationsSection(context, store),
+              if (modules.isVisible(HomeModule.upcoming)) _buildUpcomingPaymentsSection(context, plannedPayments, store),
+              if (modules.isVisible(HomeModule.budgets)) _buildBudgetsSection(context, store),
+              if (modules.isVisible(HomeModule.goals)) _buildGoalsSection(context, store),
+              if (modules.isVisible(HomeModule.reports)) _buildReportsSection(context, store),
             ],
           ),
         );
@@ -177,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _statLine(context.tr('home.expense'), store.fmt(store.monthExpense), AppColors.expense, alignment: Alignment.centerRight),
             ]),
             const SizedBox(height: 8),
-            _statLine(context.tr('home.profit'), store.fmt(savings), Colors.white),
+            Row(children: [_statLine(context.tr('home.profit'), store.fmt(savings), Colors.white)]),
           ],
         ),
       ),

@@ -221,7 +221,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       final catId = _type != 'transfer' ? (_categoryId ?? store.categories.where((c) => c.type == _type).firstOrNull?.id) : null;
       if (_type != 'transfer' && catId == null) return;
 
-      final accountId = _accountId ?? store.accounts.first.id;
+      final accountId = _accountId ?? (store.accounts.where((a) => !a.isArchived).firstOrNull ?? store.accounts.first).id;
       final toAccountId = _type == 'transfer' ? _toAccountId : null;
       double? transferAmount;
       if (_type == 'transfer' && toAccountId != null) {
@@ -421,7 +421,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
   Widget build(BuildContext context) {
     return Consumer<FinanceStore>(
       builder: (context, store, _) {
-        if (_accountId == null && store.accounts.isNotEmpty) _accountId ??= store.accounts.first.id;
+        if (_accountId == null && store.accounts.isNotEmpty) _accountId ??= (store.accounts.where((a) => !a.isArchived).firstOrNull ?? store.accounts.first).id;
         if (_categoryId == null) {
           final cats = store.categories.where((c) => c.type == _type).toList();
           if (cats.isNotEmpty) _categoryId ??= cats.first.id;
@@ -497,14 +497,14 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                       if (d == null || d.isBefore(since)) continue;
                       counts[op.accountId] = (counts[op.accountId] ?? 0) + 1;
                     }
-                    final used = store.accounts.where((a) => (counts[a.id] ?? 0) > 0).toList()
+                    final used = store.accounts.where((a) => !a.isArchived && (counts[a.id] ?? 0) > 0).toList()
                       ..sort((a, b) => (counts[b.id] ?? 0).compareTo(counts[a.id] ?? 0));
                     popularIds.addAll(used.take(5).map((a) => a.id));
                   }
                   final result = await GroupedPickerSheet.show<String>(
                     context: context,
                     title: context.tr('operations.account'),
-                    items: store.accounts.map((a) => a.id).toList(),
+                    items: store.accounts.where((a) => !a.isArchived).map((a) => a.id).toList(),
                     labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
                     orderedGroups: isTransfer ? null : [context.tr('accounts.popular')],
                     groupBuilder: (id) {
@@ -572,7 +572,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     final result = await GroupedPickerSheet.show<String>(
                       context: context,
                       title: context.tr('operations.to_account'),
-                      items: store.accounts.where((a) => a.id != _accountId).map((a) => a.id).toList(),
+                      items: store.accounts.where((a) => !a.isArchived && a.id != _accountId).map((a) => a.id).toList(),
                       labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
                       groupBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).currency,
                       subtitleBuilder: (id) {

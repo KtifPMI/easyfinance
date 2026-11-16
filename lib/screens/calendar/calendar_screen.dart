@@ -158,6 +158,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           scrollable: false,
           showBackButton: widget.showBackButton,
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => Navigator.pushNamed(context, '/add-planned-payment', arguments: _selectedDate != null
                 ? {'date': _selectedDate!.toIso8601String().substring(0, 10)}
                 : null),

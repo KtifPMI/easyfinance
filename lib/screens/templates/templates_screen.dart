@@ -22,6 +22,7 @@ class TemplatesScreen extends StatelessWidget {
       title: context.tr('templates.title'),
       showLogo: false,
       floatingActionButton: FloatingActionButton(
+        heroTag: null,
         onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTemplateScreen())),
         child: const Icon(Icons.add),
       ),

@@ -459,11 +459,6 @@ else ...[
         months.add(DateTime(selectedMonth.year, selectedMonth.month - i, 1));
       }
     }
-    double amtRub(o) {
-      final acc = store.getAccount(o.accountId);
-      return CurrencyRateService.convert(o.amount, acc?.currency ?? o.currency, 'RUB', store.rates);
-    }
-
     if (!identical(_cachedTrendOps, store.operations) ||
         _cachedTrendMonth != selectedMonth ||
         _cachedTrendFrom != customFrom ||
@@ -473,19 +468,7 @@ else ...[
       _cachedTrendFrom = customFrom;
       _cachedTrendTo = customTo;
 
-      final monthlyData = <String, (double, double)>{};
-      for (final o in store.operations.where((o) => !o.isDeleted)) {
-        final d = DateTime.tryParse(o.date);
-        if (d == null) continue;
-        final key = '${d.year}-${d.month}';
-        final current = monthlyData[key] ?? (0.0, 0.0);
-        final amt = amtRub(o);
-        if (o.type == 'income') {
-          monthlyData[key] = (current.$1 + amt, current.$2);
-        } else {
-          monthlyData[key] = (current.$1, current.$2 + amt);
-        }
-      }
+      final monthlyData = store.monthlyIncomeExpenseRub();
 
       _trendLabels = [];
       _trendExpense = [];
@@ -513,6 +496,18 @@ else ...[
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(context.tr('reports.monthly_trends'), style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
+          if (!store.allOperationsLoaded) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: Text(context.tr('reports.trend_need_history'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
+                TextButton(
+                  onPressed: store.loadingAllOps ? null : () => store.loadAllOperations(),
+                  child: Text(context.tr('operations.load_all')),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: 12),
           SizedBox(
             height: 220,

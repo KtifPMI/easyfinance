@@ -49,7 +49,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
         return ScreenScaffold(
           title: context.tr('accounts.title'),
           showLogo: false,
+          scrollable: false,
           floatingActionButton: FloatingActionButton(
+            heroTag: null,
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddAccountScreen())),
             child: const Icon(Icons.add),
           ),
@@ -103,7 +105,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                        const SizedBox(width: 4),
                                        Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                        const Spacer(),
-                                        Text(store.fmt(hidden.fold<double>(0, (sum, a) => sum + store.accountActualBalance(a))),
+                                        Text(formatMoney(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, store.displayCurrency, store.rates)), currency: store.displayCurrency),
                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                      ],
                                    ),
