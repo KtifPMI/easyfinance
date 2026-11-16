@@ -325,12 +325,30 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
 
   void _showAccountMultiPicker(BuildContext context, FinanceStore store) {
     final available = _availableAccounts(store);
+    var search = '';
+    List<Object> buildRows() {
+      final rows = <Object>[];
+      final byGroup = <String, List<Account>>{};
+      final q = search.toLowerCase();
+      for (final a in available) {
+        if (q.isNotEmpty && !a.name.toLowerCase().contains(q)) continue;
+        (byGroup[a.isArchived ? 'hidden' : groupForType(a.type)] ??= []).add(a);
+      }
+      for (final g in [...groupOrder.keys, 'hidden']) {
+        final list = byGroup[g];
+        if (list == null || list.isEmpty) continue;
+        rows.add(context.tr(g == 'hidden' ? 'accounts.hidden' : 'accounts.group.$g'));
+        rows.addAll(list);
+      }
+      return rows;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
+          final rows = buildRows();
           return DraggableScrollableSheet(
             initialChildSize: 0.7,
             minChildSize: 0.4,
@@ -353,6 +371,18 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                   ),
                 ),
                 const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: context.tr('common.search'),
+                      prefixIcon: const Icon(Icons.search, size: 20),
+                      isDense: true,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onChanged: (v) => setSheetState(() => search = v),
+                  ),
+                ),
                 Expanded(
                   child: available.isEmpty
                       ? Center(
@@ -360,9 +390,16 @@ class _AddGoalScreenState extends State<AddGoalScreen> {
                         )
                       : ListView.builder(
                           controller: scrollCtrl,
-                          itemCount: available.length,
+                          itemCount: rows.length,
                           itemBuilder: (_, i) {
-                            final a = available[i];
+                            final row = rows[i];
+                            if (row is String) {
+                              return Padding(
+                                padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+                                child: Text(row, style: Theme.of(context).textTheme.labelSmall!.copyWith(fontWeight: FontWeight.w700, color: AppColors.textSecondaryFor(context))),
+                              );
+                            }
+                            final a = row as Account;
                             final selected = _selectedAccountIds.contains(a.id);
                             return CheckboxListTile(
                               value: selected,

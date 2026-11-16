@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import '../../models/account.dart';
 import '../../models/financial_event.dart';
 import '../../store/finance_store.dart';
 import '../../store/planned_payment_store.dart';
@@ -331,8 +332,15 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     );
   }
 
+  String _accountGroupLabel(BuildContext context, Account a) =>
+      a.isArchived ? context.tr('accounts.hidden') : context.tr('accounts.group.${groupForType(a.type)}');
+
+  List<String> _accountGroupOrder(BuildContext context) => [
+        for (final g in const ['money', 'owed_by_me', 'owed_to_me', 'investments', 'property', 'loyalty']) context.tr('accounts.group.$g'),
+      ];
+
   Widget _accountField(BuildContext context, FinanceStore store) {
-    final accounts = store.accounts.where((a) => !a.isArchived).toList();
+    final accounts = store.accounts.toList();
     final selected = accounts.where((a) => a.id == _accountId).firstOrNull;
     return _buildPicker(
       label: context.tr('planned_payments.account'),
@@ -343,7 +351,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           title: context.tr('planned_payments.account'),
           items: accounts.map((a) => a.id).toList(),
           labelBuilder: (id) => accounts.firstWhere((a) => a.id == id).name,
-          groupBuilder: (id) => accounts.firstWhere((a) => a.id == id).currency,
+          orderedGroups: _accountGroupOrder(context),
+          trailingGroups: [context.tr('accounts.hidden')],
+          groupBuilder: (id) => _accountGroupLabel(context, accounts.firstWhere((a) => a.id == id)),
           subtitleBuilder: (id) {
             final a = accounts.firstWhere((a) => a.id == id);
             return '${a.balance.toStringAsFixed(2)} ${a.currency}';
@@ -469,7 +479,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   }
 
   Widget _toAccountField(BuildContext context, FinanceStore store) {
-    final accounts = store.accounts.where((a) => !a.isArchived && a.id != _accountId).toList();
+    final accounts = store.accounts.where((a) => a.id != _accountId).toList();
     final selected = accounts.where((a) => a.id == _toAccountId).firstOrNull;
     return _buildPicker(
       label: context.tr('operations.to_account'),
@@ -480,7 +490,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           title: context.tr('operations.to_account'),
           items: accounts.map((a) => a.id).toList(),
           labelBuilder: (id) => accounts.firstWhere((a) => a.id == id).name,
-          groupBuilder: (id) => accounts.firstWhere((a) => a.id == id).currency,
+          orderedGroups: _accountGroupOrder(context),
+          trailingGroups: [context.tr('accounts.hidden')],
+          groupBuilder: (id) => _accountGroupLabel(context, accounts.firstWhere((a) => a.id == id)),
           subtitleBuilder: (id) {
             final a = accounts.firstWhere((a) => a.id == id);
             return '${a.balance.toStringAsFixed(2)} ${a.currency}';

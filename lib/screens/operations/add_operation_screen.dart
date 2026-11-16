@@ -11,6 +11,7 @@ import '../../utils/format.dart';
 import '../../theme/theme.dart';
 import 'package:provider/provider.dart';
 import '../../store/finance_store.dart';
+import '../../models/account.dart';
 import '../../models/operation.dart';
 import '../../models/operation_template.dart';
 import '../../services/currency_rate_service.dart';
@@ -506,12 +507,15 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                     title: context.tr('operations.account'),
                     items: store.accounts.map((a) => a.id).toList(),
                     labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
-                    orderedGroups: isTransfer ? null : [context.tr('accounts.popular')],
+                    orderedGroups: [
+                      if (!isTransfer) context.tr('accounts.popular'),
+                      for (final g in const ['money', 'owed_by_me', 'owed_to_me', 'investments', 'property', 'loyalty']) context.tr('accounts.group.$g'),
+                    ],
                     trailingGroups: [context.tr('accounts.hidden')],
                     groupBuilder: (id) {
                       if (popularIds.contains(id)) return context.tr('accounts.popular');
                       final a = store.accounts.firstWhere((a) => a.id == id);
-                      return a.isArchived ? context.tr('accounts.hidden') : a.currency;
+                      return a.isArchived ? context.tr('accounts.hidden') : context.tr('accounts.group.${groupForType(a.type)}');
                     },
                     subtitleBuilder: (id) {
                       final a = store.accounts.firstWhere((a) => a.id == id);
@@ -575,10 +579,13 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                       title: context.tr('operations.to_account'),
                       items: store.accounts.where((a) => a.id != _accountId).map((a) => a.id).toList(),
                       labelBuilder: (id) => store.accounts.firstWhere((a) => a.id == id).name,
+                      orderedGroups: [
+                        for (final g in const ['money', 'owed_by_me', 'owed_to_me', 'investments', 'property', 'loyalty']) context.tr('accounts.group.$g'),
+                      ],
                       trailingGroups: [context.tr('accounts.hidden')],
                       groupBuilder: (id) {
                         final a = store.accounts.firstWhere((a) => a.id == id);
-                        return a.isArchived ? context.tr('accounts.hidden') : a.currency;
+                        return a.isArchived ? context.tr('accounts.hidden') : context.tr('accounts.group.${groupForType(a.type)}');
                       },
                       subtitleBuilder: (id) {
                         final a = store.accounts.firstWhere((a) => a.id == id);
