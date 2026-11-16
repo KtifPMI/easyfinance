@@ -70,6 +70,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   bool _loadingAllOps = false;
   bool _balanceLoaded = false;
   bool _allOperationsLoaded = false;
+  DateTime? _opsLoadedFrom;
   bool _useMock = true;
   /// Демо-режим был явно включён через enterDemo(). В отличие от [_useMock],
   /// который ещё true до первой загрузки данных, этот флаг означает, что на
@@ -486,6 +487,9 @@ Future<void> _saveCache() async {
 
   bool get isAuthenticated => authService.isAuthenticated;
   bool get allOperationsLoaded => _allOperationsLoaded;
+
+  /// Начало периода, за который загружены операции, пока вся история не загружена.
+  DateTime get operationsLoadedFrom => _opsLoadedFrom ?? DateTime.now().subtract(const Duration(days: 90));
   bool get loadingAllOps => _loadingAllOps;
   User? get currentUser => _currentUser;
   List<Account> get accounts => _accounts;
@@ -634,6 +638,39 @@ Future<void> setDisplayCurrency(String code) async {
     }
     return bal;
   }
+  /// Фактические балансы всех счетов за один проход по операциям (то же, что [accountActualBalance]).
+  Map<String, double> accountActualBalances() {
+    final result = <String, double>{for (final a in _accounts) a.id: a.balance};
+    for (final op in _operations) {
+      if (!op.isPending || op.isDeleted) continue;
+      if (result.containsKey(op.accountId)) {
+        if (op.type == 'expense') {
+          result[op.accountId] = result[op.accountId]! - op.amount;
+        } else if (op.type == 'income') {
+          result[op.accountId] = result[op.accountId]! + op.amount;
+        } else if (op.type == 'transfer') {
+          result[op.accountId] = result[op.accountId]! - op.amount;
+        }
+      }
+      final toId = op.toAccountId;
+      if (op.type == 'transfer' && toId != null && result.containsKey(toId)) {
+        final dst = _accountById[toId];
+        final src = _accountById[op.accountId];
+        if (dst == null) continue;
+        double add;
+        if (op.transferAmount != null && op.transferAmount! > 0) {
+          add = op.transferAmount!;
+        } else if (src != null && src.currency != dst.currency) {
+          add = CurrencyRateService.convert(op.amount, src.currency, dst.currency, _ratesForOp(op));
+        } else {
+          add = op.amount;
+        }
+        result[toId] = result[toId]! + add;
+      }
+    }
+    return result;
+  }
+
   double _amountInRub(Operation o) {
     final acc = _accountById[o.accountId] ?? getAccount(o.accountId);
     final from = acc?.currency ?? o.currency;
@@ -856,6 +893,7 @@ Future<void> setDisplayCurrency(String code) async {
     try {
     results = await Future.wait([
       api.getOperations(from: _iso8601Date(from3m)).then((ops) {
+        _opsLoadedFrom = from3m;
         _operations = ops;
         _opsDirty = true;
         final serverIds = _operations.map((o) => o.id).toSet();
@@ -1032,6 +1070,7 @@ Future<void> setDisplayCurrency(String code) async {
     final api = authService.apiService;
     try {
       final allOps = await api.getOperations();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
       final serverIds = allOps.map((o) => o.id).toSet();
       final localOnly = _operations.where((o) => !serverIds.contains(o.id) && !o.isDeleted).toList();
       _operations = [...allOps, ...localOnly];

@@ -22,6 +22,7 @@ class AccountsScreen extends StatefulWidget {
 class _AccountsScreenState extends State<AccountsScreen> {
   String _search = '';
   bool _archiveExpanded = false;
+  Map<String, double> _balances = {};
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
       builder: (context, store, _) {
         final all = store.accounts.where((a) => !a.isArchived).toList();
         final hidden = store.accounts.where((a) => a.isArchived).toList();
+        _balances = store.accountActualBalances();
         all.sort((a, b) {
           if (a.isFavorite && !b.isFavorite) return -1;
           if (!a.isFavorite && b.isFavorite) return 1;
@@ -105,7 +107,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                                        const SizedBox(width: 4),
                                        Text(context.tr('accounts.hidden'), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                        const Spacer(),
-                                        Text(formatMoney(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, store.displayCurrency, store.rates)), currency: store.displayCurrency),
+                                        Text(formatMoney(hidden.fold<double>(0, (sum, a) => sum + CurrencyRateService.convert((_balances[a.id] ?? 0), a.currency, store.displayCurrency, store.rates)), currency: store.displayCurrency),
                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondaryFor(context))),
                                      ],
                                    ),
@@ -143,7 +145,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
 
   Widget _groupHeader(BuildContext context, FinanceStore store, String group, List<Account> list) {
-    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert(store.accountActualBalance(a), a.currency, store.displayCurrency, store.rates));
+    final total = list.where((a) => a.includeInTotal).fold<double>(0, (s, a) => s + CurrencyRateService.convert((_balances[a.id] ?? 0), a.currency, store.displayCurrency, store.rates));
     final labels = {
       'money': 'accounts.group.money',
       'owed_by_me': 'accounts.group.owed_by_me',
@@ -207,10 +209,10 @@ class _AccountsScreenState extends State<AccountsScreen> {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  formatMoney(store.accountActualBalance(a), currency: a.currency),
+                  formatMoney((_balances[a.id] ?? 0), currency: a.currency),
                   maxLines: 1, softWrap: false,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
-                    color: store.accountActualBalance(a) >= 0 ? AppColors.textFor(context) : AppColors.expense),
+                    color: (_balances[a.id] ?? 0) >= 0 ? AppColors.textFor(context) : AppColors.expense),
                 ),
               ),
               const SizedBox(width: 4),
@@ -236,7 +238,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   Widget _buildCurrencyRow(BuildContext context, FinanceStore store) {
     final byCurrency = <String, double>{};
     for (final a in store.accounts.where((a) => !a.isArchived)) {
-      byCurrency.update(a.currency, (v) => v + store.accountActualBalance(a), ifAbsent: () => store.accountActualBalance(a));
+      byCurrency.update(a.currency, (v) => v + (_balances[a.id] ?? 0), ifAbsent: () => (_balances[a.id] ?? 0));
     }
     final entries = byCurrency.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));

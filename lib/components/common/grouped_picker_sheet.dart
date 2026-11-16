@@ -11,6 +11,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
   final IconData Function(T)? iconBuilder;
   final Color Function(T)? colorBuilder;
   final List<String>? orderedGroups;
+  final List<String> trailingGroups;
   final T? selectedId;
   final ValueChanged<T> onSelected;
 
@@ -24,6 +25,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
     this.iconBuilder,
     this.colorBuilder,
     this.orderedGroups,
+    this.trailingGroups = const [],
     this.selectedId,
     required this.onSelected,
   });
@@ -38,6 +40,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
     IconData Function(T)? iconBuilder,
     Color Function(T)? colorBuilder,
     List<String>? orderedGroups,
+    List<String> trailingGroups = const [],
     T? selectedId,
   }) {
     return showModalBottomSheet<T>(
@@ -58,6 +61,7 @@ class GroupedPickerSheet<T> extends StatefulWidget {
           iconBuilder: iconBuilder,
           colorBuilder: colorBuilder,
           orderedGroups: orderedGroups,
+          trailingGroups: trailingGroups,
           selectedId: selectedId,
           onSelected: (item) { Navigator.pop(ctx, item); },
         ),
@@ -90,10 +94,17 @@ class _GroupedPickerSheetState<T> extends State<GroupedPickerSheet<T>> {
     }
 
     final entries = groups.entries.toList();
-    if (widget.orderedGroups != null) {
-      final order = widget.orderedGroups!;
+    if (widget.orderedGroups != null || widget.trailingGroups.isNotEmpty) {
+      final order = widget.orderedGroups ?? const <String>[];
+      final trailing = widget.trailingGroups;
       int idx(String k) => order.indexOf(k);
       entries.sort((a, b) {
+        final ta = trailing.indexOf(a.key), tb = trailing.indexOf(b.key);
+        if (ta != -1 || tb != -1) {
+          if (ta == -1) return -1;
+          if (tb == -1) return 1;
+          return ta.compareTo(tb);
+        }
         final ia = idx(a.key), ib = idx(b.key);
         if (ia == -1 && ib == -1) return a.key.compareTo(b.key);
         if (ia == -1) return 1;

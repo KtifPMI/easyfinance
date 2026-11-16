@@ -459,6 +459,10 @@ else ...[
         months.add(DateTime(selectedMonth.year, selectedMonth.month - i, 1));
       }
     }
+    if (!store.allOperationsLoaded && months.isNotEmpty && months.first.isBefore(store.operationsLoadedFrom)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => store.loadAllOperations());
+    }
+
     if (!identical(_cachedTrendOps, store.operations) ||
         _cachedTrendMonth != selectedMonth ||
         _cachedTrendFrom != customFrom ||
@@ -501,10 +505,13 @@ else ...[
             Row(
               children: [
                 Expanded(child: Text(context.tr('reports.trend_need_history'), style: TextStyle(fontSize: 13, color: AppColors.textSecondaryFor(context)))),
-                TextButton(
-                  onPressed: store.loadingAllOps ? null : () => store.loadAllOperations(),
-                  child: Text(context.tr('operations.load_all')),
-                ),
+                if (store.loadingAllOps)
+                  const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                else
+                  TextButton(
+                    onPressed: () => store.loadAllOperations(),
+                    child: Text(context.tr('operations.load_all')),
+                  ),
               ],
             ),
           ],
