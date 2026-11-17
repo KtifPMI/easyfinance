@@ -41,9 +41,16 @@ class User {
       login: json['login']?.toString() ?? '',
       accountType: json['account_type']?.toString() ?? 'individual',
       tariffEnd: tariffEnd,
-      currency: currencyIdToCode[json['currency_default']?.toString() ?? json['default_currency']?.toString()] ?? 'RUB',
+      currency: _currencyFromJson(json),
       registeredAt: registeredAt,
     );
+  }
+
+  /// Код валюты: из кеша (`currency`, как пишет [toJson]) или из ответа сервера (id в `currency_default`).
+  static String _currencyFromJson(Map<String, dynamic> json) {
+    final code = json['currency']?.toString();
+    if (code != null && code.length == 3) return code.toUpperCase();
+    return currencyIdToCode[json['currency_default']?.toString() ?? json['default_currency']?.toString()] ?? 'RUB';
   }
 
   Map<String, dynamic> toJson() => {

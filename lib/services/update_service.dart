@@ -298,18 +298,13 @@ class UpdateService {
       return;
     }
     UpdateInfo? update;
-    bool errored = false;
     try {
       update = await check(force: force);
     } catch (_) {
-      errored = true;
+      return;
     }
     if (update == null) {
-      if (errored && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.tr('update.check_failed')), backgroundColor: Colors.orange, duration: const Duration(seconds: 2)),
-        );
-      } else if (showLatest && context.mounted) {
+      if (showLatest && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(context.tr('update.latest_version')), backgroundColor: AppColors.success, duration: const Duration(seconds: 2)),
         );

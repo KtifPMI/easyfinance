@@ -294,8 +294,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRatesSection(BuildContext context, FinanceStore store) {
-    final codes = store.watchedCurrencies.where((c) => c != 'RUB' && store.rates.containsKey(c)).toList();
-    if (codes.isEmpty) {
+    final base = store.displayCurrency;
+    final codes = store.watchedCurrencies.where((c) => c != 'RUB' && c != base && store.rates.containsKey(c)).toList();
+    if (base != 'RUB') codes.insert(0, 'RUB');
+    if (codes.isEmpty || store.rates.isEmpty) {
       if (store.ratesUpdatedAt != null) return const SizedBox.shrink();
       return AppCard(
         padding: const EdgeInsets.all(12),
@@ -347,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             children: [
                               Text(codes[r * 3 + c], style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
-                              Text(': ${store.rates[codes[r * 3 + c]]!.toStringAsFixed(1)}', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context))),
+                              Text(': ${_rateText(CurrencyRateService.convert(1, codes[r * 3 + c], base, store.rates))}', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: AppColors.textSecondaryFor(context))),
                             ],
                           ),
                         ),
@@ -361,6 +363,8 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
+  String _rateText(double value) => value <= 0 ? '—' : value.toStringAsFixed(4);
 
   Widget _currencyDropdown(BuildContext context, FinanceStore store) {
     final codes = store.watchedCurrencies.where((c) => store.rates.containsKey(c)).toList();

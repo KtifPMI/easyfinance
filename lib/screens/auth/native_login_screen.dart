@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../components/common/app_button.dart';
 import '../../components/common/app_input.dart';
 import '../../components/common/app_logo.dart';
+import '../../main.dart' show appNavigatorKey;
 import '../../navigation/app_router.dart';
 import '../../services/api_client.dart';
 import '../../services/notification_service.dart';
@@ -61,14 +62,24 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
     }
 
     if (restored) {
+      try {
+        await store.switchToAccount(store.authService.userId);
+      } catch (_) {}
+      if (!mounted) return;
+      final hasCache = store.accounts.isNotEmpty || store.operations.isNotEmpty;
+      if (hasCache) {
+        // Есть локальные данные: открываем приложение сразу, сеть проверяем в фоне.
+        Navigator.pushReplacementNamed(context, initialRoute);
+        store.fetchAllData();
+        NotificationService().rescheduleAll();
+        NotificationService().trackAppOpen();
+        _checkAccountInBackground(store);
+        return;
+      }
       if (await _verifyAccountNotDeleted(store)) {
         if (!mounted) return;
         try {
-          await store.switchToAccount(store.authService.userId);
-        } catch (_) {}
-        if (!mounted) return;
-        try {
-          final masterStatus = await store.authService.checkMasterStatus();
+          final masterStatus = await store.authService.checkMasterStatus().timeout(const Duration(seconds: 10));
           if (!mounted) return;
           if (masterStatus.isActive && !masterStatus.isMasterCompleted) {
             Navigator.pushReplacementNamed(context, AppRouter.onboarding, arguments: masterStatus);
@@ -88,10 +99,24 @@ class _NativeLoginScreenState extends State<NativeLoginScreen> {
     if (mounted) setState(() => _restoring = false);
   }
 
+  /// Проверки после открытия приложения из кеша: удалён ли аккаунт и не нужен ли онбординг мастера.
+  void _checkAccountInBackground(FinanceStore store) {
+    () async {
+      final ok = await _verifyAccountNotDeleted(store);
+      if (!ok) return;
+      try {
+        final status = await store.authService.checkMasterStatus().timeout(const Duration(seconds: 10));
+        if (status.isActive && !status.isMasterCompleted) {
+          appNavigatorKey.currentState?.pushReplacementNamed(AppRouter.onboarding, arguments: status);
+        }
+      } catch (_) {}
+    }();
+  }
+
   Future<bool> _verifyAccountNotDeleted(FinanceStore store) async {
     try {
       final api = store.authService.apiService;
-      final user = await api.getUser();
+      final user = await api.getUser().timeout(const Duration(seconds: 10));
       if (user.id.isNotEmpty && store.apiClient.userId != user.id) {
         store.apiClient.setAuth(accessToken: store.apiClient.accessToken ?? '', userId: user.id);
       }

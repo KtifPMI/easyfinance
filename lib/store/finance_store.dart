@@ -546,6 +546,17 @@ Future<void> setDisplayCurrency(String code) async {
     _scheduleNotify();
   }
 
+  /// Если валюту не выбирали в приложении, берём валюту профиля с сервера.
+  Future<void> _applyServerCurrency(String code) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString(_ck('display_currency')) != null) return;
+    if (_displayCurrency == code) return;
+    _displayCurrency = code;
+    _recalcCachedTotals();
+    _generateRecommendations();
+    _scheduleNotify();
+  }
+
   Future<void> _loadDisplayCurrency() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString(_ck('display_currency'));
@@ -865,6 +876,7 @@ Future<void> setDisplayCurrency(String code) async {
     await Future.wait([
       api.getUser().then((u) {
         _currentUser = u;
+        _applyServerCurrency(u.currency);
         if (u.id.isNotEmpty && apiClient.userId != u.id) {
           apiClient.setAuth(accessToken: apiClient.accessToken ?? '', userId: u.id);
         }
