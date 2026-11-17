@@ -171,7 +171,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                store.fmt(total),
+                formatMoney(total, currency: store.displayCurrency),
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.w600, color: total >= 0 ? AppColors.success : AppColors.danger),
               ),
             ),

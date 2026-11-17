@@ -1865,11 +1865,12 @@ String fmt(double v) => formatMoneyWhole(
 
    Future<void> addAccount(Account account, {String state = '0'}) async {
     _error = null;
-    Account toAdd = account;
+    final withCode = account.copyWith(currency: currencyIdToCode[account.currencyId] ?? account.currency);
+    Account toAdd = withCode;
     if (authService.isAuthenticated) {
       try {
         final now = formatApiDateTime();
-        final newAccount = account.copyWith();
+        final newAccount = withCode.copyWith();
         final resp = await authService.apiService.addAccount({
           'accounts': [{
             'name': account.name,
@@ -1900,7 +1901,7 @@ String fmt(double v) => formatMoneyWhole(
         throw ApiException('Сервер не вернул ID счёта', 'MISSING_ACCOUNT_ID');
       } on ApiException catch (e) {
         if (_isNetworkError(e)) {
-          toAdd = account.copyWith(isPending: true);
+          toAdd = withCode.copyWith(isPending: true);
         } else {
           _error = e.message; notifyListeners();
           return;

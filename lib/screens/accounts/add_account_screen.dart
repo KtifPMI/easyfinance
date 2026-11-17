@@ -132,6 +132,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       name: name,
       balance: balance,
       type: _type,
+      currency: currencyIdToCode[_currencyId] ?? 'RUB',
       currencyId: _currencyId,
       icon: _iconForType(_type),
       color: _colorForType(_type),
