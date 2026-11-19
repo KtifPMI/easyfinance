@@ -11,6 +11,13 @@ class PlannedPaymentStore extends ChangeNotifier {
   final ApiClient _apiClient;
   List<FinancialEvent> _events = [];
 
+  /// Resolves the server currency id of the account a planned payment belongs
+  /// to. The calendar API does not accept a currency of its own and defaults
+  /// to RUB when `currency_id` is missing, which used to store every planned
+  /// payment in rubles even for USD/EUR accounts. `FinanceStore` wires this to
+  /// its accounts list.
+  String Function(String? accountId)? currencyIdResolver;
+
   PlannedPaymentStore({required ApiClient apiClient}) : _apiClient = apiClient;
 
   String get _cacheKey => AccountCache.key(_key, _apiClient.userId);
@@ -85,9 +92,28 @@ class PlannedPaymentStore extends ChangeNotifier {
 
       final localOnly = _events.where((e) => e.serverId == null).toList();
 
+      // Keep confirmation state that only exists locally (e.g. accepted while
+      // offline, or when the `options=accepted` request above failed).
+      final localByServerId = <String, FinancialEvent>{
+        for (final e in _events)
+          if (e.serverId != null) e.serverId!: e,
+      };
+      final localByChain = <String, FinancialEvent>{
+        for (final e in _events)
+          if (e.chain != null && e.chain!.isNotEmpty) e.chain!: e,
+      };
+      final merged = collapsed.map((e) {
+        final local = localByServerId[e.serverId] ??
+            (e.chain != null ? localByChain[e.chain!] : null);
+        if (local == null) return e;
+        final accepted = <String>{...e.acceptedDates, ...local.acceptedDates}.toList();
+        final occurrenceIds = <String, String>{...e.occurrenceIds, ...local.occurrenceIds};
+        return _copyEvent(e, acceptedDates: accepted, occurrenceIds: occurrenceIds);
+      }).toList();
+
       // Replace all server-backed events with the freshly collapsed set,
       // keeping any local-only (never-synced) events untouched.
-      _events = [...localOnly, ...collapsed];
+      _events = [...localOnly, ...merged];
       _recalcDates();
       await save();
       notifyListeners();
@@ -225,42 +251,52 @@ class PlannedPaymentStore extends ChangeNotifier {
   }
 
   Future<void> add(FinancialEvent event) async {
-    if (_apiClient.accessToken != null) {
-      try {
-        final resp = await _apiClient.postCalendarEventV2(_toCalendarBody(event));
-        final serverId = _extractId(resp)?.toString();
-        final chain = _extractChain(resp)?.toString();
-        if (serverId != null) {
-          event = _copyWithServer(event, serverId: serverId, chain: chain);
-        }
-      } catch (e) {
-        debugPrint('add calendar event error: $e');
-      }
-    }
+    // Optimistic update: the server round-trip can take up to 10 seconds (and
+    // fails completely offline), which used to make the app look like the
+    // payment was never created. Show it immediately, sync afterwards.
     _events.add(event);
     _recalcDates();
-    await save();
-    await NotificationService().rescheduleAll();
     notifyListeners();
+    await save();
+    NotificationService().rescheduleAll();
+
+    if (_apiClient.accessToken == null) return;
+    final local = _events.firstWhere((e) => e.id == event.id, orElse: () => event);
+    try {
+      final resp = await _apiClient.postCalendarEventV2(_toCalendarBody(local));
+      final serverId = _extractId(resp)?.toString();
+      final chain = _extractChain(resp)?.toString();
+      if (serverId != null) {
+        final idx = _events.indexWhere((e) => e.id == event.id);
+        if (idx != -1) {
+          _events[idx] = _copyWithServer(_events[idx], serverId: serverId, chain: chain);
+          await save();
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('add calendar event error: $e');
+    }
   }
 
   Future<void> update(String id, FinancialEvent updated) async {
     final idx = _events.indexWhere((e) => e.id == id);
     if (idx == -1) return;
 
-    if (_apiClient.accessToken != null && updated.serverId != null) {
-      try {
-        await _apiClient.setCalendarEventV2(updated.serverId!, updated.chain ?? '', _toCalendarBody(updated));
-      } catch (e) {
-        debugPrint('update calendar event error: $e');
-      }
-    }
-
+    // Optimistic: apply locally first so the UI reacts instantly.
     _events[idx] = updated;
     _recalcDates();
-    await save();
-    await NotificationService().rescheduleAll();
     notifyListeners();
+    await save();
+    NotificationService().rescheduleAll();
+
+    if (_apiClient.accessToken == null || updated.serverId == null) return;
+    try {
+      await _apiClient.setCalendarEventV2(updated.serverId!, updated.chain ?? '', _toCalendarBody(updated));
+    } catch (e) {
+      // Keep the local edit; the next sync will reconcile with the server.
+      debugPrint('update calendar event error: $e');
+    }
   }
 
   Future<void> remove(String id) async {
@@ -268,18 +304,18 @@ class PlannedPaymentStore extends ChangeNotifier {
     if (idx == -1) return;
     final event = _events[idx];
 
-    if (_apiClient.accessToken != null && event.serverId != null) {
-      try {
-        await _apiClient.deleteCalendarEventV2(event.serverId!, event.chain ?? '');
-      } catch (e) {
-        debugPrint('delete calendar event error: $e');
-      }
-    }
-
+    // Optimistic: remove locally first.
     _events.removeAt(idx);
-    await save();
-    await NotificationService().rescheduleAll();
     notifyListeners();
+    await save();
+    NotificationService().rescheduleAll();
+
+    if (_apiClient.accessToken == null || event.serverId == null) return;
+    try {
+      await _apiClient.deleteCalendarEventV2(event.serverId!, event.chain ?? '');
+    } catch (e) {
+      debugPrint('delete calendar event error: $e');
+    }
   }
 
   /// Confirms a planned occurrence: marks it accepted locally and notifies the server.
@@ -289,21 +325,21 @@ class PlannedPaymentStore extends ChangeNotifier {
     final e = _events[idx];
     final accepted = List<String>.from(e.acceptedDates)..add(dateYmd);
     _events[idx] = _copyEvent(e, acceptedDates: accepted);
-
-    if (_apiClient.accessToken != null && e.serverId != null) {
-      try {
-        // Accept the specific occurrence, not the whole chain: use the
-        // per-date server occurrence id when available, otherwise fall back
-        // to the chain's first occurrence id.
-        final occurrenceId = e.occurrenceIds[dateYmd] ?? e.serverId!;
-        await _apiClient.acceptCalendarEventV2(occurrenceId, e.chain ?? '', dateYmd);
-      } catch (err) {
-        debugPrint('accept calendar event error: $err');
-      }
-    }
     _recalcDates();
-    await save();
+    // Optimistic: show the confirmation instantly, then talk to the server.
     notifyListeners();
+    await save();
+
+    if (_apiClient.accessToken == null || e.serverId == null) return;
+    try {
+      // Accept the specific occurrence, not the whole chain: use the
+      // per-date server occurrence id when available, otherwise fall back
+      // to the chain's first occurrence id.
+      final occurrenceId = e.occurrenceIds[dateYmd] ?? e.serverId!;
+      await _apiClient.acceptCalendarEventV2(occurrenceId, e.chain ?? '', dateYmd);
+    } catch (err) {
+      debugPrint('accept calendar event error: $err');
+    }
   }
 
   Future<void> clear() async {
@@ -325,7 +361,6 @@ class PlannedPaymentStore extends ChangeNotifier {
   }
 
   void _recalcDates() {
-    final now = DateTime.now();
     for (int i = 0; i < _events.length; i++) {
       final e = _events[i];
       final next = e.nextOccurrence();
@@ -336,7 +371,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     }
   }
 
-  FinancialEvent _copyEvent(FinancialEvent e, {String? date, bool? enabled, List<String>? acceptedDates}) => FinancialEvent(
+  FinancialEvent _copyEvent(FinancialEvent e, {String? date, bool? enabled, List<String>? acceptedDates, Map<String, String>? occurrenceIds}) => FinancialEvent(
     id: e.id,
     title: e.title,
     date: date ?? e.date,
@@ -358,8 +393,9 @@ class PlannedPaymentStore extends ChangeNotifier {
     dateStart: e.dateStart,
     dateEnd: e.dateEnd,
     repeatCount: e.repeatCount,
+    time: e.time,
     acceptedDates: acceptedDates ?? e.acceptedDates,
-    occurrenceIds: e.occurrenceIds,
+    occurrenceIds: occurrenceIds ?? e.occurrenceIds,
   );
 
   FinancialEvent _copyWithServer(FinancialEvent e, {String? serverId, String? chain}) => FinancialEvent(
@@ -384,6 +420,7 @@ class PlannedPaymentStore extends ChangeNotifier {
     dateStart: e.dateStart,
     dateEnd: e.dateEnd,
     repeatCount: e.repeatCount,
+    time: e.time,
     acceptedDates: e.acceptedDates,
     occurrenceIds: e.occurrenceIds,
   );
@@ -411,6 +448,9 @@ class PlannedPaymentStore extends ChangeNotifier {
     return <String, dynamic>{
       'account_id': e.accountId ?? '',
       'category_id': e.categoryId ?? '',
+      // The calendar API defaults to RUB when the currency is missing, so a
+      // planned payment on a USD account used to be stored as rubles.
+      'currency_id': currencyIdResolver?.call(e.accountId) ?? '1',
       'amount': e.amount > 0 ? e.amount.toStringAsFixed(2) : '0',
       'date': date,
       'time': e.time ?? '00:00:00',

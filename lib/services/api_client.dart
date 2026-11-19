@@ -7,7 +7,30 @@ import 'easy_api_credentials.dart';
 
 class ApiClient {
   static const String baseUrl = 'https://api.easyfinance.ru/v2/';
-  static const Duration _timeout = Duration(seconds: 30);
+  static const Duration _timeout = Duration(seconds: 10);
+
+  /// After a connection failure, skip further calls for a short while.
+  /// Otherwise every screen starts a fresh batch of requests that each hang
+  /// until the timeout, which makes the UI stutter and freeze offline.
+  DateTime? _offlineUntil;
+  static const _offlineCooldown = Duration(seconds: 20);
+
+  void _ensureOnline() {
+    final until = _offlineUntil;
+    if (until != null && DateTime.now().isBefore(until)) {
+      throw ApiException('No connection', 'OFFLINE');
+    }
+  }
+
+  void _markOffline() => _offlineUntil = DateTime.now().add(_offlineCooldown);
+  void _markOnline() => _offlineUntil = null;
+
+  /// True right after a failed connection. Stores use this to skip heavy
+  /// "load entire history" calls while offline.
+  bool get isOffline {
+    final until = _offlineUntil;
+    return until != null && DateTime.now().isBefore(until);
+  }
 
   final String appId;
   final String secretKey;
@@ -410,8 +433,19 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
+    _ensureOnline();
     final uri = _buildUri(method, params ?? {});
-    final response = await _httpClient.get(uri).timeout(_timeout);
+    late final http.Response response;
+    try {
+      response = await _httpClient.get(uri).timeout(_timeout);
+      _markOnline();
+    } on SocketException {
+      _markOffline();
+      rethrow;
+    } on TimeoutException {
+      _markOffline();
+      rethrow;
+    }
     try {
       return _handleResponse(response);
     } on ApiException catch (e) {
@@ -653,18 +687,24 @@ class ApiClient {
     Map<String, String>? params,
     Map<String, dynamic>? body,
   }) async {
+    _ensureOnline();
     final uri = _buildUri(method, params ?? {});
     final encodedBody = body != null ? jsonEncode(body) : null;
-    late http.Response response;
+    late final http.Response response;
     try {
       response = await _httpClient
           .post(uri, body: encodedBody, headers: {'Content-Type': 'application/json; charset=utf-8'})
           .timeout(_timeout);
+      _markOnline();
+    } on SocketException {
+      _markOffline();
+      rethrow;
     } on TimeoutException {
-      // Reuse the same signed URL and transact_key for an idempotent retry.
-      response = await _httpClient
-          .post(uri, body: encodedBody, headers: {'Content-Type': 'application/json; charset=utf-8'})
-          .timeout(_timeout);
+      // No retry: offline a second attempt only doubles the wait and makes
+      // the whole app feel frozen. The caller keeps its optimistic local
+      // state and the next sync will reconcile with the server.
+      _markOffline();
+      rethrow;
     }
     try {
       return _handleResponse(response);

@@ -122,6 +122,7 @@ class FinanceStore extends ChangeNotifier with WidgetsBindingObserver {
   FinanceStore({required this.authService, required this.apiClient, PlannedPaymentStore? plannedPayments})
       : _plannedPayments = plannedPayments {
     apiClient.onAuthExpired = markAuthExpired;
+    _plannedPayments?.currencyIdResolver = _currencyIdForPlanned;
     bindFormatSettings(showKopeks, showKopeksInOps);
     _cacheReady = _loadFromCache();
     _templatesReady = _loadTemplates();
@@ -609,6 +610,25 @@ Future<void> setDisplayCurrency(String code) async {
     return formatMoneyOps(converted, currency: _displayCurrency);
   }
 
+  /// Currency id used when sending a planned payment to the server. The
+  /// calendar API defaults to RUB, so we must always pass the account currency.
+  String _currencyIdForPlanned(String? accountId) {
+    if (accountId != null && accountId.isNotEmpty) {
+      final acc = getAccount(accountId);
+      if (acc?.currencyId != null && acc!.currencyId!.isNotEmpty) return acc.currencyId!;
+      if (acc?.currency != null) return currencyCodeToId[acc!.currency] ?? '1';
+    }
+    return currencyCodeToId[_displayCurrency] ?? '1';
+  }
+
+  /// Formats a planned-payment amount. Planned payments carry no currency of
+  /// their own on the server, so the amount is always in the account currency.
+  String fmtPlanned(double amount, {String? accountId, String? date}) {
+    final acc = getAccount(accountId);
+    final from = acc?.currency ?? _displayCurrency;
+    return fmt(amount, fromCurrency: from, date: date);
+  }
+
   bool get isLoading => _isLoading;
   bool get useMock => _useMock;
   /// true — на экране демо-данные, введённые через enterDemo().
@@ -874,7 +894,7 @@ Future<void> setDisplayCurrency(String code) async {
     final from3m = DateTime.now().subtract(const Duration(days: 90));
 
     await Future.wait([
-      api.getUser().then((u) {
+      api.getUser().then<User?>((u) {
         _currentUser = u;
         _applyServerCurrency(u.currency);
         if (u.id.isNotEmpty && apiClient.userId != u.id) {
@@ -886,7 +906,7 @@ Future<void> setDisplayCurrency(String code) async {
         if (e is ApiException && e.code == 'ACCOUNT_DELETED') {
           handleAccountDeleted();
         }
-        return null as dynamic;
+        return null;
       }),
 
       api.getAccounts().then((accs) {
@@ -953,16 +973,16 @@ Future<void> setDisplayCurrency(String code) async {
         return apiTemplates;
       }).catchError((e) { debugPrint('getTemplates error: $e'); return <OperationTemplate>[]; }),
 
-      api.getBudget().then((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null as dynamic; }),
-      api.getCurrencies().then((c) {
+      api.getBudget().then<BudgetInfo?>((b) { _serverBudget = b; return b; }).catchError((e) { debugPrint('getBudget error: $e'); return null; }),
+      api.getCurrencies().then<List<Map<String, dynamic>>?>((c) {
         _currencies = c;
         _rates = _buildRatesFromCurrencies(c);
         _ratesUpdatedAt = DateTime.now();
         _recalcCachedTotals();
         _scheduleNotify();
         return c;
-      }).catchError((e) { debugPrint('getCurrencies error: $e'); return null as dynamic; }),
-      api.getSystemCategories().then((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null as dynamic; }),
+      }).catchError((e) { debugPrint('getCurrencies error: $e'); return null; }),
+      api.getSystemCategories().then<List<Map<String, dynamic>>?>((sc) { _systemCategories = sc; return sc; }).catchError((e) { debugPrint('getSystemCategories error: $e'); return null; }),
       api.getBudgetCategories().then((bc) {
         _budgets = _selectCurrentBudgets(bc).map((b) => Budget(
           id: b['id']?.toString() ?? '',
@@ -1076,6 +1096,9 @@ Future<void> setDisplayCurrency(String code) async {
   }
 
   Future<void> loadAllOperations() async {
+    // Pulling the entire history while offline is both slow and pointless —
+    // the locally cached operations are already shown. Retry when online.
+    if (apiClient.isOffline) return;
     if (!authService.isAuthenticated || _allOperationsLoaded || _loadingAllOps) return;
     _loadingAllOps = true;
     _scheduleNotify();

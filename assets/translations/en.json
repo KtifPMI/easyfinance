@@ -824,7 +824,7 @@
   "hints.home": "Your financial hub: balance and net worth, health score, exchange rates, smart tips, upcoming payments, budgets, goals, and reports preview. Each block is tappable — tap to go to the full screen.",
   "hints.operations": "All income, expenses and transfers. Sort by date or update time, filter by type, date range, amount, or tag. Load full history with the button below. Add operations with + or scan receipts with your camera.",
   "hints.plan": "Budgets with monthly summary (planned / spent / remaining) and savings goals with progress tracking. Set category limits and save for what matters.",
-  "hints.calendar": "Calendar with color-coded dots: scheduled, overdue, and confirmed payments. Tap a day to see both actual operations and planned ones. Confirm or edit planned operations.",
+  "hints.calendar": "Calendar with color-coded dots: scheduled, overdue, and confirmed payments. Tap a day to see both actual operations and planned ones. The operations list is below the calendar — scroll down. Confirm or edit planned operations.",
   "hints.reports": "Pick a period (month, 3 months, year, or custom). Income and expense breakdowns with charts, 12-month trends. Tap a category to view operations.",
   "hints.more": "More features: account management, personalized recommendations, AI assistant, operation templates, categories and tags, app settings.",
   "auth.login_error": "Login failed. Please try again.",

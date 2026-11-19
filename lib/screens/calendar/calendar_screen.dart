@@ -155,7 +155,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
         return ScreenScaffold(
           title: context.tr('calendar.title'),
-          scrollable: false,
           showBackButton: widget.showBackButton,
           floatingActionButton: FloatingActionButton(
             heroTag: null,
@@ -164,8 +163,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 : null),
             child: const Icon(Icons.event),
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+          // The page scrolls as a whole: on small screens the hint +
+          // calendar grid used to consume the whole fixed viewport
+          // (`scrollable: false`), pushing the operations list below the
+          // bottom edge where it could not be reached at all.
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 80),
             child: Column(
               children: [
                 ScreenHint(hintId: 'calendar', text: context.tr('hints.calendar')),
@@ -197,11 +200,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 const SizedBox(height: 12),
                 _calendarLegend(context),
                 const SizedBox(height: 8),
-                Expanded(
-                  child: _selectedDate != null
-                      ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
-                      : _buildMonthCombinedView(context, store, plannedStore, monthPlanned),
-                ),
+                _selectedDate != null
+                    ? _buildDayEvents(context, store, selectedOps, selectedPlanned)
+                    : _buildMonthCombinedView(context, store, plannedStore, monthPlanned),
               ],
             ),
           ),
@@ -234,39 +235,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final headerStyle = TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.textSecondaryFor(context));
     final hasPlanned = plannedItems.isNotEmpty;
     final hasOps = monthOps.isNotEmpty;
-    final totalCount = (hasPlanned ? 1 + plannedItems.length : 0) + (hasOps ? 1 + monthOps.length : 0);
 
-    return ListView.builder(
-      itemCount: totalCount,
-      itemBuilder: (context, index) {
-        if (hasPlanned) {
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text('calendar.planned_operations'.tr(), style: headerStyle),
-            );
-          }
-          index--;
-          if (index < plannedItems.length) {
-            final m = plannedItems[index];
-            return _plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime);
-          }
-          index -= plannedItems.length;
-        }
-        if (index == 0) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 4),
-            child: Text('calendar.actual_operations'.tr(), style: headerStyle),
-          );
-        }
-        index--;
-        return _operationTile(context, store, monthOps[index]);
-      },
+    final children = <Widget>[];
+    if (hasPlanned) {
+      children.add(Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Text('calendar.planned_operations'.tr(), style: headerStyle),
+      ));
+      for (final m in plannedItems) {
+        children.add(_plannedPaymentTile(context, store, m['event'] as FinancialEvent, occurrenceDate: m['date'] as DateTime));
+      }
+    }
+    if (hasOps) {
+      children.add(Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 4),
+        child: Text('calendar.actual_operations'.tr(), style: headerStyle),
+      ));
+      for (final op in monthOps) {
+        children.add(_operationTile(context, store, op));
+      }
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 
   Widget _buildDayEvents(BuildContext context, FinanceStore store, List<Operation> ops, List<FinancialEvent> planned) {
-    return ListView(
+    return Column(
       children: [
         Text(formatDateLong(_selectedDate!.toIso8601String()), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: AppColors.textFor(context))),
         const SizedBox(height: 8),
@@ -350,7 +346,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Text(store.fmt(e.amount), maxLines: 1, softWrap: false, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: iconColor)),
+                    Text(store.fmtPlanned(e.amount, accountId: e.accountId, date: e.date), maxLines: 1, softWrap: false, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700, color: iconColor)),
                   ],
                 ),
               ),
@@ -404,7 +400,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.tr('calendar.delete_payment')),
-        content: Text('${plannedEventTitle(e, store)} — ${store.fmt(e.amount)}'),
+        content: Text('${plannedEventTitle(e, store)} — ${store.fmtPlanned(e.amount, accountId: e.accountId, date: e.date)}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: Text(context.tr('calendar.cancel'))),
           TextButton(
@@ -432,7 +428,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(store.fmt(e.amount), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text(store.fmtPlanned(e.amount, accountId: e.accountId, date: e.date), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             Text(formatDate(e.date), style: TextStyle(fontSize: 14, color: AppColors.textSecondaryFor(context))),
           ],

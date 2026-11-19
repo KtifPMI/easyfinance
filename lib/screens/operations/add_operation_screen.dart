@@ -272,6 +272,28 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
     }
   }
 
+  /// Shows what the typed amount will look like in the display currency when
+  /// the account uses a different one, so the amount is never a surprise.
+  Widget _amountConversionHint(BuildContext context, FinanceStore store) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _amountCtrl,
+      builder: (context, value, _) {
+        final currency = store.getAccount(_accountId)?.currency ?? store.displayCurrency;
+        final parsed = double.tryParse(value.text.trim().replaceAll(',', '.').replaceAll(' ', ''));
+        if (currency == store.displayCurrency || parsed == null || parsed <= 0) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            '≈ ${store.fmt(parsed, fromCurrency: currency)}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context)),
+          ),
+        );
+      },
+    );
+  }
+
   void _showSavedDialog(BuildContext context, FinanceStore store, Operation op) {
     final catId = op.categoryId;
     final budget = catId != null ? store.budgets.where((b) => b.categoryId == catId && !b.isDeleted).firstOrNull : null;
@@ -458,7 +480,11 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              CalculatorInput(controller: _amountCtrl, label: context.tr('operations.amount')),
+              CalculatorInput(
+                controller: _amountCtrl,
+                label: '${context.tr('operations.amount')} · ${store.getAccount(_accountId)?.currency ?? store.displayCurrency}',
+              ),
+              _amountConversionHint(context, store),
               const SizedBox(height: 16),
               if (store.templates.isNotEmpty && !_isEditing && widget.templateId == null) ...[
                 InkWell(

@@ -128,6 +128,34 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
 
   String _fmt(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+  /// Currency the amount is entered in: the selected account's currency.
+  String _accountCurrency(FinanceStore store) {
+    final acc = store.getAccount(_accountId);
+    return acc?.currency ?? store.displayCurrency;
+  }
+
+  /// Shows what the typed amount will look like in the display currency when
+  /// the account uses a different one, so the amount is never a surprise.
+  Widget _amountConversionHint(BuildContext context, FinanceStore store) {
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: _amountCtrl,
+      builder: (context, value, _) {
+        final currency = _accountCurrency(store);
+        final parsed = double.tryParse(value.text.trim().replaceAll(',', '.').replaceAll(' ', ''));
+        if (currency == store.displayCurrency || parsed == null || parsed <= 0) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            '≈ ${store.fmt(parsed, fromCurrency: currency)}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondaryFor(context)),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final store = context.watch<FinanceStore>();
@@ -142,6 +170,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
   }
 
   Widget _body(BuildContext context, FinanceStore store) {
+    // Default to the first active account so a new payment is never sent with
+    // an empty account (which made the server fall back to its defaults).
+    if (_accountId == null && store.accounts.isNotEmpty) {
+      _accountId = (store.accounts.where((a) => !a.isArchived).firstOrNull ?? store.accounts.first).id;
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -151,7 +184,11 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
           [
             _typeButtons(context),
             const SizedBox(height: 12),
-            CalculatorInput(controller: _amountCtrl, label: context.tr('add_planned.amount')),
+            CalculatorInput(
+              controller: _amountCtrl,
+              label: '${context.tr('add_planned.amount')} · ${_accountCurrency(store)}',
+            ),
+            _amountConversionHint(context, store),
             const SizedBox(height: 12),
             _accountField(context, store),
             if (_type != 'transfer') ...[
@@ -685,6 +722,9 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
     final dateEnd = (period > 0 && _limitMode == 'until') ? (_untilDate != null ? _fmt(_untilDate!) : null) : null;
     final weekDays = _buildWeekDays();
     final dayOfMonth = period == 30 ? (_date?.day) : null;
+    final financeStore = context.read<FinanceStore>();
+    final accountId = _accountId ??
+        (financeStore.accounts.where((a) => !a.isArchived).firstOrNull ?? financeStore.accounts.firstOrNull)?.id;
 
     final hh = _hourCtrl.text.trim().padLeft(2, '0');
     final mm = _minuteCtrl.text.trim().padLeft(2, '0');
@@ -699,7 +739,7 @@ class _AddPlannedPaymentScreenState extends State<AddPlannedPaymentScreen> {
       comment: comment.isNotEmpty ? comment : widget.existing?.comment,
       tags: null,
       repeatMode: period,
-      accountId: _accountId,
+      accountId: accountId,
       toAccountId: _type == 'transfer' ? _toAccountId : null,
       categoryId: _categoryId,
       dayOfMonth: dayOfMonth,

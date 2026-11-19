@@ -1,8 +1,4 @@
-const Map<String, String> _opCurrencyIdToCode = {
-  '1': 'RUB', '2': 'USD', '3': 'EUR', '4': 'GBP', '5': 'CHF',
-  '6': 'CNY', '7': 'JPY', '8': 'BYN', '9': 'UAH', '10': 'KZT',
-  '11': 'PLN', '12': 'CZK', '13': 'SEK', '14': 'NOK',
-};
+import '../utils/currency_utils.dart';
 
 class Operation {
   final String id;
@@ -107,7 +103,7 @@ class Operation {
       type: _parseOpType(json['type']),
       amount: _parseAmount(json['amount']?.toString() ?? json['sum']?.toString() ?? '0'),
       transferAmount: transferRaw != null ? _parseAmount(transferRaw.toString()) : null,
-      currency: _opCurrencyIdToCode[json['currency_id']?.toString()] ?? json['currency_code']?.toString() ?? 'RUB',
+      currency: currencyIdToCode[json['currency_id']?.toString()] ?? json['currency_code']?.toString() ?? 'RUB',
       date: dateTimeStr,
       accountId: json['account_id']?.toString() ?? '',
       toAccountId: json['to_account_id']?.toString() ?? json['transfer_account_id']?.toString(),
