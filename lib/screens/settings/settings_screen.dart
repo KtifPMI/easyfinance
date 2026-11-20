@@ -89,22 +89,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _exportItem(context),
           _homeScreenItem(context),
           _supportItem(context),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: AppCard(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: InkWell(
-                onTap: () => UpdateService.checkAndShow(context, showLatest: true, force: true),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(context.tr('settings.check_updates'), style: TextStyle(fontSize: 16, color: AppColors.textFor(context))),
-                    Icon(Icons.chevron_right, color: AppColors.textSecondaryFor(context)),
-                  ],
-                ),
-              ),
-            ),
-          ),
           _divider(),
           Padding(
             padding: const EdgeInsets.only(bottom: 4),

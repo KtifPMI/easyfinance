@@ -432,12 +432,12 @@ class ApiClient {
     );
   }
 
-  Future<Map<String, dynamic>> get(String method, {Map<String, String>? params}) async {
+  Future<Map<String, dynamic>> get(String method, {Map<String, String>? params, Duration? timeout}) async {
     _ensureOnline();
     final uri = _buildUri(method, params ?? {});
     late final http.Response response;
     try {
-      response = await _httpClient.get(uri).timeout(_timeout);
+      response = await _httpClient.get(uri).timeout(timeout ?? _timeout);
       _markOnline();
     } on SocketException {
       _markOffline();

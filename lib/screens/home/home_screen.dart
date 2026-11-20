@@ -364,7 +364,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _rateText(double value) => value <= 0 ? '—' : value.toStringAsFixed(4);
+  // Visual only: two decimals so all rates line up neatly on the home card.
+  String _rateText(double value) => value <= 0 ? '—' : value.toStringAsFixed(2);
 
   Widget _currencyDropdown(BuildContext context, FinanceStore store) {
     final codes = store.watchedCurrencies.where((c) => store.rates.containsKey(c)).toList();

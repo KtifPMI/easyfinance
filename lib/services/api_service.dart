@@ -33,7 +33,14 @@ class ApiService {
     if (from != null) params['from'] = from;
     if (to != null) params['to'] = to;
     if (from != null || to != null) params['interval_field'] = 'date';
-    final json = await _client.get('operations.get', params: params.isEmpty ? null : params);
+    // "Whole history" (no from/to) is a heavy query: the server walks every
+    // operation of the user and often needs more than the default 10s.
+    final heavy = from == null && to == null;
+    final json = await _client.get(
+      'operations.get',
+      params: params.isEmpty ? null : params,
+      timeout: heavy ? const Duration(seconds: 90) : null,
+    );
     final result = <Operation>[];
 
     void extractOps(dynamic node) {
