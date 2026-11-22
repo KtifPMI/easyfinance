@@ -176,10 +176,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
       } else if (widget.copyFrom != null) {
         final op = store.operations.where((o) => o.id == widget.copyFrom).firstOrNull;
         if (op != null) {
-          if (op.date.isNotEmpty) {
-            final d = DateTime.tryParse(op.date);
-            if (d != null) _selectedDT = d;
-          }
+          _selectedDT = DateTime.now();
           _type = op.type;
           _amountCtrl.text = op.amount.toStringAsFixed(0);
           _accountId = op.accountId;

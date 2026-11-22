@@ -925,17 +925,27 @@ Future<void> setDisplayCurrency(String code) async {
     try {
     results = await Future.wait([
       api.getOperations(from: _iso8601Date(from3m)).then((ops) {
+        // Обновление подтягивает только окно за последние 90 дней. Старые
+        // операции, которые уже были загружены (из кэша или через «Загрузить
+        // все»), должны пережить свайп: иначе они исчезают вместе с плашкой,
+        // т.к. _allOperationsLoaded remains true.
+        final serverIds = ops.map((o) => o.id).toSet();
+        final older = _operations.where((o) {
+          if (serverIds.contains(o.id)) return false;
+          final d = DateTime.tryParse(o.date);
+          return d != null && d.isBefore(from3m);
+        }).toList();
         _opsLoadedFrom = from3m;
-        _operations = ops;
+        _operations = [...ops, ...older];
         _opsDirty = true;
-        final serverIds = _operations.map((o) => o.id).toSet();
+        final knownIds = _operations.map((o) => o.id).toSet();
         for (final p in pendingOps) {
-          if (!serverIds.contains(p.id)) {
+          if (!knownIds.contains(p.id)) {
             final pd = DateTime.tryParse(p.date);
             if (pd != null && !pd.isBefore(from3m)) _operations.insert(0, p);
           }
         }
-        debugPrint('Operations loaded: ${_operations.length} (server ${ops.length} + pending in window)');
+        debugPrint('Operations loaded: ${_operations.length} (server ${ops.length} + older ${older.length} + pending in window)');
         return ops;
       }).catchError((e) {
         debugPrint('getOperations error (keeping cache): $e');
