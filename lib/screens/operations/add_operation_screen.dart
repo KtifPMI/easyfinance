@@ -15,6 +15,7 @@ import '../../models/account.dart';
 import '../../models/operation.dart';
 import '../../models/operation_template.dart';
 import '../../services/currency_rate_service.dart';
+import '../../services/review_service.dart';
 import '../../utils/calc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -263,6 +264,7 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
         _showSavedDialog(context, store, op);
       } else {
         Navigator.pushNamed(context, '/operations');
+        _scheduleReview();
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -386,7 +388,16 @@ class _AddOperationScreenState extends State<AddOperationScreen> {
           ),
         ],
       ),
-    );
+    ).whenComplete(() => _scheduleReview());
+  }
+
+  /// Окно оценки показываем только после успешного ДОБАВЛЕНИЯ операции и
+  /// с задержкой — чтобы оно не перекрывало диалог «Сохранено»/переход.
+  void _scheduleReview() {
+    if (_isEditing) return;
+    Future<void>.delayed(const Duration(milliseconds: 1500), () {
+      ReviewService.maybeRequestAfterOperation();
+    });
   }
 
   String _templateName(FinanceStore store, Operation op) {
